@@ -1,0 +1,252 @@
+/* =========================
+   SETTINGS MODAL WRAPPER
+========================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4); /* Dimmed backdrop */
+  backdrop-filter: blur(3px);     /* Increased blur */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.settings-modal {
+  background: var(--color-bg);
+  width: 650px; /* Increased width */
+  max-width: 95%;
+  min-height: 400px; /* Added min-height */
+  border-radius: var(--radius-lg); /* Larger radius */
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--color-border);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column; /* To structure header and body */
+  overflow: hidden; /* To contain children with border-radius */
+}
+
+/* =========================
+   HEADER SECTION
+========================= */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-x {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.close-x:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-accent-red);
+}
+
+/* =========================
+   MODAL BODY (2-COLUMN LAYOUT)
+========================= */
+.settings-body {
+  display: flex;
+  flex-grow: 1; /* Allow body to fill remaining space */
+}
+
+.settings-sidebar {
+  width: 200px;
+  background-color: var(--color-bg-blue);
+  padding: 16px;
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  transition: var(--transition);
+}
+
+.sidebar-item:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.sidebar-item.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* =========================
+   SETTINGS CONTENT AREA
+========================= */
+.settings-content {
+  flex-grow: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: var(--color-bg-blue);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}
+
+.setting-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.setting-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.timestamp-display {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    margin-top: 2px;
+}
+
+.setting-icon {
+    color: var(--color-muted);
+}
+
+
+/* =========================
+   GSDC CUSTOM TOGGLE SWITCH
+========================= */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1; /* Default greyed out */
+  transition: 0.3s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+input:checked + .slider {
+  background: var(--bg-gradient-main);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* =========================
+   DEBUG BUTTONS
+========================= */
+.debug-button {
+    background-color: var(--color-accent-red);
+    color: var(--color-accent-light);
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.debug-button:hover {
+    background-color: color-mix(in srgb, var(--color-accent-red) 85%, black);
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0); 
+  }
+}

@@ -1,0 +1,75 @@
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.25);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modalFadeIn 0.18s cubic-bezier(.4,2,.6,1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  min-width: 420px;
+  max-width: 85vw;
+  max-height: 85vh;
+  width: 85vw;
+  height: 85vh;
+  overflow: hidden;
+  position: relative;
+  animation: modalPopIn 0.18s cubic-bezier(.4,2,.6,1);
+}
+
+.modal-content {
+  padding: 32px 28px 24px 28px;
+}
+
+@media (max-width: 600px) {
+  .modal-content {
+    padding: 16px 8px 16px 8px;
+  }
+}
+
+@keyframes modalPopIn {
+  from { opacity: 0; transform: scale(0.97) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.15s;
+}
+.modal-close:hover {
+  color: #ff0000;
+}
+
+.modal-header {
+  margin-bottom: 18px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-primary, #1a237e);
+}

@@ -1,0 +1,1028 @@
+.attendance-container {
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 12px; /* Gentle design */
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.attendance-scroll-area {
+    overflow: auto;
+    height: 100%;
+    width: 100%;
+}
+
+.attendance-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+/* STICKY HEADER (Top) */
+.sticky-header {
+    position: sticky !important;
+    top: 0;
+    z-index: 10;
+    background: var(--color-primary); /* Navy Blue Primary */
+    color: var(--color-bg);
+    padding: 12px 15px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    border-bottom: 2px solid var(--color-accent); /* Red Accent line */
+    white-space: nowrap;
+}
+
+/* STICKY COLUMN (Left) */
+.sticky-col {
+    position: sticky !important;
+    left: 0;
+    z-index: 5;
+    background: white;
+    border-right: 2px solid #e2e8f0;
+    min-width: 280px;
+}
+
+/* INTERSECTION (Name cell at top-left) */
+.sticky-col.sticky-header {
+    z-index: 20; /* Higher than both */
+    background: var(--color-primary);
+}
+
+/* ROWS & CELLS */
+.emp-name {
+    font-weight: 700;
+    color: #1e293b;
+    padding: 10px 20px;
+    
+    /* ADD THIS LINE BELOW */
+    border-bottom: 1px solid #e2e8f0; 
+    
+    /* Ensure the sticky column width is respected */
+    min-width: 250px; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attendance-table tr:hover .emp-name {
+    color: #ff0000; /* Red hover for focus */
+}
+
+/* 1. Target the background of the even rows */
+.attendance-table tbody tr:nth-child(even) {
+    background-color: #f8fafc; /* Very light grayish-blue */
+}
+
+/* 2. CRITICAL: Target the sticky name cell specifically for even rows */
+/* Without this, the name column will stay white while the rest of the row is colored */
+.attendance-table tbody tr:nth-child(even) .emp-name {
+    background-color: #f8fafc;
+}
+
+/* 3. Optional: Subtle contrast for the "N/A" (empty) status cells on even rows */
+.attendance-table tbody tr:nth-child(even) .n-a .status-inner {
+    background-color: #f1f5f9; 
+}
+
+/* 4. Hover Effect - Keep it consistent */
+.attendance-table tbody tr:hover,
+.attendance-table tbody tr:hover .emp-name {
+    background-color: #f0f4ff !important; /* GSDC Light Navy Tint */
+}
+
+.status-cell {
+    /*padding: 2px !important; /* Tight padding for stacked statuses */
+    vertical-align: top;
+    min-width: 100px; /* Adjust based on your column width */
+
+    transition: background-color 0.5s ease;
+}
+
+.status-stack {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    /*gap: 1px; /* Creates a thin separator line between multiple statuses */
+    justify-content: center; /* Centers a single status vertically */
+    grid-template-rows: 0fr;
+}
+
+.status-stack.expanded, 
+.status-stack:not(.collapsed) { 
+    grid-template-rows: 1fr; 
+}
+
+
+tr {
+    transition: height 0.5s ease;
+}
+
+/* GSDC STATUS COLORS - Refined Specificity */
+
+/* 1. Base style for all status indicators */
+.status-inner {
+    display: flex;           /* 1. Enable Flexbox */
+    align-items: center;     /* 2. Center vertically */
+    justify-content: center; /* 3. Center horizontally */
+    
+    height: 100%;
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    border: 1px solid white;
+    box-sizing: border-box;  /* 4. Ensures padding/border don't grow the 100% height */
+}
+
+.status-inner-wrapper {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2. Specific Status Mappings (No spaces between classes) */
+.status-inner.served { 
+    background: var(--color-primary); /* GSDC Navy */
+    color: white; 
+}
+
+.status-inner.on-trip { 
+    background: #3a4efc; /* Your primary 2nd blue */
+    color: white;
+}
+
+.status-inner.rest-day { 
+    background: #f1f5f9; 
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+}
+
+.status-inner.present { 
+    background: #10b981; /* Green */
+    color: white; 
+}
+
+.status-inner.absent { 
+    background: var(--color-accent); /* Red Accent */
+    color: white; 
+}
+
+.status-inner.in-transit {
+    background: #f59e0b; /* Amber/Orange */
+    color: white;
+}
+
+.status-inner.tukod {
+    background: #f50b0b; /* Amber/Orange */
+    color: rgb(255, 255, 255);
+}
+
+.status-inner.leave {
+    background: #6366f1; /* Indigo */
+    color: white;
+}
+
+.status-inner.awol {
+    background: #1f1f1f; /* Amber/Orange */
+    color: rgb(255, 255, 255);
+}
+
+/* Fallback for N/A or empty slots */
+.status-inner.n-a,
+.status-inner.n\/a {
+    background: transparent;
+    color: #cbd5e1;
+    border: 1px dashed #e2e8f0;
+}
+
+/* Hover effect to highlight the current day/row intersection */
+.status-cell:hover .status-inner {
+    filter: brightness(1.1);
+    cursor: default;
+}
+
+/* Header Date Formatting */
+.header-date-box {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.day-name {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.day-num {
+    font-size: 1rem;
+}
+
+/* Row Hovering (Navy tint) */
+.attendance-table tbody tr:hover td {
+    background-color: #f0f4ff; /* Very light navy */
+}
+
+/* Ensure the sticky name column doesn't lose its color on row hover */
+.attendance-table tbody tr:hover .sticky-col {
+    background-color: #f0f4ff;
+    color: #ff0000; /* GSDC Red on hover */
+}
+
+.attendance-table td.status-cell {
+    padding: 0 !important; /* Remove cell padding */
+    vertical-align: stretch; /* Ensure content can fill height */
+    height: 1px; /* Hack to make children 100% height in some browsers */
+}
+
+/* Loader Styling */
+.attendance-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    font-weight: 700;
+    color: #000080;
+}
+
+.status-inner.wtu { background: #64748b; color: white; } 
+.status-inner.served { background: #000080; color: white; }
+.status-inner.on-trip { background: #3a4efc; color: white; }
+.status-inner.present { background: #10b981; color: white; }
+.status-inner.absent { background: #ef4444; color: white; }
+
+/* Handle the N/A state */
+.status-inner.n\/a, 
+.status-inner.n-a { 
+    background: transparent; 
+    color: #cbd5e1; 
+    border: 1px dashed #e2e8f0;
+}
+
+
+.attendance-control-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: white;
+    border-bottom: 2px solid #f1f5f9;
+    height: 60px;
+}
+.nav-group {
+    display: flex;
+    gap: 4px;
+}
+
+.nav-group button {
+    background: white;
+    border: 1px solid #e2e8f0; /* Soft gray border */
+    color: var(--color-primary); /* GSDC Navy Blue */
+    width: 36px;
+    height: 36px;
+    border-radius: 8px; /* Gentle rounded corners */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    padding: 0;
+}
+
+.nav-group button:hover {
+    color: var(--color-accent); /* GSDC Red */
+    border-color: var(--color-accent);
+    background-color: #fff5f5; /* Very light red tint */
+    transform: translateY(-1px); /* Subtle lift */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.nav-group button:active {
+    transform: translateY(0px);
+    background-color: #f1f5f9;
+}
+
+.nav-group button.gradient-variant {
+    position: relative;
+    background: linear-gradient(white, white) padding-box,
+                var(--bg-gradient-main-eq);
+    border: 1px solid transparent;
+}
+
+.nav-group button.gradient-variant:hover {
+    background: linear-gradient(#fff5f5, #fff5f5) padding-box,
+                var(--bg-gradient-main-eq);
+}
+
+/* Disabled State (if you reach min/max dates) */
+.nav-group button:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+}
+
+/* Icon Sizing inside buttons */
+.nav-group button svg {
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.nav-group button:hover svg {
+    transform: scale(1.1); /* Slight pop on hover */
+}
+
+.date-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--color-primary);
+    cursor: pointer;
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: #f8fafc;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.date-display:hover {
+    border-color: var(--color-accent); /* Red Accent on hover */
+    background: white;
+}
+
+.cal-icon {
+    color: var(--color-accent); /* Red accent for the calendar icon */
+}
+
+/* Hidden input that gets triggered by clicking the text */
+.hidden-date-picker {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.attendance-loader {
+    padding: 40px;
+    text-align: center;
+    color: #64748b;
+    font-weight: 600;
+}
+
+/* Skeleton Shimmer Animation */
+@keyframes shimmer {
+  0% { background-position: -468px 0; }
+  100% { background-position: 468px 0; }
+}
+
+.skeleton-text, .skeleton-box {
+  background: #f6f7f8;
+  background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+  background-repeat: no-repeat;
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 14px;
+  width: 80%;
+}
+
+.skeleton-box {
+  height: 100%;
+  width: 100%;
+}
+
+.skeleton-row .status-cell {
+  background: white;
+  height: 45px;
+}
+
+.attendance-search-wrapper {
+    width: 300px;
+}
+
+/* Gradient Outline (Imitated by overlapping boxes) */
+.attendance-search-wrapper .gsdc-gradient-outline-wrapper {
+    padding: 1px;
+    background: var(--bg-gradient-main-eq);
+    border-radius: 8px; /* Matching your "gentle" rounded corner preference */
+}
+
+.search-input-container {
+    background: white;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    padding: 2px 10px;
+    width: 100%;
+}
+
+.search-input-container input {
+    border: none;
+    outline: none;
+    padding: 6px;
+    width: 100%;
+    font-size: 0.85rem;
+    color: var(--color-primary);
+}
+
+.search-icon {
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+/* Focus effect */
+.search-input-container:focus-within {
+    background: #f8fafc;
+}
+
+.search-input-container:focus-within .search-icon {
+    color: #3a4efc; /* Your 2nd primary blue */
+}
+
+.header-section {
+    display: flex;
+    align-items: center;
+    flex: 1; /* Each takes equal space */
+}
+
+.header-section.left {
+    justify-content: flex-start;
+}
+
+.header-section.center {
+    justify-content: center;
+    gap: 15px; /* Gap between nav buttons and date display */
+    flex: 0 0 auto; /* Center doesn't grow, stays compact */
+    min-width: 400px;
+}
+
+.header-section.right {
+    justify-content: flex-end;
+    padding-right: 50px;
+    gap: 5px;
+}
+
+.attendance-filters-group {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Space between search and dropdown */
+}
+
+/* Dropdown specific styling */
+.attendance-dropdown-wrapper {
+    width: 140px;
+}
+
+.attendance-dropdown-wrapper .gsdc-gradient-outline-wrapper {
+    padding: 1.5px;
+    border-radius: 8px;
+    background: rgb(204, 198, 250);
+}
+
+.gsdc-filter-select {
+    width: 100%;
+    border: none;
+    background: white;
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    /* Custom chevron for the dropdown */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23000080' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+}
+
+.gsdc-filter-select:hover {
+    background-color: #f8fafc;
+}
+
+/* Ensure the left section expands to fit both inputs */
+.header-section.left {
+    flex: 1.5; /* Slightly more space for the filters */
+}
+
+/* Update the name cell to handle stacking */
+.emp-name {
+    padding: 8px 15px;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    height: 60px; /* Increased height for two rows */
+}
+
+.name-cell-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 100%;
+}
+
+/* Position Indicators (D/H) */
+.position-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    font-weight: 900;
+    font-size: 1.1rem;
+}
+
+.indicator-d {
+    color: var(--color-primary); /* Navy */
+}
+
+.indicator-h {
+    color: var(--color-orange); /* Orange */
+}
+
+/* Name and OE Stack */
+.name-details-stack {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.3;
+    overflow: hidden;
+}
+
+.primary-name-row {
+    font-weight: 700;
+    color: var(--color-text);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.secondary-oe-row {
+    font-size: 0.72rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Pushes status to the right */
+    margin-top: 2px;
+    width: 100%;
+}
+
+.oe-left-group {
+    display: flex;
+    gap: 4px;
+}
+
+.oe-label {
+    color: var(--color-muted);
+    font-weight: 600;
+}
+
+.oe-value {
+    color: var(--color-primary-2);
+    font-weight: 500;
+}
+
+/* Status Tag on the right */
+.oe-status-tag {
+    font-weight: 700;
+    color: var(--color-accent); /* Uses your Red accent */
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    padding: 0 4px;
+    background: rgba(218, 22, 19, 0.1); /* Very light red bg */
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+}
+
+/* Adjusting the stack to ensure it fills the available width next to D/H */
+.name-details-stack {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Prevents overflow issues */
+}
+
+/* Ensure the status cells also match the new height */
+.status-cell {
+    height: 60px;
+    padding: 0 !important;
+}
+
+
+/* GSDC Toggle Button Styling */
+.gsdc-toggle-btn {
+    position: relative; /* Required for the overlay */
+    background: var(--color-primary); /* Solid Navy */
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    overflow: hidden; /* Keeps the gradient inside the rounded corners */
+    z-index: 1;
+    border: none;
+    transition: color 0.3s ease;
+}
+
+/* The Gradient Layer */
+.gsdc-toggle-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-gradient-main-eq); /* Your Navy + Red gradient */
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.3s ease; /* This is what animates smoothly */
+    z-index: -1; /* Sits behind the text but above the solid bg */
+}
+
+.gsdc-toggle-btn:hover::before {
+    opacity: 1; /* Smoothly reveals the gradient */
+}
+
+.gsdc-toggle-btn.active {
+    background: var(--color-accent); /* Solid Red */
+}
+
+/* Ensure active state also has a smooth gradient hover if desired */
+.gsdc-toggle-btn.active:hover::before {
+    opacity: 1;
+}
+.status-inner {
+    display: flex;
+    flex-direction: column; /* Allows stacking status + OE if needed */
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    
+    /* Typography */
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    
+    /* GSDC Design Language */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /*border: 0.5px solid rgba(255, 255, 255, 0.2);*/
+    box-sizing: border-box;
+    cursor: help; /* Indicates there is a tooltip/info on hover */
+    position: relative;
+    overflow: hidden;
+
+    position: relative;
+}
+
+/* Subtle Gradient overlay on hover */
+.status-inner::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+/* Hover State: Slight Lift and Glow */
+.status-inner:hover {
+    filter: brightness(1.15);
+    z-index: 2;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    transform: scale(1.02); /* Very gentle pop */
+}
+
+/* Active/Pressed State */
+.status-inner:active {
+    transform: scale(0.96);
+    filter: brightness(0.9);
+}
+
+.oe-hover-label {
+    position: absolute;
+    top: 4px;
+    font-size: 0.55rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0; /* Invisible */
+    transform: translateY(-5px); /* Slight offset for animation */
+    transition: all 0.2s ease-in-out;
+    pointer-events: none;
+    color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(30px); /* The Blur Effect */
+    -webkit-backdrop-filter: blur(30px); /* Safari Support */
+}
+
+
+
+.status-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.status-label-mini {
+    font-size: 0.55rem;
+    opacity: 0.8;
+    font-weight: 400;
+}
+
+.status-main-value {
+    font-size: 0.72rem;
+    font-weight: 700;
+    transition: transform 0.2s ease-in-out;
+}
+
+/* --- HOVER EFFECTS --- */
+
+.status-inner:hover .oe-hover-label {
+    opacity: 1;
+    transform: translateY(0); /* Slides into view */
+
+}
+
+/* --- HOVER & SEARCH REVEAL --- */
+
+/* Original Hover Logic + New Search Match Logic */
+.status-inner:hover .oe-hover-label,
+.status-inner.force-reveal .oe-hover-label {
+    opacity: 1;
+    transform: translateY(0);
+    /* Adding a slight glow or border to make search results pop */
+    z-index: 10; 
+}
+
+
+
+/* Ensure the mark tag inside the OE label is visible */
+.oe-hover-label .gsdc-highlight {
+    background-color: #ffd900; /* Yellow highlight */
+    color: #000;
+    padding: 0 1px;
+    border-radius: 2px;
+}
+
+.status-inner:hover .status-main-value {
+    /* Gently push the main status down to make room for the label */
+    transform: translateY(6px); 
+}
+
+/* Add a subtle dark overlay on hover to make the small white text readable */
+.status-inner:hover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 0;
+}
+
+/* The Button */
+.gsdc-today-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gsdc-today-btn:hover {
+  background: #f8fafc;
+  border-color: #3a4efc;
+  transform: translateY(-1px);
+}
+
+/* The Highlighted Column */
+th.today-column .header-date-box {
+  background: var(--color-primary); /* Navy Blue */
+  color: white;
+  border-radius: 6px;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Optional: faint vertical line for today */
+td.today-column-cell {
+  background-color: rgba(58, 78, 252, 0.03);
+}
+
+
+
+/* --- TODAY HIGHLIGHT --- */
+.today-column .header-date-box {
+  background: var(--color-primary); /* Navy Blue */
+  color: white;
+  border: 1px solid #3a4efc;
+  box-shadow: 0 4px 10px rgba(58, 78, 252, 0.3);
+  transform: translateY(-2px);
+}
+
+.today-cell {
+  background-color: rgba(58, 78, 252, 0.05); /* Very faint navy tint */
+  border-left: 1px dashed rgba(58, 78, 252, 0.2);
+  border-right: 1px dashed rgba(58, 78, 252, 0.2);
+}
+
+/* --- WEEKEND STYLING --- */
+.weekend-column {
+  background-color: var(--color-primary) !important;
+}
+
+.weekend-column .day-name {
+  color: color-mix(in srgb, var(--color-accent), white 50%); /* Red accent for SAT/SUN labels */
+}
+
+.weekend-cell {
+  background-color: #f1f5f9; /* Slightly darker gray for the whole column */
+  opacity: 0.9;
+}
+
+/* Special Case: Sunday vertical separator */
+.sunday {
+  border-left: 1px solid rgba(255, 0, 0, 0.5);
+}
+
+.sunday-cell {
+  border-left: 2px solid rgba(66, 66, 66, 0.136);
+}
+
+/* --- HOVER REFINEMENT --- */
+.status-cell:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  cursor: crosshair;
+}
+
+.emp-header-with-pagination {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8px 12px !important;
+    min-width: 250px; /* Match your existing sticky offset */
+    height: 60px; /* Adjust based on your date box height */
+}
+
+.header-top-row {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.header-pagination-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+}
+
+.mini-nav-group {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15); /* Subtle contrast against navy */
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.mini-nav-group button {
+    background: transparent;
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 2px;
+    transition: opacity 0.2s;
+}
+
+.mini-nav-group button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.mini-nav-group button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.mini-page-info {
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 35px;
+    text-align: center;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 0 4px;
+}
+
+.mini-count {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    font-weight: 400;
+}
+
+.emp-header-with-pagination {
+    /* Critical for vertical centering */
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    padding: 10px 5px !important;
+    min-width: 250px;
+    background: var(--color-primary) !important; /* Navy Blue */
+    color: white;
+}
+
+.header-top-row {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+    opacity: 0.9;
+}
+
+/* Container to handle the centering */
+.header-pagination-container {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Horizontal Center */
+    align-items: center;     /* Vertical Center */
+}
+
+.pagination-centered-group {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1); /* Subtle Navy-White blend */
+    border-radius: 20px; /* Rounded pill shape for "gentle" design */
+    padding: 2px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pager-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pager-btn:hover:not(:disabled) {
+    color: var(--color-accent); /* Red highlight on hover */
+    transform: scale(1.1);
+}
+
+.pager-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.pager-info {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 0 8px;
+    font-family: monospace; /* Keeps numbers from jumping */
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.pager-info .separator {
+    opacity: 0.5;
+    font-weight: 400;
+}
+
+.pager-info .total {
+    opacity: 0.7;
+}
+
+.gsdc-highlight {
+    background-color: #fef08a; /* Soft yellow */
+    color: #1e293b; /* Dark slate for contrast */
+    padding: 0 2px;
+    border-radius: 2px;
+    /*font-weight: 800; */
+}

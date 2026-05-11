@@ -1,0 +1,622 @@
+/* Sticky Footer Message Styles */
+.sticky-footer-message {
+  margin-right: 24px;
+  font-size: 1rem;
+  align-self: center;
+  padding: 6px 16px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+
+.sticky-footer-message.selected {
+  background: linear-gradient(90deg, #e0ffe6 0%, #d1f7ff 100%);
+  color: #1a7f37;
+  border: 1px solid #b6e6c7;
+}
+
+.sticky-footer-message.not-selected {
+  background: linear-gradient(90deg, #fff0f0 0%, #fffbe6 100%);
+  color: #c62828;
+  border: 1px solid #ffd6d6;
+  animation: shake 0.2s 1;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+.main-content-split {
+  display: flex;
+  gap: 5px;
+  align-items: flex-start; /* This is the "snug fit" secret */
+  width: 100%;
+  margin-top: 10px;
+  height: 100vh;
+  min-height: 0;
+  /*overflow-y: auto;*/
+  /*border: 1px solid #010c1b; /* debug */
+}
+
+
+/* Sidebar should fit full screen height, no scroll, no sticky */
+.management-sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  box-sizing: border-box;
+  padding: 10px;
+  min-height: 400px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: static;
+  max-height: none;
+  height: 100%;
+
+  border: 1px solid var(--color-primary);
+}
+
+
+/* Sidebar show/hide animation - reduced duration for smoother feel */
+.animate-sidebar {
+  transition: opacity 0.13s, transform 0.18s cubic-bezier(.4,2,.6,1);
+  will-change: opacity, transform;
+}
+.sidebar-in {
+  opacity: 1;
+  transform: translateX(0);
+}
+.sidebar-out {
+  opacity: 0;
+  transform: translateX(-40px);
+  pointer-events: none;
+}
+
+
+.table-main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--color-bg);
+  border-radius: 12px;
+  overflow: auto;
+}
+
+/* Table area show/hide animation - reduced duration, no scale */
+.animate-table {
+  /* 0.25, 1, 0.5, 1 is a "Cubic Out" curve. 
+     It is fast at the start but very smooth at the end.
+  */
+  transition: 
+    opacity 0.4s ease-out, 
+    transform 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+    margin-left 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  
+  will-change: transform, margin-left;
+  border-radius: 12px; /* Gentle rounded corners */
+}
+
+.table-in {
+  opacity: 1;
+  transform: translateX(0);
+  margin-left: 20px; /* Gap from sidebar */
+}
+
+.table-out {
+  opacity: 1; /* Keeping opacity at 1 prevents flickering during movement */
+  transform: translateX(0);
+  margin-left: 0;
+}
+
+/* --- PAGE LAYOUT --- */
+.order-table-section {
+  width: 100%;
+  height: 100%;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* --- RIBBON ACTION BUTTONS --- */
+/* These go into the 'actions' prop of your PageTemplate */
+.header-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.header-btn.primary {
+  background: var(--color-primary); /* Navy Blue */
+  color: var(--color-text-2);
+  box-shadow: 0 4px 10px rgba(0, 0, 128, 0.2);
+}
+
+.header-btn.primary:hover {
+  background: color-mix(in srgb, var(--color-primary) 80%, black 20%);
+  transform: translateY(-1px);
+}
+
+.header-btn.secondary {
+  background: var(--color-bg);
+  color: var(--color-darkslategray);
+  border-color: var(--color-border);
+}
+
+.header-btn.secondary:hover {
+  background: var(--color-primary);
+  color: var(--color-bg);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.header-btn.secondary.preload {
+  background: var(--color-green);
+  color: var(--color-text-2);
+  border-color: var(--color-border);
+}
+
+.header-btn.secondary.mobilization {
+  background: var(--color-orange);
+  color: var(--color-text-2);
+  border-color: var(--color-border);
+}
+  
+.header-btn.secondary.preload:hover {
+  background: color-mix(in srgb, var(--color-green) 80%, black 20%);
+  border-color: var(--color-border);
+  transform: translateY(-1px);
+}
+
+.header-btn.secondary.mobilization:hover {
+  background: color-mix(in srgb, var(--color-orange) 80%, black 20%);
+  border-color: var(--color-border);
+  transform: translateY(-1px);
+}
+
+/* Loading Animation for Sync Button */
+.spinning svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* --- STATUS PILLS --- */
+/* Your TableView automatically wraps columns with 'status' in this class */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--color-bg-hover);
+  color: var(--color-darkslategray);
+  border: 1px solid var(--color-border);
+}
+
+/* Logic-based coloring (Add your SAP Statuses here) */
+.status-pill:contains("Shipped"),
+.status-pill:contains("Complete") {
+  background: var(--color-bg-success);
+  color: var(--color-border-success);
+  border-color: var(--color-border-success);
+}
+
+.status-pill:contains("Pending"),
+.status-pill:contains("Processing") {
+  background: var(--color-bg-warning);
+  color: var(--color-border-warning);
+  border-color: var(--color-border-warning);
+}
+
+.status-pill:contains("Delayed"),
+.status-pill:contains("Cancelled") {
+  background: var(--color-bg-danger);
+  color: var(--color-border-danger);
+  border-color: var(--color-border-danger);
+}
+
+/* --- TABLE OVERRIDES --- */
+/* Making the table look "Gentle" inside the order page */
+.table-view-master-container {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+/* Customizing the Search Input to match your "Gradient Outline" preference */
+.search-wrapper-gradient {
+  padding: 2px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  border-radius: 10px;
+}
+
+.search-inner-box {
+  background: var(--color-bg);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.management-utility-container {
+  background: var(--color-bg);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border);
+}
+
+.utility-tabs {
+  display: flex;
+  position: relative; /* Container for the pill */
+  background: var(--color-bg-hover); /* Subtle light track */
+  padding: 4px;
+  border-radius: 12px; /* Gentle design */
+  width: 100%;
+  margin-bottom: 15px;
+  border: 1px solid var(--color-border);
+  flex: 1
+  
+}
+
+/* Container to keep buttons together on the right */
+.utility-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Space between buttons */
+  height: 100%;
+}
+
+.utility-maximize, .utility-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px; /* Match height for alignment */
+  margin: 0;    /* REMOVE all margins */
+}
+
+.utility-close {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none; /* Remove the 100% translate */
+}
+
+.utility-maximize {
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+.utility-maximize.show-icon {
+  max-width: 40px;
+  opacity: 1;
+}
+
+/* Ensure the buttons inside don't have extra margins */
+.close-btn, .maximize-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.close-btn:hover, .maximize-btn:hover {
+  background-color: var(--color-bg-hover);
+  border-radius: 8px;
+  transform: scale(1.1);
+}
+
+.close-btn:hover svg, .maximize-btn:hover svg {
+  color: var(--color-accent);
+}
+
+/* The Sliding Pill */
+.tabs-pill-bg {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  height: calc(100% - 8px);
+  width: calc(50% - 4px); /* Assuming 2 buttons of equal width */
+  background: var(--bg-gradient-main-eq); /* Your Navy/Red Gradient */
+  border-radius: 8px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(58, 78, 252, 0.3);
+}
+
+/* Movement Logic */
+.tabs-pill-bg.dashboard {
+  transform: translateX(0);
+}
+
+.tabs-pill-bg.form {
+  transform: translateX(100%);
+}
+
+.tab-btn {
+  position: relative; /* Sits above the pill */
+  z-index: 2;
+  padding: 8px 24px;
+  border-radius: 8px;
+  border: none;
+  background: transparent !important; /* Keep transparent so pill shows through */
+  color: var(--color-primary); /* Navy */
+  cursor: pointer;
+  font-weight: 700;
+  flex: 1;
+  min-width: 120px;
+  transition: color 0.3s ease;
+}
+
+.tab-btn.active {
+  color: var(--color-text-2) !important;
+}
+
+.tab-btn:hover:not(.active) {
+  opacity: 0.7;
+}
+
+
+/* Sidebar (Ratio 1) */
+/* Duplicate selector removed, see above for new definition */
+
+/* Table Area (Ratio 2) */
+
+
+/* Tab Styling for Sidebar */
+.utility-tabs {
+  display: flex;
+  background: var(--color-bg-blue); /* Light grey background for the "track" */
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--color-primary);
+}
+
+
+/* Responsive: Stack on mobile */
+@media (max-width: 1024px) {
+  .main-content-split {
+    flex-direction: column;
+    height: auto; /* Allow container to grow with content */
+  }
+  .management-sidebar, .table-main-area {
+    flex: 1; /* Let them take up available space */
+    width: 100% !important;
+    height: auto; /* Let content define height */
+    max-height: none; /* Remove any max-height constraints */
+  }
+  .table-main-area {
+    min-height: 500px; /* Ensure table has a decent minimum height */
+    margin-left: 0 !important; /* Remove margin when stacked */    
+    flex-grow: 1; /* ADDED - This is crucial for the table to fill space */  
+  }
+  .management-sidebar {
+    min-height: 50vh;
+  }
+}
+
+.management-sidebar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+.utility-content {
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  position: relative;
+
+  /* border: 1px solid red; /* debug */
+}
+
+
+.order-form-compact {
+  height: 100%;
+  position: relative; 
+}
+
+
+.mini-dashboard-stack {
+  overflow-y: auto;
+}
+
+
+
+.maximize-btn:hover {
+    background-color: var(--color-bg); /* Soft navy tint */
+    transform: scale(1.05);
+}
+
+.maximize-btn:active {
+    transform: scale(0.95);
+}
+
+/* --- New Order Modal --- */
+.new-order-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 5px;
+    margin-right: 60px;
+}
+
+.new-order-modal-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0;
+}
+
+.new-order-modal-header p {
+    font-size: 14px;
+    font-style: italic;
+    color: var(--color-muted);
+    margin: 4px 0 0 0;
+}
+
+/* --- Trip Filter Buttons --- */
+.trip-filter-container {
+  display: flex;
+  position: relative;
+  background: var(--color-bg-hover);
+  padding: 4px;
+  border-radius: 12px;
+  width: fit-content;
+  margin: 0 0 10px 10px; /* Margin top/bottom and left */
+  border: 1px solid var(--color-border);
+}
+
+.trip-filter-pill-bg {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  height: calc(100% - 8px);
+  width: calc(25% - 4px); /* 4 buttons, so 1/4 width */
+  background: var(--bg-gradient-main-eq);
+  border-radius: 8px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(58, 78, 252, 0.3);
+}
+
+/* Movement Logic based on active filter */
+.trip-filter-pill-bg.All { transform: translateX(0%); }
+.trip-filter-pill-bg.Assigned { transform: translateX(100%); }
+.trip-filter-pill-bg.Dispatched { transform: translateX(200%); }
+.trip-filter-pill-bg.Completed { transform: translateX(300%); }
+
+.trip-filter-button {
+  position: relative;
+  z-index: 2;
+  padding: 8px 24px;
+  border-radius: 8px;
+  border: none;
+  background: transparent !important;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 700;
+  flex: 1;
+  min-width: 100px; /* Adjust as needed */
+  transition: color 0.3s ease;
+}
+
+.trip-filter-button.active {
+  color: var(--color-text-2) !important;
+}
+
+.trip-filter-button:hover:not(.active) {
+  opacity: 0.7;
+}
+
+.sidebar-toggle-tab {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--color-primary);
+    color: var(--color-text-2);
+    padding: 10px 4px;
+    cursor: pointer;
+    border-radius: 0 8px 8px 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: left 0.3s ease;
+}
+
+.sidebar-toggle-tab.hidden {
+    left: -50px; /* Hide off-screen */
+}
+
+
+.fuel-modal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+
+
+
+
+/* change trip modal css*/
+
+.invalid-changetrip-modal-container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    font-family: inherit;
+}
+
+.invalid-changetrip-modal-title-red {
+    color: var(--color-accent); /* Red Accent */
+    margin: 0 0 15px 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-bottom: 1px solid var(--color-bg);
+    padding-bottom: 10px;
+}
+
+.invalid-changetrip-modal-body-content {
+    color: var(--color-muted);
+    font-size: 1rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.invalid-changetrip-modal-footer-right {
+    display: flex;
+    justify-content: flex-end;
+}
+

@@ -1,0 +1,306 @@
+.fuel-manager-form-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.3);
+    background: var(--color-muted);
+    color: var(--color-text-2, #fff);
+    box-shadow: none;
+}
+
+
+/* General Container for the entire component */
+.fuel-manager-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-bg-modal, #fff);
+    border-radius: 8px;
+    overflow: hidden;
+
+    
+}
+
+/* Tab navigation bar */
+.fuel-manager-utility-tabs {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: var(--color-bg-light, #f0f0f0);
+    border-radius: 20px;
+    padding: 4px;
+    width: fit-content;
+    margin-bottom: 1rem;
+}
+
+.fuel-manager-utility-tabs .fuel-manager-tab-btn {
+    padding: 6px 16px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    color: var(--color-text-secondary, #555);
+    font-weight: 600;
+    font-size: 0.9rem;
+    z-index: 1;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.fuel-manager-utility-tabs .fuel-manager-tab-btn.active {
+    color: white;
+}
+
+.fuel-manager-tabs-pill-bg {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px); /* Assuming 2 tabs */
+    background: linear-gradient(135deg, var(--color-primary, #3a4efc), var(--color-primary-dark, #000080));
+    border-radius: 16px;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+}
+
+.fuel-manager-tabs-pill-bg.form {
+    transform: translateX(100%);
+}
+
+.fuel-manager-tabs-pill-bg.list {
+    transform: translateX(0%);
+}
+
+
+/* Content area for the active tab */
+.fuel-manager-content {
+    flex-grow: 1;
+    overflow: hidden;
+    background-color: transparent;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.fuel-manager-tab-pane {
+    padding: 0;
+    animation: fadeIn 0.3s ease-in-out;
+    /* ADD THESE */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Critical: allows flex child to shrink below content size */
+}
+
+
+
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+/* --- Copied from FuelRequestForm.css --- */
+
+.fuel-manager-form-container {
+    padding-left: 2vh;
+    padding-right: 2vh;
+    background: transparent; /* Make transparent to inherit from parent */
+    width: 100%;
+    /* height: 100%; Let content determine height */
+    overflow-y: auto; 
+
+    /* UPDATE THESE */
+    flex: 1; 
+    overflow-y: auto; 
+    display: block; /* Ensure it behaves as a block for the form inside */
+}
+
+.fuel-manager-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--color-primary-dark, #000080);
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--color-primary, #3a4efc);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.fuel-manager-form-section-group {
+    margin-bottom: 25px;
+    animation: slideUp 0.4s ease-out;
+}
+
+.fuel-manager-form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: nowrap;
+}
+
+.fuel-manager-form-row.wrap { flex-wrap: wrap; }
+.fuel-manager-form-row.align-end { align-items: flex-end; }
+
+.fuel-manager-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1; /* Default flex grow */
+}
+
+/* When inside a .fuel-manager-form-row.wrap, limit to 20% of parent width */
+.fuel-manager-form-row.wrap .fuel-manager-form-group {
+    max-width: 35%;
+    flex-basis: 20%;
+}
+
+.min-200 { min-width: 200px; }
+
+.fuel-manager-form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text, #444);
+}
+
+.fuel-manager-static-value {
+    padding: 8px 12px;
+    background-color: var(--color-bg-light, #f0f0f0);
+    border-radius: 6px;
+    font-weight: 500;
+    color: var(--color-text-secondary, #555);
+    min-height: 37px; /* Match input height */
+    display: flex;
+    align-items: center;
+}
+
+/* Gradient Outline Implementation */
+.fuel-manager-form-gradient-input-wrapper {
+    position: relative;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--color-primary-dark, #000080) 0%, var(--color-accent, #ff0000) 100%);
+    border-radius: 8px;
+}
+
+.fuel-manager-form-gradient-input-wrapper input, 
+.fuel-manager-form-gradient-input-wrapper textarea,
+.fuel-manager-form-gradient-input-wrapper a {
+    width: 100%;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: var(--color-bg, white);
+    color: var(--color-text);
+    outline: none;
+    display: block;
+}
+
+.fuel-manager-form-btn-primary {
+    background: linear-gradient(135deg, #000080 0%, #3a4efc 100%);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.fuel-manager-form-btn-primary:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.fuel-manager-form-btn-secondary {
+    background-color: #f0f0f0;
+    color: var(--color-accent);
+    border: 1px solid #ccc;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.fuel-manager-form-btn-secondary:hover {
+    background-color: var(--color-accent);
+    border: transparent;
+    color: var(--text-2, #fff);
+}
+
+
+.fuel-manager-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border, #eee);
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    background: var(--color-bg, #fff);
+    z-index: 10;
+    /* Optional: add a box-shadow for better separation */
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.03);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+.fuel-manager-form.noedit input,
+.fuel-manager-form.noedit textarea,
+.fuel-manager-form.noedit select {
+    background-color: var(--color-bg-light, #f0f0f0);
+    color: var(--color-text-secondary, #555);
+    border: none;
+    cursor: not-allowed;
+}
+
+.fuel-manager-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.utility-tabs-message {
+    top:0;
+    color: var(--color-accent); /* or your preferred color */
+    padding: 4px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+
+.fuel-manager-form-subtitle {
+    font-size: var(--font-size-lg, 1.25rem);
+    font-weight: 600;
+    color: var(--color-primary, #000080);
+    margin-bottom: 10px;
+}
+
+
+.fuel-manager-form-status {
+    font-size: var(--font-size-md, 1rem);
+    font-weight: 700;
+    color: var(--color-muted, #000000);
+    margin-bottom: 15px;
+    margin-left: auto;
+    padding-right: 20px;
+}
+
+.fuel-manager-form-status-value {
+    font-weight: 700;
+    color: var(--color-muted, #000080);
+    font-size: var(--font-size-vlg, 1.5rem);
+}
+

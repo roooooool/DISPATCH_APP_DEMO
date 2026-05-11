@@ -1,0 +1,43 @@
+.banner-danger {
+  background: var(--bg-gradient-main-eq);
+  color: var(--color-bg);
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  bottom: 0px;
+  left: 16px; /* Adjust as needed for your container padding */
+  right: 16px; /* Adjust as needed for your container padding */
+  z-index: 25;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.banner-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-bg);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px;
+}
+
+.banner-close-btn:hover {
+  opacity: 0.8;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

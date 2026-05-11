@@ -1,0 +1,65 @@
+{
+  "name": "[dbo].[DMS_updated]",
+  "title": "[dbo].[DMS_updated]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "UserName": {
+          "title": "UserName",
+          "type": "string"
+        },
+        "UserID": {
+          "title": "UserID",
+          "type": "integer"
+        },
+        "InputOE": {
+          "title": "InputOE",
+          "type": "string"
+        },
+        "Action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "Value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "BU": {
+          "title": "BU",
+          "type": "string"
+        },
+        "Context": {
+          "title": "Context",
+          "type": "string"
+        },
+        "ActionJSON": {
+          "title": "ActionJSON",
+          "type": "boolean"
+        },
+        "Role": {
+          "title": "Role",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

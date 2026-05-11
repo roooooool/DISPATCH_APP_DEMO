@@ -1,0 +1,37 @@
+{
+  "name": "[dbo].[DMS_divertTrip]",
+  "title": "[dbo].[DMS_divertTrip]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "CurrentOE": {
+          "title": "CurrentOE",
+          "type": "string"
+        },
+        "DivertOE": {
+          "title": "DivertOE",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

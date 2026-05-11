@@ -1,0 +1,479 @@
+import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
+import { ClipboardList, ChevronDown, ChevronRight, CheckCircle2, Circle, RotateCw, Search, X, XCircle } from 'lucide-react';
+import './comp_css/ewul_TripTaskTracker.css';
+import { ewulFetchAll, ewul_canFetch as canFetch, formatDate } from '../utils/Ewul_GSDC_Utils';
+import Modal from './ewul_Modal';
+import { TripTaskTrackerService } from '../generated/services/TripTaskTrackerService';
+import { FETCH_LOADING_KEYS, GSDC_NAVIGATE_TO_TRIP_key } from '../truth.config';
+
+
+export interface TaskTrackerHandle {
+  onRefresh: () => Promise<void>;
+}
+
+// Sub-component for each Trip Row
+const TripTaskRow = ({ 
+  data, 
+  isExpandedAlready, 
+  onToggle,
+  onCloseModal
+}: { 
+  data: any; 
+  isExpandedAlready: boolean; 
+  onToggle: () => void 
+  onCloseModal: (open: boolean) => void
+}) => {
+
+
+  // Define the bits to track based on your schema
+  const tasks = [
+    { 
+      label: 'Assigned Unit', 
+      status: data.AssignedUnit,
+      progress: 'Assigned',
+    },
+    { label: 
+      'Assigned Driver', 
+      status: data.AssignedDriver ,
+      progress: 'Assigned',
+    },
+    { 
+      label: 'ATW Document', 
+      status: data.HasATW,
+      progress: 'Assigned',
+    },
+    { 
+      label: 'Sales Order', 
+      status: data.HasSO,
+      progress: 'Assigned',
+    },
+    { 
+      label: 'Fuel Request', 
+      status: data.HasFuelRequest,
+      progress: 'Assigned',
+    },
+    { 
+      label: 'Fuel PO', 
+      status: data.HasFuelPO,
+      progress: 'Assigned',
+      invalidStatus: data.HasFuelDisapproved, 
+      invalidMessage: 'Fuel has been Disapproved.'},
+  ];
+
+  const filteredTasks = tasks.filter(t => t.progress === data.TripProgress || !t.status)
+  const taskTotalCount = filteredTasks.length;
+  const completedCount = filteredTasks.filter(t => t.status).length;
+
+  return (
+    <div className="trip-cascade-item">
+      <div 
+        className={`trip-cascade-header ${isExpandedAlready ? 'expanded' : ''} ${completedCount === taskTotalCount ? 'fully-complete' : ''}`} 
+        onClick={onToggle} 
+      >
+        {/* NEW: Progress bar background tracker */}
+        <div className="header-progress-container">
+          <div 
+            className="header-progress-fill" 
+            style={{ width: `${(completedCount / taskTotalCount) * 100}%` }}
+          ></div>
+        </div>
+
+        <div className="header-left">
+          {isExpandedAlready ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+          <span className="trip-oe-text">{data.OE}</span>
+          <span className="trip-progress-pill">{data.TripProgress}</span>
+        </div>
+        
+        <div className="header-right">
+          {completedCount === taskTotalCount && (<span className="completion-date">Completed: 
+            {formatDate(data.LastUpdated, {
+                format: {
+                  month: 'numeric',   // m
+                  day: '2-digit',     // dd
+                  year: '2-digit',    // yy
+                  hour: 'numeric',    // H
+                  minute: '2-digit',  // mm
+                  hour12: true       // Forces 24-hour format
+                }
+              })}
+          </span>)}
+          <span className="completion-duration">{(() => {
+              const duration = formatDate(data.TaggedDate, {mode: 'duration', compareTo: completedCount === taskTotalCount ? data.LastUpdated : new Date() })
+              return completedCount === taskTotalCount ? duration.replace(' ago','') : duration;
+            })()}
+          </span>
+          <span className="completion-stats">({completedCount} / {taskTotalCount})</span>
+          <button 
+            className="go-to-trip-btn"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent the row from collapsing/expanding
+              const event = new CustomEvent(GSDC_NAVIGATE_TO_TRIP_key, { 
+                detail: { oe: data.OE } 
+              });
+              window.dispatchEvent(event);
+              onCloseModal(false);
+            }}
+          >
+            Go To 
+          </button>
+        </div>
+      </div>
+
+      {/* NEW: Use a wrapper for the transition instead of {isExpanded && ...} */}
+      <div className={`trip-cascade-transition-wrapper ${isExpandedAlready ? 'is-open' : ''}`}>
+        <div className="trip-cascade-content">
+          {filteredTasks.map((task, idx) => {
+            const isInvalid = task.invalidStatus === true || task.invalidStatus === 1;
+            const isMissed = task.progress !== data.TripProgress;
+            const isDone = task.status === true || task.status === 1;
+
+            return (
+              <div 
+                key={idx} 
+                className={`task-sub-item ${isInvalid ? 'invalid': isMissed ? 'missed' : isDone ? 'done' : ''}`}
+              >
+                {/* Icon Logic */}
+                {isInvalid ? (
+                  <XCircle size={14} className="icon-invalid" />
+                ) : isMissed ? (
+                  <Circle size={14} className="icon-missed" />
+                ) : isDone ? (
+                  <CheckCircle2 size={14} className="icon-done" />
+                ) : (
+                  <Circle size={14} className="icon-pending" />
+                )}
+
+                {/* Label */}
+                <span className="task-label">{task.label}</span>
+                
+                {/* Status Tags and Custom Invalid Message */}
+                {isInvalid ? (
+                  <>
+                    {/*<span className="invalid-tag">(Disapproved)</span>*/}
+                    {task.invalidMessage && (
+                      <span className="task-error-message">
+                        {task.invalidMessage}
+                      </span>
+                    )}
+                  </>
+                ) : isMissed ? (
+                  <span className="task-missing-message">
+                    Missing from Previous Task
+                  </span>
+                )  : isDone ? (
+                  <span className="task-done-message">
+                    Done
+                  </span>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [taskList, setTaskList] = useState<any[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filterTabs = [
+    {label: "All", value: "All"}, 
+    {label: "Assigned", value: "Assigned"}, 
+    {label: "To Source", value: "Dispatched To Source"}, 
+    {label: "To Destination", value: "Dispatched To Destination"},
+    {label: "Done", value: "Done"}, 
+    {label: "Documented", value: "Documented"}
+  ];
+
+  const [pendingTasksFilter, setPendingTasksFilter] = useState<string[]>([]);
+  const [isTaskFilterOpen, setIsTaskFilterOpen] = useState(false);
+
+  const taskOptions = [
+    { label: 'Unit', key: 'AssignedUnit' },
+    { label: 'Driver', key: 'AssignedDriver' },
+    { label: 'ATW', key: 'HasATW' },
+    { label: 'SO', key: 'HasSO' },
+    { label: 'Fuel Req', key: 'HasFuelRequest' },
+    { label: 'Fuel PO', key: 'HasFuelPO' },
+  ];
+
+  const toggleTaskFilter = (key: string) => {
+    setPendingTasksFilter(prev => 
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+  };
+
+  // NEW: Store expanded OEs in a Set
+  const [expandedOEs, setExpandedOEs] = useState<Set<string>>(new Set());
+
+  const toggleRow = (oe: string) => {
+    setExpandedOEs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(oe)) {
+        newSet.delete(oe);
+      } else {
+        newSet.add(oe);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleModal = () => setIsOpen(!isOpen);
+
+  const fetchTasks = useCallback(async (isManualRefresh: boolean = false) => {
+    if (!canFetch(FETCH_LOADING_KEYS.fetchTripTaskLists)) return;
+
+    // Determine timestamp - if manual refresh, we set to 0 to bypass delta logic
+    const latestTimestamp = !isManualRefresh && taskList.length > 0 
+      ? Math.max(...taskList.map(t => t.LastUpdatedAsInt || 0)) 
+      : 0;
+
+    const odataFilter = latestTimestamp > 0 
+      ? `LastUpdatedAsInt gt ${latestTimestamp}` 
+      : '';
+
+    const result = await ewulFetchAll<any>(
+      TripTaskTrackerService,
+      { filter: odataFilter, orderBy: ["LastUpdatedAsInt desc"] },
+      10000,
+      'OE'
+    );
+
+    if (result && result.length > 0) {
+      setTaskList(prevList => {
+        if (isManualRefresh) return result; // Full replace on manual refresh
+
+        const taskMap = new Map();
+        prevList.forEach(task => taskMap.set(task.OE, task));
+        result.forEach(task => taskMap.set(task.OE, task));
+        return Array.from(taskMap.values()).sort((a, b) => b.LastUpdatedAsInt - a.LastUpdatedAsInt);
+      });
+    }
+  }, [taskList]);
+
+  const filteredTasks = taskList.filter(trip => {
+    const matchesTab = activeFilter === "All" || trip.TripProgress === activeFilter;
+    const query = searchQuery.toLowerCase();
+    const matchesSearch = trip.OE.toLowerCase().includes(query);
+
+    // NEW: Check if selected tasks are "Not Done" (value is 0 or falsy)
+    const matchesPendingTasks = pendingTasksFilter.length === 0 || 
+      pendingTasksFilter.every(taskKey => !trip[taskKey]);
+
+    return matchesTab && matchesSearch && matchesPendingTasks;
+  });
+
+  useImperativeHandle(ref, () => ({
+    onRefresh: async () => {
+      console.log("Manual refresh triggered by parent...");
+      await fetchTasks(true); // Call with true to ignore the filter
+    }
+  }));
+
+  useEffect(() => {
+    fetchTasks();
+
+    const intervalId = setInterval(() => {
+      fetchTasks();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchTasks(true); // Trigger the full fetch without filter
+    setIsRefreshing(false);
+  };
+
+  return (
+
+
+    <div className="task-tracker-container">
+      <button 
+        className={`tracker-icon-btn ${isOpen ? 'active' : ''}`} 
+        onClick={toggleModal}
+        title="View Task Manager"
+      >
+        <div className="nav-icon-button">
+          <ClipboardList size={24} />
+          {taskList.length > 0 && (
+            <span className="notification-badge">
+              {taskList.length > 99 ? '99+' : taskList.length}
+            </span>
+          )}
+        </div>
+
+      </button>
+
+      {isOpen && (
+        <Modal 
+          onClose={toggleModal} 
+          width="60%" 
+          overlayBlur={3}
+          contentClassName="tracker-modal-theme"
+          contentStyle={{padding: '0px'}}
+        >
+          <div className="task-tracker-wrapper">
+            {/* Professional Task Manager Header */}
+            <div className="task-manager-banner">
+              <div className="banner-main">
+                <div className="icon-badge">
+                  <ClipboardList size={24} color="white" />
+                </div>
+                <div className="title-group">
+                  <h2>Trip Tasks</h2>
+                  <p className="subtitle">Real-time status tracking for active trips</p>
+                </div>
+              </div>
+              <div className="banner-stats">
+                <div className="stat-item">
+                  <span className="stat-value">{taskList.length}</span>
+                  <span className="stat-label">On Going Trips</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Status & Sync Info Bar */}
+            <div className="task-status-bar">
+              <div className="sync-info">
+                <div className="pulse-dot"></div>
+                <span>Live Sync Active</span>
+              </div>
+
+              <div className="last-updated-text">
+                {/* NEW REFRESH BUTTON */}
+                <button 
+                  className={`manual-refresh-btn ${isRefreshing ? 'spinning' : ''}`}
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshing}
+                  title="Force Refresh All"
+                >
+                  <RotateCw size={14} />
+                </button>
+
+                Last checked: {new Date().toLocaleTimeString()}
+              </div>
+            </div>
+
+            <div className="task-manager-layout">
+              <div className="task-filter-tabs">
+                {filterTabs.map(tab => (
+                  <button
+                    key={tab.value}
+                    className={`filter-tab-btn ${activeFilter === tab.value ? 'active' : ''}`}
+                    onClick={() => setActiveFilter(tab.value)}
+                  >
+                    {tab.label}
+                    {/* Optional: Show count per status */}
+                    {(() => {
+                      const listlen = tab.value === "All" 
+                        ? taskList.length 
+                        : taskList.filter(t => t.TripProgress === tab.value).length;
+                        
+                      return <span className={`tab-count ${listlen > 0 ? '' : 'hide'}`}>{listlen}</span>;
+                    })()}
+                  </button>
+                ))}
+              </div>
+              
+              <div className='task-tracker-content-container'>
+                <div className="task-body-header" style={{display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '10px'}}>
+                  <div className="task-search-container">
+                    <div className="search-input-wrapper">
+                      <Search size={16} className="search-icon" />
+                      <input 
+                        type="text"
+                        placeholder="Search OE..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="task-search-input"
+                      />
+                      {searchQuery && (
+                        <X 
+                          size={16} 
+                          className="clear-search" 
+                          onClick={() => setSearchQuery("")} 
+                        />
+                      )}
+                    </div>
+                    {false && (<div className="pending-filter-container">
+                      <button 
+                        className={`pending-filter-trigger ${pendingTasksFilter.length > 0 ? 'active' : ''}`}
+                        onClick={() => setIsTaskFilterOpen(!isTaskFilterOpen)}
+                      >
+                        <span className="filter-text">Tasks Not Done</span>
+                        {pendingTasksFilter.length > 0 && <span className="filter-badge">{pendingTasksFilter.length}</span>}
+                        <ChevronDown size={14} />
+                      </button>
+
+                      {isTaskFilterOpen && (
+                        <>
+                          <div className="filter-dropdown-overlay" onClick={() => setIsTaskFilterOpen(false)} />
+                          <div className="filter-dropdown-menu">
+                            <div className="dropdown-header">
+                              <span>Filter Pending Tasks</span>
+                              {pendingTasksFilter.length > 0 && (
+                                <button onClick={() => setPendingTasksFilter([])}>Clear</button>
+                              )}
+                            </div>
+                            {taskOptions.map(opt => (
+                              <label key={opt.key} className="filter-option">
+                                <input 
+                                  type="checkbox" 
+                                  checked={pendingTasksFilter.includes(opt.key)}
+                                  onChange={() => toggleTaskFilter(opt.key)}
+                                />
+                                <span className="custom-checkbox"></span>
+                                <span className="option-label">{opt.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>)}
+                  </div>
+                </div>
+                <div className="task-tracker-body">
+                  {/* Scrollable List Area */}
+                  <div className="task-list-scrollable">
+                    {filteredTasks.length > 0 ? (
+                      filteredTasks.map((trip) => (
+                        <TripTaskRow 
+                          key={trip.ItemInternalId} 
+                          data={trip} 
+                          isExpandedAlready={expandedOEs.has(trip.OE)}
+                          onToggle={() => toggleRow(trip.OE)}
+                          onCloseModal={setIsOpen}
+                        />
+                      ))
+                    ) : (
+                      <div className="empty-state">
+                        <p>No active tasks found.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+
+
+
+  );
+});
+
+// Important: Display name for debugging
+TaskTracker.displayName = 'TaskTracker';
+
+export default TaskTracker;

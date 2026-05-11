@@ -1,0 +1,254 @@
+/* Spinning animation for refresh icon */
+.spin-refresh {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Fleet Monitoring - GSDC Refined */
+
+.fleet-monitoring-bg {
+  position: relative;
+  width: 100%;
+  /* Use calc to fill the available screen snugly */
+  height: calc(100vh - 160px); 
+  min-height: 500px;
+  overflow: hidden;
+  border-radius: 12px; /* Gentle corners for the map container */
+  z-index: 1;
+}
+
+/* Floating Table Styling */
+.fleet-floating-table {
+  background: var(--color-bg); /* Slightly more opaque for readability */
+  backdrop-filter: blur(12px);
+  border-radius: calc(var(--radius) - 3px); /* Snug fit inside the gradient */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 83vh;
+  width: 100%; /* Relative to the wrapper */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fleet-floating-table.expanded {
+  width: calc(72vw - 20px);
+  /*width: calc(100vw - 20px); /* Full width minus the wrapper padding */
+}
+
+.fleet-floating-table.minimized {
+  width: 50vw;
+}
+
+/* Internal Header for the Floating Table */
+
+.fleet-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  height: 50px;
+  /* Use your primary navy for the header background to contrast the white content */
+  background: var(--bg-gradient-main); 
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fleet-table-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: white;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Toggle inside the header for a cleaner look */
+.fleet-table-toggle-inner {
+  background: rgba(241, 245, 249, 0.55); /* semi-transparent */
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.fleet-table-toggle-inner:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.fleet-table-toggle-inner:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Action Buttons - Solid Theme */
+.fleet-actions-bar {
+  display: flex;
+  gap: 10px;
+}
+
+.fleet-action-btn.primary-solid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-primary); /* Navy Blue */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.2s;
+}
+
+.fleet-action-btn.primary-solid:hover {
+  filter: brightness(1.2); /* Gentle highlight */
+}
+
+.fleet-action-btn.primary-solid:active {
+  transform: scale(0.96);
+}
+
+.fleet-action-btn.secondary-outline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* When the template has this class, strip all gaps from the inner content */
+.page-layout-wrapper.flush-map-page .main-content-container {
+  padding: 0;
+  overflow: hidden; /* Prevent double scrollbars with the map */
+}
+
+.page-layout-wrapper.flush-map-page .content-inner-box {
+  padding: 0;
+  margin: 0;
+  max-width: none; /* Ensure it hits the edges of the screen */
+  flex: 1;
+}
+
+/* Ensure the map background fills the remaining height */
+.page-layout-wrapper.flush-map-page .fleet-monitoring-bg {
+  /* Adjust 140px based on your Header + Navbar height */
+  width: 100%;
+  height: 100%;
+}
+
+/* Header Ribbon Base */
+.page-header-ribbon {
+  overflow: hidden;
+  max-height: 200px; /* Adjust to fit your header's natural height */
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+              padding 0.35s ease, 
+              opacity 0.25s ease;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+}
+
+/* Collapsed State */
+.page-header-ribbon.collapsed {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  opacity: 0;
+  pointer-events: none; /* Prevents clicking hidden buttons */
+}
+
+/* Map height depends on the header state */
+.header-open.flush-map-page .fleet-monitoring-bg {
+  height: calc(100vh - 140px);
+}
+
+.header-closed.flush-map-page .fleet-monitoring-bg {
+  height: calc(100vh - 60px); /* Smaller subtraction because header is gone */
+}
+
+
+.fleet-table-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%; /* or whatever fits your layout */
+  padding-bottom: 8px;
+
+
+}
+
+
+
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between the switch and the chevron */
+}
+
+.view-mode-toggle, 
+.fleet-table-toggle-inner,
+.map-action-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 6px;
+  color: var(--color-bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.view-mode-toggle:hover, 
+.fleet-table-toggle-inner:hover,
+.map-action-btn:hover,
+.map-action-btn.primary-solid-lock {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+/* Expansion toggle styling update to match */
+.fleet-table-toggle-inner {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px); /* The Blur Effect */
+    -webkit-backdrop-filter: blur(20px);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color:  var(--color-bg);
+}
+
+.fleet-table-toggle-inner:hover {
+    color:  var(--color-bg); /* Red Accent on hover */
+}
+
+.fleet-table-gradient-wrapper {
+  position: absolute; /* Takes the place of the floating table's positioning */
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  padding: 2px; /* This is your gradient border thickness */
+  background: var(--bg-gradient-main-eq);
+  border-radius: var(--radius); /* 10px */
+  box-shadow: 0 12px 40px 0 rgba(255, 255, 255, 0.40);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+

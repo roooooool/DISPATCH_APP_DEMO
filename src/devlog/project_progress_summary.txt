@@ -1,0 +1,138 @@
+Project: GSDC Dispatch App Code Enhancement
+Date: April 9, 2026
+
+This document summarizes the development progress and key changes made to the GSDC Dispatch App codebase.
+
+## Session Summary
+
+The session focused on several key areas of improvement: SVG to React component conversion, extensive responsive layout debugging, and UI component enhancements.
+
+### 1. SVG to React Component Conversion
+
+- **Objective**: Convert static SVG icon files into dynamic, customizable React components.
+- **File Path**: `src/components/ewul_Icons.tsx`
+- **Actions Taken**:
+    - Read SVG files from `src/to_convert_svgs`.
+    - Converted `assigned_truck_white_icon.svg`, `delivered_truck_white_icon.svg`, and `unload_truck_white_icon.svg` into React functional components.
+    - The new components (`AssignedTruckIcon`, `DeliveredTruckIcon`, `UnloadTruckIcon`) were added to `ewul_Icons.tsx`.
+    - Enhanced all custom icons in the file to accept `size`, `color`, and `strokeWidth` props for full customizability. Icons that used `fill` were modified to use `stroke` to support `strokeWidth`.
+    - The original SVG files were deleted from the `src/to_convert_svgs` directory after conversion.
+- **Documentation**:
+    - A guide detailing the conversion process was created and saved as `src/to_convert_svgs/AI_SVG_CONVERSION_GUIDE.txt` for future reference.
+
+### 2. Responsive Layout Enhancements & Bug Fixes
+
+A significant portion of the session was dedicated to debugging and improving the responsive behavior of various components.
+
+#### a. Order Management Page (`src/pages/OrderManagement.tsx`)
+
+- **Objective**: Fix layout issues on smaller screens where a sidebar and a data table were not aligning correctly.
+- **Problems Addressed**:
+    1.  **Vertical Stacking Gap**: On small screens, the sidebar and table stacked vertically but left a large empty gap at the top.
+    2.  **Sidebar Width**: An inline `maxWidth` style on the sidebar prevented it from taking up 100% width when stacked.
+    3.  **Hidden Sidebar Space**: When the sidebar was hidden on mobile, it still occupied vertical space in the layout.
+    4.  **Disappearing Table**: The main data table would disappear on small screens after `overflow-y: auto` was added to its container.
+- **Solutions Implemented**:
+    - **CSS Fixes (`src/pages/css/OrderManagement.css`)**:
+        - Modified flexbox properties within a `@media (max-width: 1024px)` query to ensure correct vertical stacking.
+        - Removed a conflicting `height: 100vh` from the main container and added `flex-grow: 1` to the table's container to ensure it fills available space.
+    - **Component Logic (`src/pages/OrderManagement.tsx`)**:
+        - Introduced an `isMobile` state variable that tracks window width.
+        - Conditionally applied inline styles to the sidebar:
+            - Sets `maxWidth: '100%'` on mobile to resolve the width issue.
+            - Sets `display: 'none'` when the sidebar is hidden on mobile to remove it from the layout entirely.
+        - Removed a conflicting `maxHeight` prop from the `TableView` component that was causing the disappearing table issue.
+
+#### b. Page Template Header (`src/pages/template.tsx`)
+
+- **Objective**: Make the action buttons in the main page header responsive.
+- **Problem**: On smaller screens, the action buttons would overflow or break the layout.
+- **Solution**:
+    - In `src/pages/css/template.css`, the `.header-actions` class was updated with `flex-wrap: wrap` and `justify-content: flex-end`. This allows the buttons to wrap onto a new line gracefully when space is limited.
+
+#### c. Main Navbar (`src/components/Navbar.tsx`)
+
+- **Objective**: Make the main navigation bar responsive for smaller screens.
+- **Problem**: The navigation links were not accessible on smaller viewports.
+- **Solution**:
+    - **Component Logic (`Navbar.tsx`)**:
+        - Imported `Menu` and `X` icons from `lucide-react`.
+        - Added `isMobileMenuOpen` state to toggle the visibility of a mobile navigation menu.
+    - **CSS (`src/components/comp_css/Navbar.css`)**:
+        - Added styles for a hamburger menu icon (`.mobile-menu-toggle`) and a full-screen navigation overlay (`.mobile-nav-menu`).
+        - Used a `@media (max-width: 768px)` query to:
+            - Hide the standard desktop navigation links.
+            - Display the hamburger menu icon.
+            - Style the mobile navigation overlay, which appears when the hamburger icon is clicked.
+
+#### d. Donut Chart Grid (`src/components/tripGroup_DonutChart.tsx`)
+
+- **Objective**: Make the grid of donut charts responsive.
+- **Solution (`src/components/comp_css/tripGroup_DonutChart.css`)**:
+    - Added media queries to switch the grid to a single-column layout on screens smaller than 768px.
+    - On screens smaller than 480px, the content within each chart card stacks vertically for better readability.
+
+#### e. Bar Chart (`src/components/tripStatus_BarChart.tsx`)
+
+- **Objective**: Make the trip status bar chart responsive.
+- **Solution (`src/components/comp_css/tripStatus_BarChart.css`)**:
+    - Added media queries to adjust bar and label sizes on smaller screens.
+    - On screens smaller than 768px, gaps are reduced and labels are rotated more.
+    - On screens smaller than 480px, bars become slimmer and tooltips smaller.
+    - Ensured filter controls are horizontally scrollable on mobile.
+
+#### f. Map Component (`src/components/ewul_Maps.tsx`)
+
+- **Objective**: Make the map component responsive.
+- **Solution (`src/components/comp_css/ewul_Maps.css`)**:
+    - On screens smaller than 768px, the map's minimum height is reduced, and UI elements like the style picker and popups are made more compact.
+    - On screens smaller than 480px, the style picker is moved to the top-left, and marker labels are hidden by default to reduce clutter.
+
+#### g. Landing Page (`src/pages/LandingPage.tsx`)
+
+- **Objective**: Make the main dashboard landing page responsive.
+- **Solution (`src/pages/css/FleetDashboard.css`)**:
+    - On screens smaller than 1200px, the grid layout becomes a more balanced two-column view.
+    - On screens smaller than 900px, the layout switches to a single column, stacking the map and charts vertically.
+    - On screens smaller than 600px, the footer content stacks vertically.
+
+### 3. UI & Feature Enhancements
+
+#### a. Notification System
+
+- **Objective**: Implement a comprehensive notification system.
+- **Actions Taken**:
+    - Created a new reusable component `NotificationBell.tsx` and its stylesheet `comp_css/NotificationBell.css`.
+    - The component features:
+        - A bell icon with an unread notification count badge.
+        - A dropdown panel listing all notifications.
+        - Visual indicators for `unseen`/`seen` statuses.
+        - Icons for `ongoing`, `success`, and `failed` states for asynchronous tasks.
+        - A toast-style animation for new notifications.
+        - "Mark all as read" and "Clear all" functionality.
+    - Integrated the `NotificationBell` into the main `Navbar.tsx`.
+    - Defined the `Notification` interface within `NotificationBell.tsx` as per user preference.
+
+### 4. Unsaved Changes Workflow (April 15, 2026)
+
+- **Objective**: Implemented a robust "unsaved changes" workflow to prevent data loss in the order distribution form.
+- **Key Features**:
+    - A confirmation modal appears if the user tries to navigate away with unsaved edits.
+    - The modal logic is controlled via a `Promise`-based function (`showUnsavedChangesModal`) exposed to the parent component using `useImperativeHandle`.
+    - Change detection was made more reliable by comparing the current form state to an original snapshot using `JSON.stringify`.
+    - A pulsing red "!" icon was added to the "Save" button as a visual indicator for unsaved changes.
+- **Bug Fixes**:
+    - Resolved a critical bug where the confirmation promise would not resolve correctly because the component was unmounting prematurely.
+    - Streamlined the `onRowClick` logic in the parent component to correctly handle the asynchronous confirmation and improve user flow.
+- **Files Modified**:
+    - `src/components/OrderDistributionForm.tsx`
+    - `src/pages/OrderManagement.tsx`
+    - `src/components/comp_css/OrderDistributionForm.css`
+    - `src/pages/css/OrderManagement.css`
+- **New Log File**: `src/devlog/2026-04-15_session_log.md`
+
+### 4. Project & Conversation Summary
+
+- **Objective**: Document the work performed during the session.
+- **Action Taken**:
+    - This summary document was created and saved to `src/project_progress_summary.txt`.

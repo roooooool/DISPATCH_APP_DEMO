@@ -1,0 +1,110 @@
+.date-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--local-bg) !important; /* Navy Blue */
+  padding: 6px 14px;
+  border-radius: 20px; /* Gentle rounded corners */
+  color: var(--local-bg);
+  width: fit-content;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.date-filter-group:hover {
+  opacity: 1 !important;
+  transform: translateY(-1px); /* A gentle lift instead of transparency */
+  background-color: var(--local-hover) !important;
+}
+
+.datepicker-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+
+/* Select Dropdowns */
+.date-select {
+  background: var(--local-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* The color property here was causing the issue, so it's removed. */
+  /* The browser will now correctly color the selected option text. */
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.2s;
+}
+
+.date-select:hover, 
+.year-input-inline:hover {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  color: var(--color-bg) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+
+
+.date-select option {
+  background-color: var(--color-bg); /* Set a solid background for the dropdown list */
+  color: var(--color-text) !important; /* Ensure text is always readable */
+}
+
+/* Year Input */
+.year-input-inline {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--color-bg);
+  padding: 4px 6px;
+  border-radius: 6px;
+  width: 70px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+/* Custom Date Inputs */
+.custom-date-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.custom-date-inputs input[type="date"] {
+  background: var(--local-bg);
+  border: 1px solid #e2e8f0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  outline: none;
+}
+
+/* Animation for appearing sub-menus */
+.animate-in {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Remove arrows from number input */
+.year-input-inline::-webkit-inner-spin-button,
+.year-input-inline::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

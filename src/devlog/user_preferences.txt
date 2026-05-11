@@ -1,0 +1,21 @@
+# User Development Preferences
+
+This document outlines specific coding and design preferences for this project.
+
+## 1. Code Style & Structure
+
+### TypeScript Interfaces and Types
+- **Colocation**: For components, define TypeScript `interface` or `type` definitions within the same file as the component that primarily uses them. Avoid global type definitions in files like `truth.config.tsx` unless the type is truly shared across many unrelated parts of the application.
+- **Type Imports**: When importing a TypeScript type or interface, always use the `import type` syntax.
+  - **Example**: `import type { UserInfo } from "../truth.config";`
+
+### Build Configuration
+- **Exclusions**: The `src/devlog` directory, which contains development logs and summaries, should be excluded from production builds. This is configured in `tsconfig.app.json`.
+
+## 2. UI/UX Design & Component Styling
+
+### Input Fields
+- **Gradient Border**: All input fields (including `<input>`, `<select>`, `<textarea>`, and custom dropdowns) must be styled with a 1px gradient border.
+- **Implementation**: This is achieved by wrapping the input element in a `<div>` with the class `gradient-input-wrapper`.
+- **Consistency**: This style should be applied consistently across all new input fields to maintain a uniform look and feel, as seen in `OrderDistributionForm.css`.
+

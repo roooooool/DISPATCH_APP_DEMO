@@ -1,0 +1,33 @@
+{
+  "name": "[dbo].[GetLastLiquidatedOdometer]",
+  "title": "[dbo].[GetLastLiquidatedOdometer]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "Head": {
+          "title": "Head",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

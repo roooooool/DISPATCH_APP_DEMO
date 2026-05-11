@@ -1,0 +1,90 @@
+Project_Dev_Log_GSDC_Dispatch.txt
+Project Context:
+
+System: GSDC Dispatch App (PCF / React / TypeScript)
+
+Target: Logistics/Trucking Management System
+
+Author/Dev: ewul (itdevelopers@gsdc.com.ph)
+
+1. THE "HOW-TO" (Environment & Setup)
+A. Fixing PAC CLI Path Mismatches
+
+Problem: VS Code may prioritize a broken internal CLI version over the system version.
+
+Action: 1. Always verify paths using where.exe pac in both Windows Terminal and VS Code.
+2. If VS Code fails while the system terminal works, manually point the VS Code "Power Platform: PAC Location" setting to: C:\Users\IT Dev\AppData\Local\Microsoft\PowerAppsCLI.
+3. If the extension's "bolt" module is missing, delete the pac folder in %AppData%\Roaming\Code\User\globalStorage\microsoft-isvexptools.powerplatform-vscode\ and restart.
+
+B. Fixing Terminal Rendering (Encoding)
+
+Problem: PAC commands output weird symbols like ΓöÇ.
+
+Action: Force UTF-8 encoding.
+
+Command: [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+Permanent Fix: Add $OutputEncoding = [System.Text.Encoding]::UTF8 to your $PROFILE.
+
+C. Project Commands
+
+pac code run: Local test harness (Hosts code locally).
+
+pac code push: Pushes current build to the Dataverse/Power Apps cloud.
+
+npm start: Alternative to trigger the local watcher if pac wrapper is buggy.
+
+2. KNOWN USER PREFERENCES (UI/UX Standards)
+A. Visual Theme
+
+Primary: Navy Blue
+
+Background: White
+
+Accent/Sub: Red
+
+Secondary Blue: #3a4efc
+
+Gradients: Use Navy Blue to Red gradients for high-impact areas.
+
+B. Component Engineering
+
+Structure:
+
+Logic: src\components
+
+Styles: src\components\comp_css
+
+Pages: src\pages
+
+The "Truth": All global configurations or static variables must reference src\truth.config.ts.
+
+Responsiveness: Components must be relative to their container and flexible (no hard-coded pixel widths for parent containers).
+
+C. Signature Design Elements
+
+Input Fields: Must have a gradient outline. Execution: Overlap a slightly larger gradient box behind a smaller white container box.
+
+Geometry: Rounded corners on all containers/buttons for a "gentle" feel.
+
+3. REASONING & LOGIC PATH
+Logic - Data Fetching: Data fetching is strictly performed within the components rather than the pages. This ensures components are self-contained and reusable across different views (like the TMS vs. Dispatch views).
+
+Logic - Error Troubleshooting: * We isolated the FileNotFoundException in your logs to the NodeCliManager.
+
+Reasoning: If push works but run fails, the logic/auth is fine, but the local Node.js environment/pathing is corrupted.
+
+Conclusion: Terminal-based execution is the "Source of Truth" when VS Code extension UI buttons fail.
+
+Logic - Environment Isolation: We identified that the VS Code extension and the Windows Terminal operate in different "Environment Scopes." By aligning the PATH variable, we synchronized the developer experience.
+
+4. CURRENT PROGRESS SUMMARY
+Status: Development environment fully restored.
+
+Auth: Successfully connected to itdevelopers@gsdc.com.ph.
+
+Git: GitHub authentication synced with VS Code for source control.
+
+Next Step: Implementation of logic for DISPATCH_APP_DMS and refining the ewul_TableFlex components.
+
+End of File

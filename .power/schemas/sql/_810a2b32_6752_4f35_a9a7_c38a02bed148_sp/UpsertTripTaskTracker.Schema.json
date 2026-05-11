@@ -1,0 +1,77 @@
+{
+  "name": "[dbo].[UpsertTripTaskTracker]",
+  "title": "[dbo].[UpsertTripTaskTracker]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "OE": {
+          "title": "OE",
+          "type": "string"
+        },
+        "TripProgress": {
+          "title": "TripProgress",
+          "type": "string"
+        },
+        "AssignedUnit": {
+          "title": "AssignedUnit",
+          "type": "boolean"
+        },
+        "AssignedDriver": {
+          "title": "AssignedDriver",
+          "type": "boolean"
+        },
+        "HasATW": {
+          "title": "HasATW",
+          "type": "boolean"
+        },
+        "HasSO": {
+          "title": "HasSO",
+          "type": "boolean"
+        },
+        "HasFuelRequest": {
+          "title": "HasFuelRequest",
+          "type": "boolean"
+        },
+        "HasFuelPO": {
+          "title": "HasFuelPO",
+          "type": "boolean"
+        },
+        "HasFuelDisapproved": {
+          "title": "HasFuelDisapproved",
+          "type": "boolean"
+        },
+        "TaggedDate": {
+          "title": "TaggedDate",
+          "type": "string"
+        },
+        "UpdateOnly": {
+          "title": "UpdateOnly",
+          "type": "boolean"
+        },
+        "deleteIfComplete": {
+          "title": "deleteIfComplete",
+          "type": "boolean"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

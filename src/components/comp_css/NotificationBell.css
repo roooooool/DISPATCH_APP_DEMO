@@ -1,0 +1,319 @@
+/* NotificationBell.css */
+
+.notification-bell-container {
+  position: relative;
+}
+
+.notification-bell-icon {
+  position: relative;
+  display: flex; /* Added to center icons */
+  align-items: center; /* Added to center icons */
+  justify-content: center; /* Added to center icons */
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.bell-spinner {
+  position: absolute;
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+.bell-icon-foreground {
+  position: relative; /* Ensure it stays on top */
+  z-index: 1;
+}
+
+.notification-bell-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--color-accent);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-primary);
+  transform: translate(25%, -25%);
+}
+
+.notification-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 350px;
+  max-height: 400px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1001;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notification-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.notification-panel-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.notification-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notification-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.notification-actions button:hover {
+  color: var(--color-primary);
+  background: #e2e8f0;
+}
+
+.notification-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.no-notifications {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.notification-item {
+  position: relative; /* Added for positioning the close button */
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item:hover {
+  background: #f8fafc;
+}
+
+.notification-item.unseen {
+  background: #eff6ff; /* Light blue for unseen */
+}
+
+.notification-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 2px 0;
+  font-size: 0.9rem;
+}
+
+.notification-message {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.notification-timestamp {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Toast Animation */
+.notification-toast {
+  position: relative; /* Change from fixed to relative */
+  pointer-events: auto; /* Re-enable clicks for the actual toast */
+  width: 350px;
+  background: var(--color-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--color-border);
+  animation: toast-in-right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  overflow: visible;
+  
+  /* Gentle Design: ensure smooth movement if one is removed */
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.notification-toast-container .notification-toast:not(:first-child) {
+  transition-delay: 0.4s; /* Staggers the movement slightly for a "waterfall" feel */
+}
+
+.notification-toast-container {
+  position: fixed;
+  top: 80px;      /* Move the whole stack down from the top */
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;      /* Gap between multiple toasts */
+  pointer-events: none; /* Allows clicking through the gaps to the app below */
+}
+
+.toast-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  
+  /* Reset button defaults */
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Gentle Design styling */
+  border-radius: 50%;
+  color: #64748b; /* Subtle slate gray */
+  transition: all 0.2s ease;
+  z-index: 2001; /* Stay above the notification item */
+}
+
+.toast-close-btn:hover {
+  background-color: #f1f5f9; /* Soft gray background on hover */
+  color: var(--brand-red); /* Your accent red on hover */
+}
+
+/* Optional: If the button feels too small/hard to click */
+.toast-close-btn svg {
+  display: block;
+}
+
+/* The Entry Animation */
+@keyframes toast-in-right {
+  0% {
+    transform: translateX(100%); /* Start completely off-screen to the right */
+    opacity: 0;
+  }
+  70% {
+    transform: translateX(-10px); /* Slight overshoot for a "spring" effect */
+  }
+  100% {
+    transform: translateX(0); /* Settle at natural position */
+    opacity: 1;
+  }
+}
+
+/* The Exit Animation (If you use a class to remove it) */
+@keyframes toast-out-fade {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9); /* Shrinks slightly as it disappears */
+  }
+}
+
+.toast-timer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--bg-gradient-main-eq);
+  animation: shrink 5s linear forwards;
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.notification-toast {
+  /* ... existing styles ... */
+  
+  /* Apply the animation */
+  animation: toast-in-right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  
+  /* Critical for multiple toasts: smooth movement when others disappear */
+  transition: all 0.3s ease-in-out; 
+}
+
+
+
+@keyframes toastInRight {
+
+  from {
+
+    opacity: 0;
+
+    transform: translateX(100%);
+
+  }
+
+  to {
+
+    opacity: 1;
+
+    transform: translateX(0);
+
+  }
+
+}
+
+
+.bracket-bold {
+  font-weight: 700;
+  color: var(--navy-blue); /* Highlighting the trip ID or status in navy */
+}
+
+.notification-message {
+  white-space: pre-line; /* Reminder: Keep this for your \n to work! */
+  line-height: 1.5;
+}

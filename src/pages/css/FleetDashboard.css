@@ -1,0 +1,656 @@
+  /* ============================================================
+    DASHBOARD LAYOUT & WRAPPER
+    ============================================================ */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  /* Change this to allow scrolling when panels stack */
+  min-height: 100%; 
+  overflow-x: hidden; 
+}
+
+  .dashboard-wrapper.light-theme {
+    background-color: var(--color-bg);
+    min-height: 100vh;
+    width: 100%;
+    display: flex;  
+    flex-direction: column;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  /* ============================================================
+    CONTENT TOP BAR (NEW CONSOLIDATED STYLE)
+    ============================================================ */
+  .content-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    margin-bottom: 1.2rem;
+    border-radius: 12px; /* Your gentle design */
+    
+    /* Applying the theme gradient as the background */
+    background: var(--bg-gradient-main);
+    
+    /* Adding a subtle inner glow to make the gradient "pop" */
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 
+                0 6px 20px rgba(0, 0, 0, 0.15);
+    
+    border: none;
+
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  @media (max-width: 768px) {
+  .top-bar-left, .top-bar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .date-filter-group {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+  .top-bar-left, .top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  /* Page Title & BU Display */
+  .page-main-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: white;
+    margin: 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .accent-slash {
+    color: var(--color-accent);
+    margin: 0 8px;
+    font-weight: 900;
+  }
+
+  .bu-display {
+    color: #cbd5e1; /* Light Slate for subtle BU contrast */
+    font-weight: 400;
+    font-size: 0.95rem;
+  }
+
+  /* ============================================================
+    DATE FILTERS & DROPDOWNS (NAVY THEME)
+    ============================================================ */
+  .date-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+  }
+
+  .date-select {
+    background-color: var(--color-bg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .date-select:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--color-bg);
+  }
+
+  .date-select option {
+    background-color: var(--color-bg);
+    color: white;
+  }
+
+  .year-input-inline {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    width: 55px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    outline: none;
+    text-align: center;
+  }
+
+  .custom-date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .custom-date-inputs input {
+    background: white;
+    border: none;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .custom-date-inputs span {
+    font-size: 0.75rem;
+    color: white;
+    font-weight: 600;
+  }
+
+  .date-select:hover, 
+  .year-input-inline:hover,
+  .date-filter-group:hover {
+      /* Instead of turning white, we use your primary navy/blue with transparency */
+      background-color: var(--color-bg); /* Using your #3a4efc blue */
+      border-color: rgba(255, 255, 255, 0.5);
+      color: white; /* Force text to stay white */
+      
+  }
+
+  /* Ensure the parent group doesn't look broken on hover */
+  .filter-item:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      border-radius: 4px;
+      margin-right: 2px;
+      opacity: 0.95;
+      transition: all 0.2s ease;
+      
+      /* 2. Change the color using filters */
+      /* This specific filter turns the black icon into your Primary Navy (#000080 / navy) */
+      filter: invert(12%) sepia(95%) saturate(4562%) hue-rotate(235deg) brightness(88%) contrast(143%);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+      transform: scale(1.1);
+      /* Switch to Red on hover? Use this filter for Red: */
+      /* filter: invert(13%) sepia(94%) saturate(7125%) hue-rotate(359deg) brightness(98%) contrast(116%); */
+  }
+
+
+
+  /* ============================================================
+    BUTTONS (BACK & REFRESH)
+    ============================================================ */
+  .content-back-btn, .content-refresh-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+  }
+
+  .content-back-btn:hover, .content-refresh-btn:hover {
+    background: var(--color-primary-2); /* Electric Blue */
+    border-color: white;
+    transform: translateY(-1px);
+  }
+
+  @keyframes spin-refresh {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .content-refresh-btn.spinning svg {
+    animation: spin-refresh 0.8s ease-in-out;
+  }
+
+  /* ============================================================
+    MAIN CONTENT & GRID
+    ============================================================ */
+  .dashboard-main {
+    flex: 1;
+    padding: 1.2rem 2.5%;
+    overflow-y: auto;
+    background-color: var(--color-bg);
+  }
+
+  .dashboard-grid-layout {
+    display: grid;
+    /* Left panel takes 1 part, right takes 1.5 parts */
+    /* minmax(350px, ...) ensures panels don't get too thin */
+    grid-template-columns: minmax(350px, 1fr) minmax(450px, 1.5fr);
+    gap: 20px;
+    width: 100%;
+    /* Let height be determined by content */
+    height: auto; 
+    align-items: start;
+
+    /*outline: 1px solid;*/
+  }
+
+  /* Stack vertically on tablets/mobile */
+  @media (max-width: 1200px) {
+    .dashboard-grid-layout {
+      /* More balanced 1fr 1fr layout for tablets */
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* Mobile: Single Column Stack */
+  @media (max-width: 900px) {
+    .dashboard-main {
+      padding: 0.8rem; /* Reduce padding on mobile */
+    }
+
+    .dashboard-grid-layout {
+      grid-template-columns: 1fr;
+      gap: 15px; /* Reduce gap on mobile */
+    }
+    
+    /* Force the map to have height when stacked */
+    .panel-left {
+      height: 400px !important; 
+    }
+  }
+
+  .panel-left { flex: 2; display: flex; flex-direction: column; height: 100%}
+  .panel-right { flex: 4; display: flex; flex-direction: column; }
+
+  .panel-right-top, .panel-right-bottom {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
+  }
+
+  /* ============================================================
+    GENTLE GRADIENT PANELS (THEME)
+    ============================================================ */
+  .panel-left, .panel-right-top {
+    padding: 2px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+
+  .panel-content-inner {
+    background-color: var(--color-bg);
+    border-radius: 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  /* ============================================================
+    FOOTER STATUS
+    ============================================================ */
+  .footer-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .footer-status p {
+    margin: 0;
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .footer-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  @media (max-width: 600px) {
+    .footer-status {
+      flex-direction: column;
+      gap: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+  }
+
+  .btn-scroll-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px; /* Gentle rounded corners */
+    color: #000080; /* Navy Blue */
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-scroll-top:hover {
+    border-color: #3a4efc; /* Primary 2nd Blue */
+    color: #3a4efc;
+    background: color-mix(in srgb, #3a4efc, white 95%); /* Very light blue fade */
+    transform: translateY(-2px); /* Gentle lift effect */
+  }
+
+  .btn-scroll-top svg {
+    transition: transform 0.2s ease;
+  }
+
+  .btn-scroll-top:hover svg {
+    transform: translateY(-2px); /* Arrow "jumps" up slightly */
+  }
+
+  .btn-export {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .btn-export:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+
+
+  .floating-scroll-btn {
+    position: fixed;
+    bottom: 80px;
+    right: 40px;
+    width: 45px;
+    height: 45px;
+    
+    /* Theme Colors */
+    background-color: var(--color-primary); /* Navy Blue Primary */
+    color: white;
+    
+    /* Gentle Design */
+    border: none;
+    border-radius: 12px; /* Your rounded corner style */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    
+    /* Initial State (Hidden) */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(0, 0, 128, 0.3);
+    z-index: 9999;
+  }
+
+  /* Entrance State */
+  .floating-scroll-btn.show-btn {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .floating-scroll-btn:hover {
+    background-color: var(--color-accent); /* Red Accent */
+    box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
+    transform: scale(1.1);
+  }
+
+  .floating-scroll-btn svg {
+    transition: transform 0.2s ease;
+  }
+
+  .floating-scroll-btn:hover svg {
+    transform: translateY(-2px); /* Gentle arrow jump */
+  }
+
+  /* --- Animations --- */
+  .animate-in { animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+
+  /* ============================================================
+    BU TITLE DROPDOWN (GHOST STYLE)
+    ============================================================ */
+  .bu-dropdown-title {
+    background: transparent;
+    border: none;
+    color: var(--color-text-2); /* Matches the "FLEET ANALYTICS" title */
+    font-family: inherit;
+    font-size: 1.15rem; /* Matches .page-main-title */
+    font-weight: 800;    /* Matches .page-main-title */
+    cursor: pointer;
+    outline: none;
+    padding: 4px 25px 4px 8px; /* Extra right padding for the arrow */
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    
+    /* Custom Arrow Styling */
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 5px center;
+    background-size: 14px;
+    
+    /* Alignment fix for breadcrumb look */
+    vertical-align: baseline;
+    margin-left: 2px;
+  }
+
+  /* Subtle "Interactive" hint on hover */
+  .bu-dropdown-title:hover {
+    /*background-color: var(--color-bg);*/
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Focus state for accessibility */
+  .bu-dropdown-title:focus {
+    /*background-color: var(--color-bg);*/
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Style the actual dropdown list (The Popup) */
+  .bu-dropdown-title option {
+    background-color: var(--color-bg); /* Your Primary Navy */
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 12px;
+  }
+
+  /* Animation to match your "Animate-in" class */
+  .bu-dropdown-title {
+    animation: fadeIn 0.4s ease;
+  }
+
+
+
+  .analytic-card-full {
+    padding: 0.01rem 1rem !important; /* Reduced from 1.5rem */
+  }
+
+  .card-header-flex {
+    margin-bottom: 0.1rem !important; /* Reduced from 1rem */
+    display: flex;
+    align-items: center; /* Align title and live indicator on the same line */
+    justify-content: space-between;
+  }
+
+  .navy-title {
+    font-size: 0.7rem !important; /* Smaller, sharper title */
+    line-height: 1;
+  }
+
+  .sub-label {
+    font-size: 0.75rem !important; /* Very small sub-text */
+    margin-top: 2px;
+  }
+
+  /* Ensure the chart takes every remaining pixel */
+  .chart-wrapper-main {
+    width: 100%;
+    /* Maintain a nice landscape shape without hard-coding pixels */
+    aspect-ratio: 16 / 9; 
+    min-height: 100;
+    position: relative;
+    /* Ensures the chart library (Recharts/Chart.js) can fill the box */
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 1200px) {
+  .chart-wrapper-main {
+    aspect-ratio: 45 / 10; /* Your original wide look for desktop */
+  }
+}
+
+  /* src/pages/css/FleetDashboard.css */
+
+  .dashboard-main {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 30px; /* Space between the grid and the table */
+  }
+
+  .full-width-details-container {
+    width: 100%;
+    background: #ffffff;
+    border-top: 4px solid #000080; /* Navy primary border */
+    border-radius: 16px; /* Gentle rounded corners */
+    box-shadow: 0 -10px 25px rgba(0,0,0,0.03); /* Subtle upward shadow */
+    overflow: hidden;
+    margin-top: 10px;
+  }
+
+  .details-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: #fdfdfd;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .title-area h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    letter-spacing: -0.5px;
+  }
+
+  .red-accent-tag {
+    color: #FF0000;
+    font-weight: 800;
+    font-size: 12px;
+    text-transform: uppercase;
+    background: rgba(255, 0, 0, 0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 10px;
+  }
+
+  .details-table-wrapper {
+    padding: 25px;
+    background: #ffffff;
+    /* Add these to allow side-scrolling the table data */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; 
+  }
+
+  .details-body {
+      background: white;
+      border-radius: 12px; /* Matches your gentle design preference */
+      
+      /* Soft Navy Shadow: subtle enough for professional use */
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 128, 0.35);
+      
+      /* Optional: A very thin border makes the shadow look cleaner on white backgrounds */
+      border: 1px solid #f1f5f9;
+      
+      /* Ensure the shadow has room to breathe */
+      margin: 15px; 
+      padding: 2px; /* Prevents the table from touching the shadow-casting edge */
+      min-height: 500px;
+  }
+
+  .close-details-btn {
+    background: #4b0404;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+    right: 10px;
+  }
+
+  .close-details-btn:hover {
+    transform: scale(1.05);
+    background: #FF0000; /* Turns red on hover */
+  }
+
+  /* Entrance Animation */
+  .animate-slide-up {
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .gsdc-map-container {
+    width: 100%;
+    height: 100% !important; /* Fill the flex-grow parent */
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+/* Ensure the MapLibre canvas inside also fills the container */
+.maplibregl-canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+  /*.details-body {outline: 1px solid;}*/

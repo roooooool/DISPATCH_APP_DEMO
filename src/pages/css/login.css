@@ -1,0 +1,161 @@
+/* --- LOGIN PAGE SPECIFIC STYLES --- */
+
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #eff6ff, #f8fbff);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.login-left {
+  flex: 1;
+  min-width: 450px;
+  background-color: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.login-right {
+  flex: 1.2;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+}
+
+/* --- LOGO & TYPOGRAPHY --- */
+.logo {
+  width: 180px;
+  margin-bottom: 20px;
+  transition: transform 0.3s ease;
+  animation: bob 3s ease-in-out infinite;
+}
+
+.logo:hover {
+  transform: rotate(5deg) scale(1.05);
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 30px;
+  letter-spacing: 1px;
+}
+
+.login-title h1 {
+  font-size: 32px; /* Increased size */
+  font-weight: 900; /* Maximum thickness */
+  color: var(--color-primary);
+  margin-bottom: 30px;
+  letter-spacing: 2px; /* Spread it out for that "Premium" look */
+  text-transform: uppercase; /* All caps always feels bolder */
+  
+  /* This creates a "faux-bold" effect by doubling the edges */
+  text-shadow: 0.5px 0 0 var(--color-primary); 
+}
+
+
+/* --- FORM & GRADIENT INPUTS --- */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 320px;
+  gap: 20px;
+}
+
+/* Your Specific Spec: Gradient outline via overlapping boxes */
+.input-gradient-wrapper {
+  position: relative;
+  padding: 2px; /* Border thickness */
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+
+.input-gradient-wrapper:focus-within {
+  transform: scale(1.02);
+}
+
+.gradient-input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+
+
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(135deg, rgba(9,33,98,1), red) border-box;
+
+  color: rgba(9,33,98,1);
+  font-size: 14px;
+  outline: none;
+}
+
+/* Focus effect */
+.gradient-input:focus {
+  border-width: 3px; /* slightly thicker */
+  box-shadow: 0 0 8px rgba(9,33,98,0.4); /* subtle glow */
+}
+
+.btn-login {
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background-color: var(--color-primary);
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(9, 33, 98, 0.2);
+}
+
+.btn-login:hover:not(:disabled) {
+  background-color: var(--color-bg);
+  transform: translateY(-2px);
+}
+
+.btn-login:active {
+  transform: scale(0.98);
+}
+
+/* --- INFO PANEL (RIGHT SIDE) --- */
+.gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(9, 33, 98, 0.85), rgba(229, 57, 53, 0.4));
+  z-index: 1;
+  backdrop-filter: blur(2px);
+}
+
+.company-info-panel {
+  position: relative;
+  z-index: 2;
+  width: min(480px, 90%);
+  padding: 4px; 
+  border-radius: 28px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  animation: glowPulseRed 2.5s ease-in-out infinite;
+}
+
+.company-info-inner {
+  background-color: var(--color-bg);
+  border-radius: 24px;
+  padding: 35px;
+  color: var(--color-text);
+}
+
+
+.fade-out {
+  opacity: 0;
+  transform: scale(0.98);
+}

@@ -1,0 +1,1080 @@
+/* Make the order-dist-body scrollable and footer sticky */
+.scrollable-body {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-bottom: 24px; /* Ensure content is not hidden behind sticky footer */
+}
+
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-bg);
+  z-index: 10;
+  padding-bottom: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+/* Collapsible input group styling */
+/* Tighter input group and header spacing */
+.input-group-group {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  margin-bottom: 2px;
+  background: var(--color-bg-blue);
+  box-shadow: 0 2px 8px rgba(60, 60, 120, 0.04);
+  transition: box-shadow 0.2s;
+}
+.input-group-group:hover {
+  box-shadow: 0 4px 16px rgba(60, 60, 120, 0.08);
+}
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 6px 14px 4px 14px;
+  background: transparent;
+  color: var(--color-text-2);
+  background-color: var(--color-primary);
+  border-radius: 10px 10px 0 0;
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.5px;
+  transition: background 0.2s;
+  margin-bottom: 0;
+}
+.group-header:hover {
+  background: color-mix(in srgb, var(--color-primary) 80%, black 20%);
+  color: var(--color-primary-light);
+}
+.input-group-group .form-row {
+  padding: 6px 14px 8px 14px;
+}
+.input-group-group .form-row:last-child {
+  padding-bottom: 2px;
+}
+
+.group-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.order-dist-container {
+  background: var(--color-bg);
+  border-radius: 16px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+
+  /*border: 1px solid #032653;*/
+}
+
+.order-dist-header h3 {
+  color: var(--color-primary); /* Navy */
+  margin: 0;
+  font-weight: 800;
+}
+
+.order-dist-header p {
+  color: var(--color-darkslategray);
+  font-size: 13px;
+  margin: 4px 0 12px 0; /* Reduced bottom margin */
+}
+
+.order-dist-header {
+  padding: 8px 16px 0 16px; /* Reduced vertical padding */
+  z-index: 11;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 8px 12px -5px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 15px;
+}
+
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.input-group label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-darkslategray);
+}
+
+/* Input field styling when invalid */
+.gradient-input-wrapper.invalid-input {
+  border: 2px solid var(--color-accent-light); /* Your theme's red color */
+  box-shadow: 0 0 8px rgba(255, 82, 82, 0.4); /* Optional: add a red glow */
+}
+
+/* Footer Buttons */
+.order-dist-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center; /* Align items vertically */
+  gap: 12px;
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -8px 12px -5px rgba(0, 0, 0, 0.08);
+  padding: 8px 16px; /* Reduced vertical padding */
+}
+
+.footer-validation-message {
+  margin-right: auto; /* Pushes this element to the far left */
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.footer-validation-message.valid {
+  color: var(--color-green);
+}
+
+.footer-validation-message.invalid {
+  color: var(--color-accent-light);
+}
+
+.order-dist-footer button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px; /* Standardized padding */
+  font-size: 0.9rem; /* Standardized font size */
+  font-weight: 700; /* Standardized font weight */
+  border-radius: 8px; /* Standardized border radius */
+  border: none; /* Remove default borders */
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  height: 40px; /* Explicit height */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.order-dist-footer button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-cancel {
+  background: transparent;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+}
+
+.btn-cancel-wait {
+  background: transparent;
+  color: var(--color-muted);
+}
+
+.btn-cancel-wait:hover {
+  border-color: transparent !important;
+}
+
+.btn-cancel-wait.enabled {
+  background: var(--color-accent);
+  color: var(--color-text-2);
+}
+
+.btn-cancel:hover {
+  color: var(--color-accent-light);
+  border-color: var(--color-accent-light);
+  background: transparent;
+}
+
+.btn-save {
+  background: var(--color-green);
+  color: var(--color-text-2);
+  position: relative; /* Needed for positioning the indicator */
+}
+
+.btn-save:hover {
+  background: color-mix(in srgb, var(--color-green) 80%, var(--color-mix-hover) 20%);
+}
+
+.btn-proceed {
+  background: var(--color-primary); /* Navy */
+  color: var(--color-text-2);
+}
+
+.btn-proceed:hover {
+  background: var(--bg-gradient-main);
+}
+
+.btn-proceed:disabled,
+.btn-save:disabled {
+  background: var(--color-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  border: 1px solid var(--color-darkslategray);
+}
+
+.btn-proceed:disabled:hover,
+.btn-save:disabled:hover {
+  background: var(--color-muted); /* Keep the same disabled background on hover */
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* Optional: Soften the label color for disabled groups to match */
+.input-group:has(input:disabled) label {
+    color: var(--color-primary);
+    opacity: 0.7;
+}
+
+
+.header-sub-row {
+    display: flex;
+    justify-content: space-between; /* Pushes controls to the far right */
+    align-items: center;
+    width: 100%;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-primary); /* Navy blue */
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.control-btn svg {
+  margin-left: 4px;
+  flex-shrink: 0; /* Prevents the icon from getting squashed */
+}
+
+.control-btn:hover {
+    opacity: 1;
+    background: rgba(58, 78, 252, 0.05); /* Very faint navy tint */
+    color: var(--color-accent-light); /* Red accent on hover */
+}
+
+.control-separator {
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    user-select: none;
+}
+
+
+.group-content-wrapper.open {
+    grid-template-rows: 1fr;
+    overflow: visible; /* Allows dropdowns to pop out of the container */
+}
+
+/* Container for the folding animation */
+.group-content-wrapper {
+  display: grid;
+  grid-template-rows: 0fr; /* Start collapsed */
+  transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+  overflow: hidden;
+
+  background-color: var(--color-primary);
+  border-radius: 0 0 10px 10px;
+}
+
+.group-content-wrapper.is-open {
+  grid-template-rows: 1fr; /* Expand to fit content exactly */
+  background-color: transparent;
+  
+}
+
+/* Necessary inner div for grid-row animation stability */
+.group-content-inner {
+  position: relative;
+  min-height: 0;
+  padding: 0 5px 15px 5px; /* Bottom padding for separation */
+
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Show the text only when the wrapper is open */
+.group-content-wrapper.is-open .group-content-inner {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Toggle Icon Rotation */
+.toggle-icon {
+  position: relative;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-text-2); 
+}
+
+/* The Horizontal Bar (Always visible) */
+.toggle-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 2px;
+}
+
+/* The Vertical Bar (Hidden when expanded, visible when collapsed) */
+.toggle-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background-color: currentColor;
+  transform: translateX(-50%) scaleY(0); /* Hidden by default */
+  transition: transform 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Hover effect from your theme */
+.group-header:hover .toggle-icon {
+  color:  var(--color-primary-light);
+}
+
+/* Collapsed State: Spin and Show Vertical Bar */
+.toggle-icon.is-collapsed {
+  transform: rotate(180deg); /* Full spin */
+}
+
+.toggle-icon.is-collapsed::after {
+  transform: translateX(-50%) scaleY(1); /* Becomes a Plus sign */
+}
+
+/* Ensure SearchableDropdown isn't cut off when open */
+.group-content-wrapper.is-open {
+    overflow: visible;
+}
+
+
+
+
+
+.shadow-gentle {
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+
+
+.standard-select {
+    flex: 1;
+    height: 100%;
+    border: none; /* Hide default border to show the gradient wrapper */
+    border-radius: 7px; /* Slightly smaller than wrapper to fit perfectly */
+    padding: 8px 30px 8px 12px;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    appearance: none; /* Required to use custom arrow */
+    width: 100%;
+
+}
+
+/* Ensure the white background persists on focus and hover */
+.standard-select:focus, 
+.standard-select:active {
+    background-color: white;
+}
+
+/* --- RESPONSIVE MEDIA QUERIES --- */
+
+/* For tablets and smaller desktops */
+@media (max-width: 1024px) {
+  .form-row {
+    gap: 12px; /* Slightly reduce gap */
+  }
+
+  .order-dist-header p {
+    font-size: 12px;
+    margin-bottom: 15px;
+  }
+
+  .order-dist-footer {
+    gap: 10px;
+  }
+}
+
+/* For mobile devices */
+@media (max-width: 768px) {
+  .order-dist-body {
+    /* On mobile, allow body to take more height if needed */
+    max-height: none; 
+  }
+
+  .form-row {
+    flex-direction: column; /* Stack inputs vertically */
+    gap: 0; /* Remove horizontal gap */
+    margin-bottom: 0; /* Remove bottom margin as it's handled by input-group */
+  }
+
+  .input-group {
+    margin-bottom: 20px; /* Ensure consistent spacing between stacked inputs */
+  }
+
+  /* When stacked, we don't want the last input group in a "row" to have extra margin */
+  .form-row .input-group:last-child {
+    margin-bottom: 20px;
+  }
+  
+  /* Remove margin for the very last input group in a section */
+  .group-content-inner > .form-row:last-child .input-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .header-sub-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .order-dist-footer {
+    flex-direction: column; /* Stack buttons vertically */
+    align-items: stretch; /* Make buttons full-width */
+  }
+
+  .order-dist-footer button {
+    width: 100%;
+    justify-content: center; /* Center text and icon */
+  }
+
+  .btn-cancel {
+    order: 3; /* Move cancel button to the bottom */
+  }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+  .order-dist-header {
+    padding: 12px;
+  }
+
+  .order-dist-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .group-header {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .input-group-group .form-row {
+    padding: 8px 12px;
+  }
+}
+
+.personnel-validation-modal {
+  padding: 20px;
+  text-align: center;
+}
+
+.personnel-validation-modal h3 {
+  margin-top: 0;
+  color: var(--color-primary);
+}
+
+.personnel-validation-modal p {
+  margin-bottom: 20px;
+}
+
+.personnel-validation-modal .modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* --- Confirmation Modal --- */
+.confirmation-modal {
+  /*max-width: 420px; /* Smaller max-width */
+  width: 90%;
+  padding: 24px !important; /* Override default padding */
+  border-radius: 12px !important;
+}
+
+.confirmation-content {
+  display: flex;
+  align-items: flex-start; /* Align icon to the top of the text */
+  gap: 16px;
+}
+
+.confirmation-icon {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin-top: -4px; /* Fine-tune vertical alignment */
+}
+
+.confirmation-text h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.confirmation-text p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-darkslategray);
+}
+
+.confirmation-text strong {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.btn-save {
+  position: relative; /* Needed for positioning the indicator */
+}
+
+.unsaved-indicator {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 0 5px red;
+  animation: pulse 1.5s infinite;
+  z-index: 1;
+}
+
+.order-form-fuelfetch-spinner {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: color-mix(in srgb, var(--color-bg) 90%, transparent 20%);
+  color: var(--color-primary);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 0 5px var(--color-bg);
+  animation: spin 1s linear infinite;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 3px rgba(255, 0, 0, 1);
+  }
+  50% {
+    transform: scale(1.25);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 3px rgba(255, 0, 0, 1);
+  }
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.form-header-controls {
+  display: flex;
+  justify-content: flex-end;
+  padding: 5px 20px;
+  background-color: #f8f9fa;
+}
+
+.more-options-container {
+  position: relative;
+  display: inline-block;
+}
+
+.more-options-button {
+  background-color: transparent;
+  color: var(--color-primary);
+  padding: 5px 10px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-btn.open {
+  background-color: var(--color-accent);
+  color: var(--color-text-2);
+  transition: all 0.2s ease;
+}
+
+.more-options-dropdown {
+  display: block;
+  position: absolute;
+  right: 0;
+  background-color: var(--color-bg);
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-radius: 4px;
+}
+
+.more-options-dropdown a {
+  color: var(--color-text);
+  padding: 12px 16px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-lg) !important;
+  color: var(--color-primary);
+}
+
+.more-options-dropdown a.disabled {
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
+.more-options-dropdown a:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+
+.discrepancy.positive {
+  color: var(--color-border-success) !important;
+}
+
+.discrepancy.negative {
+  color: var(--color-border-danger) !important;
+}
+
+.input-group label {
+  color: var(--color-primary) !important;
+}
+
+.stopper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: color-mix(in srgb, var(--color-primary-2), transparent 90%);
+  z-index: 10;
+  cursor: not-allowed;
+}
+
+
+
+/***/
+
+
+/* src/components/comp_css/AssignmentChangesModal.css */
+
+.assignment-changes-preview {
+  padding: 1rem;
+  color: #000080; /* Navy Primary */
+  font-family: inherit;
+}
+
+.assignment-changes-preview p {
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  font-size: 1.1rem;
+}
+
+.assignment-changes-preview ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.assignment-changes-preview li {
+  margin-bottom: 12px;
+  padding: 12px;
+  background-color: var(--color-background-2);
+  border-radius: 6px;
+  border-left: 4px solid var(--color-accent);
+  font-size: 0.95rem;
+  transition: transform 0.2s ease;
+}
+
+
+
+/* Status Selection Styling */
+.assignment-changes-status-selection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 5px;
+  border-top: 1px dashed #dee2e6;
+}
+
+.assignment-changes-status-selection span {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Gradient-border imitation for the Select field */
+.assignment-changes-status-selection select {
+  appearance: none;
+  background-color: white;
+  border: 2px solid transparent;
+  background-image: linear-gradient(white, white), 
+                    linear-gradient(to right, #000080, #cc0000); /* Navy to Red Gradient */
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  border-radius: 6px;
+  padding: 4px 24px 4px 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #000080;
+  cursor: pointer;
+}
+
+/* Modal Action Buttons */
+.assignment-changes-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.assignment-changes-button-primary, .button-secondary {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.assignment-changes-button-primary {
+  background: linear-gradient(135deg, #000080 0%, #cc0000 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.assignment-changes-button-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.assignment-changes-button-secondary {
+  background-color: #fff;
+  color: #000080;
+  border: 1px solid #000080;
+}
+
+.assignment-changes-button-secondary:hover {
+  background-color: #f0f0f5;
+}
+
+/* Assignment Changes Modal */
+.assignment-changes-preview ul {
+  list-style-type: none;
+  padding: 1rem 0 0 0;
+  margin: 0;
+}
+
+.assignment-changes-preview li {
+  margin-bottom: 12px;
+  padding: 12px;
+  background-color: var(--color-background-2);
+  border-radius: 6px;
+  border-left: 4px solid var(--color-accent);
+  font-size: 0.95rem;
+}
+
+.assignment-changes-status-selection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.assignment-changes-status-selection select {
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border-1);
+  background-color: var(--color-background-1);
+  color: var(--color-text-1);
+  font-weight: bold;
+}
+
+.assignment-changes-preview h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.assignment-changes-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.assignment-label-new strong {
+  color: var(--color-border-success) !important;
+}
+
+.assignment-label-old strong {
+  color: var(--color-border-danger) !important;
+}
+
+.assignment-label-new, .assignment-label-old {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.status-change {
+  font-weight: normal;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-old {
+  color: var(--color-darkslategray) !important;
+  /*text-decoration: line-through;*/
+  font-weight: bold;
+  opacity: 0.8;
+}
+
+.status-new {
+  color: var(--color-text-2);
+  font-weight: bold;
+  background-color: var(--color-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+select.status-new {
+  background-color: var(--color-primary);
+  color: var(--color-text-2);
+  border: none; /* Optional: to better see the background color */
+  padding: 4px 8px; /* Adjust padding as needed */
+}
+
+.status-change .status-old + span { /* The arrow */
+  color: var(--color-text-2);
+  font-weight: bold;
+}
+
+.assignment-label-new strong {
+  color: var(--color-text-success);
+}
+
+.assignment-label-old strong {
+  color: var(--color-text-danger);
+}
+.assignment-change-item {
+    display: flex !important;
+    align-items: center !important; /* Vertically center the text and icon */
+    gap: 8px;            /* Consistent spacing between elements */
+    list-style: none;    /* Optional: removes default bullet if needed */
+    white-space: nowrap; /* Prevents the row from breaking on small screens */
+}
+
+.payload-table-wrapper {
+    margin-top: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.payload-mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.payload-mini-table th {
+    background: #f8fafc;
+    color: #000080;
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.payload-mini-table td {
+    padding: 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.payload-mini-table tr:last-child td {
+    border-bottom: none;
+}
+
+
+
+.served-date-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+}
+
+.served-date-label {
+    color: var(--color-primary); /* Navy Blue */
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    white-space: nowrap;
+}
+
+.served-date-input-inner-container {
+    background: var(--color-bg); /* White bg */
+    border-radius: 7px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+}
+
+.served-date-custom-date-input {
+    border: none;
+    outline: none;
+    width: 100%;
+    color: var(--color-primary); /* Navy Text */
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    background-color: transparent;
+      font-family: inherit;
+  }
+
+/* The Gradient Border Imitation */
+.served-date-gradient-input-wrapper {
+    padding: 1px;
+    background: var(--input-gradient); /* Navy to Red Gradient */
+    border-radius: 8px; /* Gentle rounded corners */
+    width: 100%;
+    max-width: 180px;
+}
+
+
+/* Imitates your gradient outline pattern */
+.share-gradient-wrapper {
+    background: linear-gradient(to right, #000080, #ff0000); /* Navy to Red */
+    padding: 2px;
+    border-radius: 8px; /* Gentle rounded corners */
+}
+
+.share-textarea {
+    width: 100%;
+    border: none;
+    background: white;
+    border-radius: 6px;
+    padding: 12px;
+    display: block;
+    outline: none;
+    font-family: inherit;
+    resize: none;
+}
+
+/* Matching your existing modal heading style */
+.personnel-validation-modal h4 {
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-muted);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-right: auto;
+    text-align: left;
+}
+
+.personnel-validation-modal p {
+  text-align: left;
+}
+
+
+.payload-label {
+  font-weight: 600;
+  color: var(--color-primary, #1e3a8a); /* Navy blue primary */
+  text-align: left;
+}
+
+.payload-value {
+  color: var(--color-text, #333333);
+  font-weight: 500;
+}
+
+.payload-header-wrapper {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0px 10px;
+  background: color-mix(in srgb, var(--color-bg, #ffffff), transparent 80%);
+  padding: 8px;
+  border-radius: 8px; /* Matches the gentle design preference */
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+

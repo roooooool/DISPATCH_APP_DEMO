@@ -1,0 +1,98 @@
+Trip Progressed
+
+            logDmsUpdate({
+              userName: editingUser?.FullName || '', 
+              userID: Number(editingUser?.id) || 0,
+              inputOE: formData.OE || '',
+              action: `Trip progress to [${progress_next}]`,
+              value: progress_next,
+              isRecordJSON: true,
+              context: `Trip - Progressed`,
+              role: editingUser?.Position || '',
+            });
+
+
+
+
+Trip Status Changed
+
+        DISPATCH_APP_DMS.dboDMSupdated(
+            {
+                UserName: userName,
+                UserID: Value(userID),
+                InputOE: varLiveSelectedOE.OE,
+                Action: "Changed trip status from to ["&_dms_item.'Trip Status'&"] to ["&STATSELECT_inp.Selected.Status&"]",
+                Value: STATSELECT_inp.Selected.Status,
+                BU:bumodule_picker.Selected.Title,
+                Context: "Trip - Status",
+                Role: userPosition
+            }
+        );
+
+
+
+Assigned
+
+        DISPATCH_APP_DMS.dboDMSupdated(
+            {
+                UserName: userName,
+                UserID: userID,
+                InputOE: varLiveSelectedOE.OE,
+                Action: "Assigned Head: " & head_value.Text & " for this trip.",
+                Value: head_value.Text,
+                BU:bumodule_picker.Selected.Title,
+                Role: userPosition
+            }
+        );
+
+        DISPATCH_APP_DMS.dboDMSupdated(
+            {
+                UserName: userName,
+                UserID: userID,
+                InputOE: varLiveSelectedOE.OE,
+                Action: "Assigned Trailer: " & bo_value.Text & " for this trip.",
+                Value: bo_value.Text,
+                BU:bumodule_picker.Selected.Title,
+                Role: userPosition
+            }
+        );
+
+        DISPATCH_APP_DMS.dboDMSupdated(
+            {
+                UserName: userName,
+                UserID: userID,
+                InputOE: varLiveSelectedOE.OE,
+                Action: "Assigned Driver: " & drv_value.Text & " for this trip.",
+                Value: drv_value.Text,
+                BU:bumodule_picker.Selected.Title,
+                Role: userPosition
+            }
+        );
+
+        DISPATCH_APP_DMS.dboDMSupdated(
+            {
+                UserName: userName,
+                UserID: userID,
+                InputOE: varLiveSelectedOE.OE,
+                Action: "Assigned Helper: " & hlp_value.Text & " for this trip.",
+                Value: hlp_value.Text,
+                BU:bumodule_picker.Selected.Title,
+                Role: userPosition
+            }
+        );
+
+
+Attendance Changed
+
+    DISPATCH_APP_DMS.dboDMSupdated(
+        {
+            UserName: userName,
+            UserID: userID,
+            InputOE: _oe,
+            Action: "Set Attendance of " & ThisItem.FullName & " to [" & newStatus & "]",
+            Value: newStatus,
+            BU: userBU,
+            Context: "Attendance",
+            Role: userPosition
+        }
+    );

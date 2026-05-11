@@ -1,0 +1,214 @@
+.option-label-multiline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.option-subtext {
+  font-size: 0.8em;
+  color: #64748b;
+  margin-top: 1px;
+  line-height: 1.2;
+  white-space: normal;
+}
+/* Container & Label */
+.searchable-dropdown-wrapper {
+  position: relative;
+  width: 100%;
+  font-family: inherit;
+}
+
+.dropdown-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary); /* Navy Blue */
+}
+
+/* Gradient Border Logic */
+.gradient-outline-box {
+  padding: 1px; /* This thickness creates the "border" */
+  border-radius: 10px; /* Gentle rounded corners */
+  background: var(--bg-gradient-main-eq); /* Navy to Red */
+  transition: opacity 0.3s ease;
+}
+
+.searchable-dropdown-inner {
+  background: var(--color-bg);
+  border-radius: 8px; /* Slightly smaller than wrapper to fit inside */
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  min-height: 42px;
+}
+
+.searchable-dropdown-inner.disabled {
+  background: var(--color-input-disabled-bg);
+  cursor: not-allowed;
+}
+
+/* Value text and Arrow */
+.dropdown-value-text {
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
+
+.dropdown-value-text.placeholder {
+  color: var(--color-muted);
+}
+
+.dropdown-arrow {
+  color: var(--color-primary);
+  transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.rotate {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.searchable-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  overflow: visible;
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Search Bar */
+.dropdown-search-container {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid var(--color-border);
+  gap: 8px;
+}
+
+.dropdown-search-field {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+/* Options List & FIXED Checkbox Space */
+.dropdown-options-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.dropdown-option-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  gap: 12px; /* Space between checkbox and text */
+}
+
+.dropdown-option-row:hover {
+  background: var(--color-bg-hover);
+}
+
+.dropdown-option-row.selected {
+  background: var(--color-bg);
+}
+
+/* Checkbox Constraint */
+.option-checkbox {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0; /* Prevents checkbox from squishing or growing */
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.option-label {
+  flex: 1; /* Allows text to take up remaining space */
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+/* Clear Button */
+.dropdown-clear-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-top: 1px solid #f1f5f9;
+  background: white;
+  color: #ff0000; /* Red accent */
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.dropdown-clear-btn:hover {
+  background: #fff5f5;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+.option-card-container {
+  margin-top: 8px;
+  padding: 4px;
+  background: #f8fafc;
+  /*border-radius: 6px;*/
+  /*border-left: 3px solid #3a4efc; /* Your primary 2nd blue */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.card-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.card-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.cell-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.cell-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary); /* Default Navy */
+}
+
+/* Selected state behavior */
+.dropdown-option-row.selected .option-card-container {
+  background: rgba(255, 255, 255, 0.2);
+  border-left-color: white;
+}
+.dropdown-option-row.selected .cell-value {
+  color: white;
+}

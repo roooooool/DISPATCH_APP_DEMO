@@ -1,0 +1,98 @@
+GUIDE TO FIXING COMMON MARKDOWN LINTING ERRORS
+Prepared for: GSDC Development Team
+Date: April 15, 2026
+
+This guide summarizes the Markdown linting rules encountered during the GSDC Dispatch App documentation phase, providing sample errors and their corresponding fixes to ensure clean, compliant .md files.
+
+---
+
+1. MD041 - First Line in a File Should be a Top-Level Heading
+Requirement: Every Markdown file must start with an H1 heading (#).
+
+❌ ERROR:
+## Project: Dispatch App Updates
+Date: April 15, 2026
+
+✅ FIX:
+# GSDC Dispatch App Enhancement Report
+## Project: Dispatch App Updates
+Date: April 15, 2026
+
+---
+
+2. MD032 - Lists Should be Surrounded by Blank Lines
+Requirement: There must be a blank line before the start of a list and after the end of a list to prevent parsing errors.
+
+❌ ERROR:
+Check out these components:
+- OrderForm.tsx
+- TripList.tsx
+The next steps are...
+
+✅ FIX:
+Check out these components:
+
+- OrderForm.tsx
+- TripList.tsx
+
+The next steps are...
+
+---
+
+3. MD007 - Unordered List Indentation
+Requirement: Nested bullets or standard list items must follow a consistent indentation (usually 2 spaces).
+
+❌ ERROR:
+- Components Involved:
+    - OrderDistributionForm.tsx (4 spaces is often flagged)
+
+✅ FIX:
+- Components Involved:
+  - OrderDistributionForm.tsx (Exactly 2 spaces)
+
+---
+
+4. MD022 - Headings Should be Surrounded by Blank Lines
+Requirement: Headings must have exactly one blank line above and below them.
+
+❌ ERROR:
+### Feature: Unsaved Changes
+- Objective: Prevent data loss.
+
+✅ FIX:
+### Feature: Unsaved Changes
+
+- Objective: Prevent data loss.
+
+---
+
+5. MD036 - No Emphasis as Heading
+Requirement: Do not use bold (**) or italics (*) on a single line to act as a pseudo-header. Use actual heading tags (###) or include it in a paragraph.
+
+❌ ERROR:
+**Date: April 15, 2026**
+
+This session focused on...
+
+✅ FIX:
+**Date:** April 15, 2026
+
+This session focused on...
+(By adding the colon and keeping it part of the text block, it is no longer flagged as a 'fake' heading).
+
+---
+
+6. SUMMARY OF BEST PRACTICES
+- Always start with #.
+- Use blank lines liberally to separate headers, paragraphs, and lists.
+- Use exactly 2 spaces for list indentation.
+- Never use bold text as a standalone line if it is meant to be a title; use ### instead.
+
+7. always add a new line at the end
+
+8. Headers heirarchy
+- # -> ## -> ###
+- do not use ### if you did not use the previous headers (e.g. # , ##)
+
+
+9. numberings and list-marker-space should only have one space in between "1. **Navbar Unread Message Count:**" or "    * **Goal:** Display the total number of unread messages on the chat icon in the main navbar."

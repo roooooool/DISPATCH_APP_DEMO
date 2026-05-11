@@ -1,0 +1,378 @@
+/* comp_css/ModernFileAttachment.css */
+
+.file-attachment-container {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.file-dropzone {
+  cursor: pointer;
+}
+
+.zone-content {
+  flex-direction: column; /* Stack icon and text */
+  padding: 20px !important;
+  height: auto !important;
+  gap: 10px;
+  border: 2px dashed #e2e8f0; /* Dashed look inside the white box */
+  background: #fdfdfd;
+}
+
+.zone-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.main-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.sub-text {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* Attachment List Items */
+.attachment-list {
+  margin-top: 12px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+  overflow: visible;
+}
+
+.attachment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #f8fafc;
+  transition: background 0.2s;
+  position: relative;
+  overflow: visible;
+}
+
+.attachment-item:last-child { border-bottom: none; }
+.attachment-item:hover { background: #fcfcfc; }
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.unsaved-indicator-files {
+  position: absolute;
+  top: -6px;    /* Slightly outside the top edge */
+  right: -6px;  /* Slightly outside the right edge */
+  background-color: #ff0000; /* Your theme red */
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%; /* Circular */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 10; /* Ensure it stays above the preview and remove button */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 2px solid #ffffff; /* White border helps it pop against the background */
+  cursor: help;
+  
+  /* Subtle animation to draw attention */
+  animation: pulse-soft 2s infinite;
+}
+
+@keyframes pulse-soft {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.img-blue { color: var(--color-primary-2); }
+.doc-navy { color: var(--color-primary); }
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-size {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+}
+
+/* Remove Button - Red Accent on hover */
+.btn-remove-file {
+  background: transparent;
+  border: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-remove-file:hover {
+  color: var(--color-accent);
+  background: rgba(255, 0, 0, 0.05);
+}
+
+
+.file-preview-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Clips the image to the rounded square */
+  flex-shrink: 0;   /* Prevents the square from squishing */
+  border: 1px solid #e2e8f0;
+}
+
+.file-img-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image fills the square nicely */
+}
+
+.doc-red { color: var(--color-accent); }
+.doc-navy { color: var(--color-primary); }
+
+/* Gentle hover effect for the whole item */
+.attachment-item:hover .file-preview-wrapper {
+  border-color: #3a4efc; /* Your primary 2nd blue */
+}
+
+
+.file-info-clickable {
+  display: flex;
+  align-items: center; /* This centers the text vertically against the image */
+  gap: 12px;
+  flex: 1;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.gradient-spinner {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    /* Uses your theme colors: Navy (#1a2a4a) to Red (#ef4444) */
+    background: conic-gradient(
+        from 0deg, 
+        transparent 0%, 
+        var(--color-primary-2) 40%, 
+        var(--color-accent) 100%
+    );
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* This creates the 'donut' hole by overlapping a white circle */
+.spinner-inner {
+    width: 14px;
+    height: 14px;
+    background: white; /* Matches your white background theme */
+    border-radius: 50%;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Pulse effect for the wrapper */
+.file-preview-wrapper:has(.gradient-spinner) {
+    background: rgba(58, 78, 252, 0.05);
+}
+
+.file-dropzone.dragging {
+  border-color: #3a4efc; /* Use your primary 2nd blue */
+  background-color: rgba(58, 78, 252, 0.05);
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+.unsaved-indicator-files {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--color-accent);
+  animation: pulse 1.5s infinite;
+  margin-left: 8px;
+  line-height: 1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+
+
+/* --- GLOBAL MODAL (OUTSIDE CONTAINER) --- */
+.modal-overlay-global {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 8, 45, 0.85); /* Navy-tinted overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* Higher than any form or header */
+  backdrop-filter: blur(5px);
+}
+
+.modal-content-global {
+    width: 95vw;          /* Occupy 95% of the viewport width */
+    height: 90vh;         /* Occupy 90% of the viewport height */
+    max-width: 1600px;    /* Optional: prevents it from looking absurd on ultra-wide monitors */
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg);
+    border-radius: 12px;  /* Matches your 'gentle' design preference */
+    overflow: hidden;     /* Keeps the toolbar and footer pinned */
+}
+
+.modal-header-global {
+  background: var(--bg-gradient-main-eq); /* Your Navy + Red/Blue Gradient style */
+  color: var(--color-text-2);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-body-global {
+    flex: 1;              /* This is the key: it pushes the footer to the bottom */
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;     /* We handle dragging/zooming via JS, so hide scrollbars */
+}
+
+.modal-img-preview {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;  /* Maintains aspect ratio without clipping */
+}
+
+.modal-close-x {
+  background: transparent;
+  border: none;
+  color: var(--color-text-2);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.modal-close-x:hover {
+  transform: scale(1.1);
+}
+
+.modal-footer-global {
+  padding: 1rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Reusing your Navy theme for the footer button */
+.navy-bg {
+  background-color: var(--color-primary);
+  color: var(--color-text-2);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+
+
+
+/* --- END OF GLOBAL MODAL STYLES --- */
+
+.modal-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-bg-blue); /* Light navy tinted bg */
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 0 15px;
+}
+
+.tool-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-primary); /* Your primary blue */
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.tool-btn:hover {
+    background: var(--color-bg-hover);
+}
+
+.tool-label {
+    font-size: 12px;
+    min-width: 40px;
+    text-align: center;
+    color: var(--color-primary); /* Navy */
+}
+
+.tool-divider {
+    color: var(--color-border);
+    margin: 0 4px;
+}
+
+.img-transform-container {
+    background: var(--color-bg-blue); /* Neutral grey bg for better contrast */
+    cursor: grab;
+}
+
+.img-transform-container:active {
+    cursor: grabbing;
+}

@@ -1,0 +1,507 @@
+.bar-grid {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around; /* Better spacing for few bars */
+    flex: 1; /* Grow to fill the card */
+    min-height: 120px; /* Allow it to shrink significantly */
+    gap: 4px;
+    padding-bottom: 5px; /* Extra space for rotated labels */
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.4s ease;
+    padding-top: 5px;
+    z-index: 3;
+}
+
+.bar-column {
+    flex: 1;
+    min-width: 0; 
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
+    z-index: 5;
+}
+
+.bar-track {
+    position: relative;
+    width: 80%; /* Wider bars as they shrink */
+    max-width: 40px; /* Prevent them from being too fat on wide screens */
+    height: 100%;
+    background-color: #f8fafc;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: flex-end;
+}
+
+
+
+.bar-fill {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.bar-tooltip {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 700;
+    color: #000080;
+    background: white;
+    padding: 2px 4px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+    pointer-events: none; /* Don't interfere with hover */
+}
+
+.bar-column:hover .bar-tooltip {
+    opacity: 1;
+}
+
+.bar-label {
+    margin-top: 12px;
+    font-size: 10px; /* Smaller font for high-density */
+    font-weight: 600;
+    color: #64748b;
+    transform: rotate(-45deg);
+    transform-origin: top left;
+    white-space: nowrap;
+    /* Prevent long labels from breaking layout */
+    max-width: 50px; 
+    overflow: hidden;
+    translate: -5px 2px;
+}
+/* Container for the chart within the panel */
+.analytic-card-full {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 10px rgba(0, 0, 128, 0.05);
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.navy-title {
+  color: #000080;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.sub-label {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.chart-wrapper-main {
+  flex: 1;
+  min-height: 0; /* Important for flex-grow to work with charts */
+  width: 100%;
+}
+
+/* Subtle "Live" pulse matching your primary red accent */
+.live-indicator {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ping {
+  width: 8px;
+  height: 8px;
+  background-color: #15ff00;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(255, 0, 0, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+
+/* src/components/comp_css/tripStatus_BarChart.css */
+
+.bar-fill {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  /* Add a very soft shadow to make the colors pop */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bar-column:hover .bar-fill {
+  filter: brightness(1.1); /* Slightly brighten on hover */
+  cursor: pointer;
+  /* Optional: adds a subtle glow based on the bar's color */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.bar-label {
+  /* ... existing styles ... */
+  transition: color 0.2s ease;
+}
+
+.bar-column:hover .bar-label {
+  color: #000080; /* Highlight label in Navy on hover */
+  font-weight: 700;
+}
+
+
+
+.filter-controls-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 10px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid #f1f5f9;
+    overflow-x: auto; /* Allow scrolling on small screens */
+    white-space: nowrap;
+    z-index: 100;
+}
+
+.filter-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 50px;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.filter-chip.active {
+    background: white;
+    border-color: #000080;
+    color: #000080;
+    box-shadow: 0 2px 4px rgba(0,0,128,0.05);
+}
+
+.hidden-checkbox {
+    display: none;
+}
+
+.chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    opacity: 0.3;
+}
+
+.filter-chip.active .chip-dot {
+    opacity: 1;
+}
+
+.filter-chip:hover {
+    border-color: #94a3b8;
+}
+
+/* Animations for bars popping in/out */
+.animate-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* --- Loading & Blur Effects (Same as Donut) --- */
+.grid-blur {
+  filter: blur(4px);
+  opacity: 0.6;
+  pointer-events: none; /* Prevents clicking filters while loading */
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Ensure the container fills the card height provided by the panel */
+.grid-container-relative {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 150px; 
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Anchor the loader to the card, not the page */
+.grid-loader-wrapper {
+  position: absolute;
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none;
+  /* Matching your Navy/White theme */
+  border-radius: 12px; 
+  overflow: hidden;
+}
+
+.status-bar-container {
+    /* 1. Layout: Essential for the 'Squish' effect */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    
+    /* 2. Containment: Prevents the clipping in Power Apps */
+    position: relative;
+    overflow: hidden; 
+    
+    /* 3. Theme: Matches your GSDC 'Gentle' design */
+    background: rgb(255, 255, 255);
+    padding: 10px; /* 10px is usually safer for touch targets than 8px */
+    border-radius: 12px;
+    
+    /* 4. Box Sizing: Ensures padding doesn't add to the 100% height */
+    box-sizing: border-box; 
+
+    transition: background 0.3s ease;
+
+    z-index: 1;
+}
+
+/* When filters are hidden, keep it tight and unscrollable */
+.status-bar-container.is-fixed {
+    overflow: hidden;
+}
+
+/* When filters are shown, allow vertical scrolling */
+.status-bar-container.is-scrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Container for the collapsing logic */
+.filter-section-wrapper {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    z-index: 100;
+}
+
+.filter-section-wrapper.is-closed {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
+    pointer-events: none;
+}
+
+.filter-section-wrapper.is-open {
+    /*max-height: 500; /* Large enough to hold the chips */
+    opacity: 1;
+    margin-bottom: 20px;
+    z-index: 200;
+    min-height: 40px;
+    height: auto;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    transition: all 0.3s ease-out;
+
+    overflow-y: auto;
+    position: absolute;
+}
+
+/* The toggle button inside the header */
+.filter-toggle-btn {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 50px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.filter-toggle-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* The "Show Filters" pill that appears when hidden */
+.expand-filter-pill {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.2s ease;
+}
+
+.expand-filter-pill:hover {
+    border-color: #000080;
+    color: #000080;
+    background: #f8fafc;
+}
+
+
+/* Layout for the new floating control group */
+.floating-controls-right {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+}
+
+/* Tooltip Logic */
+.bar-tooltip {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 800;
+    color: #000080;
+    background: white;
+    padding: 2px 5px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+}
+
+/* Permanent Visibility Class */
+.bar-tooltip.is-permanent {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-2px);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+/* Hover Visibility (only if not permanent) */
+.bar-column:hover .bar-tooltip {
+    opacity: 1;
+}
+
+/* Toggle Switch Styling */
+.toggle-minimal {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+    color: #94a3b8;
+    transition: all 0.2s;
+}
+
+.toggle-minimal.active {
+    color: #3a4efc;
+    border-color: #3a4efc;
+    background: #eff6ff;
+}
+
+.expand-filter-pill.active-blue {
+    color: #3a4efc;
+    border-color: #3a4efc;
+}
+
+/* --- RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 768px) {
+    .bar-grid {
+        gap: 2px; /* Reduce gap between bars */
+    }
+
+    .bar-label {
+        font-size: 9px; /* Make labels slightly smaller */
+        transform: rotate(-60deg); /* Increase rotation to fit more */
+        translate: -2px 2px;
+    }
+
+    .filter-controls-horizontal {
+        /* Ensure horizontal scrolling is smooth on touch devices */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .filter-chip {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .bar-track {
+        max-width: 30px; /* Make bars slimmer on very small screens */
+    }
+
+    .bar-label {
+        margin-top: 8px;
+        font-size: 8px;
+        transform: rotate(-70deg);
+    }
+
+    .bar-tooltip, .bar-tooltip.is-permanent {
+        font-size: 9px;
+        padding: 1px 3px;
+        top: -20px;
+    }
+
+    .floating-controls-right {
+        gap: 4px;
+    }
+
+    .expand-filter-pill {
+        padding: 2px 6px;
+        font-size: 9px;
+    }
+}

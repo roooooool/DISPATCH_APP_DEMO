@@ -1,0 +1,476 @@
+/* Loading bar below the control header (copied from TableFlex) */
+.gallery-top-loader {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: var(--table-theme, #e2e8f0);
+  z-index: 120;
+  overflow: hidden;
+}
+
+.loader-progress-bar {
+  width: 100%;
+  height: 100%;
+  background: var(--loadbar-gradient);
+  background-size: 200% 100%;
+  animation: table-loading-slide 1.5s infinite linear;
+  z-index: 100;
+}
+
+@keyframes table-loading-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+/* --- FILTERS & CHIPS --- */
+.dropdown-multi-filter {
+  position: relative;
+  display: inline-block;
+  margin-left: 8px;
+}
+.dropdown-multi-trigger {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 4px 12px;
+  min-width: 110px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #334155;
+  position: relative;
+}
+.dropdown-multi-trigger:focus .dropdown-multi-list,
+.dropdown-multi-trigger:hover .dropdown-multi-list {
+  display: block;
+}
+.dropdown-multi-list {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 110%;
+  z-index: 20;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  min-width: 180px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.dropdown-multi-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px;
+  gap: 8px;
+  font-size: 0.95em;
+  cursor: pointer;
+}
+.dropdown-multi-item input[type="checkbox"] {
+  margin-right: 6px;
+}
+.dropdown-multi-item:hover {
+  background: #f1f5f9;
+}
+
+.active-filters-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
+.filter-chip {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 16px;
+  padding: 2px 10px 2px 8px;
+  font-size: 0.85em;
+  color: #334155;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+.filter-chip:hover {
+  background: #e0e7ef;
+}
+.chip-label {
+  font-weight: 700;
+  margin-right: 4px;
+}
+.chip-value {
+  margin-right: 4px;
+}
+.chip-remove {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1em;
+  margin-left: 2px;
+  cursor: pointer;
+}
+.chip-tooltip {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 120%;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.85em;
+  color: #222;
+  white-space: pre;
+  z-index: 30;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.filter-chip:hover .chip-tooltip {
+  display: block;
+}
+.clear-all-filters {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 2px 12px;
+  font-size: 0.9em;
+  color: #ff0000;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.2s, border 0.2s;
+}
+.clear-all-filters:hover {
+  background: #fff5f5;
+  border-color: #ff0000;
+}
+/* --- LAYOUT CONTAINERS --- */
+.info-gallery-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  gap: 20px;
+  padding: 10px;
+}
+
+.gallery-grid {
+  flex: 1;
+  /* Grid settings are primarily handled by inline styles in the component, 
+     but we provide a fallback here */
+  display: grid;
+  gap: 20px;
+
+}
+
+/* --- COMMAND RIBBON --- */
+/* Ensure the main ribbon doesn't wrap and stays centered */
+/* Ensure the main ribbon doesn't wrap and stays centered */
+.gallery-command-ribbon {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px; /* Reduced padding for a slimmer profile */
+    gap: 20px;
+    flex-wrap: nowrap; /* Prevent dropping to 2nd line */
+    position: relative;
+}
+
+.gallery-top-loader {
+  position: absolute;
+  bottom: 0;   /* Anchor to the bottom of the ribbon */
+  left: 0;
+  width: 100%;
+  height: 3px; /* Slightly thinner looks more modern for cards */
+  background: transparent; /* Let the ribbon background show through */
+  z-index: 120;
+  overflow: hidden;
+}
+
+.loader-progress-bar {
+  width: 100%;
+  height: 100%;
+  /* Use your theme colors: Navy to Red gradient */
+  background: linear-gradient(90deg, #3a4efc 0%, #ff0000 50%, #3a4efc 100%);
+  background-size: 200% 100%;
+  animation: table-loading-slide 1.5s infinite linear;
+}
+
+/* Align Title and Search Box side-by-side */
+.ribbon-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0; /* Don't let the title/search squish */
+}
+
+/* Align Filters, Chips, and Sort Button in one line */
+.ribbon-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex: 1; /* Allows the right side to take available space for chips */
+    min-width: 0; /* Critical for inner overflow/ellipsis to work */
+}
+
+/* Adjust the chips ribbon so it doesn't push the sort button off-screen */
+.active-filters-ribbon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 8px;
+    overflow-x: auto; /* Allow chips to scroll if there are too many */
+    scrollbar-width: none; /* Hide scrollbar for clean look */
+    padding-right: 4px;
+}
+
+@media (max-width: 768px) {
+    .gallery-command-ribbon {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .ribbon-left, .ribbon-right {
+        justify-content: space-between;
+        width: 100%;
+    }
+}
+
+.active-filters-ribbon::-webkit-scrollbar {
+    display: none;
+}
+
+/* Minor tweak to title for better alignment */
+.gallery-title {
+    margin: 0;
+    white-space: nowrap;
+    font-size: 1.1rem;
+}
+
+.gallery-search-box {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  gap: 8px;
+  width: 300px;
+}
+
+.gallery-search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.gallery-action-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary, #3a4efc); 
+  transition: all 0.2s ease;
+}
+
+.gallery-action-btn:hover {
+  border-color: #ff0000; /* GSDC Red */
+  color: #ff0000;
+  background: #fff5f5;
+}
+
+/* --- INFO CARD CORE --- */
+.gsdc-info-card {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  height: auto;
+  min-height: 160px;
+}
+
+.gsdc-info-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary, #3a4efc);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* --- IMAGE & ICON SECTION --- */
+.card-image-section {
+  width: 130px;
+  flex-shrink: 0;
+  position: relative;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #e2e8f0;
+}
+
+.card-image-section img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder-icon-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  color: var(--color-primary, #000080);
+  transition: color 0.3s ease, background 0.3s ease;
+}
+
+.gsdc-info-card:hover .placeholder-icon-wrapper {
+  color: #ff0000; /* Red on hover */
+  background: #fff5f5;
+}
+
+/* --- DETAILS & ROW SYSTEM --- */
+.card-details-section {
+  flex: 1;
+  padding: 12px 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Spreads rows vertically */
+  overflow: hidden;
+}
+
+.details-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  flex: 1; /* Rows auto-adjust height to fit card */
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.detail-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  letter-spacing: 0.025em;
+}
+
+.detail-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Title row styling */
+.title-field .detail-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-primary, #000080);
+}
+
+.title-field {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 4px;
+}
+
+/* --- STATUS INDICATORS --- */
+.status-pill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.status-pill.active { border-left: 3px solid #10b981; color: #059669; }
+.status-pill.delayed { border-left: 3px solid #ef4444; color: #dc2626; }
+
+/* --- TRANSITIONS --- */
+.fleet-table-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.view-transition-in {
+  animation: gsdcFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes gsdcFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.view-wrapper {
+  height: 100%;
+  width: 100%;
+}
+
+/* Skeleton Base */
+.skeleton-box {
+  background: #f1f5f9;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+/* Shimmer Animation */
+.skeleton-box::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.3) 20%,
+    rgba(255, 255, 255, 0.6) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Skeleton Specifics */
+.skeleton-img { width: 100%; height: 100%; }
+.skeleton-text { height: 14px; width: 80%; margin-top: 4px; }
+.skeleton-title { height: 20px; width: 60%; margin-bottom: 8px; }
+.skeleton-label { height: 10px; width: 40%; margin-bottom: 4px; }
+

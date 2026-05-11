@@ -1,0 +1,305 @@
+/* comp_css/ModernTimestampInput.css */
+
+.date-time-container {
+  position: relative;
+  width: 100%;
+}
+
+.date-time-container.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.input-label-navy {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #000066;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Gradient Wrapper with Hover Effect */
+.timestamp-gradient-input-wrapper {
+  background: linear-gradient(135deg, #000066, #ff0000, #3a4efc);
+  padding: 2px; /* Default thin border */
+  border-radius: 8px;
+  cursor: pointer;
+  transition: padding 0.2s ease, box-shadow 0.2s ease;
+}
+
+.timestamp-gradient-input-wrapper:hover:has(input:not(:disabled)) {
+  padding: 2px; /* Slight thickness increase on hover */
+  box-shadow: 0 4px 12px rgba(58, 78, 252, 0.2);
+}
+
+.input-inner-container {
+  background: #ffffff;
+  border-radius: 7px;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 38px;
+}
+
+.display-values {
+  display: flex;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #000066;
+}
+
+.val-divider { color: #e2e8f0; }
+.val-time { font-weight: 600; color: #3a4efc; } /* Highlight time in your 2nd blue */
+
+/* Popover UI */
+.datetime-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  width: 280px;
+  z-index: 1000;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 102, 0.15);
+}
+
+
+
+/* Time Picker Styling */
+.time-control-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  padding: 8px;
+  border-radius: 10px;
+  margin-top: 15px;
+}
+
+.time-input-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-input-box input {
+  width: 40px;
+  border: none;
+  background: white;
+  text-align: center;
+  padding: 4px;
+  border-radius: 4px;
+  font-weight: 700;
+  color: #000066;
+}
+
+.ampm-switch {
+  display: flex;
+  gap: 2px;
+  background: #e2e8f0;
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.ampm-switch button {
+  border: none;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  color: #64748b;
+}
+
+.ampm-switch button.active {
+  background: #3a4efc; /* Your primary 2nd blue */
+  color: white;
+}
+
+.btn-confirm-navy {
+  background: #000066;
+  color: white;
+  font-weight: 600;
+  border: none;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+/* Calendar Mockup Styling */
+.calendar-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #000066;
+}
+
+.calendar-days-mock {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.day-cell {
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.day-cell:hover { background: #f1f5f9; }
+.day-cell.selected { background: #3a4efc; color: white; }
+
+
+.ampm-switch button.active {
+  background: #3a4efc !important; /* Your primary 2nd blue */
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(58, 78, 252, 0.3);
+}
+
+.day-cell.selected {
+  background: #3a4efc !important;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%; /* Circular selection looks gentler */
+}
+
+
+
+/* Container for the top two buttons */
+.popover-controls-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* Adjust the NOW button to share space */
+.btn-now-red {
+  flex: 2; /* Takes more space because it's the primary action */
+  background: rgba(255, 0, 0, 0.03);
+  border: 1.5px solid #ff0000;
+  color: #ff0000;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-now-red:hover {
+  background: #ff0000;
+  color: white;
+}
+
+/* New Clear Button Style */
+.btn-clear-gray {
+  flex: 1; /* Smaller footprint */
+  background: #f1f5f9;
+  border: 1.5px solid #cbd5e1;
+  color: #64748b;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-clear-gray:hover {
+  background: #e2e8f0;
+  color: #334155;
+  border-color: #94a3b8;
+}
+
+.calendar-nav-advanced {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  background: #f8fafc;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.nav-selectors {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-selectors select {
+  border: none;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #000066; /* Navy */
+  cursor: pointer;
+  outline: none;
+  padding: 2px;
+}
+
+.nav-selectors select:hover {
+  color: #3a4efc; /* 2nd Blue */
+}
+
+.nav-arrow {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  color: var(--color-primary) !important;
+}
+
+.nav-arrow:hover {
+  color: var(--color-accent-red); /* Red Accent */
+  border-color: var(--color-accent-red);
+}
+
+.nav-arrow svg {
+  stroke: currentColor; 
+}
+
+.calendar-day-labels {
+  display: grid;
+  /* Must match the 7-column grid of your .calendar-days-mock */
+  grid-template-columns: repeat(7, 1fr); 
+  gap: 2px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9; /* Subtle separator */
+  padding-bottom: 4px;
+}
+
+.calendar-day-labels span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #000066; /* Your Navy Blue */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.6; /* Slight fade so it doesn't distract from the dates */
+}
+
+/* Optional: Highlight weekends in a very subtle red to match your accent */
+.calendar-day-labels span:first-child,
+.calendar-day-labels span:last-child {
+  color: #ff0000; 
+  opacity: 0.4;
+}

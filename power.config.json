@@ -1,0 +1,167 @@
+{
+  "version": "1.0",
+  "appId": "b7d07d74-32a0-435b-ab9f-d60ccce59a72",
+  "appDisplayName": "Dispatch App V2",
+  "region": "prod",
+  "environmentId": "b2d2222d-c740-ef16-9086-1d5bd091f18e",
+  "description": "",
+  "buildPath": "./dist",
+  "buildEntryPoint": "index.html",
+  "localAppUrl": "http://localhost:3000",
+  "logoPath": "src/assets/app_logo.png",
+  "connectionReferences": {
+    "810a2b32-6752-4f35-a9a7-c38a02bed148": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sql",
+      "displayName": "SQL Server",
+      "dataSources": [
+        "dms_cem",
+        "_810a2b32_6752_4f35_a9a7_c38a02bed148_sp",
+        "newtripsview_cem_unfiltered",
+        "livedmsview_cem",
+        "vw_livedms_truckdriverhelper_pairing",
+        "dms_attendancelogs",
+        "livevehicleassignmentlistview",
+        "livedriverdispatchedlist_all",
+        "action_logs_history",
+        "liveactionlogsview",
+        "vw_source_list_cem",
+        "live_latestfuelrequests",
+        "dms_tripfuelrequestslist",
+        "vw_fct_routenodelist",
+        "chatmessages",
+        "userchannelreadstatus",
+        "triptasktracker",
+        "vw_employeeservedtodaycount"
+      ],
+      "authenticationType": "sqlAuthentication",
+      "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
+      "dataSets": {
+        "localhost,DISPATCH_APP_DMS": {
+          "dataSources": {
+            "dms_cem": {
+              "tableName": "DMS_CEM"
+            },
+            "_810a2b32_6752_4f35_a9a7_c38a02bed148_sp": {},
+            "newtripsview_cem_unfiltered": {
+              "tableName": "NewTripsView_CEM_unfiltered"
+            },
+            "livedmsview_cem": {
+              "tableName": "[dbo].[LiveDMSView_CEM]"
+            },
+            "vw_livedms_truckdriverhelper_pairing": {
+              "tableName": "[dbo].[vw_LiveDMS_TruckDriverHelper_Pairing]"
+            },
+            "dms_attendancelogs": {
+              "tableName": "[dbo].[DMS_AttendanceLogs]"
+            },
+            "livevehicleassignmentlistview": {
+              "tableName": "[dbo].[LiveVehicleAssignmentLIstView]"
+            },
+            "livedriverdispatchedlist_all": {
+              "tableName": "[dbo].[LiveDriverDispatchedList_All]"
+            },
+            "action_logs_history": {
+              "tableName": "[dbo].[Action_Logs_History]"
+            },
+            "liveactionlogsview": {
+              "tableName": "[dbo].[LiveActionLogsView]"
+            },
+            "vw_source_list_cem": {
+              "tableName": "[dbo].[vw_SOURCE_LIST_CEM]"
+            },
+            "live_latestfuelrequests": {
+              "tableName": "[dbo].[Live_LatestFuelRequests]"
+            },
+            "dms_tripfuelrequestslist": {
+              "tableName": "[dbo].[DMS_TripFuelRequestsList]"
+            },
+            "vw_fct_routenodelist": {
+              "tableName": "[dbo].[vw_FCT_RouteNodeList]"
+            },
+            "chatmessages": {
+              "tableName": "[dbo].[ChatMessages]"
+            },
+            "userchannelreadstatus": {
+              "tableName": "[dbo].[UserChannelReadStatus]"
+            },
+            "triptasktracker": {
+              "tableName": "[dbo].[TripTaskTracker]"
+            },
+            "vw_employeeservedtodaycount": {
+              "tableName": "[dbo].[vw_EmployeeServedTodayCount]"
+            }
+          }
+        }
+      }
+    },
+    "cb93bf16-92d5-4e6c-b723-4da04b17fda0": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "displayName": "SharePoint",
+      "dataSources": [
+        "gsdc_accounts",
+        "dms_attachments",
+        "fct2",
+        "gsdc_attendance"
+      ],
+      "dataSets": {
+        "https://gsdcph.sharepoint.com": {
+          "dataSources": {
+            "gsdc_accounts": {
+              "tableName": "GSDC_Accounts"
+            },
+            "fct2": {
+              "tableName": "fct2"
+            },
+            "gsdc_attendance": {
+              "tableName": "GSDC_Attendance"
+            }
+          }
+        },
+        "https://gsdcph.sharepoint.com/sites/ProjectsDevelopments": {
+          "dataSources": {
+            "dms_attachments": {
+              "tableName": "DMS_Attachments"
+            }
+          }
+        }
+      }
+    },
+    "a4e987e4-c307-462b-8d80-24df123d4df7": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sql",
+      "displayName": "SQL Server",
+      "dataSources": [
+        "fctfinal"
+      ],
+      "authenticationType": "windowsAuthentication",
+      "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/aa7b4e76c3b448aaa2a0ea48162d590b",
+      "dataSets": {
+        "localhost,FCT_Reporting": {
+          "dataSources": {
+            "fctfinal": {
+              "tableName": "[dbo].[fctFinal]"
+            }
+          }
+        }
+      }
+    },
+    "d32bf0ec-b272-47d1-bee1-9557b6916c1d": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sql",
+      "displayName": "SQL Server",
+      "dataSources": [
+        "headtosheet"
+      ],
+      "authenticationType": "windowsAuthentication",
+      "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/cbebab804a7e4813b1ba4cedb219ed47",
+      "dataSets": {
+        "localhost,TMS_APP": {
+          "dataSources": {
+            "headtosheet": {
+              "tableName": "[dbo].[HeadToSheet]"
+            }
+          }
+        }
+      }
+    }
+  },
+  "databaseReferences": {}
+}

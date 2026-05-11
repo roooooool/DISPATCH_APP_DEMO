@@ -1,0 +1,836 @@
+.task-tracker-container {
+  display: flex;
+  align-items: center;
+}
+
+.tracker-icon-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-bg); /* Your Navy Blue */
+}
+
+.tracker-icon-btn:hover, .tracker-icon-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #3a4efc; /* Primary 2nd Blue */
+}
+
+/* Modal Styling */
+.task-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+.task-modal-content {
+  background: white;
+  width: 500px;
+  max-width: 90vw;
+  border-radius: 12px; /* Gentle design */
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  /* Imitating gradient outline */
+  border: 2px solid transparent;
+  background-image: linear-gradient(white, white), 
+                    linear-gradient(135deg, #000080, #ff0000); /* Navy to Red gradient */
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.task-modal-header {
+  background: #000080; /* Navy Primary */
+  color: white;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.close-btn:hover {
+  opacity: 1;
+  color: #ff0000; /* Red Accent */
+}
+
+.task-modal-body {
+  padding: 24px;
+  min-height: 200px;
+}
+
+.placeholder-text {
+  color: #666;
+  text-align: center;
+  font-style: italic;
+}
+
+
+.task-manager-layout {
+  display: flex;
+  height: 100%; /* Adjust as needed */
+  background: white;
+  flex: 1;
+}
+
+
+/* Navy (Primary), White (BG), Red (Accent) and Rounded Corners */
+.tracker-modal-theme {
+  border-radius: 12px !important;
+  overflow: hidden;
+  border: 1px solid #3a4efc !important; /* Your primary 2nd blue */
+}
+
+.task-tracker-header {
+  background: #000080; /* Navy */
+  color: white;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-tracker-body {
+  padding: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: white;
+
+  flex: 1;
+}
+
+.task-tracker-content-container {
+  padding: 12px;
+  max-height: 60vh;
+
+  flex: 1;
+}
+
+.trip-cascade-item {
+  margin-bottom: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px; /* Gentle design */
+  overflow: hidden;
+}
+
+.trip-cascade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: color #f8f9fa;
+  cursor: pointer;
+  transition: all 0.3s ease; /* Gentle transition for color changes */
+  position: relative;
+}
+
+.trip-cascade-header:hover {
+  background: #f0f2ff;
+}
+
+.trip-cascade-header.expanded {
+  border-bottom: 1px solid #e0e0e0;
+  background: #f0f2ff;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+.header-right {
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Spacing between duration, stats, and button */
+}
+
+.completion-duration {
+    font-size: 0.85rem;
+    color: #3a4efc; /* Your primary 2nd blue */
+    font-weight: 500;
+    opacity: 0.85;
+    background: rgba(58, 78, 252, 0.08); /* Very light blue tint */
+    padding: 2px 8px;
+    border-radius: 12px; /* Gentle design */
+    white-space: nowrap;
+}
+
+.trip-oe-text {
+  font-weight: 700;
+  color: #000080;
+}
+
+.trip-progress-pill {
+  font-size: 11px;
+  background: #3a4efc;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.completion-stats {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+}
+
+.trip-cascade-content {
+  padding: 8px 12px 12px 35px;
+  background: white;
+}
+
+.task-sub-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: #555;
+}
+
+.task-sub-item.done {
+  color: #000080;
+}
+
+.icon-done { color: #28a745; }
+.icon-missed { color: var(--color-range); }
+.icon-pending { color: #ccc; }
+
+.done-tag {
+  font-size: 11px;
+  color: #28a745;
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+
+/* Container Wrapper */
+.task-tracker-wrapper {
+  display: flex;
+  flex-direction: column;
+  background: #fcfcfc;
+  height: 100%;
+}
+
+/* Professional Banner */
+.task-manager-banner {
+  background: #000080; /* Navy Primary */
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid #ff0000; /* Red Accent Sub-line */
+}
+
+.banner-main {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.icon-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title-group h2 {
+  margin: 0;
+  color: white;
+  font-size: 1.4rem;
+  letter-spacing: 0.5px;
+}
+
+.title-group .subtitle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+}
+
+.banner-stats {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px 16px;
+  margin-right: 10%;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: white;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* Sync Status Bar */
+.task-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px;
+  background: #f0f2ff;
+  border-bottom: 1px solid #e0e4ff;
+}
+
+.sync-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #3a4efc; /* Primary 2nd Blue */
+  font-weight: 600;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #3a4efc;
+  border-radius: 50%;
+  animation: pulse-animation 2s infinite;
+}
+
+.last-updated-text {
+  font-size: 0.75rem;
+  color: #888;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+}
+
+@keyframes pulse-animation {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(58, 78, 252, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(58, 78, 252, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(58, 78, 252, 0); }
+}
+
+
+.tracker-icon-btn:hover {
+  background: rgba(58, 78, 252, 0.1); /* Gentle primary blue tint */
+}
+
+.icon-badge-container {
+  position: relative;
+  display: inline-flex;
+  padding: 2px;
+}
+
+.icon-notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background-color: #ff0000; /* Your Red Accent */
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid white; /* Makes it pop against the icon */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badge-pop {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+.sync-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #3a4efc;
+  font-weight: 600;
+}
+
+/* Refresh Button Styles */
+.manual-refresh-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #3a4efc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  margin-left: 4px;
+}
+
+.manual-refresh-btn:hover {
+  background: rgba(58, 78, 252, 0.1);
+  color: #000080;
+}
+
+.manual-refresh-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Rotation Animation */
+.manual-refresh-btn.spinning svg {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+
+/* The wrapper handles the actual height transition */
+.trip-cascade-transition-wrapper {
+  display: grid;
+  grid-template-rows: 0fr; /* Start collapsed */
+  transition: grid-template-rows 0.3s ease-out; /* Gentle transition */
+  overflow: hidden;
+  background: #fdfdfd;
+}
+
+.trip-cascade-transition-wrapper.is-open {
+  grid-template-rows: 1fr; /* Expand to content height */
+}
+
+/* The content inside needs min-height: 0 to work with the grid trick */
+.trip-cascade-content {
+  min-height: 0; 
+  padding: 0 40px; /* Adjust padding to line up with header text */
+  border-left: 2px solid #3a4efc; /* Primary 2nd Blue accent line */
+  margin-left: 28px;
+  margin-bottom: 0px;
+  transition: padding 0.3s ease, margin 0.3s ease;
+}
+
+/* Adjust padding/margins when open for better spacing */
+.trip-cascade-transition-wrapper.is-open .trip-cascade-content {
+  padding-top: 10px;
+  padding-bottom: 15px;
+}
+
+/* Smooth Rotation for the Chevron */
+.trip-cascade-header svg {
+  transition: transform 0.2s ease;
+}
+
+.trip-cascade-header.expanded svg {
+  color: #3a4efc; /* Color shift when active */
+}
+
+
+/* Left Sidebar Tabs */
+.task-filter-tabs {
+  width: 180px;
+  background: #f8f9fa;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  padding: 15px 10px;
+  gap: 8px;
+  height: 100%;
+}
+
+.filter-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 8px; /* Gentle design */
+  text-align: left;
+  font-size: 0.85rem;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.filter-tab-btn:hover {
+  background: rgba(58, 78, 252, 0.05);
+  color: #3a4efc;
+}
+
+/* Active State - Navy Blue Primary */
+/* Active State - Navy Blue Primary */
+.filter-tab-btn.active {
+  background: #000080; 
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 128, 0.2);
+}
+
+.tab-count {
+  font-size: var(--font-size-sm);
+  background: var(--color-accent);
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: var(--color-text-2)
+}
+
+.tab-count.hide {
+  display: none;
+}
+
+.active .tab-count {
+  background: color-mix(in srgb, var(--color-bg) , transparent 80%);
+  color: var(--color-text-2)
+}
+
+
+
+
+/* The Progress Bar Container */
+.header-progress-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; /* Thin subtle bar */
+  background: transparent;
+  z-index: 1; /* Keep it behind text */
+}
+
+/* The Green Fill */
+.header-progress-fill {
+  height: 100%;
+  background: color-mix(in srgb, var(--color-border-success), var(--color-bg) 60%); /* Success Green */
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.5;
+}
+
+/* 100% Complete State */
+.trip-cascade-header.fully-complete {
+  background: color-mix(in srgb, var(--color-border-success), var(--color-bg) 40%); /* Very light green background */
+  border-bottom: 1px solid var(--color-border-success);
+}
+
+/* Change the border of the parent item when complete */
+.fully-complete.trip-cascade-header {
+  /* This targets the header specifically, but to get the outer border: */
+  box-shadow: inset 0 0 0 1px var(--color-border-success); 
+}
+
+/* If the whole row container needs a green border */
+.trip-cascade-item:has(.fully-complete) {
+  border-color: var(--color-border-success);
+}
+
+.fully-complete .trip-oe-text {
+  color: #1b5e20; /* Darker green for text readability */
+}
+
+.fully-complete .header-progress-fill {
+  opacity: 1;
+  height: 100%; /* Optional: make it full height or keep it as a bottom bar */
+}
+
+.go-to-trip-btn {
+  margin-left: 12px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  /*border: 1px solid #3a4efc;*/
+  background: var(--color-bg);
+  color: var(--color-primary-3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2; /* Ensure it stays above the progress background */
+}
+
+.go-to-trip-btn:hover {
+  background: var(--color-primary-3);
+  color: var(--color-bg);
+  box-shadow: 0 2px 6px rgba(58, 78, 252, 0.3);
+  border-color: transparent;
+}
+
+/* If the row is fully complete, we can make the button red to stand out as a 'Final Review' */
+.fully-complete .go-to-trip-btn {
+  background: var(--color-green);
+  color: var(--color-text-2);
+}
+
+.fully-complete .go-to-trip-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-text-2);
+}
+
+
+
+.task-search-container {
+  
+  position: sticky;
+  padding: 3px 3px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-bg);
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-blue);
+  border-radius: 8px; /* Gentle rounded corners */
+  padding: 0 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+/* Gradient outline effect on focus as requested */
+.search-input-wrapper:focus-within {
+  border-color: var(--color-primary-3);
+  background: var(--color-bg);
+  box-shadow: 0 0 0 2px rgba(58, 78, 252, 0.1);
+}
+
+.task-search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 3px 8px;
+  font-size: 0.9rem;
+  outline: none;
+  color: var(--color-primary); /* Navy blue text */
+}
+
+.search-icon {
+  color: var(--color-muted);
+}
+
+.clear-search {
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.clear-search:hover {
+  color: #ff0000; /* Red accent on hover */
+}
+
+.task-body-header {
+  flex-shrink: 0; /* Prevents the search bar from squishing */
+  background: var(--color-bg);
+  z-index: 5;
+  border-bottom: 1px solid var(--color-bg);
+}
+
+/* Red accent for disapproved items */
+.task-sub-item.invalid {
+    color: var(--color-accent-2); /* Bright red for visibility */
+}
+
+.task-sub-item.missed {
+    color: var(--color-orange); /* Bright red for visibility */
+}
+
+.icon-invalid {
+    color: var(--color-accent-2); /* Your theme's red accent */
+    margin-right: 8px;
+}
+
+.invalid-tag {
+    font-size: 0.75rem;
+    font-style: italic;
+    margin-left: 5px;
+    color: var(--color-accent-2);
+}
+
+/* Optional: Add a gentle strike-through or dimming if desired */
+.task-sub-item.invalid .task-label {
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+
+/* The specific invalid message styling */
+.task-error-message {
+    font-size: 0.7rem;
+    background-color: color-mix(in srgb, var(--color-accent-2), transparent 90%); /* Very light red bg */
+    color: var(--color--accent-2); /* Your theme's red accent */
+    padding: 2px 8px;
+    border-radius: 10px; /* Gentle design rounded corners */
+    margin-left: 8px;
+    border: 1px solid var(--color-border-danger);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.task-done-message {
+    font-size: 0.7rem;
+    background-color: color-mix(in srgb, var(--color-green), transparent 90%); /* Very light red bg */
+    color: var(--color-green); /* Your theme's red accent */
+    padding: 2px 8px;
+    border-radius: 10px; /* Gentle design rounded corners */
+    margin-left: 8px;
+    border: 1px solid var(--color-border-success);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.task-missing-message {
+    font-size: 0.7rem;
+    background-color: color-mix(in srgb, var(--color-orange), transparent 90%); /* Very light red bg */
+    color: var(--color-orange); /* Your theme's red accent */
+    padding: 2px 8px;
+    border-radius: 10px; /* Gentle design rounded corners */
+    margin-left: 8px;
+    border: 1px solid var(--color-border-warning);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Optional: Subtle animation to catch the dispatcher's eye */
+.task-sub-item.invalid {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-5px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.pending-filter-container {
+    position: relative;
+    margin-left: 10px;
+}
+
+.pending-filter-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 15px;
+    height: 38px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.pending-filter-trigger.active {
+    border-color: #3a4efc;
+    color: #3a4efc;
+    font-weight: 600;
+}
+
+.filter-badge {
+    background: #ff4d4d; /* Red Accent */
+    color: white;
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 0.7rem;
+}
+
+.filter-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    width: 200px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    z-index: 100;
+    padding: 10px;
+    border: 1px solid #eee;
+}
+
+.dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #666;
+}
+
+.dropdown-header button {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    cursor: pointer;
+    font-size: 0.7rem;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    padding: 8px 5px;
+    cursor: pointer;
+    gap: 10px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.filter-option:hover {
+    background: #f8f9ff;
+}
+
+.filter-option input {
+    cursor: pointer;
+}
+
+.option-label {
+    font-size: 0.85rem;
+    color: #444;
+}
+
+.filter-dropdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99;
+}

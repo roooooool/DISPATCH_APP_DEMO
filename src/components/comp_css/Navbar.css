@@ -1,0 +1,244 @@
+.main-navbar {
+  width: 100%;
+  height: 70px;
+  
+  /* GENTLE NAVY TO RED GRADIENT */
+  /* Starts with Navy on top-left, ends with Red on bottom-right */
+  /*background: linear-gradient(135deg, #092162 0%, #8b0000 100%);*/
+  background: var(--color-primary);
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30px;
+  
+  /* Subtle Shadow for Depth */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  
+  /* Fixed positioning logic */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  
+  /* Border for extra definition */
+  border-bottom: 3px solid var(--color-primary);
+}
+/* --- LEFT SIDE: PROFILE --- */
+.nav-profile-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  position: relative;
+  padding: 20px 15px;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+  
+}
+
+.nav-profile-section:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* The Slanted Red Streak */
+.nav-divider-streak {
+  position: absolute;
+  right: 10px;
+  /*top: 15%;*/
+  height: 100%; /* Not full height for a cleaner look */
+  width: 4px;
+  background-color: var(--color-accent); /* Your Dark Red */
+  transform: skewX(-25deg); /* This creates the slant */
+  border-radius: 2px;
+  box-shadow: 2px 0 8px rgba(139, 0, 0, 0.3); /* Subtle red glow */
+}
+
+/* Optional: Make the streak "pulse" or glow on hover */
+.nav-profile-section:hover .nav-divider-streak {
+  background-color: #ff3131; /* Brighter red on hover */
+  width: 5px;
+  transition: all 0.3s ease;
+}
+
+.nav-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.nav-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-username {
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.nav-position {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- DROPDOWN --- */
+.nav-dropdown {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  background: white;
+  min-width: 180px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.nav-dropdown button {
+  padding: 10px 15px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.nav-dropdown button:hover {
+  background: #f1f5f9;
+}
+
+.nav-dropdown .logout-btn {
+  color: var(--color-accent); /* Red */
+  font-weight: 700;
+}
+
+.nav-dropdown hr {
+  margin: 5px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+/* --- RIGHT SIDE: LINKS --- */
+.nav-right-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* spacing between nav items and bell */
+}
+
+.nav-icon-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.nav-icon-button:hover {
+  background-color: var(--color-primary-hover-light);
+}
+
+.nav-links {
+  display: flex;
+  gap: 10px;
+}
+
+.nav-item {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-item:hover {
+  background: var(--color-accent); /* Red Accent */
+  transform: translateY(-2px);
+}
+
+.nav-item.active {
+  background: #000080; /* Navy Blue */
+  color: white;
+  border-bottom: 3px solid #FF0000; /* Red Accent line */
+  font-weight: bold;
+}
+
+/* --- MOBILE & RESPONSIVE --- */
+.mobile-menu-toggle {
+  display: none; /* Hidden by default */
+  cursor: pointer;
+  color: white;
+}
+
+.mobile-nav-menu {
+  display: none; /* Hidden by default */
+}
+
+.nav-right-section {
+  gap: 15px;
+}
+
+@media (max-width: 768px) {
+  .main-navbar {
+    padding: 0 15px;
+  }
+
+  .nav-links {
+    display: none; /* Hide desktop links */
+  }
+
+  .mobile-menu-toggle {
+    display: block; /* Show hamburger icon */
+  }
+
+  .nav-right-section {
+    gap: 15px;
+  }
+
+  .mobile-nav-menu {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 70px; /* Below navbar */
+    left: 0;
+    right: 0;
+    background: var(--color-primary);
+    padding: 10px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 999;
+  }
+
+  .mobile-nav-menu .nav-item {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-nav-menu .nav-item:last-child {
+    border-bottom: none;
+  }
+
+  .nav-user-info .nav-position {
+    display: none; /* Hide position on small screens */
+  }
+
+  .nav-username {
+    font-size: 0.9rem;
+  }
+}

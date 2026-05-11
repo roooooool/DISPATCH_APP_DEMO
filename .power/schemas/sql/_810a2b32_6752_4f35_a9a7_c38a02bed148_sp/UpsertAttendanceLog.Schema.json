@@ -1,0 +1,49 @@
+{
+  "name": "[dbo].[UpsertAttendanceLog]",
+  "title": "[dbo].[UpsertAttendanceLog]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "EmployeeName": {
+          "title": "EmployeeName",
+          "type": "string"
+        },
+        "EmployeeID": {
+          "title": "EmployeeID",
+          "type": "string"
+        },
+        "AttendanceDate": {
+          "title": "AttendanceDate",
+          "type": "string"
+        },
+        "AttendanceStatus": {
+          "title": "AttendanceStatus",
+          "type": "string"
+        },
+        "OE": {
+          "title": "OE",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

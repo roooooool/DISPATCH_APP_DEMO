@@ -1,0 +1,382 @@
+.chatbox-container {
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--color-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 550px; /* Increased width for sidebar */
+    max-width: 90vw;
+    height: 600px;
+    max-height: 80vh;
+    display: flex; /* Changed to flex */
+    flex-direction: row; /* Sidebar and main content side-by-side */
+    border: 1px solid var(--color-border);
+    z-index: 1000;
+    overflow: hidden; /* Prevent content from spilling out */
+    transition: width 0.3s ease, height 0.3s ease; /* Smooth transition */
+  }
+
+  /* Maximized State */
+.chatbox-container.maximized {
+    /* Center it on screen */
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important; /* Perfect centering */
+    
+    /* Responsive sizing (gentle gap from edges) */
+    width: 95vw !important;
+    height: 90vh !important;
+    
+    border-radius: 12px; /* Maintain your gentle design */
+    z-index: 9999;
+    transition: all 0.3s ease-in-out;
+}
+
+.chatbox-maximized-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;    /* Vertical center */
+    justify-content: center; /* Horizontal center */
+    background: rgba(0, 0, 30, 0.4); /* Slightly dark Navy tint */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+}
+
+
+
+
+  .chatbox-sidebar {
+    width: 150px;
+    background-color: var(--color-bg-blue);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chatbox-sidebar-header {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .chatbox-sidebar-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+  }
+
+  .chatbox-channels {
+    list-style: none;
+    padding: 0.5rem 0;
+    margin: 0;
+    overflow-y: auto;
+  }
+
+  .channel-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    transition: background-color 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .channel-item:hover {
+    background-color: var(--color-primary-hover-light);
+  }
+
+  .channel-item.active {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: bold;
+  }
+
+  .unread-badge {
+    background-color: var(--color-accent);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .chatbox-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chatbox-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    cursor: move; /* Indicates the header is draggable */
+  }
+  
+  .chatbox-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--color-text);
+  }
+
+  .chatbox-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .chatbox-control-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text);
+    padding: 0.25rem;
+    border-radius: 4px;
+  }
+
+  .chatbox-control-btn:hover {
+    background-color: var(--color-primary-hover-light);
+  }
+  
+  .chatbox-body {
+    flex: 1;
+    flex-grow: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* Space between messages */
+  }
+  
+  .chat-message {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+    padding: 0.6rem 0.9rem;
+    border-radius: 12px;
+    background-color: var(--color-bg-blue);
+    align-self: flex-start;
+    word-wrap: break-word;
+    position: relative;
+    animation: pop-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .chat-message.mine {
+    align-self: flex-end;
+    background-color: var(--color-primary);
+    color: white;
+  }
+
+  .message-sender {
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+    color: var(--color-text-secondary);
+  }
+
+  .chat-message.mine .message-sender {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .message-text {
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .message-time {
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+    align-self: flex-end;
+    margin-top: 0.3rem;
+  }
+
+  .chat-message.mine .message-time {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .skeleton-bubble {
+    height: 40px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, var(--skeleton-bg-start, #f0f0f0) 25%, var(--skeleton-bg-mid, #e0e0e0) 50%, var(--skeleton-bg-start, #f0f0f0) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+  }
+
+  .skeleton-bubble.mine {
+      align-self: flex-end;
+      width: 60%;
+  }
+
+  .skeleton-bubble.theirs {
+      align-self: flex-start;
+      width: 70%;
+  }
+
+  @keyframes skeleton-loading {
+      0% {
+          background-position: 200% 0;
+      }
+      100% {
+          background-position: -200% 0;
+      }
+  }
+
+  /* Message Statuses */
+  .chat-message.sending {
+    opacity: 0.6;
+  }
+
+  .chat-message.failed {
+    background-color: #5c2a2a;
+    border: 1px solid #ff5c5c;
+  }
+
+  .message-error {
+    font-size: 0.75rem;
+    color: #ffc4c4;
+    margin-top: 0.25rem;
+    cursor: pointer;
+  }
+
+  @keyframes pop-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    80% {
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .chat-message {
+    animation: pop-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+  
+  .chatbox-footer {
+    display: flex;
+    padding: 1rem;
+    border-top: 1px solid var(--color-border);
+    gap: 0.5rem;
+  }
+  
+  .chatbox-footer input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background-color: var(--color-bg-input);
+    color: var(--color-text);
+  }
+  
+  .chatbox-footer button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: var(--color-primary);
+    color: var(--color-bg);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .chatbox-footer button:hover {
+    background-color: var(--color-primary-hover);
+  }
+
+  .chatbox-minimized {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: var(--color-primary);
+    color: var(--color-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+  }
+
+  /* The Notification Badge */
+.chatbox-minimized.has-unread::after {
+  content: '';
+  position: absolute;
+  top: 5%;
+  right: 5%;
+  width: 12px;
+  height: 12px;
+  background-color: var(--color-accent); /* Your Red Accent */
+  /*border: 2px solid var(--color-bg);  /* White border to make it "pop" against the bg */
+  border-radius: 50%;        /* Perfect circle */
+  
+  /* Animation to draw attention (optional but nice for UX) */
+  box-shadow: 0 0 8px var(--color-accent);
+  animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-glow-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 4px var(--color-accent);
+  }
+  50% {
+    transform: scale(1.2);
+    /* Increase glow spread and intensity at the peak */
+    box-shadow: 0 0 12px var(--color-accent), 0 0 20px var(--color-accent);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 4px var(--color-accent);
+  }
+}
+
+.chatbox-minimized:hover {
+  transform: scale(1.05);
+}
+
+/* Custom styling for the [TRIP:...] mentions */
+.chat-mention-trip {
+    color: var(--color-primary); /* Your Red Accent */
+    font-weight: 800; /* Bold as requested */
+    cursor: pointer;
+    background: rgba(58, 78, 252, 0.1); /* Subtle Navy Blue tint */
+    padding: 2px 6px;
+    border-radius: 4px; /* Gentle rounded corners */
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.chat-mention-trip.mine {
+  color: var(--color-bg-blue) !important;
+}
+
+.chat-mention-trip:hover {
+    background: #3a4efc; /* Solid Navy on hover */
+    color: #ffffff; /* White text on hover */
+    text-decoration: none;
+    transform: scale(1.05);
+}
+
+/* Ensure the message text handles inline-blocks correctly */
+.message-text {
+    line-height: 1.5;
+    word-wrap: break-word;
+}

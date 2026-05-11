@@ -1,0 +1,1624 @@
+/* Banner message for table feedback */
+.table-banner-message {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--table-theme, #1e293b) 100%, var(--color-bg) 10%);
+  border: 1px solid var(--color-accent-light);
+  color: var(--color-bg);
+  padding: 10px 32px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 #0002;
+  font-weight: 600;
+  font-size: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.5s;
+  display: block;
+}
+.table-banner-message.show {
+  opacity: 1;
+}
+.table-banner-message.hidden {
+  display: none;
+}
+@media (max-width: 1024px) {
+  .filters-collapse-toggle {
+    display: block !important;
+    background: red;
+    color: var(--color-bg);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-align: center; 
+    cursor: pointer;
+    font-weight: 600;
+     font-size: var(--font-size-title);
+    user-select: none;
+    transition: background 0.2s;
+  }
+  .filters-collapse-toggle:active {
+    background: var(--color-bg-hover);
+  }
+  .ribbon-filters-area {
+    transition: max-height 0.3s, opacity 0.3s;
+    overflow: hidden;
+  }
+}
+@media (max-width: 1024px) {
+  .filters-collapse-toggle {
+    display: none !important;
+  }
+}
+.table-control-ribbon {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px;
+  background: var(--color-bg-blue) !important;
+}
+
+.ribbon-left-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  flex: 1 1 0;
+}
+
+.ribbon-right-controls {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+
+/* Responsive styles for small screens */
+@media (max-width: 900px) {
+  .table-control-ribbon {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .ribbon-left-content,
+  .ribbon-right-controls {
+    align-items: stretch;
+    width: 100%;
+    gap: 12px;
+  }
+  .ribbon-left-content {
+    flex-direction: column;
+  }
+
+  .ribbon-left-content > * {
+    width: 100%;
+  }
+  .ribbon-filters-area,
+  .active-filters-ribbon,
+  .selection-controls,
+  .search-wrapper-gradient,
+  .ribbon-right-controls {
+    width: 100%;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+  }
+  .active-filters-ribbon {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+.table-container-responsive.is-scrollable-x {
+  overflow-x: scroll;
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Hide the bottom scrollbar visually, but keep it for sync */
+.table-container-responsive.is-scrollable-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* Style for the top scrollbar */
+.table-top-scrollbar {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 16px;
+  background: transparent;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.table-top-scrollbar::-webkit-scrollbar {
+  height: 10px;
+  background: #e0e0e0;
+}
+.table-top-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--table-theme);
+  border-radius: 6px;
+}
+.table-container-responsive {
+  width: 100%;
+  border-radius: 12px; /* Rounded corners */
+  border: 1px solid #e2e8f0;
+  background-color: var(--color-bg);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.gsdc-reusable-table {
+  width: 100%;
+  text-align: center;
+}
+
+
+.gsdc-reusable-table thead th {
+  position: sticky;
+  top: 0; /* Sticks to the top of .table-container-responsive */
+  z-index: 250; /* Higher than tbody cells */
+  background-color: var(--table-theme); /* Navy Blue */
+  color: var(--color-text-2);
+  /* Prevent background bleed-through on scroll */
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.1); 
+}
+
+.gsdc-reusable-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-darkslategray);
+  font-size: var(--table-font-size, var(--font-size-base));
+  text-align: center;
+}
+
+.gsdc-reusable-table tr:hover {
+  background-color: var(--color-bg-blue);
+}
+
+
+
+.table-loader, .table-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Shimmer/Skeleton Effect */
+.skeleton-cell {
+  height: 20px;
+  width: 80%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-row td {
+  padding: 15px;
+}
+
+/* Entrance Animations */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Status Pill - Refined with Navy/Red theme hints */
+.status-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--color-bg-blue);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary); /* Navy Blue Text */
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.table-empty {
+  padding: 60px;
+  text-align: center;
+  background: var(--color-bg);
+  border: 2px dashed var(--color-border);
+  border-radius: 16px;
+  color: var(--color-muted);
+}
+
+/* Header Specifics */
+.gsdc-reusable-table th {
+  /* 1. Theme & Colors */
+  background-color: var(--table-theme) !important; /* Navy Blue Primary */
+  color: var(--color-text-2) !important;
+  
+  /* 2. Typography & Spacing */
+  padding: 12px 16px;
+  font-size: var(--table-font-size, var(--font-size-base));
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  
+  /* 3. Sticky Logic (Crucial for scrolling) */
+  position: sticky;
+  top: 0;
+  z-index: 105;
+  
+  /* 4. Gentle Design Borders */
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1); 
+  
+  /* 5. Interaction & Animation */
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  white-space: nowrap; /* Prevents header from wrapping weirdly */
+}
+
+.sortable-header:hover {
+  background-color: color-mix(in srgb, var(--table-theme-neon) 90%, black 99%) !important; /* Darker Navy on hover */
+}
+
+/* The Flexbox Magic */
+.header-content {
+  position: relative !important; /* CRITICAL: This is the anchor for the resizer */
+  display: flex !important;      /* Changed from inline-flex to flex */
+  align-items: center;
+  justify-content: center;
+  width: 100%;        /* Ensure it fills the entire TH */
+  height: 100%;
+  gap: 6px;
+}
+
+.sort-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  transition: color 0.2s;
+}
+
+.dim-icon {
+  opacity: 0.3;
+}
+
+/* Active Sorting State */
+.active-sort {
+  background-color: var(--table-theme ) !important;
+}
+
+.active-sort .sort-icon {
+  color: var(--color-accent-light); /* Red Accent for the active arrow */
+}
+
+/* Optional: Red underline for the specific column being sorted */
+.active-sort::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--color-accent-light);
+}
+
+
+.table-view-master-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+  width: 100%;
+  min-height: var(--table-min-height);
+  height: 100%;
+  z-index: 1;
+
+  background-color: /*var(--color-bg)*/ transparent !important;
+
+}
+
+
+/* Ensure the table container still looks good below it */
+.table-container-responsive {
+  border: 1px solid var(--color-bg-blue);
+  border-radius: 12px;
+  overflow: auto;
+  position: relative;
+}
+
+.table-empty-row {
+  text-align: center;
+  padding: 40px !important;
+  color: var(--color-darkslategray);
+  font-style: italic;
+}
+
+.drag-handle {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+  color: var(--color-bg);
+}
+
+.drag-handle:hover {
+  opacity: 1;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.clickable-header-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-grow: 1;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Space between handle and text */
+}
+
+/* Ensure the dragged header looks prominent */
+.sortable-header[style*="transform"] {
+  background-color: var(--table-theme) !important;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+
+.ribbon-left-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+/* Gradient outline imitation */
+.search-wrapper-gradient {
+    position: relative;
+    padding: 2px; /* The "border" thickness */
+    background: var(--table-gradient);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.search-inner-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 7px; /* Slightly smaller to fit inside */
+}
+
+.table-search-input {
+    border: none;
+    outline: none;
+    font-size: var(--font-size-base);
+    color: black;
+    width: 100%;
+    font-weight: 500;
+}
+
+.table-search-input::placeholder {
+    color: #94a3b8;
+}
+
+.clear-search-btn {
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s;
+}
+
+.clear-search-btn:hover {
+    color: var(--color-accent); /* Red accent on hover */
+}
+
+.no-results-cell {
+    text-align: center;
+    padding: 40px !important;
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+.table-pagination-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: var(--color-bg-blue);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--font-size-base);
+    color: var(--color-muted);
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-buttons button {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--color-primary);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.pagination-buttons button:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: var(--color-text-2);
+}
+
+.pagination-buttons button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-indicator input {
+    width: 40px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    margin: 0 4px;
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+.page-size-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.page-size-selector select {
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 2px 4px;
+    outline: none;
+    color: var(--color-primary);
+}
+
+.ribbon-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--color-bg-blue);
+    padding: 2px 12px;
+    border-radius: 8px;
+    /*border: 1px solid #ff0000;*/
+    min-width: 2px;
+}
+
+.pagination-compact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pagination-compact button {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    color: var(--color-primary);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.pagination-compact button:hover:not(:disabled) {
+    background: var(--color-bg-blue);
+}
+
+.pagination-compact button:disabled {
+    color: var(--color-muted);
+    cursor: not-allowed;
+}
+
+.page-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--color-muted);
+    margin: 0 4px;
+}
+
+.page-status input {
+    width: 32px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    text-align: center;
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    padding: 2px 0;
+}
+
+.vertical-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--color-border);
+}
+
+.page-size-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-size-selector select {
+    border: none;
+    background: transparent;
+    font-weight: 700;
+    color: var(--color-primary);
+    cursor: pointer;
+    outline: none;
+    font-size: 12px;
+}
+
+.rows-label {
+    font-size: var(--font-size-caption);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: color-mix(in srgb, var(--table-theme) 60%, var(--color-border));
+}
+
+.table-mini-info {
+    padding: 8px 16px;
+    font-size: var(--font-size-span);
+    color: var(--color-muted);
+    text-align: right;
+}
+
+.sortable-header {
+  position: relative;
+  overflow: hidden; /* Keeps the content inside the resized box */
+  min-width: 50px;
+  white-space: nowrap;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.col-resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+.col-resizer:hover, .col-resizer:active {
+  background: var(--table-theme-neon); /* Primary 2nd Blue */
+  width: 5px;
+}
+
+/* Ensure table-layout is fixed so widths are respected */
+.gsdc-reusable-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.gsdc-reusable-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 8px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--table-theme); /* Navy */
+}
+
+.action-btn:hover {
+    background: var(--color-bg-hover);
+    border-color: color-mix(in srgb, var(--table-theme), var(--color-bg) 15%);
+}
+
+.action-btn.save {
+    background: var(--table-theme);
+    color: var(--color-bg);
+    border: none;
+}
+
+.action-btn.save:hover {
+    background: color-mix(in srgb, var(--table-theme), var(--color-bg) 15%);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--table-theme), transparent 15%);
+}
+
+.action-btn.reset {
+    color: var(--color-accent); /* Red Accent */
+}
+
+.action-btn.reset:hover {
+    background: #fff1f1;
+    border-color: var(--color-accent);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-accent), transparent 15%);
+}
+
+.active-filters-ribbon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+    flex-wrap: wrap;
+    overflow: visible !important;
+    position: relative;
+    z-index: 20;
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.active-filters-ribbon::-webkit-scrollbar {
+    display: none; /* Keep it clean */
+}
+
+
+
+.chip-label {
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.chip-value {
+    color: var(--color-primary-2); /* Your 2nd Blue */
+}
+
+.chip-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    color: var(--color-muted);
+    transition: color 0.2s;
+}
+
+.chip-remove:hover {
+    color: var(--color-accent); /* Red Accent */
+}
+
+.filter-chip {
+    position: relative; /* Anchors the tooltip */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--color-bg);
+    border: 1px solid var(--table-theme);
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: help;
+    overflow: visible !important;
+    /* No high z-index needed here, the Ribbon parent handles it */
+}
+
+/* Hide custom tooltip by default */
+.chip-tooltip {
+    /* Visibility Logic */
+    visibility: hidden;
+    opacity: 0;
+    
+    /* Positioning */
+    position: absolute;
+    bottom: 130%; /* Clearly below the chip */
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    
+    /* Design */
+    background-color: var(--table-theme); /* Navy Blue */
+    color: var(--color-bg);
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    
+    /* The Fix: Since the Ribbon is 200, this 9999 is now effective */
+    z-index: 9999; 
+    
+    /* Effects */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease-out;
+    pointer-events: none;
+}
+
+.chip-tooltip-wew {
+
+    /* Visibility Logic */
+
+    visibility: hidden;
+    opacity: 0;
+
+    /* Positioning */
+
+    position: absolute;
+    top: 130%; /* Clearly below the chip */
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+
+    /* Design */
+
+    background-color: var(--table-theme); /* Navy Blue */
+    color: var(--color-bg);
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+
+   
+
+    /* The Fix: Since the Ribbon is 200, this 9999 is now effective */
+
+    z-index: 9999;
+
+   
+
+    /* Effects */
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease-out;
+    pointer-events: none;
+
+    overflow: visible !important;
+
+}
+
+
+
+/* Little arrow for the tooltip */
+
+.chip-tooltip-wew::after {
+
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--table-theme) transparent;
+
+}
+
+/* Little arrow for the tooltip */
+.chip-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--table-theme) transparent;
+}
+
+/* Show on hover */
+.filter-chip:hover .chip-tooltip-wew {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Show on hover */
+.filter-chip:hover .chip-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+/* Hover effect on chip itself */
+.filter-chip:hover {
+  filter: brightness(1.1); /* Your favorite neon boost */
+  box-shadow: 0 0 5px var(--color-accent);
+  margin-bottom: 30px;
+}
+
+.filter-chip:hover button {
+  color: var(--color-accent);
+}
+
+.clear-all-filters {
+    background: none;
+    border: none;
+    color: var(--color-muted);
+    font-size:  var(--font-size-base);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.clear-all-filters:hover {
+    color: var(--color-accent);
+}
+
+.ribbon-filters-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: 20px;
+    padding-left: 15px;
+    border-left: 1px solid var(--color-border); /* Subtle divider from search */
+}
+
+.ribbon-table-filter-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-primary);
+}
+
+.ribbon-filter-label {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: color-mix(in srgb, var(--table-theme) 60%, var(--color-border) 40%);
+    white-space: nowrap;
+}
+
+/* Adjust your existing filter-wrapper for ribbon use */
+.filter-wrapper {
+    position: relative;
+}
+
+.filter-trigger {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    color: var(--table-theme); /* Navy */
+    border-radius: 6px;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    transition: all 0.2s;
+}
+
+.filter-trigger.active {
+    background: var(--table-theme); /* Your 2nd Blue */
+    color: var(--color-bg);
+    border-color: color-mix(in srgb, var(--table-theme) 100%, var(--color-bg) 50%);
+}
+
+.filter-trigger:hover {
+    border-color: var(--table-hover); /* Red Accent */
+}
+
+/* Ensure dropdowns pop over the table */
+.filter-dropdown-content {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    z-index: 1000;
+    background: var(--color-bg);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    min-width: 180px;
+    max-height: 350px;
+    min-height: 30px;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+}
+
+/* --- THE STICKY HEADER --- */
+.filter-sticky-header {
+  position: sticky;
+  top: 0;
+  background: var(--color-bg);
+  z-index: 10;
+  padding: 2px;
+  display: flex;
+  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  
+  border-bottom: 1px solid #742121;
+}
+
+.filter-header {
+  font-weight: 800;
+  color: var(--table-theme); /* Navy Blue */
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+/* --- CLEAR LINK STYLE --- */
+.clear-filter-link {
+  background: transparent;
+  border: none;
+  color: var(--color-accent); /* Red Accent */
+  font-size: 0.60rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: opacity 0.2s;
+}
+
+.clear-filter-link:hover {
+  text-decoration: underline;
+  color: var(--color-bg);
+  background-color: var(--color-accent);
+  opacity: 0.8;
+}
+
+
+/* Gentle Design: Thin scrollbar */
+.filter-options-list::-webkit-scrollbar {
+  width: 6px;
+}
+.filter-options-list::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 10px;
+}
+
+/* 1. The Container Animation */
+.animate-slide-down {
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 2. Dropdown Header */
+.filter-header {
+    padding: 10px 14px;
+    font-size: var(--font-size-base);
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--color-primary-light);
+    border-bottom: 1px solid var(--color-border);
+    letter-spacing: 0.5px;
+}
+
+/* 3. The Scrollable List */
+.filter-options-list {
+    flex: 1;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 6px 0;
+}
+
+  /* 4. Individual Items */
+  .table-filter-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: var(--font-size-base);
+      color: var(--color-darkslategray) !important; /* Dark Slate Gray */
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1;
+  }
+
+  .table-filter-item:hover {
+      background: var(--color-bg-blue);
+  }
+
+  /* 5. Custom Checkbox Styling (Gentle Design) */
+  .table-filter-item input[type="checkbox"],
+  .table-filter-item input[type="radio"] {
+      accent-color: var(--color-primary-2); /* Your Primary 2nd Blue */
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+  }
+
+/* 6. Footer Button */
+.clear-filter-btn {
+    width: 100%;
+    padding: 8px;
+    background: var(--color-bg);
+    border: none;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-accent); /* Red Accent */
+    font-size: var(--font-size-span);
+    font-weight: 700;
+    cursor: pointer;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    transition: background 0.2s;
+}
+
+.clear-filter-btn:hover {
+    background: var(--color-accent);
+    color: var(--color-bg);
+}
+
+/* 7. Scrollbar for the list (Gentle/Thin) */
+.filter-options-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.filter-options-list::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 10px;
+}
+
+/* Container adjustments */
+.table-container-responsive.is-fit-x {
+    width: 100%;
+}
+
+.table-container-responsive.is-scrollable-x {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Table Layout adjustments */
+.gsdc-reusable-table.fixed-layout {
+    table-layout: fixed; /* Forces columns to fit inside the 100% width */
+    width: 100%;
+}
+
+.gsdc-reusable-table:not(.fixed-layout) {
+    table-layout: auto; /* Allows table to expand past container if needed */
+    min-width: 100%;
+}
+
+/* Scrollbar styling for a "gentle" design */
+.table-container-responsive::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+.table-container-responsive::-webkit-scrollbar-thumb {
+    background: var(--color-border); /* Soft gray */
+    border-radius: 10px;
+}
+
+.table-container-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--table-theme); /* Navy on hover */
+}
+
+.table-config-wrapper {
+  position: relative; /* Crucial for absolute positioning of the menu */
+  display: flex;
+  align-items: center;
+  height: auto;
+}
+
+.config-toggle-btn {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--table-theme); /* Navy Blue */
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.config-toggle-btn:hover, .config-toggle-btn.active {
+  background: var(--table-theme);
+  transform: scale(1.05);
+  color: var(--color-bg) !important;
+}
+
+/* Subtle spin animation for the gear when active */
+.spin-icon {
+  animation: rotateGear 2s infinite linear;
+}
+
+@keyframes rotateGear {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* The Collapsible Menu */
+.config-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--color-bg), transparent 50%);
+  z-index: 200;
+  min-width: 175px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--table-theme);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.action-item:hover {
+  background: var(--color-bg-hover);
+  color: color-mix(in srgb, var(--table-theme) 80%, black 90%); /* Hover to Navy */
+}
+
+/* Animation for the pop-in effect */
+.animate-pop-in {
+  animation: popIn 0.2s ease-out;
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.95) translateY(-10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Container for the loader to ensure it sticks to the top of the scroll area */
+.table-top-loader {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px; /* Thin and professional */
+  background:  var(--table-theme);
+  z-index: 120;
+  overflow: hidden;
+}
+
+/* The actual moving bar */
+.loader-progress-bar {
+  width: 100%;
+  height: 100%;
+  background: var(--table-gradient);
+  background-size: 200% 100%;
+  animation: table-loading-slide 1.5s infinite linear;
+  z-index: 100;
+}
+
+@keyframes table-loading-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Optional: Soften the table opacity while refreshing */
+.table-view-master-container.data-refreshing .gsdc-reusable-table {
+  opacity: 0.6;
+  filter: grayscale(0.5); /* Optional: adds a slight gray feel */
+  pointer-events: none;   /* Blocks clicks while loading */
+  transition: all 0.3s ease;
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    color: var(--navy-theme); /* Or white depending on your ribbon bg */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.refresh-btn:hover {
+    color: var(--color-accent); /* Red accent on hover */
+}
+
+.refresh-btn.spinning svg {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.gsdc-reusable-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Keep fixed to respect our calculated % precisely */
+}
+
+/* Ensure cells don't shrink smaller than their content if portion is small */
+.gsdc-reusable-table td, 
+.gsdc-reusable-table th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.filter-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border);
+  
+  padding: 4px 8px;
+  transition: border-color 0.2s;
+}
+
+.filter-search-container:focus-within {
+  border-color: var(--table-theme); /* Navy Blue */
+  background: var(--color-bg);
+}
+
+.filter-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  width: 100%;
+  color: var(--color-darkslategray);
+}
+
+.search-icon-dim {
+  color: var(--color-muted);
+}
+
+.clear-mini-search {
+  cursor: pointer;
+  color: var(--color-muted);
+}
+
+.clear-mini-search:hover {
+  color: var(--color-accent); /* Red Accent */
+}
+
+/* --- EMPTY STATE --- */
+.no-filter-results {
+  padding: 20px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+.table-row-interactive {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+/* Using a soft Navy-tinted highlight */
+.table-row-interactive:hover {
+  /* This lifts the dark navy into a lighter, more vibrant blue */
+  filter: brightness(0.9) saturate(1.1); 
+  
+  /* Optional: Add a subtle lift to make the row feel "closer" to the user */
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Slightly deeper highlight when pressing down */
+.table-row-interactive:active {
+  background-color: color-mix(in srgb, var(--table-theme), transparent 90%) !important;
+}
+
+/* Ensure skeleton rows don't show the pointer cursor */
+.skeleton-row {
+  cursor: default;
+}
+
+.selection-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-bg);
+  color: var(--table-theme);
+  border-color: var(--table-theme);
+  border-radius: 20px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.selection-toggle:hover {
+  border-color: var(--color-bg);
+  background: var(--table-theme);
+  color: var(--color-bg);
+}
+
+.selection-toggle.active {
+  border-color: var(--color-bg);
+  background: var(--table-theme);
+  color: var(--color-bg);
+}
+
+
+.row-selected {
+  background-color: color-mix(in srgb, var(--table-theme-neon) 30%, transparent 100%) !important;
+}
+
+.selection-count-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-bg);
+  color: var(--table-theme);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.clear-selection-icon {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.clear-selection-icon:hover {
+  opacity: 1;
+}
+
+/* --- SELECTION COLUMN (THIN) --- */
+.selection-col-header, 
+.selection-cell {
+  width: 45px;         /* Fixed thin width */
+  min-width: 45px;
+  max-width: 45px;
+  text-align: center;
+  padding: 0 !important; /* Remove bulk padding to keep it tight */
+  vertical-align: middle;
+}
+
+/* Ensure the checkbox is centered and uses your theme */
+.gsdc-checkbox {
+  cursor: pointer;
+  accent-color: var(--table-theme); /* Navy Blue */
+  width: 16px;
+  height: 16px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* --- SELECTED ROW STATE --- */
+
+/* Optional: A subtle red left-border indicator for selected rows */
+.row-selected td:first-child {
+  box-shadow: inset 4px 0 0 var(--color-secondary); /* Red Accent */
+}
+
+/* --- HIGHLIGHTED ROW (scrollTo) --- */
+.highlight-row {
+  border: 2px solid var(--color-border-row) !important;
+  background: var(--color-bg-info) !important;
+  z-index: 400;
+}
+.highlight-success {
+  border-color: var(--color-border-success) !important;
+  background: var(--color-bg-success) !important;
+}
+.highlight-warning {
+  border-color: var(--color-border-warning) !important;
+  background: var(--color-bg-warning) !important;
+}
+.highlight-info {
+  border-color: var(--color-border-info) !important;
+  background: var(--color-bg-info) !important;
+}
+.highlight-danger {
+  border-color: var(--color-border-danger) !important;
+  background: var(--color-bg-danger) !important;
+}
+
+/* --- SKELETON SYNC --- */
+.skeleton-cell.mini {
+  width: 20px;
+  height: 20px;
+  margin: 0 auto;
+  border-radius: 4px;
+}
+
+
+
+/* CUSTOM SCROLL BAR */
+
+.table-container-responsive {
+  overflow-y: auto;
+  scroll-behavior: smooth; /* Makes the content slide gently */
+  
+  /* Optimization for touch devices */
+  -webkit-overflow-scrolling: touch; 
+}
+
+/* Default State (Idle) */
+.table-container-responsive::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--table-theme), transparent 70%); /* Your Navy Blue */
+  border-radius: 10px;
+  transition: background 0.5s ease; /* Smooth transition */
+  
+}
+
+/* Active State (When Scrolling) */
+.table-container-responsive.is-scrolling::-webkit-scrollbar-thumb {
+  background: var(--table-theme); /* Your Red Accent */
+  transition: background 0.5s ease; /* Smooth transition */
+}
+
+/* Hover State (Optional: if they hover the scrollbar area) */
+.table-container-responsive::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--table-theme) 100%, var(--color-bg) 40%); /* Your Primary 2nd Blue */
+}
+
+/* Only triggers when clicking the bar */
+.table-container-responsive::-webkit-scrollbar-thumb:active {
+  background: var(--table-theme);
+}
+
+/* --- NUMBERING COLUMN (CELL & HEADER) --- */
+.numbering-cell, 
+.numbering-header {
+  width: 5%; /* Bumped to 25px for safety; 15px is too narrow for "10" or "20" */
+  white-space: nowrap;
+  min-width: max-content !important;
+
+
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: var(--font-size-span); /* Smaller font to fit the narrow width */
+  font-weight: 700;
+  padding: 0 8px !important; /* Remove padding to maximize space */
+  display: table-cell;
+  vertical-align: middle;
+  
+  /* Sticky Logic: Keeps the number visible during horizontal scroll */
+  position: sticky;
+  left: 0; 
+  z-index: 10;
+
+}
+
+/* Specific Header Styling (Navy) */
+th.numbering-header {
+  background-color: var(--table-theme) !important;
+  color: var(--color-bg) !important;
+  text-transform: uppercase;
+  z-index: 250; /* Higher than cell to stay above during scroll */
+  text-align: center !important;
+}
+
+.numbering-header .header-content {
+  display: flex;
+  justify-content: center; /* Centers horizontally in Flex */
+  align-items: center;     /* Centers vertically in Flex */
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.numbering-header span {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+}
+
+/* Specific Cell Styling (Muted) */
+td.numbering-cell {
+  /*background-color: #f9f9f9 !important; /* Very light gray to distinguish from data */
+  color: var(--table-theme);
+  opacity: 0.5; /* Keeps it subtle/gentle */
+  user-select: none; /* Prevent accidental highlighting of numbers */
+  width: auto;
+}
+
+td.numbering-cell.numbering-blur{
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  background: color-mix(in srgb, var(--color-bg), transparent 15%) !important;
+}
+
+td.cell.cell-blur {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  background: color-mix(in srgb, var(--color-bg), transparent 50%) !important;
+}
+
+
+@keyframes tableflex-text-background-glow {
+  0% { 
+    background-color: rgba(255, 240, 0, 0.3);
+    /*box-shadow: 0 0 8px #fff000;*/
+  }
+  20% { 
+    background-color: rgba(255, 240, 0, 0.7);
+    /*box-shadow: 0 0 18px #fff000;*/
+  }
+  80% { 
+    background-color: rgba(255, 240, 0, 0.7);
+    /*box-shadow: 0 0 18px #fff000;*/
+  }
+  100% { 
+    background-color: rgba(255, 240, 0, 0.3);
+    /*box-shadow: 0 0 8px #fff000;*/
+  }
+}
+
+.text-glow-wrapper {
+  display: inline-block; /* Essential to wrap only the text width */
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #000; /* High contrast for the yellow glow */
+  font-weight: 600;
+  animation: tableflex-text-background-glow 1s infinite ease-in-out;
+  line-height: 1;
+}

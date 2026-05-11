@@ -1,0 +1,49 @@
+{
+  "name": "[dbo].[sp_get_AggregatedAssigned_CountsByBU]",
+  "title": "[dbo].[sp_get_AggregatedAssigned_CountsByBU]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "colToGet": {
+          "title": "colToGet",
+          "type": "string"
+        },
+        "BU": {
+          "title": "BU",
+          "type": "string"
+        },
+        "FROM": {
+          "title": "FROM",
+          "type": "string"
+        },
+        "TO": {
+          "title": "TO",
+          "type": "string"
+        },
+        "transpose": {
+          "title": "transpose",
+          "type": "boolean"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}
