@@ -1840,7 +1840,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const disabledOEEntGrp = prog_verified;
     const disabledDoneGrp = prog_verified || prog_idx < 4 || !validateOE(formData).isValid;
 
-    const discrepancy = formData.QTYDelivered != null && formData.QTYWithdrawn != null ? formData.QTYDelivered - formData.QTYWithdrawn : 0;
+    const discrepancy = formData.QTYDelivered != null && formData.QTYWithdrawn != null ?  formData.QTYWithdrawn - formData.QTYDelivered : 0;
     return (
     <>
       <div className="order-dist-container animate-pop-in" style={style}>
@@ -2462,7 +2462,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   <div className="input-group">
                     <label>Actual Discrepancy</label>
                     <div className="gradient-input-wrapper">
-                      <input disabled={disabledDoneGrp} type="number" value={(formData.QTYWithdrawn_Actual || 0 )-(formData.QTYDelivered_Actual || 0)} />
+                      <input disabled={disabledDoneGrp} type="number" value={(formData.QTYDelivered_Actual || 0)-(formData.QTYWithdrawn_Actual || 0 )} />
                     </div>
                   </div>
 
