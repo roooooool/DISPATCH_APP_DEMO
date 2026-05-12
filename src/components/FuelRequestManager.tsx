@@ -384,6 +384,68 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
         setIsEditing(false); // Reset editing state on cancel
     };
 
+    const handleSave = async () => {
+        // Update status from 'New' to 'Pre-Request', otherwise keep current status
+        const updatedFormData = {
+            ...formData,
+            Frstatus: formData.Frstatus === 'New' ? 'Pre-New' : formData.Frstatus
+        };
+
+        setFormData(updatedFormData);
+
+        // Prepare the form submission with the updated status
+        const responseData = await uploadAttachments(tempFiles, updatedFormData.Id ? String(updatedFormData.Id) : undefined);
+        const attachmentID = (responseData as any)?.data?.createdID;
+        const tripID = tripData?.ID ? tripData.ID.toString() : undefined;
+
+        const cleanedFormData: FctFinal = {
+            Category: updatedFormData.Category || '',
+            Orderentryref: updatedFormData.Orderentryref || '',
+            Status: updatedFormData.Status || '',
+            Destination1: updatedFormData.Destination1 || '',
+            Destination2: updatedFormData.Destination2 || '',
+            Destination3: updatedFormData.Destination3 || '',
+            Destination4: updatedFormData.Destination4 || '',
+            Destination5: updatedFormData.Destination5 || '',
+            Stationdepot: updatedFormData.Stationdepot || '',
+            Currentlocation: updatedFormData.Currentlocation || '',
+            Head: updatedFormData.Head || '',
+            Headnumber: updatedFormData.Headnumber || '',
+            Plate: updatedFormData.Plate || '',
+            Brand: updatedFormData.Brand || '',
+            Wheelertype: updatedFormData.Wheelertype || '',
+            Trailer: updatedFormData.Trailer || '',
+            Platetrailer: updatedFormData.Platetrailer || '',
+            Type: updatedFormData.Type || '',
+            Classification: updatedFormData.Classification || '',
+            Axle: updatedFormData.Axle || '',
+            Subengine: updatedFormData.Subengine || '',
+            Compressor: updatedFormData.Compressor || '',
+            Requestedby: updatedFormData.Requestedby || '',
+            Businessunit: updatedFormData.Businessunit || '',
+            Remarks: updatedFormData.Remarks || '',
+            Frstatus: updatedFormData.Frstatus || 'Pre-New',
+            Fromdispapp: "Yes V2",
+            Driversname: updatedFormData.Driversname || '',
+            Ts1: updatedFormData.Ts1 || '',
+            Created: updatedFormData.Created || '',
+            Sukattank: updatedFormData.Sukattank || '',
+            Sukatcompressor: updatedFormData.Sukatcompressor || '',
+            Karga: updatedFormData.Karga || '',
+            Addblue: updatedFormData.Addblue || '',
+            Orderentrystatus: updatedFormData.Orderentrystatus || '',
+            Odometer: updatedFormData.Odometer || '',
+            SQLID: updatedFormData.SQLID || undefined,
+            Id: attachmentID
+        };
+
+        setValidationMessage('');
+        onFormSubmit?.(cleanedFormData, attachmentID, tripID);
+        updateTaskTracker();
+        // Stay on the form after saving
+        setIsEditing(true);
+    };
+
     const handleNewRequestClick = () => {
         setIsEditing(false); // No longer editing
         const newFormData = initialFormData || {};
@@ -1172,15 +1234,25 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                                         {noedit ? 'Go Back' : 'Cancel'}
                                     </button>
                                     {!noedit && 
-                                        <button 
-                                            type="submit" 
-                                            className={`fuel-manager-form-btn-primary`} 
-                                            disabled={!!validationMessage || hasSubmitted || !formData.Orderentryref}
-                                            style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                        >
+                                        <>
+                                            <button 
+                                                type="button" 
+                                                className="fuel-manager-form-btn-secondary" 
+                                                onClick={handleSave}
+                                                style={{backgroundColor: '#22c55e', color: 'white'}}
+                                            >
+                                                Save
+                                            </button>
+                                            <button 
+                                                type="submit" 
+                                                className={`fuel-manager-form-btn-primary`} 
+                                                disabled={!!validationMessage || hasSubmitted || !formData.Orderentryref}
+                                                style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                            >
                                                 {isEditing ? 'Update Fuel Request' : 'Submit Fuel Request'}
                                                 {hasSubmitted && (<Loader2 size={16} style={{animation: 'spin 1s linear infinite'}}/>)}
-                                        </button>
+                                            </button>
+                                        </>
                                     }
                                 </div>
                             </form>

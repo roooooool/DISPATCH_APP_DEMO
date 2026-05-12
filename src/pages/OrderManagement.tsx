@@ -390,9 +390,9 @@ const OrderManagement: React.FC = () => {
         console.log("Submitting new fuel request...");
         // 1. Set loading state
         setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, true);
-        let isCreate = formData.Frstatus === 'New';
+        let isCreate = formData.Frstatus === 'New' || formData.Frstatus === 'Pre-New';
         let isFRDisapproveUpdate = formData.Frstatus === 'FR Disapproved';
-        let createData: FctFinal = { ...formData, Id: Number(attachmentSPID) || 0, Frstatus: isCreate ? 'Request' : formData.Frstatus }; // Ensure the status is set to 'Request' for new submissions
+        let createData: FctFinal = { ...formData, Id: Number(attachmentSPID) || 0, Frstatus:  isCreate ? formData.Frstatus === 'Pre-New' ? 'Pre-Request' : 'Request' : formData.Frstatus }; // Ensure the status is set to 'Request' for new submissions
         let updateData: FctFinal  = { ...formData, Frstatus: 'Request', SQLID: undefined}; // For updates, only change status if it's a disapproval update
 
 
