@@ -160,7 +160,7 @@ const TripTaskRow = ({
 const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [taskList, setTaskList] = useState<any[]>([]);
-  const [editorList, setEditorList] = useState<any[]>([]);
+  const [editorMap, setEditorMap] = useState<Map<string, any>>(new Map());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -212,6 +212,8 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
   const fetchTasks = useCallback(async (isManualRefresh: boolean = false) => {
     if (!canFetch(FETCH_LOADING_KEYS.fetchTripTaskLists)) return;
 
+    console.log("Fetching tasks with isManualRefresh =", isManualRefresh);
+
     // Determine timestamp - if manual refresh, we set to 0 to bypass delta logic
     const latestTimestamp = !isManualRefresh && taskList.length > 0 
       ? Math.max(...taskList.map(t => t.LastUpdatedAsInt || 0)) 
@@ -219,6 +221,9 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
 
     const odataFilter = latestTimestamp > 0 
       ? `LastUpdatedAsInt gt ${latestTimestamp}` 
+      : '';
+    const editorFilter = latestTimestamp > 0 
+      ? `TimestampAsInt gt ${latestTimestamp}` 
       : '';
 
     const result = await ewulFetchAll<any>(
@@ -230,10 +235,11 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
 
     const resultEditor = await ewulFetchAll<any>(
       TripTaskEditorListService,
-      { filter: odataFilter, orderBy: ["LastUpdatedAsInt desc"] },
+      { filter: editorFilter, orderBy: ["TimestampAsInt desc"] },
       10000,
       'OE'
     );
+
 
     if (result && result.length > 0) {
       setTaskList(prevList => {
@@ -247,15 +253,19 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
     }
 
     if (resultEditor && resultEditor.length > 0) {
-      setEditorList(prevList => {
-        const editorMap = new Map();
-        // Create a unique key using OE and the Task name
-        prevList.forEach(ed => editorMap.set(`${ed.OE}_${ed.Task}`, ed));
-        resultEditor.forEach(ed => editorMap.set(`${ed.OE}_${ed.Task}`, ed));
+      setEditorMap(prevMap => {
+        // Create a new Map instance to trigger a React re-render
+        const newMap = new Map(prevMap);
         
-        return Array.from(editorMap.values());
+        resultEditor.forEach(ed => {
+          newMap.set(`${ed.OE}_${ed.Task}`, ed);
+        });
+        
+        return newMap;
       });
+      // console.log("Editor Map Entries:", Array.from(editorMap.entries()));
     }
+
 
   }, [taskList]);
 
@@ -271,8 +281,12 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
     return matchesTab && matchesSearch && matchesPendingTasks;
   });
 
-  const getTaskEditorInfo = (oe: string, taskName: string) => {
-    const editor = editorList.find(e => e.OE === oe && e.Task === taskName);
+  const getTaskEditorInfo = useCallback((oe: string, taskName: string) => {
+    const key = `${oe}_${taskName}`;
+    // console.log(`Looking up editor info for key: ${key}`);
+    const editor = editorMap.get(key); // Instant lookup
+    // console.log(`Editor info found:`, editor);
+    
     if (!editor) return null;
 
     return {
@@ -282,7 +296,7 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
         minute: '2-digit' 
       })
     };
-  };
+  }, [editorMap]);
 
   useImperativeHandle(ref, () => ({
     onRefresh: async () => {
