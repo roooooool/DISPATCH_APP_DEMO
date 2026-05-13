@@ -1029,6 +1029,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           UpdateOnly: false, // always create or update the record regardless of progress for better tracking of changes
 
           deleteIfComplete: deleteIfComplete, // Only delete if the trip is progressing to Done (or beyond) and has a valid OE. This prevents premature deletion of the tracker record for trips that are still in progress or don't have an OE assigned yet.
+        
+          EditorName: editingUser?.FullName || 'Unknown User',
         };
 
         UpsertTripTaskTrackerService.UpsertTripTaskTracker(payload as any);

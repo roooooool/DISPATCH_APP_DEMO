@@ -1315,6 +1315,12 @@ export const dataSourcesInfo = {
             "in": "body",
             "required": false,
             "type": "boolean"
+          },
+          {
+            "name": "EditorName",
+            "in": "body",
+            "required": false,
+            "type": "string"
           }
         ]
       }

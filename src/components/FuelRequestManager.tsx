@@ -310,7 +310,7 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
     };
 
     const updateTaskTracker = async () => {
-        UpsertTripTaskTrackerService.UpsertTripTaskTracker({OE: formData.Orderentryref, HasFuelRequest: true} as any);
+        UpsertTripTaskTrackerService.UpsertTripTaskTracker({OE: formData.Orderentryref, HasFuelRequest: true, EditorName: user?.FullName || 'Unknown User'} as any);
     };
 
     const [hasSubmitted, setHasSubmitted] = useState(false);

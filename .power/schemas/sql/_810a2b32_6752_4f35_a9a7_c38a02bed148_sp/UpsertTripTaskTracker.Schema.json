@@ -52,6 +52,10 @@
         "deleteIfComplete": {
           "title": "deleteIfComplete",
           "type": "boolean"
+        },
+        "EditorName": {
+          "title": "EditorName",
+          "type": "string"
         }
       }
     },
