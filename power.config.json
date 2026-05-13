@@ -31,7 +31,8 @@
         "chatmessages",
         "userchannelreadstatus",
         "triptasktracker",
-        "vw_employeeservedtodaycount"
+        "vw_employeeservedtodaycount",
+        "triptaskeditorlist"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -89,6 +90,9 @@
             },
             "vw_employeeservedtodaycount": {
               "tableName": "[dbo].[vw_EmployeeServedTodayCount]"
+            },
+            "triptaskeditorlist": {
+              "tableName": "[dbo].[TripTaskEditorList]"
             }
           }
         }

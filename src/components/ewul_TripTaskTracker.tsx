@@ -4,6 +4,7 @@ import './comp_css/ewul_TripTaskTracker.css';
 import { ewulFetchAll, ewul_canFetch as canFetch, formatDate } from '../utils/Ewul_GSDC_Utils';
 import Modal from './ewul_Modal';
 import { TripTaskTrackerService } from '../generated/services/TripTaskTrackerService';
+import {TripTaskEditorListService} from '../generated/services/TripTaskEditorListService';
 import { FETCH_LOADING_KEYS, GSDC_NAVIGATE_TO_TRIP_key } from '../truth.config';
 
 
@@ -16,48 +17,25 @@ const TripTaskRow = ({
   data, 
   isExpandedAlready, 
   onToggle,
-  onCloseModal
+  onCloseModal,
+  getEditorInfo,
 }: { 
   data: any; 
   isExpandedAlready: boolean; 
   onToggle: () => void 
-  onCloseModal: (open: boolean) => void
+  onCloseModal: (open: boolean) => void,
+  getEditorInfo: (oe: string, taskName: string) => any
 }) => {
 
 
   // Define the bits to track based on your schema
   const tasks = [
-    { 
-      label: 'Assigned Unit', 
-      status: data.AssignedUnit,
-      progress: 'Assigned',
-    },
-    { label: 
-      'Assigned Driver', 
-      status: data.AssignedDriver ,
-      progress: 'Assigned',
-    },
-    { 
-      label: 'ATW Document', 
-      status: data.HasATW,
-      progress: 'Assigned',
-    },
-    { 
-      label: 'Sales Order', 
-      status: data.HasSO,
-      progress: 'Assigned',
-    },
-    { 
-      label: 'Fuel Request', 
-      status: data.HasFuelRequest,
-      progress: 'Assigned',
-    },
-    { 
-      label: 'Fuel PO', 
-      status: data.HasFuelPO,
-      progress: 'Assigned',
-      invalidStatus: data.HasFuelDisapproved, 
-      invalidMessage: 'Fuel has been Disapproved.'},
+    { label: 'Assigned Unit', status: data.AssignedUnit, progress: 'Assigned', key: 'AssignedUnit' },
+    { label: 'Assigned Driver', status: data.AssignedDriver, progress: 'Assigned', key: 'AssignedDriver' },
+    { label: 'ATW Document', status: data.HasATW, progress: 'Assigned', key: 'HasATW' },
+    { label: 'Sales Order', status: data.HasSO, progress: 'Assigned', key: 'HasSO' },
+    { label: 'Fuel Request', status: data.HasFuelRequest, progress: 'Assigned', key: 'HasFuelRequest' },
+    { label: 'Fuel PO', status: data.HasFuelPO, progress: 'Assigned', key: 'HasFuelPO', invalidStatus: data.HasFuelDisapproved, invalidMessage: 'Fuel has been Disapproved.' },
   ];
 
   const filteredTasks = tasks.filter(t => t.progress === data.TripProgress || !t.status)
@@ -162,7 +140,12 @@ const TripTaskRow = ({
                   </span>
                 )  : isDone ? (
                   <span className="task-done-message">
-                    Done
+                    {(() => {
+                      const info = getEditorInfo(data.OE, task.key); // Use the key we'll add below
+                      return info 
+                        ? `Done by ${info.name} at ${info.time}` 
+                        : 'Done';
+                    })()}
                   </span>
                 ) : null}
               </div>
@@ -177,6 +160,7 @@ const TripTaskRow = ({
 const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [taskList, setTaskList] = useState<any[]>([]);
+  const [editorList, setEditorList] = useState<any[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -244,6 +228,13 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
       'OE'
     );
 
+    const resultEditor = await ewulFetchAll<any>(
+      TripTaskEditorListService,
+      { filter: odataFilter, orderBy: ["LastUpdatedAsInt desc"] },
+      10000,
+      'OE'
+    );
+
     if (result && result.length > 0) {
       setTaskList(prevList => {
         if (isManualRefresh) return result; // Full replace on manual refresh
@@ -254,6 +245,18 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
         return Array.from(taskMap.values()).sort((a, b) => b.LastUpdatedAsInt - a.LastUpdatedAsInt);
       });
     }
+
+    if (resultEditor && resultEditor.length > 0) {
+      setEditorList(prevList => {
+        const editorMap = new Map();
+        // Create a unique key using OE and the Task name
+        prevList.forEach(ed => editorMap.set(`${ed.OE}_${ed.Task}`, ed));
+        resultEditor.forEach(ed => editorMap.set(`${ed.OE}_${ed.Task}`, ed));
+        
+        return Array.from(editorMap.values());
+      });
+    }
+
   }, [taskList]);
 
   const filteredTasks = taskList.filter(trip => {
@@ -267,6 +270,19 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
 
     return matchesTab && matchesSearch && matchesPendingTasks;
   });
+
+  const getTaskEditorInfo = (oe: string, taskName: string) => {
+    const editor = editorList.find(e => e.OE === oe && e.Task === taskName);
+    if (!editor) return null;
+
+    return {
+      name: editor.Name,
+      time: new Date(editor.Timestamp).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+    };
+  };
 
   useImperativeHandle(ref, () => ({
     onRefresh: async () => {
@@ -451,6 +467,7 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
                           isExpandedAlready={expandedOEs.has(trip.OE)}
                           onToggle={() => toggleRow(trip.OE)}
                           onCloseModal={setIsOpen}
+                          getEditorInfo={getTaskEditorInfo}
                         />
                       ))
                     ) : (

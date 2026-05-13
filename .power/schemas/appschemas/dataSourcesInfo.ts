@@ -898,6 +898,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "triptaskeditorlist": {
+    "tableId": "TripTaskEditorList",
+    "version": "v2",
+    "primaryKey": "OE",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "triptasktracker": {
     "tableId": "TripTaskTracker",
     "version": "v2",

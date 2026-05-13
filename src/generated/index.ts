@@ -33,6 +33,7 @@ export * as Sp_fetchAttendanceCalendarModel from './models/Sp_fetchAttendanceCal
 export * as Sp_GetLastLiquidatedOdometerModel from './models/Sp_GetLastLiquidatedOdometerModel';
 export * as Sp_get_AggregatedAssigned_CountsByBUModel from './models/Sp_get_AggregatedAssigned_CountsByBUModel';
 export * as Sp_get_AggregatedTrips_CountsByBUModel from './models/Sp_get_AggregatedTrips_CountsByBUModel';
+export * as TripTaskEditorListModel from './models/TripTaskEditorListModel';
 export * as TripTaskTrackerModel from './models/TripTaskTrackerModel';
 export * as UpsertAttendanceLogModel from './models/UpsertAttendanceLogModel';
 export * as UpsertTripTaskTrackerModel from './models/UpsertTripTaskTrackerModel';
@@ -71,6 +72,7 @@ export * from './services/Sp_fetchAttendanceCalendarService';
 export * from './services/Sp_GetLastLiquidatedOdometerService';
 export * from './services/Sp_get_AggregatedAssigned_CountsByBUService';
 export * from './services/Sp_get_AggregatedTrips_CountsByBUService';
+export * from './services/TripTaskEditorListService';
 export * from './services/TripTaskTrackerService';
 export * from './services/UpsertAttendanceLogService';
 export * from './services/UpsertTripTaskTrackerService';
