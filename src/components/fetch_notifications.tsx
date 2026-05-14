@@ -113,7 +113,7 @@ const NotificationFetcher: React.FC<NotificationFetcherProps> = ({
     fetchMetadata();
     const interval = setInterval(() => {
       fetchMetadata();
-    }, 15000); // 30 seconds
+    }, 60000); // 60 seconds
 
     return () => clearInterval(interval);
   }, [fetchMetadata, stopFetching]);
