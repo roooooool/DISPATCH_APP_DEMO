@@ -1,0 +1,9 @@
+{
+    "AppName": "GSDC Dispatch",
+    "Version": "1.0.0",
+    "maintenance": {
+        "startTime": "2024-06-01T00:00:00+08:00",
+        "endTime": "2024-06-02T00:00:00+08:00",
+        "message": "The app is currently undergoing maintenance. Please check back later."
+    }
+}

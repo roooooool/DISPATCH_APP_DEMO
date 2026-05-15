@@ -16,6 +16,7 @@ import type { Notification } from "./components/NotificationBell"; // Ensure fet
 import NotificationFetcher from "./components/fetch_notifications"; // Import to set up the polling mechanism for notifications
 import LoadingOverlayMask from './components/loaderMask';
 import { NotificationProvider, useNotifications } from './utils/NotificationContext'; // Ensure the context is imported to wrap the app and provide notification state
+import MaintenanceChecker from './components/maintenanceChecker';
 
 // Move the logic into a child component
 function MainContent() {
@@ -58,7 +59,7 @@ function MainContent() {
   };
 
   return (
-    <>
+    <MaintenanceChecker>
       {showOverlay && (
         <div className={`loading-overlay-mask${overlayFading ? ' fade-out' : ''}`}>
           <LoadingOverlayMask onProgressChange={handleOverlayProgress} />
@@ -80,7 +81,7 @@ function MainContent() {
           </Routes>
         </HashRouter>
       </TaskWorkerProvider>
-    </>
+    </MaintenanceChecker>
   );
 }
 

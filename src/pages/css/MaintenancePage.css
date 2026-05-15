@@ -1,0 +1,65 @@
+.maintenance-container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg); /* White bg */
+}
+
+/* Imitating gradient outline with overlapping boxes */
+.maintenance-card {
+  position: relative;
+  padding: 3px; /* The "thickness" of the gradient border */
+  background: var(--bg-gradient-main); /* Navy to Red gradient */
+  border-radius: var(--radius); /* 10px */
+  width: 90%;
+  max-width: 450px;
+  text-align: center;
+}
+
+.maintenance-card::after {
+  content: "";
+  display: block;
+  background: white;
+  border-radius: calc(var(--radius) - 2px);
+  padding: 40px 20px;
+  /* This creates the inner white box */
+}
+
+.icon-wrapper {
+  color: var(--color-primary); /* Navy blue */
+  margin-bottom: 20px;
+}
+
+.maint-title {
+  color: var(--color-primary);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-title);
+  margin-bottom: 10px;
+}
+
+.maint-message {
+  color: var(--color-muted);
+  font-size: var(--font-size-base);
+  margin-bottom: 20px;
+}
+
+.maint-time-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+}
+
+.spinning-icon {
+  animation: rotate 4s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
