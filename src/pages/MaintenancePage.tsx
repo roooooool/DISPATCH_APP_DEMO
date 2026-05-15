@@ -1,7 +1,7 @@
 // src/pages/MaintenancePage.tsx
 // import React from 'react';
 import { Settings, Clock } from 'lucide-react';
-import '../components/comp_css/MaintenancePage.css';
+import './css/MaintenancePage.css';
 
 const MaintenancePage = ({ details }: { details: any }) => {
   return (

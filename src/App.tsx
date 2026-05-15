@@ -59,7 +59,7 @@ function MainContent() {
   };
 
   return (
-    <MaintenanceChecker>
+    <>
       {showOverlay && (
         <div className={`loading-overlay-mask${overlayFading ? ' fade-out' : ''}`}>
           <LoadingOverlayMask onProgressChange={handleOverlayProgress} />
@@ -68,20 +68,22 @@ function MainContent() {
 
       <TaskWorkerProvider setNotifications={setWorkerNotifications}>
         <HashRouter>
-          <NotificationFetcher onDataLoaded={handleNewToasts} stopFetching={overlayProgress < 99} />
-          <Routes>
-            <Route path="/" element={<Navigate to="/loading" replace />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/dash" element={<ProtectedRoute><DASHPage/></ProtectedRoute>} />
-            <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT/></ProtectedRoute>} />
-            <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring/></ProtectedRoute>} />
-            <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
-            <Route path="/loading" element={<LoadingPage />} />
-            <Route path="*" element={<Not_Found />} />
-          </Routes>
+          <MaintenanceChecker>
+            <NotificationFetcher onDataLoaded={handleNewToasts} stopFetching={overlayProgress < 99} />
+            <Routes>
+              <Route path="/" element={<Navigate to="/loading" replace />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dash" element={<ProtectedRoute><DASHPage/></ProtectedRoute>} />
+              <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT/></ProtectedRoute>} />
+              <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring/></ProtectedRoute>} />
+              <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
+              <Route path="/loading" element={<LoadingPage />} />
+              <Route path="*" element={<Not_Found />} />
+            </Routes>
+          </MaintenanceChecker>
         </HashRouter>
       </TaskWorkerProvider>
-    </MaintenanceChecker>
+    </>
   );
 }
 
