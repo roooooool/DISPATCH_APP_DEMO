@@ -87,12 +87,14 @@
 
 
     /* TYPOGRAPHY */
-    --font-family-primary: 'Inter', sans-serif;
-    --font-family-secondary: 'Lato', sans-serif;
+    --font-family-primary: 'Lato', sans-serif;
+    --font-family-secondary: 'Inter', sans-serif;
 
     --font-size-base: 0.875rem;   /* 14px */
+    --font-size-vsm: 0.50rem;      /* 12px */
     --font-size-sm: 0.75rem;      /* 12px */
     --font-size-lg: 1rem;         /* 16px */
+    --font-size-vlg: 2rem;
     --font-size-title: 2rem;      /* Main page titles */
     --font-size-subtitle: 1.25rem;/* Section/subtitles */
     --font-size-label: 0.95rem;   /* Form labels, small headings */
@@ -157,22 +159,6 @@
 
   --color-input-disabled-bg: #0a0a35;
 
-
-  /* TYPOGRAPHY */
-  --font-family-primary: 'Lato', sans-serif;
-  --font-family-secondary: 'Inter', sans-serif;
-
-  --font-size-base: 0.875rem;   /* 14px */
-  --font-size-vsm: 0.55rem;      
-  --font-size-sm: 0.75rem;      /* 12px */
-  --font-size-lg: 1rem;         /* 16px */
-  --font-size-vlg: 1.25rem;     /* 20px */
-  --font-size-title: 2.1rem;
-  --font-size-subtitle: 1.3rem;
-  --font-size-label: 1rem;
-  --font-size-span: 0.97rem;
-  --font-size-caption: 0.85rem;
-  font-size: var(--font-size-base);
 }
 
 html, 

@@ -85,7 +85,8 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
                   ChatMessagesService,
                   { 
                       filter: filter,
-                      select: ['MessageID'] // Only fetch IDs to be lightweight
+                      select: ['MessageID'], // Only fetch IDs to be lightweight
+                      top: 100 // Cap at 100 to represent "99+"
                   },
                   100, // Cap at 100 to represent "99+"
                   'MessageID'
@@ -286,7 +287,8 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
                     ChatMessagesService,
                     { 
                         filter: filter, 
-                        orderBy: ["SentAt desc"] 
+                        orderBy: ["SentAt desc"],
+                        top: 50
                     },
                     50, // Fetch last 50 messages initially
                     'MessageID'
@@ -347,7 +349,8 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
                     ChatMessagesService,
                     {
                         filter: filter,
-                        orderBy: ["SentAt asc"]
+                        orderBy: ["SentAt asc"],
+                        top: 100,
                     },
                     100,
                     'MessageID'

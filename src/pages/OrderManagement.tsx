@@ -1232,7 +1232,16 @@ const OrderManagement: React.FC = () => {
         const isselectedrecordvalid = /*await formRef.current?.runValidation(record)*/ {isValid: true}; // For now, we'll assume it's valid. You can implement this function to validate the record before selecting it.
         const highlight = isselectedrecordvalid?.isValid ? 'success' : 'danger';
         const selectrecord = () => {
-            setSelectedOrder(record);
+            setSelectedOrder({
+                ...record, 
+                QTYDelivered_Actual: record.TripProgress === 'Done' 
+                    ? (record.QTYDelivered_Actual ?? record.QTYDelivered ?? 0) 
+                    : (record.QTYDelivered_Actual ?? 0),
+
+                QTYWithdrawn_Actual: record.TripProgress === 'Done' 
+                    ? (record.QTYWithdrawn_Actual ?? record.QTYWithdrawn ?? 0) 
+                    : (record.QTYWithdrawn_Actual ?? 0),
+            });
             handleChangeActiveView('form');
             setShowNewTripModal(false);
             setSidebarVisible(true);

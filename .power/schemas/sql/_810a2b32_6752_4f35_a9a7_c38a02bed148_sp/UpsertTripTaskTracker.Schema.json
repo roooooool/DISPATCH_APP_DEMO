@@ -56,6 +56,10 @@
         "EditorName": {
           "title": "EditorName",
           "type": "string"
+        },
+        "deleteAnyways": {
+          "title": "deleteAnyways",
+          "type": "boolean"
         }
       }
     },

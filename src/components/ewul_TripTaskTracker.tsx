@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { ClipboardList, ChevronDown, ChevronRight, CheckCircle2, Circle, RotateCw, Search, X, XCircle } from 'lucide-react';
+import { ClipboardList, ChevronDown, ChevronRight, CheckCircle2, Circle, RotateCw, Search, X, XCircle, FilterX} from 'lucide-react';
 import './comp_css/ewul_TripTaskTracker.css';
 import { ewulFetchAll, ewul_canFetch as canFetch, formatDate } from '../utils/Ewul_GSDC_Utils';
 import Modal from './ewul_Modal';
@@ -76,7 +76,7 @@ const TripTaskRow = ({
               })}
           </span>)}
           <span className="completion-duration">{(() => {
-              const duration = formatDate(data.TaggedDate, {mode: 'duration', compareTo: completedCount === taskTotalCount ? data.LastUpdated : new Date() })
+              const duration = formatDate(data.TaggedDate?.replace('Z',''), {mode: 'duration', compareTo: completedCount === taskTotalCount ? data.LastUpdated?.replace('Z','') : new Date() })
               return completedCount === taskTotalCount ? duration.replace(' ago','') : duration;
             })()}
           </span>
@@ -143,8 +143,8 @@ const TripTaskRow = ({
                     {(() => {
                       const info = getEditorInfo(data.OE, task.key); // Use the key we'll add below
                       return info 
-                        ? `Done by ${info.name} at ${info.time}` 
-                        : 'Done';
+                        ? `Completed by ${info.name} at ${info.time}` 
+                        : 'Completed';
                     })()}
                   </span>
                 ) : null}
@@ -175,7 +175,7 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
   ];
 
   const [pendingTasksFilter, setPendingTasksFilter] = useState<string[]>([]);
-  const [isTaskFilterOpen, setIsTaskFilterOpen] = useState(false);
+  // const [isTaskFilterOpen, setIsTaskFilterOpen] = useState(false);
 
   const taskOptions = [
     { label: 'Unit', key: 'AssignedUnit' },
@@ -228,16 +228,15 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
 
     const result = await ewulFetchAll<any>(
       TripTaskTrackerService,
-      { filter: odataFilter, orderBy: ["LastUpdatedAsInt desc"] },
-      10000,
+      { filter: odataFilter, orderBy: ["LastUpdatedAsInt desc"], top: 500 },
+      500,
       'OE'
     );
 
     const resultEditor = await ewulFetchAll<any>(
       TripTaskEditorListService,
-      { filter: editorFilter, orderBy: ["TimestampAsInt desc"] },
-      10000,
-      'OE'
+      { filter: editorFilter, orderBy: ["TimestampAsInt desc"], top: 500 },
+      500
     );
 
 
@@ -355,19 +354,19 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
             <div className="task-manager-banner">
               <div className="banner-main">
                 <div className="icon-badge">
-                  <ClipboardList size={24} color="white" />
+                  <ClipboardList size={'var(--font-size-vlg)'} color="white" />
                 </div>
                 <div className="title-group">
                   <h2>Trip Tasks</h2>
-                  <p className="subtitle">Real-time status tracking for active trips</p>
+                  <p className="subtitle">Real-time pending task tracking for active trips</p>
                 </div>
               </div>
-              <div className="banner-stats">
+              {/* <div className="banner-stats">
                 <div className="stat-item">
                   <span className="stat-value">{taskList.length}</span>
                   <span className="stat-label">On Going Trips</span>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Status & Sync Info Bar */}
@@ -394,29 +393,57 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
 
             <div className="task-manager-layout">
               <div className="task-filter-tabs">
-                {filterTabs.map(tab => (
-                  <button
-                    key={tab.value}
-                    className={`filter-tab-btn ${activeFilter === tab.value ? 'active' : ''}`}
-                    onClick={() => setActiveFilter(tab.value)}
+                <div className="sidebar-label" style={{ padding: '10px', fontSize: 'var(--font-size-sm)', color: 'var(--color-muted)', fontWeight: 'bold' }}>
+                  FILTER TASKS
+                </div>
+                {taskOptions.map(opt => {
+                  const isSelected = pendingTasksFilter.includes(opt.key);
+                  const count = taskList.filter(t => !t[opt.key]).length; // Count of trips where this task is NOT done
+
+                  return (
+                    <button
+                      key={opt.key}
+                      className={`filter-tab-btn ${isSelected ? 'active' : ''}`}
+                      onClick={() => toggleTaskFilter(opt.key)}
+                    >
+                      {opt.label}
+                      <span className={`tab-count ${count > 0 ? '' : 'hide'}`}>{count}</span>
+                    </button>
+                  );
+                })}
+                {pendingTasksFilter.length > 0 && (
+                  <button 
+                    className="filter-tab-btn clear-all" 
+                    onClick={() => setPendingTasksFilter([])}
+                    style={{ 
+                      marginBottom: 'auto', 
+                      background: 'var(--color-accent)', 
+                      color: 'var(--color-text-2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius)', // Uses your 10px rounded corner
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      fontSize: 'var(--font-size-sm)' // Maintains consistent 12px text
+                    }}
                   >
-                    {tab.label}
-                    {/* Optional: Show count per status */}
-                    {(() => {
-                      const listlen = tab.value === "All" 
-                        ? taskList.length 
-                        : taskList.filter(t => t.TripProgress === tab.value).length;
-                        
-                      return <span className={`tab-count ${listlen > 0 ? '' : 'hide'}`}>{listlen}</span>;
-                    })()}
+                    <FilterX size={'var(--font-size-lg)'} /> 
+                    <span>Clear Filters</span>
                   </button>
-                ))}
+                )}
               </div>
               
               <div className='task-tracker-content-container'>
-                <div className="task-body-header" style={{display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '10px'}}>
-                  <div className="task-search-container">
-                    <div className="search-input-wrapper">
+                <div className="task-body-header">
+                  {/* HEADER TOP: Search + Progress Tabs relocated here */}
+                  <div className="task-search-container" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '10px 0' }}>
+                    
+                    {/* Search Bar */}
+                    <div className="search-input-wrapper" style={{ flex: '1', maxWidth: '300px' }}>
                       <Search size={16} className="search-icon" />
                       <input 
                         type="text"
@@ -426,48 +453,41 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
                         className="task-search-input"
                       />
                       {searchQuery && (
-                        <X 
-                          size={16} 
-                          className="clear-search" 
-                          onClick={() => setSearchQuery("")} 
-                        />
+                        <X size={16} className="clear-search" onClick={() => setSearchQuery("")} />
                       )}
                     </div>
-                    {false && (<div className="pending-filter-container">
-                      <button 
-                        className={`pending-filter-trigger ${pendingTasksFilter.length > 0 ? 'active' : ''}`}
-                        onClick={() => setIsTaskFilterOpen(!isTaskFilterOpen)}
-                      >
-                        <span className="filter-text">Tasks Not Done</span>
-                        {pendingTasksFilter.length > 0 && <span className="filter-badge">{pendingTasksFilter.length}</span>}
-                        <ChevronDown size={14} />
-                      </button>
 
-                      {isTaskFilterOpen && (
-                        <>
-                          <div className="filter-dropdown-overlay" onClick={() => setIsTaskFilterOpen(false)} />
-                          <div className="filter-dropdown-menu">
-                            <div className="dropdown-header">
-                              <span>Filter Pending Tasks</span>
-                              {pendingTasksFilter.length > 0 && (
-                                <button onClick={() => setPendingTasksFilter([])}>Clear</button>
-                              )}
-                            </div>
-                            {taskOptions.map(opt => (
-                              <label key={opt.key} className="filter-option">
-                                <input 
-                                  type="checkbox" 
-                                  checked={pendingTasksFilter.includes(opt.key)}
-                                  onChange={() => toggleTaskFilter(opt.key)}
-                                />
-                                <span className="custom-checkbox"></span>
-                                <span className="option-label">{opt.label}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>)}
+                    {/* RELOCATED: Trip Progress Tabs (Horizontal) */}
+                    <div className="horizontal-filter-tabs" style={{ display: 'flex', gap: '8px', overflowX: 'auto', flex: '2' }}>
+                      {filterTabs.map(tab => (
+                        <button
+                          key={tab.value}
+                          className={`filter-tab-btn-pill ${activeFilter === tab.value ? 'active' : ''}`}
+                          onClick={() => setActiveFilter(tab.value)}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '20px',
+                            border: '1px solid var(--color-border)',
+                            background: activeFilter === tab.value ? 'var(--bg-gradient-main)' : 'white',
+                            color: activeFilter === tab.value ? 'white' : 'var(--color-text)',
+                            fontSize: 'var(--font-size-sm)',
+                            whiteSpace: 'nowrap',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            transition: 'var(--transition)'
+                          }}
+                        >
+                          {tab.label}
+                          {(() => {
+                            const listlen = tab.value === "All" 
+                              ? taskList.length 
+                              : taskList.filter(t => t.TripProgress === tab.value).length;
+                            return listlen > 0 ? <span style={{ opacity: 0.8, fontSize: '10px' }}>({listlen})</span> : null;
+                          })()}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div className="task-tracker-body">

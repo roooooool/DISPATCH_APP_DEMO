@@ -17,6 +17,7 @@ export interface UpsertTripTaskTrackerRequest {
   UpdateOnly?: boolean;
   deleteIfComplete?: boolean;
   EditorName?: string;
+  deleteAnyways?: boolean;
 }
 
 export interface UpsertTripTaskTrackerResponse {

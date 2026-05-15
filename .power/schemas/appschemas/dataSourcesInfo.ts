@@ -1328,6 +1328,12 @@ export const dataSourcesInfo = {
             "in": "body",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "deleteAnyways",
+            "in": "body",
+            "required": false,
+            "type": "boolean"
           }
         ]
       }

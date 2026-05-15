@@ -44,21 +44,23 @@ const NotificationFetcher: React.FC<NotificationFetcherProps> = ({
   const fetchMetadata = useCallback(async () => {
     if (!user) return; // Don't fetch if user is not available yet
     console.log('Fetching notifications...', 'Latest Timestamp:', latestFetchedTimestamp, 'User Last Check:', user.lastNotificationCheck);
-    const baseDate = latestFetchedTimestamp || user.lastNotificationCheck || null;
+    const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000));
+    const baseDateString = latestFetchedTimestamp || user.lastNotificationCheck || null;
+    let baseDate = baseDateString ? new Date(baseDateString) : null;
     let fromInt = 0;
 
-    if (baseDate) {
-        const d = new Date(baseDate);
-        // Standardize to GMT+8 for your backend filter logic
-        const gmt8Date = new Date(d.getTime() + (8 * 60 * 60 * 1000));
-        
-        // 15 min buffer only applies on initial load (when latestFetchedTimestamp is null)
-        // This prevents missing data due to clock skew on startup
-        const buffer = latestFetchedTimestamp ? 500 : (15 * 1000);
-        const adjustedDate = new Date(gmt8Date.getTime() - buffer);
-        
-        fromInt = ISOtoInt(adjustedDate.toISOString(), true);
+    if (!baseDate || baseDate < oneHourAgo) {
+        baseDate = oneHourAgo;
     }
+
+    // Standardize to GMT+8 for your backend filter logic
+    const gmt8Date = new Date(baseDate.getTime() + (8 * 60 * 60 * 1000));
+    
+    // buffer logic
+    const buffer = latestFetchedTimestamp ? 500 : (15 * 1000);
+    const adjustedDate = new Date(gmt8Date.getTime() - buffer);
+    
+    fromInt = ISOtoInt(adjustedDate.toISOString(), true);
 
 
 
@@ -67,11 +69,13 @@ const NotificationFetcher: React.FC<NotificationFetcherProps> = ({
     if (setLoading) setLoading(true);
 
     try {
+      
         const result = await ewulFetchAll<any>(
           LiveActionLogsViewService, 
           { 
             filter: date_filter + ` and startswith(ContextType, 'Trip')`,
             orderBy: ['Timestamp desc'],
+            top: 100,
           }, 
           100
         );

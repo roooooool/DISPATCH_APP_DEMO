@@ -393,9 +393,29 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       return { isValid: true, message: 'Source details are valid.' };
     };
 
+    const validateLoaderUnloader = (data: LiveDMSView_CEM) => {
+      if (data.Driver_x0020_Loader && !data.Driver_x0020_Unloader) {
+        return { isValid: false, message: 'Driver Unloader must be assigned if Driver Loader is assigned.' };
+      }
+      if (!data.Driver_x0020_Loader && data.Driver_x0020_Unloader) {
+        return { isValid: false, message: 'Please specify a Driver Loader, either the assigned Driver or another valid driver.'};
+      }
+      if (data.Driver === data.Driver_x0020_Loader && data.DriverLoaderType !== 'Loader Only') {
+          return { isValid: false, message: 'Driver loader type must be "Loader Only" for same driver & loader.'};
+      }
+
+      return { isValid: true, message: 'Loader/Unloader details are valid.' };
+    };
+
     const validateDispatchedToDestination = (data: LiveDMSView_CEM) => {
       const sourceValidation = validateDispatchedToSource(data);
       if (!sourceValidation.isValid) return sourceValidation;
+
+      if (data.Driver || data.Helper) {
+        const loaderUnloaderValidation = validateLoaderUnloader(data);
+        if (!loaderUnloaderValidation.isValid) return loaderUnloaderValidation;
+      }
+        
 
 
       if (!data.QTYDelivered || data.QTYDelivered < 1) {
@@ -773,7 +793,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     const refs = [newtripsDetailsRef, assignmentDetailsRef, dispatchedToSourceRef, dispatchedToDestinationRef, doneRef];
     const icons = [
-        <Plus size={14} color='var(--color-text-2)' />,
+        <Plus size={'var(--font-size-vlg)'}  color='var(--color-text-2)' />,
         <Assi_icon color='var(--color-text-2)' />, 
         <DispSrc_icon size={32} color='var(--color-text-2)' />, 
         <DispDst_icon size={32} color='var(--color-text-2)' />, 
@@ -1029,11 +1049,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           UpdateOnly: false, // always create or update the record regardless of progress for better tracking of changes
 
           deleteIfComplete: deleteIfComplete, // Only delete if the trip is progressing to Done (or beyond) and has a valid OE. This prevents premature deletion of the tracker record for trips that are still in progress or don't have an OE assigned yet.
-        
-          EditorName: editingUser?.FullName || 'Unknown User',
-        };
+          deleteAnyways: !!wouldbeformData.Verified_x0020_By,
 
+          EditorName: editingUser?.FullName || 'Unknown User',
+
+
+        };
+      
         UpsertTripTaskTrackerService.UpsertTripTaskTracker(payload as any);
+
       } catch (error) {
         console.error("Failed to sync TripTaskTracker:", error);
         // Optional: add a notification task to the worker here
@@ -2191,8 +2215,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               </div>
 
               {(formData.Driver_x0020_Loader || formData.Helper_x0020_Loader) && (<div className="form-row">
-                {formData.Driver_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy')} value={''} onChange={val => console.log(val)} />)}
-                {formData.Helper_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper Type *" options={LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy')} value={''} onChange={val => console.log(val)} />)}
+                {formData.Driver_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Driver_x0020_Loader === formData.Driver ? (l.value == 'Loader Only') : l.value !== 'Convoy')} value={formData.DriverLoaderType} onChange={val => handleFieldChange('DriverLoaderType', String(val))} />)}
+                {formData.Helper_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper Type *" options={LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy')} value={formData.HelperLoaderType} onChange={val => handleFieldChange('HelperLoaderType', String(val))} />)}
               </div>)}
 
               <div className='form-row'>
@@ -2272,8 +2296,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               </div>
 
               {(formData.Driver_x0020_Unloader || formData.Helper_x0020_Unloader) && (<div className="form-row">
-                {formData.Driver_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy')} value={''} onChange={val => console.log(val)} />)}
-                {formData.Helper_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper Type *" options={LOADER_TYPE_OPTIONS} value={''} onChange={val => console.log(val)} />)}
+                {formData.Driver_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy')} value={formData.DriverUnloaderType} onChange={val => handleFieldChange('DriverUnloaderType', String(val))} />)}
+                {formData.Helper_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper Type *" options={LOADER_TYPE_OPTIONS} value={formData.HelperUnloaderType} onChange={val => handleFieldChange('HelperUnloaderType', String(val))} />)}
               </div>)}
 
               <div className='form-row'>
@@ -2498,7 +2522,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           <button className="btn-cancel" onClick={handleOnClose}>Cancel</button>
           <button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripSave();}} disabled={isSubmitting || prog_verified}>
             {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
-            <SaveIcon />
+            <SaveIcon size={'var(--font-size-vlg)'} />
             Save
           </button>
           <button 
@@ -2511,7 +2535,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           >
             {prog_icon} {prog_verified ? 'Verified' : prog_next.replace('ed','')}
           </button>
-          {isSubmitting && (<Loader2 style={{animation: 'spin 1s linear infinite'}}/>)}
+          {isSubmitting && (<Loader2 style={{animation: 'spin 1s linear infinite'}} size={'var(--font-size-vlg)'} />)}
         </div>
 
         {personnelValidationModal?.isOpen && createPortal(

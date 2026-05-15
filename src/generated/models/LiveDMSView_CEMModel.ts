@@ -89,4 +89,8 @@ export interface LiveDMSView_CEM {
   HasFuelRequest?: boolean;
   HasFuelPO?: boolean;
   HasFuelDisapproved?: boolean;
+  DriverLoaderType?: string;
+  DriverUnloaderType?: string;
+  HelperLoaderType?: string;
+  HelperUnloaderType?: string;
 }

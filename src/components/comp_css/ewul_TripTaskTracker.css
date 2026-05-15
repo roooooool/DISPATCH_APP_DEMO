@@ -244,12 +244,12 @@
 
 /* Professional Banner */
 .task-manager-banner {
-  background: #000080; /* Navy Primary */
-  padding: 20px;
+  background: var(--color-primary); /* Navy Primary */
+  padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 3px solid #ff0000; /* Red Accent Sub-line */
+  border-bottom: 3px solid var(--color-accent); /* Red Accent Sub-line */
 }
 
 .banner-main {
@@ -272,12 +272,14 @@
   color: white;
   font-size: 1.4rem;
   letter-spacing: 0.5px;
+  font-size: var(--font-size-lg);
+  font-weight: bold;
 }
 
 .title-group .subtitle {
   margin: 0;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.85rem;
+  font-size: var(--font-size-base);
 }
 
 .banner-stats {
@@ -665,7 +667,7 @@
 
 /* Red accent for disapproved items */
 .task-sub-item.invalid {
-    color: var(--color-accent-2); /* Bright red for visibility */
+    color: var(--color-accent-light); /* Bright red for visibility */
 }
 
 .task-sub-item.missed {
@@ -673,7 +675,7 @@
 }
 
 .icon-invalid {
-    color: var(--color-accent-2); /* Your theme's red accent */
+    color: var(--color-accent-light); /* Your theme's red accent */
     margin-right: 8px;
 }
 
@@ -681,12 +683,13 @@
     font-size: 0.75rem;
     font-style: italic;
     margin-left: 5px;
-    color: var(--color-accent-2);
+    color: var(--color-accent-light);
 }
 
 /* Optional: Add a gentle strike-through or dimming if desired */
 .task-sub-item.invalid .task-label {
     text-decoration: line-through;
+    color: var(--color-accent-light);
     opacity: 0.8;
 }
 
@@ -694,7 +697,7 @@
 .task-error-message {
     font-size: 0.7rem;
     background-color: color-mix(in srgb, var(--color-accent-2), transparent 90%); /* Very light red bg */
-    color: var(--color--accent-2); /* Your theme's red accent */
+    color: var(--color-accent-light) !important; /* Your theme's red accent */
     padding: 2px 8px;
     border-radius: 10px; /* Gentle design rounded corners */
     margin-left: 8px;
