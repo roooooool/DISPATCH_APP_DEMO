@@ -42,6 +42,13 @@ const TripTaskRow = ({
   const taskTotalCount = filteredTasks.length;
   const completedCount = filteredTasks.filter(t => t.status).length;
 
+  const latestEditor = tasks
+    .filter(task => task.status) // Only look at completed tasks
+    .map(task => getEditorInfo(data.OE, task.key)) // Get editor info for each
+    .filter(info => info) // Filter out any nulls
+    .sort((a, b) => b.rawTime - a.rawTime) // Sort by timestamp descending
+    [0]; // Get the most recent one
+
   return (
     <div className="trip-cascade-item">
       <div 
@@ -63,6 +70,11 @@ const TripTaskRow = ({
         </div>
         
         <div className="header-right">
+          {latestEditor && (
+            <span className="latest-editor-badge">
+              {latestEditor.name}
+            </span>
+          )}
           {completedCount === taskTotalCount && (<span className="completion-date">Completed: 
             {formatDate(data.LastUpdated, {
                 format: {
@@ -273,9 +285,19 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
     const query = searchQuery.toLowerCase();
     const matchesSearch = trip.OE.toLowerCase().includes(query);
 
-    // NEW: Check if selected tasks are "Not Done" (value is 0 or falsy)
-    const matchesPendingTasks = pendingTasksFilter.length === 0 || 
-      pendingTasksFilter.every(taskKey => !trip[taskKey]);
+    // If no filters, all tasks match
+    if (pendingTasksFilter.length === 0) {
+      return matchesTab && matchesSearch;
+    }
+
+    // Handle the special case for "Fuel PO (w/ Req)" when it's the only filter
+    if (pendingTasksFilter.length === 1 && pendingTasksFilter[0] === 'HasFuelPO') {
+      const matchesPending = trip.HasFuelRequest && !trip.HasFuelPO;
+      return matchesTab && matchesSearch && matchesPending;
+    }
+
+    // For multiple filters, check if the trip is missing ANY of the selected tasks
+    const matchesPendingTasks = pendingTasksFilter.some(taskKey => !trip[taskKey]);
 
     return matchesTab && matchesSearch && matchesPendingTasks;
   });
@@ -293,7 +315,8 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
       time: new Date(editor.Timestamp).toLocaleTimeString([], { 
         hour: '2-digit', 
         minute: '2-digit' 
-      })
+      }),
+      rawTime: new Date(editor.Timestamp).getTime() // Add raw timestamp for sorting
     };
   }, [editorMap]);
 
@@ -309,7 +332,7 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
 
     const intervalId = setInterval(() => {
       fetchTasks();
-    }, 5000);
+    }, 60000);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -398,7 +421,22 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
                 </div>
                 {taskOptions.map(opt => {
                   const isSelected = pendingTasksFilter.includes(opt.key);
-                  const count = taskList.filter(t => !t[opt.key]).length; // Count of trips where this task is NOT done
+                  const isFuelReqActive = pendingTasksFilter.includes('HasFuelRequest');
+
+                  // Determine the label for Fuel PO
+                  let displayLabel = opt.label;
+                  if (opt.key === 'HasFuelPO') {
+                    displayLabel = isFuelReqActive ? 'Fuel PO' : 'Fuel PO (w/ Req)';
+                  }
+                  
+                  // Count of trips where this task is NOT done
+                  let count = 0;
+                  if (opt.key === 'HasFuelPO') {
+                    // Special logic for Fuel PO: count only if Fuel Req exists but PO doesn't
+                    count = taskList.filter(t => t.HasFuelRequest && !t.HasFuelPO).length;
+                  } else {
+                    count = taskList.filter(t => !t[opt.key]).length;
+                  }
 
                   return (
                     <button
@@ -406,7 +444,7 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
                       className={`filter-tab-btn ${isSelected ? 'active' : ''}`}
                       onClick={() => toggleTaskFilter(opt.key)}
                     >
-                      {opt.label}
+                      {displayLabel}
                       <span className={`tab-count ${count > 0 ? '' : 'hide'}`}>{count}</span>
                     </button>
                   );

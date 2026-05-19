@@ -255,9 +255,9 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
     };
     setUnreadCounts(prev => ({ ...prev, ['Dispatch']: 0 }));
     
-    if (isOpen || true) {
+    if (isOpen) {
         pollUnreadCounts();
-        const interval = setInterval(pollUnreadCounts, 3000); // Poll for unread counts every 3s
+        const interval = setInterval(pollUnreadCounts, 5000); // Poll for unread counts every 60s
         return () => clearInterval(interval);
     }
   }, [isOpen, user]);
@@ -306,7 +306,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
             }
         };
 
-        if (isOpen || true) {
+        if (isOpen) {
             fetchInitialMessages();
         }
     }, [activeChannel, isOpen]);
@@ -368,9 +368,11 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
             }
         };
 
-        const intervalId = setInterval(pollNewMessages, 5000);
+        if (!isOpen) return;
+
+        const intervalId = setInterval(pollNewMessages, 5000); // Poll every 30 seconds
         return () => clearInterval(intervalId);
-    }, [channelMessages, activeChannel, isOpen]);
+    }, [channelMessages, activeChannel, isOpen, user]);
 
   //if (!isOpen) return null;
 
