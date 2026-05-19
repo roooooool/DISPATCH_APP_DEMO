@@ -849,6 +849,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "gsdc_gitpat": {
+    "tableId": "GSDC_GITPAT",
+    "version": "v2",
+    "primaryKey": "patID",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "headtosheet": {
     "tableId": "HeadToSheet",
     "version": "v2",

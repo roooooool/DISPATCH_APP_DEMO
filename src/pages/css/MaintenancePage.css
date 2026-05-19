@@ -1,65 +1,162 @@
+/* src/pages/css/MaintenancePage.css */
+
 .maintenance-container {
   height: 100vh;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-bg); /* White bg */
+  background-color: #ffffff; /* White bg requirement */
 }
 
-/* Imitating gradient outline with overlapping boxes */
-.maintenance-card {
-  position: relative;
-  padding: 3px; /* The "thickness" of the gradient border */
-  background: var(--bg-gradient-main); /* Navy to Red gradient */
-  border-radius: var(--radius); /* 10px */
+/* Gradient outline achieved by 3px padding and background */
+.maintenance-outline-wrapper {
+  padding: 3px;
+  background: linear-gradient(135deg, #000080 0%, #3a4efc 50%, #ff0000 100%);
+  border-radius: 20px; /* Gentle design rounded corners */
+  box-shadow: 0 10px 30px rgba(0, 0, 128, 0.1);
   width: 90%;
-  max-width: 450px;
+  max-width: 460px;
+}
+
+.maintenance-card {
+  background: white;
+  border-radius: 17px; /* Fits inside the 20px outer wrapper */
+  padding: 45px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
-.maintenance-card::after {
-  content: "";
-  display: block;
-  background: white;
-  border-radius: calc(var(--radius) - 2px);
-  padding: 40px 20px;
-  /* This creates the inner white box */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 0, 0, 0.08);
+  color: #ff0000; /* Red accent */
+  padding: 5px 14px;
+  border-radius: 50px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
 }
 
-.icon-wrapper {
-  color: var(--color-primary); /* Navy blue */
+.icon-stack {
+  position: relative;
+  color: #000080; /* Navy primary */
   margin-bottom: 20px;
+}
+
+.alert-overlay {
+  position: absolute;
+  bottom: -2px;
+  right: -4px;
+  color: #ff0000;
+  background: white;
+  border-radius: 50%;
 }
 
 .maint-title {
-  color: var(--color-primary);
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-title);
-  margin-bottom: 10px;
+  color: #000080;
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.accent-divider {
+  height: 3px;
+  width: 40px;
+  background: linear-gradient(90deg, #000080, #ff0000); /* Navy to Red gradient */
+  margin: 15px 0;
+  border-radius: 2px;
 }
 
 .maint-message {
-  color: var(--color-muted);
-  font-size: var(--font-size-base);
-  margin-bottom: 20px;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 30px;
 }
 
 .maint-time-box {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: var(--font-size-sm);
+  background: #f1f5f9;
+  padding: 12px 24px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+}
+
+.time-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.time-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000080;
+}
+
+.maint-footer {
+  margin-top: 35px;
+  font-size: 12px;
+  color: #cbd5e1;
 }
 
 .spinning-icon {
-  animation: rotate 4s linear infinite;
+  animation: rotate-slow 10s linear infinite;
 }
 
-@keyframes rotate {
+@keyframes rotate-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* Add these to your existing MaintenancePage.css */
+
+.maint-back-btn {
+  margin-top: 25px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  /* Standard GSDC Navy Theme */
+  background: #000080;
+  color: white;
+  border: none;
+}
+
+.maint-back-btn:hover:not(:disabled) {
+  background: #3a4efc; /* Primary 2nd blue */
+  transform: translateY(-2px);
+}
+
+/* Disabled state - looks "greyed out" but keeps the rounded structure */
+.maint-back-btn:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Optional: Add a subtle pulse to the button when it becomes enabled */
+.maint-back-btn:not(:disabled) {
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(0, 0, 128, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 0, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 128, 0); }
 }

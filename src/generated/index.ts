@@ -21,6 +21,7 @@ export * as GenerateNewTripTicketModel from './models/GenerateNewTripTicketModel
 export * as GetLastLiquidatedOdometerModel from './models/GetLastLiquidatedOdometerModel';
 export * as GSDC_AccountsModel from './models/GSDC_AccountsModel';
 export * as GSDC_AttendanceModel from './models/GSDC_AttendanceModel';
+export * as GSDC_GITPATModel from './models/GSDC_GITPATModel';
 export * as HeadToSheetModel from './models/HeadToSheetModel';
 export * as LiveActionLogsViewModel from './models/LiveActionLogsViewModel';
 export * as LiveDMSView_CEMModel from './models/LiveDMSView_CEMModel';
@@ -60,6 +61,7 @@ export * from './services/GenerateNewTripTicketService';
 export * from './services/GetLastLiquidatedOdometerService';
 export * from './services/GSDC_AccountsService';
 export * from './services/GSDC_AttendanceService';
+export * from './services/GSDC_GITPATService';
 export * from './services/HeadToSheetService';
 export * from './services/LiveActionLogsViewService';
 export * from './services/LiveDMSView_CEMService';

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import MaintenancePage from '../pages/MaintenancePage';
 import { useUser } from '../utils/useUser'; // Custom hook to get user info, including role
+import {GSDC_GITPATService} from '../generated/services/GSDC_GITPATService';
+import { ewulFetchAll } from '../utils/Ewul_GSDC_Utils';
 
 interface MaintenanceCheckerProps {
   children: React.ReactNode;
@@ -11,13 +13,65 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
   const userRole = user?.Position || 'User'; // Default to 'User' if role is not available
   const [maintStatus, setMaintStatus] = useState({ isDown: false, details: null as any });
   const [isLoading, setIsLoading] = useState(true);
+  const [activePAT, setActivePAT] = useState<string | null>(null);
+
+
+  const fetchAndDistributePAT = async () => {
+    // Check Local Storage first
+    const cachedPAT = localStorage.getItem("GSDC_ACTIVE_PAT");
+    if (cachedPAT) {
+      console.log("Using cached GITPAT from local storage.");
+      return cachedPAT;
+    }
+
+    //If not in local storage, fetch all tokens from the service 
+    const result = await ewulFetchAll<any>(
+      GSDC_GITPATService, 
+      {}, 
+      100
+    ) || [];
+
+    if (result.length === 0) {
+      console.error("No GITPATs found in the database.");
+      return null;
+    }
+
+    // 3. Sort by 'used' count ascending (Lowest first)
+    const sortedPats = [...result].sort((a, b) => a.used - b.used);
+    const selectedPat = sortedPats[0];
+    
+
+    await updateGITPATusedCount(selectedPat.patID, selectedPat.used + 1);
+
+    localStorage.setItem("GSDC_ACTIVE_PAT", selectedPat.gitPAT);
+    localStorage.setItem("GSDC_ACTIVE_PAT_ID", selectedPat.patID.toString());
+
+    return selectedPat.gitPAT;
+  };
+
+  const updateGITPATusedCount = async (id: number, newCount: number) => {
+    try {
+      await GSDC_GITPATService.update(id.toString(), { used: newCount });
+    } catch (error) {
+      console.error("Failed to update GITPAT used count:", error);
+    }
+  }
+
+  useEffect(() => {
+    const fetchPAT = async () => {
+      const pat = await fetchAndDistributePAT();
+      setActivePAT(pat);
+      console.log(`USING PAT ${pat?.substring(0, 20)}...${pat?.substring(pat.length - 20)}`);
+    };
+    fetchPAT();
+  }, []);
 
   useEffect(() => {
     // 1. Define the check as a standalone function
     const checkMaintenance = async () => {
         try {
         console.log("Checking maintenance status...");
-        const token = import.meta.env.VITE_GITHUB_TOKEN;
+        const token = activePAT;
         const repoPath = import.meta.env.VITE_APP_CONFIG_REPO; 
 
         if (!repoPath || !token) return;

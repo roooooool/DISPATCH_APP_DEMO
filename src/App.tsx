@@ -8,6 +8,7 @@ import Not_Found from "./pages/not_found";
 import ORDER_MANAGEMENT from "./pages/OrderManagement";
 import FleetMonitoring from "./pages/FleetMonitoring";
 import LoadingPage from "./pages/LoadingPage";
+import MaintenancePage from "./pages/MaintenancePage";
 
 //CUSTOM
 import ProtectedRoute from "./components/ewul_ProtectedRoute"; // Route guard 
@@ -77,6 +78,7 @@ function MainContent() {
               <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT/></ProtectedRoute>} />
               <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring/></ProtectedRoute>} />
               <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
+              <Route path="/maintenance" element={<MaintenancePage details={{}} />} />
               <Route path="/loading" element={<LoadingPage />} />
               <Route path="*" element={<Not_Found />} />
             </Routes>
