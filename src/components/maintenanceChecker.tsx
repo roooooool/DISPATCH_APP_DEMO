@@ -1,8 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import MaintenancePage from '../pages/MaintenancePage';
 import { useUser } from '../utils/useUser'; // Custom hook to get user info, including role
 import {GSDC_GITPATService} from '../generated/services/GSDC_GITPATService';
 import { ewulFetchAll } from '../utils/Ewul_GSDC_Utils';
+
+interface ConfigContextType {
+  config: any;
+  refreshConfig: () => Promise<void>;
+  activePAT: string | null;
+}
+
+const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
+
+export const useAppConfig = () => {
+  const context = useContext(ConfigContext);
+  if (!context) throw new Error("useAppConfig must be used within MaintenanceChecker");
+  return context;
+};
 
 interface MaintenanceCheckerProps {
   children: React.ReactNode;
@@ -11,6 +25,7 @@ interface MaintenanceCheckerProps {
 const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
   const { user } = useUser();
   const userRole = user?.Position || 'User'; // Default to 'User' if role is not available
+  const [fullConfig, setFullConfig] = useState<any>(null);
   const [maintStatus, setMaintStatus] = useState({ isDown: false, details: null as any });
   const [isLoading, setIsLoading] = useState(true);
   const [activePAT, setActivePAT] = useState<string | null>(null);
@@ -66,52 +81,54 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
     fetchPAT();
   }, []);
 
-  useEffect(() => {
-    // 1. Define the check as a standalone function
-    const checkMaintenance = async () => {
+  const checkMaintenance = async () => {
         try {
-        console.log("Checking maintenance status...");
-        const token = activePAT;
-        const repoPath = import.meta.env.VITE_APP_CONFIG_REPO; 
+          console.log("Checking maintenance status...");
+          const token = await fetchAndDistributePAT();
+          const repoPath = import.meta.env.VITE_APP_CONFIG_REPO; 
 
-        if (!repoPath || !token) return;
+          if (!repoPath || !token) return;
 
-        const url = `https://api.github.com/repos/${repoPath}/contents/external_trigger/app_config.json?t=${Date.now()}`;
+          const url = `https://api.github.com/repos/${repoPath}/contents/external_trigger/app_config.json?t=${Date.now()}`;
 
-        const res = await fetch(url, {
-            method: 'GET',
-            headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/vnd.github.v3.raw',
-            'X-GitHub-Api-Version': '2022-11-28'
-            }
-        });
+          const res = await fetch(url, {
+              method: 'GET',
+              headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/vnd.github.v3.raw',
+              'X-GitHub-Api-Version': '2022-11-28'
+              }
+          });
 
-        
 
-        if (!res.ok) throw new Error(`Config fetch failed: ${res.status}`);
-        
-        const data = await res.json();
-        const config = data?.maintenance;
-        console.log("GitHub API response data:", data);
-        if (config) {
-            const now = new Date();
-            const start = new Date(config.startTime);
-            const end = new Date(config.endTime);
+          
 
-            if (now >= start && now <= end) {
-            setMaintStatus({ isDown: true, details: config });
-            } else {
-            // If maintenance window passed, set back to live
-            setMaintStatus({ isDown: false, details: null });
-            }
-        }
+          if (!res.ok) throw new Error(`Config fetch failed: ${res.status}`);
+          
+          const data = await res.json();
+          setFullConfig(data); // Store full config for context
+          const config = data?.maintenance;
+
+          if (config) {
+              const now = new Date();
+              const start = new Date(config.startTime);
+              const end = new Date(config.endTime);
+
+              if (now >= start && now <= end) {
+              setMaintStatus({ isDown: true, details: config });
+              } else {
+              // If maintenance window passed, set back to live
+              setMaintStatus({ isDown: false, details: null });
+              }
+          }
         } catch (err) {
         console.error("Maintenance check failed:", err);
         } finally {
         setIsLoading(false);
         }
     };
+
+  useEffect(() => {
 
     // 2. Run immediately on mount
     checkMaintenance();
@@ -129,7 +146,11 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
     return <MaintenancePage details={maintStatus.details} />;
   }
 
-  return <>{children}</>;
+  return (
+    <ConfigContext.Provider value={{ config: fullConfig, refreshConfig: checkMaintenance, activePAT }}>
+      {children}
+    </ConfigContext.Provider>
+  );
 };
 
 export default MaintenanceChecker;

@@ -250,3 +250,61 @@ input:checked + .slider:before {
     transform: translateY(0); 
   }
 }
+
+
+
+
+/* Sidebar Item Specifics */
+.sidebar-item.dev-sidebar-item.active {
+  background: rgba(0, 0, 128, 0.1);
+  color: #000080; /* Navy primary */
+  border-left: 3px solid #ff0000; /* Red accent border */
+}
+
+/* Developer Content Panel */
+.developer-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;      /* Centers the header and button horizontally */
+  justify-content: center;   /* Centers the content vertically in the main area */
+  height: 100%;
+  text-align: center;
+  padding: 20px;
+}
+
+.panel-header h4 {
+  color: #000080;
+  margin: 10px 0 5px 0;
+}
+
+.panel-header {
+  display: flex;
+  flex-direction: column;   /* Stack icon, h4, and p vertically */
+  align-items: center;      /* Centers each item (icon, title, text) within the header */
+  margin-bottom: 25px;
+}
+
+.panel-header p {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 25px;
+}
+
+.dev-full-nav-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #000080 0%, #3a4efc 100%); /* Navy to 2nd Blue */
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px; /* Gentle design */
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.dev-full-nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 128, 0.2);
+}
+
+

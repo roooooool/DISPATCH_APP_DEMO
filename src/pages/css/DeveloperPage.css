@@ -1,0 +1,97 @@
+/* src/pages/css/DeveloperPage.css */
+
+.dev-container {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.dev-title {
+  color: #000080; /* Navy Blue */
+  font-weight: 800;
+  margin-bottom: 30px;
+}
+
+.dev-section {
+  margin-bottom: 40px;
+}
+
+.dev-section h3 {
+  color: #3a4efc; /* Primary 2nd Blue */
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+/* Gradient outline imitation */
+.gradient-input-wrapper {
+  position: relative;
+  padding: 2px; /* The "border" thickness */
+  background: linear-gradient(135deg, #000080 0%, #ff0000 100%); /* Navy to Red gradient */
+  border-radius: 12px; /* Gentle design rounded corners */
+  margin-bottom: 20px;
+}
+
+.gradient-input-wrapper input, 
+.gradient-input-wrapper textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  outline: none;
+  background: white; /* Smaller container box usually white bg */
+  border-radius: 10px; /* Fits inside the 12px wrapper */
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.save-btn {
+  background: #000080;
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: #3a4efc;
+}
+
+/* src/pages/css/DeveloperPage.css */
+
+.back-link-btn {
+  background: white; /* Clean white bg */
+  color: #000080;    /* Navy blue text */
+  border: 2px solid #000080; /* Navy border */
+  padding: 10px 20px;
+  border-radius: 12px; /* Gentle design rounded corners */
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.back-link-btn:hover {
+  /* Subtle shift to your secondary blue and red shadow on hover */
+  border-color: #3a4efc; /* Primary 2nd blue */
+  color: #ff0000;       /* Red accent text */
+  background: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 128, 0.1);
+  transform: translateX(-4px); /* Slight "nudge" left to indicate going back */
+}
+
+/* Optional: styling for the loading/syncing state text */
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #64748b;
+  font-style: italic;
+}

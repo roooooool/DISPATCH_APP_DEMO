@@ -309,7 +309,7 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
 
     const intervalId = setInterval(() => {
       fetchTasks();
-    }, 60000);
+    }, 5000);
 
     return () => clearInterval(intervalId);
   }, []);

@@ -178,11 +178,11 @@ export const NAV_DESTINATIONS = [
     path: "/wew", 
     whiteList: ["POD"] 
   },
-  { 
-    label: "Maintenance", 
-    path: "/maintenance", 
-    whiteList: ["Developer"] 
-  },
+  // { 
+  //   label: "Maintenance", 
+  //   path: "/maintenance", 
+  //   whiteList: ["Developer"] 
+  // },
 ];
 
 

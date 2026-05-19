@@ -1,8 +1,9 @@
 import React, {useState} from "react";
-import { Sun, Moon, Trash2, SlidersHorizontal } from 'lucide-react';
+import { Sun, Moon, Trash2, SlidersHorizontal, Code2 } from 'lucide-react';
 import "./comp_css/SettingsModal.css";
 
 import { type UserInfo } from "../truth.config";
+import { useNavigate } from "react-router-dom";
 
 
 interface SettingsModalProps {
@@ -14,7 +15,7 @@ interface SettingsModalProps {
   updateUser: (data: Partial<UserInfo>) => void; // Function to update user data
 }
 
-type SettingsCategory = 'Appearance' | 'Debug';
+type SettingsCategory = 'Appearance' | 'Debug' | 'Developer';
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, theme, toggleTheme, user, updateUser }) => {
   /*const { user, updateUser } = useUser();
@@ -22,11 +23,27 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, theme, t
     useEffect(() => {
     userRef.current = user;
   }, [user]);*/
-
+  const navigate = useNavigate(); // Initialize navigate
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('Appearance');
 
 
   if (!isOpen) return null;
+
+  const handleNavigateToDeveloper = () => {
+    const savedUser = localStorage.getItem("gsdc_user");
+    
+    if (savedUser) {
+      const userInfo = JSON.parse(savedUser);
+      userInfo.CurrentNav = "/developer"; // Set the truth config path
+      localStorage.setItem("gsdc_user", JSON.stringify(userInfo));
+
+      onClose(); // Close modal before navigating
+      navigate("/developer", { state: { user: userInfo } });
+    } else {
+      onClose();
+      navigate("/developer");
+    }
+  };
 
   const handleClearNotificationCheck = () => {
     // Check if user exists before attempting update
@@ -115,8 +132,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, theme, t
               </button>
             </div>
           </>
-
-          
+        );
+      case 'Developer':
+        return (
+          <div className="developer-panel">
+            <div className="panel-header">
+              <Code2 size={32} color="#000080" />
+              <h4>System Administration</h4>
+              <p>Manage application configuration and System Health.</p>
+            </div>
+            <button className="dev-full-nav-btn" onClick={handleNavigateToDeveloper}>
+              Open Developer Control Center
+            </button>
+          </div>
         );
       default:
         return null;
@@ -139,12 +167,23 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, theme, t
             >
               <Sun size={18} /> Appearance
             </button>
+            
             <button 
               className={`sidebar-item ${activeCategory === 'Debug' ? 'active' : ''}`}
               onClick={() => setActiveCategory('Debug')}
             >
               <Trash2 size={18} /> Debug
             </button>
+
+            {/* 2. Conditional Sidebar Item for Developer Only */}
+            {user?.Position === 'Developer' && (
+              <button 
+                className={`sidebar-item dev-sidebar-item ${activeCategory === 'Developer' ? 'active' : ''}`}
+                onClick={() => setActiveCategory('Developer')}
+              >
+                <Code2 size={18} /> Developer
+              </button>
+            )}
           </aside>
           
           <main className="settings-content">
