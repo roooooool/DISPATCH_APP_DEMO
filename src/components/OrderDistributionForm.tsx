@@ -1289,7 +1289,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           onProceed?.(updatedData, doDeselect || deselectAfterVerified); //update optimistically in UI with new data from response
           onRefreshTrips?.();
           onRefreshDriverHelpers?.();
-          handleUpdateTripTaskTracker(updatedData, !!updatedData.Completed_x0020_Date);
+          handleUpdateTripTaskTracker({...formData, TripProgress: progress_next}, !!updatedData.Completed_x0020_Date);
         },
         onFailure: () => {setIsSubmitting(false); onRefreshTrips?.();},
         message: `${progress_next.replace('ed', 'ing')}...`,
