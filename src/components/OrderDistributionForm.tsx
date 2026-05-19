@@ -1313,6 +1313,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         ttID = await generateTripTicketID(formData.OE)
       }
 
+      // If the trip hasn't been saved before, we need to create it first to get an ID for attachments
+
       setOriginalFormData(formData); //unsave the save state
       handleAttachmentUpload();
       addTask({
@@ -1372,6 +1374,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 QTYDelivered_Actual: formData.QTYDelivered_Actual,
                 //Verified_x0020_By: formData.Verified_x0020_By,
                 GSDC_x0020_DR: formData.GSDC_x0020_DR,
+
+                tripID: formData.tripID || formData.ID, // Ensure tripID is set for attachments, use existing tripID or fallback to ID if tripID is not set yet
 
 
               }
