@@ -1,9 +1,9 @@
 {
-    "AppName": "GSDC Dispatch",
-    "Version": "1.0.0",
-    "maintenance": {
-        "startTime": "2026-05-15T14:58:00+08:00",
-        "endTime": "2026-05-15T15:03:00+08:00",
-        "message": "TEST: The app is undergoing a 5-minute maintenance check. Please standby."
-    }
+  "AppName": "GSDC Dispatch",
+  "Version": "1.0.0",
+  "maintenance": {
+    "startTime": "2026-05-15T14:58:00+08:00",
+    "endTime": "2026-05-15T15:03:00+08:00",
+    "message": "TEST: The app is undergoing a 5-minute maintenance check. Please standby. TEST IT"
+  }
 }

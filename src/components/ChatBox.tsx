@@ -370,7 +370,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
 
         if (!isOpen) return;
 
-        const intervalId = setInterval(pollNewMessages, 5000); // Poll every 30 seconds
+        const intervalId = setInterval(pollNewMessages, 5000); // Poll every 5 seconds
         return () => clearInterval(intervalId);
     }, [channelMessages, activeChannel, isOpen, user]);
 
