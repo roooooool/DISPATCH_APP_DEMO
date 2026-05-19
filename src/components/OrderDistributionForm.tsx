@@ -1032,7 +1032,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
 
-    const handleUpdateTripTaskTracker = async (wouldbeformData: LiveDMSView_CEM) => {
+    const handleUpdateTripTaskTracker = async (wouldbeformData: LiveDMSView_CEM, deleteAnyways? : boolean) => {
       try {
         const progress = wouldbeformData.TripProgress;
         if (!progress) return;
@@ -1049,7 +1049,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           UpdateOnly: false, // always create or update the record regardless of progress for better tracking of changes
 
           deleteIfComplete: deleteIfComplete, // Only delete if the trip is progressing to Done (or beyond) and has a valid OE. This prevents premature deletion of the tracker record for trips that are still in progress or don't have an OE assigned yet.
-          deleteAnyways: !!wouldbeformData.Verified_x0020_By,
+          deleteAnyways: !!deleteAnyways,
 
           EditorName: editingUser?.FullName || 'Unknown User',
 
@@ -1289,7 +1289,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           onProceed?.(updatedData, doDeselect || deselectAfterVerified); //update optimistically in UI with new data from response
           onRefreshTrips?.();
           onRefreshDriverHelpers?.();
-          handleUpdateTripTaskTracker(updatedData);
+          handleUpdateTripTaskTracker(updatedData, !!updatedData.Completed_x0020_Date);
         },
         onFailure: () => {setIsSubmitting(false); onRefreshTrips?.();},
         message: `${progress_next.replace('ed', 'ing')}...`,
@@ -1297,7 +1297,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         message_failure: (result) => `Trip failed to be ${progress_next}. Reason: ${result.error?.message || 'Unknown error'}`
       });
 
-      handleUpdateTripTaskTracker({...formData, TripProgress: progress_next}); // Trigger a sync for the task tracker in case of any assignment changes
+      // handleUpdateTripTaskTracker({...formData, TripProgress: progress_next}, !!formData.Completed_x0020_Date); // Trigger a sync for the task tracker in case of any assignment changes
     };
 
     const handleTripSave = async () => {
@@ -1399,6 +1399,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           onProceed?.({ //update optimistically
             ...formData, TripTicketID: ttID || formData.TripTicketID,
           }, false);
+          handleUpdateTripTaskTracker(formData, !!formData.Completed_x0020_Date); // Trigger a sync for the task tracker in case of any assignment changes
         },
         onFailure: () => {setIsSubmitting(false);onRefreshTrips?.();},
 
@@ -1406,8 +1407,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         message_success: `Trip ${formData.OE} saved successfully!`,
         message_failure: (result) => `Failed to save trip ${formData.OE}. Reason: ${result.error?.message || 'Unknown error'}`
       });
-
-      handleUpdateTripTaskTracker(formData); // Trigger a sync for the task tracker in case of any assignment changes
     };
 
     const handleCancelTrip = () => {
