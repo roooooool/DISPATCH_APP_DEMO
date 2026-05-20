@@ -14,7 +14,6 @@ import {GSDC_AttendanceService} from '../generated/services/GSDC_AttendanceServi
 import { type GSDC_AttendanceBase} from '../generated/models/GSDC_AttendanceModel';
 import type { UpsertTripTaskTrackerRequest } from '../generated/models/UpsertTripTaskTrackerModel';
 import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
-import { TripTaskTrackerService } from '../generated/services/TripTaskTrackerService';
 import {CheckIfOEExistsService} from '../generated/services/CheckIfOEExistsService';
 
 //CSS
@@ -1037,6 +1036,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         const progress = wouldbeformData.TripProgress;
         if (!progress) return;
 
+        console.log("Syncing TripTaskTracker with data progress:", wouldbeformData.TripProgress, " deleteAnyways flag:", deleteAnyways);
+
         const deleteIfComplete: boolean = !!((TRIP_PROGRESS ? TRIP_PROGRESS.find(p => p.Progress === progress)?.idx ?? 0 : 0) >= 2 && wouldbeformData.OE);
         const payload: UpsertTripTaskTrackerRequest = {
           OE: wouldbeformData.OE || '',
@@ -1443,14 +1444,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               }
           },
           checkSuccess: (result: { success: boolean }) => result.success,
-          onSuccess: () => {onRefreshTrips?.(); if (formData.OE) {TripTaskTrackerService.delete(formData.OE);} },
+          onSuccess: () => {onRefreshTrips?.(); if (formData.OE) {handleUpdateTripTaskTracker(formData, true);} },
           onFailure: () => {onRefreshTrips?.();},
           message: `Cancelling trip ${formData.OE}...`,
           message_success: `Trip ${formData.OE} has been cancelled successfully.`,
           message_failure: (result) => `Failed to cancel trip ${formData.OE}. Reason: ${result.error?.message || 'Unknown error'}`
       });
 
-      if (formData.OE) TripTaskTrackerService.delete(formData.OE); 
     };
 
 
@@ -1903,7 +1903,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <a href="#" className={!formData.Latlong ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); setMoreOptionsOpen(false);}}><MapPin size={16}  /> Check GPS</a>
                     <a href="#" className={!formData.tripID ? 'disabled' : ''} onClick={(e) => {e.preventDefault();if (!formData.tripID) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
                     <a href="#" className={!formData.tripID || !canChangeTrip ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if (!formData.tripID || !canChangeTrip) {handleCannotChangeTrip(); return;} onRequestChangeTrip?.(formData,progress_idx() > 2 ? 'Divert' : 'Change'); setMoreOptionsOpen(false);}}><Replace size={16} /> {`${progress_idx() > 2 ? 'Divert' : 'Change'} Trip`}</a>
-                    <a href="#" className={!formData.tripID || prog_verified || !canChangeTrip || formData.TripProgress === 'Done' ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if (!formData.tripID || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') {handleCannotChangeTrip(); return;} setShowCancelConfirmModal(true); setMoreOptionsOpen(false);}}><Ban size={16} /> Cancel Trip</a>
+                    <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip || formData.TripProgress === 'Done') && editingUser?.Position !== 'Developer' ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if ((!formData.tripID || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && editingUser?.Position !== 'Developer') {handleCannotChangeTrip(); return;} setShowCancelConfirmModal(true); setMoreOptionsOpen(false);}}><Ban size={16} /> Cancel Trip</a>
                     <a 
                       href="#" 
                       className={!formData.OE ? 'disabled' : ''} 

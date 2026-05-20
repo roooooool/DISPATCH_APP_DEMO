@@ -38,6 +38,7 @@ import { DMS_TripFuelRequestsListService} from '../generated/services/DMS_TripFu
 import { GetLastLiquidatedOdometerService } from '../generated/services/GetLastLiquidatedOdometerService';
 import FuelRequestManager from '../components/FuelRequestManager';
 import {Vw_EmployeeServedTodayCountService} from '../generated/services/Vw_EmployeeServedTodayCountService';
+import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
 
 // Custom Components
 import TableView,  { type ColumnConfig, type scrollToConfig, encodeColumnName as enc } from '../components/ewul_TableFlex';
@@ -1618,6 +1619,21 @@ const OrderManagement: React.FC = () => {
                                         },
                                         checkSuccess: (result: { success: boolean }) => result.success,
                                         onSuccess: (data) => {
+
+                                            UpsertTripTaskTrackerService.UpsertTripTaskTracker({ //delete task of old OE
+                                                OE: selectedChangeTripOE.OE || '',
+                                                TripProgress: selectedChangeTripOE.TripProgress || '',
+                                                AssignedDriver: !!selectedChangeTripOE.Driver,
+                                                AssignedUnit: !!selectedChangeTripOE.Vehicle,
+                                                HasATW: !!selectedChangeTripOE.ATW_x002f_LO_x0023_,
+                                                HasSO: !!selectedChangeTripOE.SO_x0023_,
+                                                UpdateOnly: false, 
+                                                deleteIfComplete: true, //delete
+                                                deleteAnyways: true,
+                                                EditorName: user?.FullName || 'Unknown User',
+                                            }as any);
+
+
                                             setTrips(prevTrips => {
                                                 const index = prevTrips.findIndex(t => t.OE === data.OE);
                                                 if (index !== -1) {
