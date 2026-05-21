@@ -1157,27 +1157,28 @@ const OrderManagement: React.FC = () => {
     const onSelectChangeTrip = (raw_record: any) => {
         if (!showChangeTripModal) return;
 
+        const isDev = user?.Position === 'Developer';
         const original = showChangeTripModal.record;
         let errorMessage: string | null = null;
 
         // 1. Define Validation Rules
         if (["Tagged", "Completed"].includes(raw_record.SAPStatus)) {
-            errorMessage = `This Trip is already ${raw_record.SAPStatus.toLowerCase()}.`;
+            errorMessage = isDev ? null : `This Trip is already ${raw_record.SAPStatus.toLowerCase()}.`;
         } 
         else if (raw_record.SAPStatus !== "Approved" && !(raw_record._tripGroup == 'Preload' && raw_record.SAPStatus === 'Manual' && original._tripGroup === 'Preload')) {
             errorMessage = "Only approved trips can be selected.";
         } 
         else if (raw_record.SourceName !== original.Source) {
-            errorMessage = "Source does not match the original trip. Please select a trip with the same source.";
+            errorMessage = isDev ? null : "Source does not match the original trip. Please select a trip with the same source.";
         } 
         else if (
             raw_record._tripGroup !== original._tripGroup && 
             !['Preload', 'Mobilization'].includes(original._tripGroup)
         ) {
-            errorMessage = "Trip group does not match. Please select a trip with the same trip group.";
+            errorMessage = isDev ? null : "Trip group does not match. Please select a trip with the same trip group.";
         } 
         else if (raw_record.CementTypeName !== original.cementType) {
-            errorMessage = "Cement type does not match. Please select a trip with the same cement type.";
+            errorMessage = isDev ? null : "Cement type does not match. Please select a trip with the same cement type.";
         }
 
         // 2. Execute Result
@@ -1570,7 +1571,6 @@ const OrderManagement: React.FC = () => {
                                     const original = selectedOrder;
                                     const changedTripRecord = 
                                         {
-
                                             OE: selectedChangeTripOE.OE,
                                             Source: selectedChangeTripOE.SourceName,
                                             Destination: selectedChangeTripOE.DestiName,
@@ -1578,8 +1578,7 @@ const OrderManagement: React.FC = () => {
                                             Ordered_x0020_Date: selectedChangeTripOE.OrderedDate,
                                             Needed_x0020_Date: selectedChangeTripOE.NeededDate,
                                             OE_x0020_Date: selectedChangeTripOE.OE_x0020_Date,
-                                            _tripGroup: selectedChangeTripOE._tripGroup,
-                                            
+                                            _tripGroup: selectedChangeTripOE._tripGroup,  
                                         }
 
                                     setSelectedOrder({...selectedOrder, ...changedTripRecord});

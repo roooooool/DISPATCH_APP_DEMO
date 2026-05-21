@@ -393,6 +393,21 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
     const validateLoaderUnloader = (data: LiveDMSView_CEM) => {
+
+      if (data.Driver_x0020_Loader && !data.DriverLoaderType) {
+        return { isValid: false, message: 'Please specify a Driver Loader type.'};
+      }
+      if (data.Helper_x0020_Loader && !data.HelperLoaderType) {
+        return { isValid: false, message: 'Please specify a Helper Loader type.'};
+      }
+      if (data.Driver_x0020_Unloader && !data.DriverUnloaderType) {
+        return { isValid: false, message: 'Please specify a Driver Unloader type.'};
+      }
+      if (data.Helper_x0020_Unloader && !data.HelperUnloaderType) {
+        return { isValid: false, message: 'Please specify a Helper Unloader type.'};
+      }
+
+
       if (data.Driver_x0020_Loader && !data.Driver_x0020_Unloader) {
         return { isValid: false, message: 'Driver Unloader must be assigned if Driver Loader is assigned.' };
       }
@@ -1187,6 +1202,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 QTYDelivered_Actual: formData.QTYDelivered_Actual,
                 GSDC_x0020_DR: formData.GSDC_x0020_DR,
 
+                DriverLoaderType: formData.DriverLoaderType,
+                HelperLoaderType: formData.HelperLoaderType,
+                DriverUnloaderType: formData.DriverUnloaderType,
+                HelperUnloaderType: formData.HelperUnloaderType,
+
 
               } as Partial<LiveDMSView_CEM>;
             
@@ -1606,6 +1626,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       const tripKM = Number(formData.TripKM|| 0);
       const tripIndex = Number(formData.TripIndex || 0);
 
+      const getTypeMultipliers = (typeName: string | null | undefined, fallback: number) => {
+        const selected = LOADER_TYPE_OPTIONS.find(option => option.value === typeName);
+        const kmMult = selected?.record?.kmMult;
+        const tiMult = selected?.record?.tiMult;
+
+        return {
+          kmMult: typeof kmMult === 'number' ? kmMult : fallback,
+          tiMult: typeof tiMult === 'number' ? tiMult : fallback,
+        };
+      };
+
       // 1. RESOLVE VALUES (Mirroring the 'With' block)
       const drvU = (formData.Driver_x0020_Unloader || formData.Driver || "").trim();
       const drvL = (formData.Driver_x0020_Loader || formData.Driver || "").trim();
@@ -1618,15 +1649,20 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       console.log(attendanceServedCounts?.find(att => att.EmployeeName === 'Apple'));
 
       // Helper function to push to our temp collection
-      const addToTemp = (role: "Driver" | "Helper", name: string, pos: string, kmMult: number) => {
+        const addToTemp = (
+          role: "Driver" | "Helper",
+          name: string,
+          pos: string,
+          multipliers: { kmMult: number; tiMult: number }
+        ) => {
           if (!name) return;
           const servedCountsRecord = attendanceServedCounts?.find(att => att.EmployeeName === name);
           colTemp.push({
               Role: role,
               SName: name,
               Position: pos,
-              TripKM: tripKM * kmMult,
-              TripIndex: tripIndex * kmMult,
+                TripKM: tripKM * multipliers.kmMult,
+                TripIndex: tripIndex * multipliers.tiMult,
               TripCount: servedCountsRecord ? servedCountsRecord.TotalServedDates : 0,
           });
       };
@@ -1634,36 +1670,38 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       // 2. BUILD DRIVER COLLECTION
       if (drvU && drvL) {
           if (drvU === drvL) {
-              addToTemp("Driver", drvU, "", 1);
+            addToTemp("Driver", drvU, "", { kmMult: 1, tiMult: 1 });
           } else {
-              // type matrix dito apply
-              addToTemp("Driver", drvU, "Long Trip Unloader", 0.75);
-              addToTemp("Driver", drvL, "Loader Only", 0.25);
+            const driverUnloaderType = formData.DriverUnloaderType || 'Long Trip Unloader';
+            const driverLoaderType = formData.DriverLoaderType || 'Loader Only';
+            addToTemp("Driver", drvU, driverUnloaderType, getTypeMultipliers(formData.DriverUnloaderType, 0.75));
+            addToTemp("Driver", drvL, driverLoaderType, getTypeMultipliers(formData.DriverLoaderType, 0.25));
           }
       } else if (!drvU && drvL) {
-          addToTemp("Driver", drvL, "", 1); //temp - add restriction
+          addToTemp("Driver", drvL, "", { kmMult: 1, tiMult: 1 }); //temp - add restriction
       } else if (drvU && !drvL) {
-          addToTemp("Driver", drvU, "", 1); // oks
+          addToTemp("Driver", drvU, "", { kmMult: 1, tiMult: 1 }); // oks
       } else if (drv) {
-          addToTemp("Driver", drv, "", 1); // oks
+          addToTemp("Driver", drv, "", { kmMult: 1, tiMult: 1 }); // oks
       }
 
       // 3. BUILD HELPER COLLECTION
       if (hlpU && hlpL) {
           if (hlpU === hlpL) {
-              addToTemp("Helper", hlpU, "", 1);
+            addToTemp("Helper", hlpU, "", { kmMult: 1, tiMult: 1 });
           } else {
-            // type matrix dito apply
-              addToTemp("Helper", hlpU, "Long Trip Unloader", 0.75);
-              addToTemp("Helper", hlpL, "Loader Only", 0.25);
+            const helperUnloaderType = formData.HelperUnloaderType || 'Long Trip Unloader';
+            const helperLoaderType = formData.HelperLoaderType || 'Loader Only';
+            addToTemp("Helper", hlpU, helperUnloaderType, getTypeMultipliers(formData.HelperUnloaderType, 0.75));
+            addToTemp("Helper", hlpL, helperLoaderType, getTypeMultipliers(formData.HelperLoaderType, 0.25));
           }
       } else if (!hlpU && hlpL) {
           // ? no attendance
-          addToTemp("Helper", hlpL, "", 1); // oks ? compute credits
+          addToTemp("Helper", hlpL, "", { kmMult: 1, tiMult: 1 }); // oks ? compute credits
       } else if (hlpU && !hlpL) {
-          addToTemp("Helper", hlpU, "", 1); //oks ? compute credits
+          addToTemp("Helper", hlpU, "", { kmMult: 1, tiMult: 1 }); //oks ? compute credits
       } else if (hlp) {
-          addToTemp("Helper", hlp, "", 1); // oks
+          addToTemp("Helper", hlp, "", { kmMult: 1, tiMult: 1 }); // oks
       }
 
       // 4. MAP TO FINAL SHAREPOINT SCHEMA (The 'Patch' block)
@@ -2218,8 +2256,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               </div>
 
               {(formData.Driver_x0020_Loader || formData.Helper_x0020_Loader) && (<div className="form-row">
-                {formData.Driver_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Driver_x0020_Loader === formData.Driver ? (l.value == 'Loader Only') : l.value !== 'Convoy')} value={formData.DriverLoaderType} onChange={val => handleFieldChange('DriverLoaderType', String(val))} />)}
-                {formData.Helper_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper Type *" options={LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy')} value={formData.HelperLoaderType} onChange={val => handleFieldChange('HelperLoaderType', String(val))} />)}
+                {formData.Driver_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Driver_x0020_Loader === formData.Driver ? (l.value == 'Loader Only') : (l.value !== 'Convoy' && l.value !== 'Unloader Only'))} value={formData.DriverLoaderType} onChange={val => handleFieldChange('DriverLoaderType', String(val))} />)}
+                {formData.Helper_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Helper_x0020_Loader === formData.Helper ? (l.value == 'Loader Only') : (l.value !== 'Convoy' && l.value !== 'Unloader Only'))} value={formData.HelperLoaderType} onChange={val => handleFieldChange('HelperLoaderType', String(val))} />)}
               </div>)}
 
               <div className='form-row'>
@@ -2299,8 +2337,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               </div>
 
               {(formData.Driver_x0020_Unloader || formData.Helper_x0020_Unloader) && (<div className="form-row">
-                {formData.Driver_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy')} value={formData.DriverUnloaderType} onChange={val => handleFieldChange('DriverUnloaderType', String(val))} />)}
-                {formData.Helper_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper Type *" options={LOADER_TYPE_OPTIONS} value={formData.HelperUnloaderType} onChange={val => handleFieldChange('HelperUnloaderType', String(val))} />)}
+                {formData.Driver_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Driver_x0020_Unloader === formData.Driver ? (l.value == 'Unloader Only') : (l.value !== 'Convoy' && l.value !== 'Loader Only'))} value={formData.DriverUnloaderType} onChange={val => handleFieldChange('DriverUnloaderType', String(val))} />)}
+                {formData.Helper_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Helper_x0020_Unloader === formData.Helper ? (l.value == 'Unloader Only') : (l.value !== 'Loader Only'))} value={formData.HelperUnloaderType} onChange={val => handleFieldChange('HelperUnloaderType', String(val))} />)}
               </div>)}
 
               <div className='form-row'>
