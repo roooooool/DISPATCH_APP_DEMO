@@ -268,7 +268,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     }, [formData, originalFormData, tempPlantDrAttachments, tempWsAttachments]);
 
 
-    const convNaive = (datetime: string) => {
+    const convNaive = (datetime: string | undefined) => {
       return datetime ? datetime.replace('Z', '') : ''
     }
 
@@ -1166,12 +1166,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
                 Trip_x0020_Status: tripStatus || formData.Trip_x0020_Status,
 
-                Source_x0020_in: formData.Source_x0020_in,
-                Source_x0020_out: formData.Source_x0020_out,
+                Source_x0020_in: convNaive(formData.Source_x0020_in),
+                Source_x0020_out: convNaive(formData.Source_x0020_out),
                 Plant_x0020_DR: formData.Plant_x0020_DR,
                 
-                Destination_x0020_in: formData.Destination_x0020_in,
-                Destination_x0020_out: formData.Destination_x0020_out,
+                Destination_x0020_in: convNaive(formData.Destination_x0020_in),
+                Destination_x0020_out: convNaive(formData.Destination_x0020_out),
 
                 Driver_x0020_Loader: formData.Driver_x0020_Loader,
                 Driver_x0020_Unloader: formData.Driver_x0020_Unloader,
@@ -1359,12 +1359,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 Trip_x0020_Status: formData.Trip_x0020_Status,
 
                 Dispatched_x0020_to_x0020_Source: formData.Dispatched_x0020_to_x0020_Source,
-                Source_x0020_in: formData.Source_x0020_in,
-                Source_x0020_out: formData.Source_x0020_out,
+                Source_x0020_in: convNaive(formData.Source_x0020_in),
+                Source_x0020_out: convNaive(formData.Source_x0020_out),
                 Plant_x0020_DR: formData.Plant_x0020_DR,
                 Dispatched_x0020_to_x0020_Destination: formData.Dispatched_x0020_to_x0020_Destination,
-                Destination_x0020_in: formData.Destination_x0020_in,
-                Destination_x0020_out: formData.Destination_x0020_out,
+                Destination_x0020_in: convNaive(formData.Destination_x0020_in),
+                Destination_x0020_out: convNaive(formData.Destination_x0020_out),
 
                 Driver_x0020_Loader: formData.Driver_x0020_Loader,
                 Driver_x0020_Unloader: formData.Driver_x0020_Unloader,

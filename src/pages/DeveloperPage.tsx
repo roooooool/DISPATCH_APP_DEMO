@@ -57,7 +57,8 @@ const DeveloperPage = () => {
 
     setIsSaving(true);
     const repoPath = import.meta.env.VITE_APP_CONFIG_REPO;
-    const url = `https://api.github.com/repos/${repoPath}/contents/external_trigger/app_config.json`;
+    const configPath = import.meta.env.VITE_CONFIG_PATH;
+    const url = `https://api.github.com/repos/${repoPath}/contents/${configPath}`;
     const headers = {
       "Authorization": `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
       "Accept": "application/vnd.github.v3+json",

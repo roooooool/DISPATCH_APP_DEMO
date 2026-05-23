@@ -27,7 +27,7 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
   const userRole = user?.Position || 'User'; // Default to 'User' if role is not available
   const [fullConfig, setFullConfig] = useState<any>(null);
   const [maintStatus, setMaintStatus] = useState({ isDown: false, details: null as any });
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
   const [activePAT, setActivePAT] = useState<string | null>(null);
 
 
@@ -35,7 +35,7 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
     // Check Local Storage first
     const cachedPAT = localStorage.getItem("GSDC_ACTIVE_PAT");
     if (cachedPAT) {
-      console.log("Using cached GITPAT from local storage.");
+      // console.log("Using cached GITPAT from local storage.");
       return cachedPAT;
     }
 
@@ -47,7 +47,7 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
     ) || [];
 
     if (result.length === 0) {
-      console.error("No GITPATs found in the database.");
+      // console.error("No GITPATs found in the database.");
       return null;
     }
 
@@ -68,7 +68,7 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
     try {
       await GSDC_GITPATService.update(id.toString(), { used: newCount });
     } catch (error) {
-      console.error("Failed to update GITPAT used count:", error);
+      // console.error("Failed to update GITPAT used count:", error);
     }
   }
 
@@ -86,10 +86,11 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
           console.log("Checking maintenance status...");
           const token = await fetchAndDistributePAT();
           const repoPath = import.meta.env.VITE_APP_CONFIG_REPO; 
+          const configPath = import.meta.env.VITE_CONFIG_PATH;
 
           if (!repoPath || !token) return;
 
-          const url = `https://api.github.com/repos/${repoPath}/contents/external_trigger/app_config.json?t=${Date.now()}`;
+          const url = `https://api.github.com/repos/${repoPath}/contents/${configPath}?t=${Date.now()}`;
 
           const res = await fetch(url, {
               method: 'GET',
@@ -107,15 +108,16 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
           
           const data = await res.json();
           setFullConfig(data); // Store full config for context
-          const config = data?.maintenance;
+          const maintConfig = data?.maintenance;
 
-          if (config) {
+
+          if (maintConfig) {
               const now = new Date();
-              const start = new Date(config.startTime);
-              const end = new Date(config.endTime);
+              const start = new Date(maintConfig.startTime);
+              const end = new Date(maintConfig.endTime);
 
               if (now >= start && now <= end) {
-              setMaintStatus({ isDown: true, details: config });
+              setMaintStatus({ isDown: true, details: maintConfig });
               } else {
               // If maintenance window passed, set back to live
               setMaintStatus({ isDown: false, details: null });
@@ -138,11 +140,18 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children}) => {
 
     // 4. CLEANUP: This is CRITICAL to prevent memory leaks and multiple timers
     return () => clearInterval(interval);
-    }, []);
-  if (isLoading) return null; // Let the App's LoadingOverlayMask handle the visual
+  }, []);
 
-  // Bypass for Ed/ewul (Developer role)
-  if (maintStatus.isDown && userRole !== 'Developer') {
+  // if (isLoading) return null; // Let the App's LoadingOverlayMask handle the visual
+
+  // 1. Identify the bypass first
+  const isDeveloper = userRole === 'Developer';
+  const forceMaintenanceForDev = fullConfig?.maintenance?.ignoreDev;
+
+  // 2. Determine if THIS specific user should see the maintenance page
+  const showMaintenance = maintStatus.isDown && (!isDeveloper || forceMaintenanceForDev);
+
+  if (showMaintenance) {
     return <MaintenancePage details={maintStatus.details} />;
   }
 
