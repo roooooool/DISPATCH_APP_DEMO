@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 're
 import ReactDOM from 'react-dom';
 import Draggable from 'react-draggable';
 import './comp_css/ChatBox.css';
-import { X, Minus, MessageSquare, Maximize2, Minimize2  } from 'lucide-react';
+import { X, Minus, MessageSquare, Maximize2, Minimize2} from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 // SQL + GATEWAY services
 import { UserChannelReadStatusService } from '../generated/services/UserChannelReadStatusService';
@@ -164,15 +165,22 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
     }, [activeChannel, user]);
 
     const renderMessageText = (text: string, onMentionClick: (oe: string) => void, isMine: boolean) => {
-        // Regex to find [TRIP:ANYTHING]
-        const tripRegex = /\[TRIP:(.*?)\]/g;
-        const parts = text.split(tripRegex);
+        // Combined regex to catch both patterns
+        // Group 1: TRIP, Group 2: THINK
+        const combinedRegex = /\[TRIP:(.*?)\]|\[THINK:(.*?)\]/g;
+        
+        const parts = text.split(combinedRegex);
+        if (parts.length === 1) return <ReactMarkdown components={{ p: 'span' }}>{text}</ReactMarkdown>;
 
-        if (parts.length === 1) return text;
-
+        // Filter out undefined/empty matches from the split groups
         return parts.map((part, index) => {
-            // Every second element in the split (odd indexes) is the OE_NUMBER from the capture group
-            if (index % 2 === 1) {
+            if (!part) return null;
+
+            // Note: With two capture groups, every match consumes 3 array slots (part, group1, group2)
+            // However, a simpler way is to check the text content or context
+            
+            // Handle Trip Mentions
+            if (text.includes(`[TRIP:${part}]`)) {
                 return (
                     <span 
                         key={index} 
@@ -183,7 +191,22 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
                     </span>
                 );
             }
-            return part;
+
+            // Handle Thinking Animations
+            if (text.includes(`[THINK:${part}]`)) {
+                return (
+                    <span key={index} className="bot-thinking-text">
+                        {/* <span className="thinking-icon"><Settings/></span> */}
+                        <div className="chat-loader"></div>
+                        {/* {part} */}
+                        {/* <span className="dot-one">.</span>
+                        <span className="dot-two">.</span>
+                        <span className="dot-three">.</span> */}
+                    </span>
+                );
+            }
+
+            return <span key={index}>{part}</span>;
         });
     };
 
@@ -374,11 +397,36 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
         return () => clearInterval(intervalId);
     }, [channelMessages, activeChannel, isOpen, user]);
 
-  //if (!isOpen) return null;
+    //if (!isOpen) return null;
+
+    const THINKING_PHRASES = [
+        // --- General/Professional ---
+        "Dev Bot is thinking",
+        "Processing your request",
+        "Gathering information",
+        "Formulating a response",
+        "Reviewing system context",
+
+        // --- Logistics & Fleet Focused (GSDC Vibe) ---
+        "Analyzing dispatch logs",
+        "Scanning fleet manifests",
+        "Consulting the GSDC knowledge base",
+        "Calculating route efficiencies",
+        "Checking driver availability",
+        "Cross-referencing logistics data",
+
+        // --- A bit of Personality ---
+        "One moment, almost there",
+        "Just a second, double-checking the math",
+        "Organizing my thoughts",
+        "Syncing with the server",
+        "Checking the dashboard for updates"
+    ];
 
     const handleSendMessage = async () => {
         if (newMessage.trim() === '' || !user) return;
 
+        const userMsgText = newMessage;
         const optimisticMessage: MessageWithStatus = {
             MessageID: Date.now(), 
             Channel: activeChannel,
@@ -398,6 +446,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
         setNewMessage('');
 
         try {
+
             const payload = {
                 Channel: optimisticMessage.Channel!,
                 UserID: optimisticMessage.UserID!,
@@ -409,13 +458,95 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
             };
             
             const result = await ChatMessagesService.create(payload);
-            
-            setChannelMessages(prev => ({
-                ...prev,
-                [activeChannel]: prev[activeChannel].map(msg => 
-                    msg.MessageID === optimisticMessage.MessageID ? { ...result.data, status: 'sent' } : msg
-                )
-            }));
+
+            if (activeChannel === 'Dev Bot') {
+                const TEMP_BOT_ID = Date.now();
+                let isThinking = true;
+                let unusedPhrases = [...THINKING_PHRASES];
+
+                const getNextPhrase = () => {
+                    if (unusedPhrases.length === 0) {
+                        return "Finalizing response..."; 
+                    }
+                    
+                    const randomIndex = Math.floor(Math.random() * unusedPhrases.length);
+                    const phrase = unusedPhrases[randomIndex];
+                    
+                    // Remove the picked phrase from the local pool
+                    unusedPhrases.splice(randomIndex, 1);
+                    return phrase;
+                };
+                const firstPhrase = getNextPhrase() || "Processing...";
+                
+                setChannelMessages(prev => ({
+                    ...prev,
+                    ['Dev Bot']: [...(prev['Dev Bot'] || []), {
+                        MessageID: TEMP_BOT_ID,
+                        Channel: 'Dev Bot',
+                        UserID: DEVBOT_USERID,
+                        UserName: 'Dev Bot',
+                        MessageText: firstPhrase,
+                        SentAt: new Date().toISOString(),
+                        status: 'sending'
+                    }]
+                }));
+
+                const rotateText = () => {
+                    if (!isThinking) return; // Stop if the response is back
+                    
+                    const nextPhrase = getNextPhrase();
+                    if (!nextPhrase) return;
+                    const randomDelay = Math.floor(Math.random() * (8000 - 3500 + 1) + 1500); // 1.5s to 4s
+
+                    setChannelMessages(prev => ({
+                        ...prev,
+                        ['Dev Bot']: (prev['Dev Bot'] || []).map(m => 
+                            m.MessageID === TEMP_BOT_ID ? { ...m, MessageText: `[THINK:${nextPhrase}]` } : m
+                        )
+                    }));
+
+                    setTimeout(rotateText, randomDelay);
+                };
+                rotateText(); // start
+
+
+                const botResponseText = await handleDevBotChat(userMsgText);
+                
+                isThinking = false; // stop the thinking text rotation
+                const botPayload = {
+                    Channel: 'Dev Bot',
+                    UserID: DEVBOT_USERID,
+                    UserName: 'Dev Bot',
+                    MessageText: botResponseText,
+                    SentAt: new Date().toISOString(),
+                    SentAtAsInt: Number(ISOtoInt(new Date().toISOString(), true)),
+                    RecipientUserID: user.id,
+                };
+
+
+                setChannelMessages(prev => {
+                    const filtered = (prev['Dev Bot'] || []).filter(m => m.MessageID !== TEMP_BOT_ID);
+                    return {
+                        ...prev,
+                        ['Dev Bot']: [...filtered, { ...botPayload, MessageID: Date.now() + 1, status: 'sent' }]
+                    };
+                });
+                
+                ChatMessagesService.create(botPayload); // Fire and forget the bot response to save in DB
+
+
+
+            } else {
+                
+                setChannelMessages(prev => ({
+                    ...prev,
+                    [activeChannel]: prev[activeChannel].map(msg => 
+                        msg.MessageID === optimisticMessage.MessageID ? { ...result.data, status: 'sent' } : msg
+                    )
+                }));
+            }
+
+
         } catch (error) {
             console.error("Failed to send message:", error);
             setChannelMessages(prev => ({
@@ -424,6 +555,74 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
                     msg.MessageID === optimisticMessage.MessageID ? { ...msg, status: 'failed' } : msg
                 )
             }));
+        }
+    };
+
+    const handleDevBotChat = async (userMessage: string) => {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+        const secretKey = user?.Position === 'Developer' ? import.meta.env.VITE_DEV_BOT_SECRETDEV : import.meta.env.VITE_DEV_BOT_SECRET;
+        
+        const now = new Date().toLocaleString('en-US', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
+            hour: '2-digit', minute: '2-digit' 
+        });
+
+        const historyData = (channelMessages['Dev Bot'] || []).slice(-20);
+        const historyMD = historyData.length > 0 
+            ? "### CHAT HISTORY (For Reference):\n" + historyData.map(msg => {
+                const role = msg.UserID === user?.id ? 'User' : 'Dev Bot';
+                const msgTime = new Date(msg.SentAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return `- [${msgTime}] **${role}**: ${msg.MessageText}`;
+            }).join("\n")
+            : "_No previous history._";
+        const fullMDPrompt = `
+> **Context:** Current System Time is ${now}.
+> **Context2:** You are Dev Bot, a helpful assistant for GSDC employees. Answer based on the current message and the conversation history. If you don't know the answer, say you don't know. Be concise & Fast.
+
+## RESPONSE GUIDELINES
+1. **No Echoing:** Do not repeat the user's question or use phrases like "To answer your question about..." or "You asked...". 
+2. **Direct Starts:** Start the response immediately with the answer or the code requested.
+3. **Third-Person Ban:** Do not refer to yourself as "Dev Bot," "an AI," or "Assistant." 
+4. **Contextual Awareness:** Maintain the flow of conversation without summarizing the chat history in every response.
+5. **Format:** Use clean Markdown for displaying code/table answers. If code/table is requested, provide the code/table block immediately with a brief explanation only if necessary.
+
+---
+### CURRENT USER PROMPT:
+${userMessage}
+---
+
+${historyMD}
+    `.trim();
+        // console.log('Full MD Prompt:', fullMDPrompt);
+        try {
+            // 1. Authenticate to get a Session Token
+            const authRes = await fetch(`${baseUrl}/api/llm-auth`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user?.id, secretKey })
+            });
+
+            if (!authRes.ok) throw new Error("Auth failed");
+            const { token } = await authRes.json();
+
+            // 2. Send the message to your new protected Ollama endpoint
+            const chatRes = await fetch(`${baseUrl}/api/ollm/chat`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': token,
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({ message: fullMDPrompt})
+            });
+
+            const data = await chatRes.json();
+            
+            if (chatRes.status === 429) return "Daily limit reached.";
+            return data.answer;
+
+        } catch (err) {
+            console.error("DevBot Error:", err);
+            return "I'm having trouble connecting to the server right now.";
         }
     };
 

@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom"; // Changed to HashRouter
 import { useEffect, useState, useCallback } from 'react';
+//wew
 
 import Login from "./pages/login";
 import TEMPLATE_PAGE from "./pages/template";
