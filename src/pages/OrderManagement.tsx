@@ -39,6 +39,7 @@ import { GetLastLiquidatedOdometerService } from '../generated/services/GetLastL
 import FuelRequestManager from '../components/FuelRequestManager';
 import {Vw_EmployeeServedTodayCountService} from '../generated/services/Vw_EmployeeServedTodayCountService';
 import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
+import { TripTicketsService } from '../generated/services/TripTicketsService';
 
 // Custom Components
 import TableView,  { type ColumnConfig, type scrollToConfig, encodeColumnName as enc } from '../components/ewul_TableFlex';
@@ -1593,9 +1594,20 @@ const OrderManagement: React.FC = () => {
                                                 showChangeTripModal.record.ID.toString(), 
                                                 changedTripRecord
                                             );
+                                            
+
+                                            const result2 = await TripTicketsService.update(
+                                                showChangeTripModal.record?.OE || '', 
+                                                {OE: selectedChangeTripOE.OE} as any
+                                            );
+
+
                                 
                                             if (result.error) {
                                                 throw new Error(result.error.message);
+                                            }
+                                            if (result2.error) {
+                                                throw new Error(result2.error.message);
                                             }
 
                                             //log to transaction history

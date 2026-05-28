@@ -36,6 +36,7 @@ export * as Sp_get_AggregatedAssigned_CountsByBUModel from './models/Sp_get_Aggr
 export * as Sp_get_AggregatedTrips_CountsByBUModel from './models/Sp_get_AggregatedTrips_CountsByBUModel';
 export * as TripTaskEditorListModel from './models/TripTaskEditorListModel';
 export * as TripTaskTrackerModel from './models/TripTaskTrackerModel';
+export * as TripTicketsModel from './models/TripTicketsModel';
 export * as UpsertAttendanceLogModel from './models/UpsertAttendanceLogModel';
 export * as UpsertTripTaskTrackerModel from './models/UpsertTripTaskTrackerModel';
 export * as UserChannelReadStatusModel from './models/UserChannelReadStatusModel';
@@ -76,6 +77,7 @@ export * from './services/Sp_get_AggregatedAssigned_CountsByBUService';
 export * from './services/Sp_get_AggregatedTrips_CountsByBUService';
 export * from './services/TripTaskEditorListService';
 export * from './services/TripTaskTrackerService';
+export * from './services/TripTicketsService';
 export * from './services/UpsertAttendanceLogService';
 export * from './services/UpsertTripTaskTrackerService';
 export * from './services/UserChannelReadStatusService';

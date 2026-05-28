@@ -470,7 +470,7 @@ export const loaderTypeOptions = [
   {value: "Short Trip Loader", label: "Short Trip", type: "multi", subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", record: {tcMult: .25,tiMult: .25,kmMult: .25,}},
   {value: "Half Trip Loader", label: "Half Trip", type: "multi", subtext: "0.50 Trip Count | 0.50 Index | 0.50 KM", record: {tcMult: .50,tiMult: .50,kmMult: .50,}},
   {value: "Long Trip Loader", label: "Long Trip", type: "multi", subtext: "0.75 Trip Count | 0.75 Index | 0.75 KM", record: {tcMult: .75,tiMult: .75,kmMult: .75,}},
-  {value: "Convoy", label: "Convoy", type: "multi", subtext: "1 Trip Count | 1 Index | 0 KM", record: {tcMult: 1,tiMult: 1,kmMult: 0,}},
+  {value: "Convoy", label: "Convoy", type: "multi", subtext: "0 Trip Count | 0 Index | 0 KM", record: {tcMult: 0,tiMult: 0,kmMult: 0,}},
 ]
 
 

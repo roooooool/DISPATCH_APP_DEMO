@@ -919,6 +919,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "triptickets": {
+    "tableId": "TripTickets",
+    "version": "v2",
+    "primaryKey": "TripTicketID",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "userchannelreadstatus": {
     "tableId": "UserChannelReadStatus",
     "version": "v2",

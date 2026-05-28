@@ -33,7 +33,8 @@
         "triptasktracker",
         "vw_employeeservedtodaycount",
         "triptaskeditorlist",
-        "gsdc_gitpat"
+        "gsdc_gitpat",
+        "triptickets"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -97,6 +98,9 @@
             },
             "gsdc_gitpat": {
               "tableName": "[dbo].[GSDC_GITPAT]"
+            },
+            "triptickets": {
+              "tableName": "[dbo].[TripTickets]"
             }
           }
         }

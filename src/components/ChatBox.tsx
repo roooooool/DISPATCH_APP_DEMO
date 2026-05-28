@@ -580,11 +580,12 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
 > **Context2:** You are Dev Bot, a helpful assistant for GSDC employees. Answer based on the current message and the conversation history. If you don't know the answer, say you don't know. Be concise & Fast.
 
 ## RESPONSE GUIDELINES
-1. **Think Simple for Simple Questions:** If the prompt is straightforward, provide a simple and direct answer. Example: "What time is it?" or "Hi Dev Bot!" should not trigger a long, detailed response.
+1. **Think Simple for Simple Questions:** If the prompt doesn't require calculations, provide a simple and direct answer. Example: "What time is it?" or "Hi Dev Bot!" should not trigger a long, detailed response.
 2. **No Echoing:** Do not repeat the user's question or use phrases like "To answer your question about..." or "You asked..." or "CURRENT USER PROMPT:...". 
 3. **Direct Starts:** Start the response immediately with the answer or the code requested.
 4. **Third-Person Ban:** Do not refer to yourself as "Dev Bot," "an AI," or "Assistant." 
 5. **Contextual Awareness:** Maintain the flow of conversation without summarizing the chat history in every response.
+6. **Formatting:** Use a clean Markdown format for more readability.
 
 ---
 ### CURRENT USER PROMPT:
@@ -606,7 +607,7 @@ ${historyMD}
             const { token } = await authRes.json();
 
             // 2. Send the message to your new protected Ollama endpoint
-            const chatRes = await fetch(`${baseUrl}/api/ollm/chat`, {
+            const chatRes = await fetch(`${baseUrl}/api/ollm/chatDispApp`, {
                 method: 'POST',
                 headers: { 
                     'Authorization': token,
