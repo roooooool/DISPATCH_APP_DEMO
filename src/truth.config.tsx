@@ -1,3 +1,6 @@
+export const APP_VERSION = "2.4.0"; // Update this with each release for better error tracking and user support
+
+
 //react helper for truths
 import { 
     PersonnelCell, 
@@ -178,11 +181,11 @@ export const NAV_DESTINATIONS = [
     path: "/wew", 
     whiteList: ["POD"] 
   },
-  // { 
-  //   label: "Maintenance", 
-  //   path: "/maintenance", 
-  //   whiteList: ["Developer"] 
-  // },
+  { 
+    label: "Error", 
+    path: "/error", 
+    whiteList: ["Developer"] 
+  },
 ];
 
 
@@ -1032,7 +1035,7 @@ export const DMS_ATTACHMENTS_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.
 //export const UPLOAD_ATTACHMENTS_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/30b49950f80843beae490213beb56715/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=UCME-tdMqefh_d-G8hK78MUSxtVuFWDIvcPOzrMampc";
 export const PRINT_DMS_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/5c158d3bd1b742c8a929a68cd8bf6ac9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aQVY8keLswpB0k_34fv2uAZJK4dO-vt3P6JvQvnAqxU";
 export const UPLOAD_ATTACHMENTS_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/956d4fbec4db4bd78f0c5f99aae41c6c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=RB-nyQsBDWEy0aux94IfIhw6CLVTSjGb9M-vixmyn6o";
-
+export const ERROR_EMAIL_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/25910ba44d244d92aaa23ab1aaf9d146/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=n3Pva4B7ioglK0TIhBoyv3yGd2xizzVc32Eyt3Ri70E";
 
 export const DEVBOT_USERID = '-1432';
 export const ITDEV_USERID = '251';

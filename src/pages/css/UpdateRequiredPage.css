@@ -1,0 +1,102 @@
+.update-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f1f5f9;
+  padding: 20px;
+}
+
+.update-card {
+  background: white;
+  padding: 40px;
+  border-radius: 16px; /* Gentle rounded corners */
+  box-shadow: 0 10px 25px rgba(0, 0, 128, 0.1);
+  max-width: 400px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.update-icon {
+  font-size: 50px;
+  margin-bottom: 20px;
+}
+
+.update-title {
+  color: #000080; /* Navy blue primary */
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.update-message {
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.refresh-btn {
+  background-color: #000080;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.refresh-btn:hover {
+  background-color: #3a4efc; /* Primary 2nd blue */
+}
+
+.version-hint {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+
+/* Container for the icon */
+.update-icon-wrapper {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Red for Major/Critical alerts */
+.update-icon-wrapper.major {
+  color: #ff0000; /* Your red accent */
+}
+
+/* Navy Blue for Minor/Feature updates */
+.update-icon-wrapper.minor {
+  color: #000080; /* Your primary navy blue */
+}
+
+/* Button with icon spacing */
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Space between the Refresh icon and text */
+  background-color: #000080;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-icon {
+  animation: spin-slow 4s linear infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -479,6 +479,7 @@ const OrderManagement: React.FC = () => {
         let originalOESource = tripData?.Source || '';
         setSelectedChangeTripOE(null); // Reset selected OE when opening modal
         setShowChangeTripModal({ show: true, record: tripData, action, configChange: changeConfig(originalOESource) });
+        // console.log("trip data: ", tripData);
         fetchNewOrders(); // Refresh orders to get the latest OEs for selection
     };
     
@@ -1597,9 +1598,12 @@ const OrderManagement: React.FC = () => {
                                             
 
                                             const result2 = await TripTicketsService.update(
-                                                showChangeTripModal.record?.OE || '', 
-                                                {OE: selectedChangeTripOE.OE} as any
+                                                showChangeTripModal.record.TripTicketID || '',
+                                                {
+                                                    OE: selectedChangeTripOE.OE,
+                                                }
                                             );
+                                            // console.log("result2: ", result2)
 
 
                                 
