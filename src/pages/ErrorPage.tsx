@@ -142,7 +142,7 @@ const ErrorPage = () => {
 
           {/* Core Layout Action Modals */}
           <div className="error-action-row">
-            {user.user?.Position === 'Developer' && (
+            {(user.user?.Position === 'Developer' || errorDetails === "No Error - User-Initiated Report") && (
               <button 
                 className="error-action-btn secondary-back" 
                 onClick={handleAction}

@@ -1266,7 +1266,7 @@
   transition: all 0.3s ease;
 }
 
-.refresh-btn {
+.table-refresh-btn {
     background: none;
     border: none;
     color: var(--navy-theme); /* Or white depending on your ribbon bg */
@@ -1278,11 +1278,11 @@
     transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.refresh-btn:hover {
+.table-refresh-btn:hover {
     color: var(--color-accent); /* Red accent on hover */
 }
 
-.refresh-btn.spinning svg {
+.table-refresh-btn.spinning svg {
     animation: rotate 1s linear infinite;
 }
 

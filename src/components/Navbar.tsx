@@ -28,11 +28,32 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
   const [isChatBoxOpen, setIsChatBoxOpen] = useState(false);
   const [unreadChatMessages, setUnreadChatMessages] = useState(0);
   const chatBoxRef = useRef<ChatBoxHandle>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
 
   //const prev_notifications: Notification[] = notifications;
 
   const { user, updateUser } = useUser();
+
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Check if the click happened outside the dropdown container
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    // Add listener when dropdown is open
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Clean up the listener when component unmounts or dropdown closes
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
 
   useEffect(() => {
     const fetchCount = async () => {
@@ -110,6 +131,21 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
   }, [navigate, onNavigate]);
 
 
+  const handleReportProblem = () => {
+    // Force navigate to your Error Page
+    navigate('/error', {
+      state: {
+        title: 'Report a Problem',
+        // message: "This is a system-generated chaos test to verify error reporting and UI responsiveness.",
+        message: 'If you are experiencing an issue, please provide details in the report form below. Our team will review your submission and get back to you as soon as possible. Thank you for helping us improve!',
+        actionText: "Return to Current Page",
+        actionPath: location.pathname,
+        details: "No Error - User-Initiated Report"
+      }
+    });
+  }
+
+
 
 
   // Filter navigation based on user position whitelist
@@ -122,8 +158,8 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
 
   return (
     <nav className="main-navbar">
-      {/* LEFT: User Profile Section */}
-        <div className="nav-profile-section" onClick={() => setShowDropdown(!showDropdown)}>
+        {/* LEFT: User Profile Section */}
+        <div className="nav-profile-section" ref={dropdownRef} onClick={() => setShowDropdown(!showDropdown)}>
             <img 
             src={profile_icon_placeholder}
             alt="Profile" 
@@ -135,12 +171,13 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
             </div>
 
             {/* Dropdown Menu */}
-            {showDropdown && (
-              <div className="nav-dropdown">
+            {showDropdown && ( 
+              <div className="nav-dropdown" onClick={(e) => e.stopPropagation()}>
                 <button onClick={() => {}}>User Profile</button>
                 <button onClick={() => { setIsSettingsOpen(true); setShowDropdown(false);  }}>
                   Settings
                 </button>
+                <button className="report-btn" onClick={() => {handleReportProblem()}}>Report Problem</button>
                 <hr />
                 <button className="logout-btn" onClick={handleLogout}>Log out</button>
               </div>

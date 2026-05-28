@@ -1231,7 +1231,7 @@ const TableView: React.FC<TableViewProps> = ({
 
           {/* REFRESH BUTTON */}
           <button 
-            className={`refresh-btn ${isRefreshing || isLoading ? 'spinning' : ''}`}
+            className={`table-refresh-btn ${isRefreshing || isLoading ? 'spinning' : ''}`}
             onClick={handleRefreshClick}
             disabled={isLoading}
             title="Refresh Data"
