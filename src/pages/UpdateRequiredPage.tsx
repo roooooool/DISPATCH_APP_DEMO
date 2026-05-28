@@ -21,15 +21,31 @@ const UpdateRequired: React.FC = () => {
             <Sparkles size={48} strokeWidth={2.5} />
           )}
         </div>
+
         <h1 className="update-title">
           {isMajor ? "Critical Update" : "New Features Available"}
         </h1>
+
         <p className="update-message">
           The system version <strong>{newVersion}</strong> is now available. 
           {isMajor 
             ? " A major overhaul has been deployed. You must refresh to continue using the application." 
             : " New minor improvements and features have been added."}
         </p>
+
+        {/* Refresh Instructions Image */}
+        <div className="instruction-image-wrapper">
+          <img 
+            src="/images/clickrefresh.png" 
+            alt="How to refresh" 
+            className="refresh-instruction-img"
+          />
+          <p className="instruction-caption">Click the refresh icon in your browser to update.</p>
+        </div>
+
+
+
+
         <button className="refresh-btn" onClick={handleRefresh}>
           <RefreshCw size={18} className="btn-icon" />
           REFRESH TO VERSION {newVersion}
