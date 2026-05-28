@@ -19,6 +19,7 @@ interface NavbarProps {
   onNavigate: (path: string) => void;
 }
 
+
 const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -140,7 +141,8 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
         message: 'If you are experiencing an issue, please provide details in the report form below. Our team will review your submission and get back to you as soon as possible. Thank you for helping us improve!',
         actionText: "Return to Current Page",
         actionPath: location.pathname,
-        details: "No Error - User-Initiated Report"
+        details: "No Error - User-Initiated Report",
+        // priority: 'medium'
       }
     });
   }

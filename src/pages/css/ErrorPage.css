@@ -241,3 +241,132 @@
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+.validation-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  padding: 10px 15px;
+  background-color: #fff5f5; /* Very light red tint */
+  border-left: 4px solid #ff0000; /* Your red accent */
+  border-radius: 8px;
+  color: #c53030;
+  font-size: 13px;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.hint-icon {
+  font-weight: 800;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Base styling for the radio labels */
+.radio-label {
+  padding: 6px 12px;
+  border-radius: 20px; /* Gentle rounded pill shape */
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Color Coding Logic */
+.severity-low {
+  color: #2e7d32; /* Green */
+}
+.severity-low.active {
+  background-color: #e8f5e9;
+  border-color: #2e7d32;
+}
+
+.severity-medium {
+  color: #0000e9; /* Your Navy Blue Primary */
+}
+.severity-medium.active {
+  background-color: #e8eaf6;
+  border-color: #0000e9;
+}
+
+.severity-high {
+  color: #ed6c02; /* Orange */
+}
+.severity-high.active {
+  background-color: #fff3e0;
+  border-color: #ed6c02;
+}
+
+.severity-critical {
+  color: #ff0000; /* Your Red Accent */
+}
+.severity-critical.active {
+  background-color: #ffebee;
+  border-color: #ff0000;
+  animation: pulse-soft 2s infinite;
+}
+
+/* Hide the actual radio circle for a cleaner button-like look */
+.radio-label input[type="radio"] {
+  display: none;
+}
+
+/* Soft pulse for critical items to draw attention */
+@keyframes pulse-soft {
+  0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.2); }
+  70% { box-shadow: 0 0 0 6px rgba(255, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+
+/* Container layout for the dynamic notice */
+.priority-hint-container {
+  margin: 12px 0 8px 0;
+  padding: 8px 12px;
+  border-radius: 8px; /* Gentle design style rounded corners */
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  text-align: left;
+}
+
+/* Color-coded hints matched to the dynamic active state class name */
+.hint-low {
+  background-color: #f4fbf7;
+  border-left: 3px solid #2e7d32;
+  color: #1b5e20;
+}
+
+.hint-medium {
+  background-color: #f0f4ff;
+  border-left: 3px solid #3a4efc; /* Primary 2nd Blue */
+  color: #000080; /* Navy Blue Primary */
+}
+
+.hint-high {
+  background-color: #fffaf4;
+  border-left: 3px solid #ed6c02;
+  color: #e65100;
+}
+
+.hint-critical {
+  background-color: #fff5f5;
+  border-left: 3px solid #ff0000; /* Red Accent */
+  color: #c53030;
+  font-weight: 600;
+}
+
+.priority-hint-text {
+  display: inline-block;
+  animation: fadeInHint 0.2s ease-out;
+}
+
+@keyframes fadeInHint {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
