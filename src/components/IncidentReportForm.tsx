@@ -1,4 +1,4 @@
-import React, { useState, useImperativeHandle, forwardRef, useRef } from 'react';
+import { useState, useImperativeHandle, forwardRef, useRef } from 'react';
 import { Save, ClipboardList, AlertCircle, ChevronDown, Clock, Image as ImageIcon } from 'lucide-react';
 
 // YOUR CUSTOM COMPONENTS

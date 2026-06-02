@@ -1780,6 +1780,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       const filename = `DMS_${formData.OE || 'UnknownOE'}_${editingUser?.FullName || 'UnknownUser'}_${new Date().toISOString()}`;
       const feeTotal = ((formData.FlatTire_Fee_Total || 0) + (formData.Toll_Fee_Total || 0) + (formData.Baranggay_Fee_Total || 0) + (formData.Other_Fee_Total || 0));
+      const withdrawn = formData.QTYWithdrawn !== undefined && formData.QTYWithdrawn <= 0 ? null : formData.QTYWithdrawn?.toString() || null;
+      const delivered = formData.QTYDelivered !== undefined && formData.QTYDelivered <= 0 ? null : formData.QTYDelivered?.toString() || null;
+      const actualWithdrawn = formData.QTYWithdrawn_Actual !== undefined && formData.QTYWithdrawn_Actual <= 0 ? null : formData.QTYWithdrawn_Actual?.toString() || null;
+      const actualDelivered = formData.QTYDelivered_Actual !== undefined && formData.QTYDelivered_Actual <= 0 ? null : formData.QTYDelivered_Actual?.toString() || null;
 
       addTask({
         name: `Generating DMS for ${formData.OE}`,
@@ -1818,7 +1822,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               dispsrc_arrival_time: formData.Source_x0020_in ? new Date(formData.Source_x0020_in.slice(0, -1)).toLocaleTimeString() : null,
               dispsrc_departure_date: formData.Source_x0020_out ? new Date(formData.Source_x0020_out.slice(0, -1)).toISOString().split('T')[0] : null,
               dispsrc_departure_time: formData.Source_x0020_out ? new Date(formData.Source_x0020_out.slice(0, -1)).toLocaleTimeString() : null,
-              qty_withdrawn: formData.QTYWithdrawn !== undefined && formData.QTYWithdrawn <= 0 ? null : formData.QTYWithdrawn?.toString() || null,
+              qty_withdrawn: actualWithdrawn ? actualWithdrawn : withdrawn,
               driver_unloader: formData.Driver_x0020_Unloader || null,
               helper_unloader: formData.Helper_x0020_Unloader || null,
               dispdst_date: formData.Dispatched_x0020_to_x0020_Destination ? new Date(formData.Dispatched_x0020_to_x0020_Destination.slice(0, -1)).toISOString().split('T')[0] : null,
@@ -1827,7 +1831,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               dispdst_arrival_time: formData.Destination_x0020_in ? new Date(formData.Destination_x0020_in.slice(0, -1)).toLocaleTimeString() : null,
               dispdst_departure_date: formData.Destination_x0020_out ? new Date(formData.Destination_x0020_out.slice(0, -1)).toISOString().split('T')[0] : null,
               dispdst_departure_time: formData.Destination_x0020_out ? new Date(formData.Destination_x0020_out.slice(0, -1)).toLocaleTimeString() : null,
-              qty_delivered: formData.QTYDelivered !== undefined && formData.QTYDelivered <= 0 ? null : formData.QTYDelivered?.toString() || null,
+              qty_delivered: actualDelivered ? actualDelivered : delivered,
               fee_flattire: formData.FlatTire_Fee_Total !== undefined && formData.FlatTire_Fee_Total <= 0 ? null : formData.FlatTire_Fee_Total?.toString() || null,
               fee_tollgate: formData.Toll_Fee_Total !== undefined && formData.Toll_Fee_Total <= 0 ? null : formData.Toll_Fee_Total?.toString() || null,
               fee_barangay: formData.Baranggay_Fee_Total !== undefined && formData.Baranggay_Fee_Total <= 0 ? null : formData.Baranggay_Fee_Total?.toString() || null,
@@ -1837,7 +1841,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               date_deocumented: formData.Documented_x0020_Date ? new Date(formData.Documented_x0020_Date.slice(0, -1)).toISOString().split('T')[0] : null,
               date_transmitted: formData.Transimtted_x0020_Date ? new Date(formData.Transimtted_x0020_Date.slice(0, -1)).toISOString().split('T')[0] : null,
               verified_by: formData.Verified_x0020_By || null,
-              qty_discrepancy:  formData.QTYDelivered === undefined && formData.QTYWithdrawn === undefined ? null : ( (formData.QTYDelivered || 0) - (formData.QTYWithdrawn || 0) ).toString(),
+              qty_discrepancy:  actualWithdrawn ? (Number(actualWithdrawn) - Number(actualDelivered)) : (formData.QTYWithdrawn !== undefined && formData.QTYDelivered !== undefined ? (Number(formData.QTYWithdrawn) - Number(formData.QTYDelivered)) : null),
             };
 
             const response = await fetch(PRINT_DMS_ENDPOINT, {

@@ -7,7 +7,7 @@ import { RefreshCcw, Plus } from 'lucide-react';
 
 //truth
 import { 
-    IR_TYPES,
+    // IR_TYPES,
     INCIDENT_TABLE_MODULE
 } from '../truth.config'; // Importing IR types for dropdown options
 
