@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import { Sun, Moon, Trash2, SlidersHorizontal, Code2 } from 'lucide-react';
+import { Sun, Moon, Trash2, SlidersHorizontal, Code2, Eye, EyeOff } from 'lucide-react';
 import "./comp_css/SettingsModal.css";
 
 import { type UserInfo } from "../truth.config";
@@ -11,13 +11,15 @@ interface SettingsModalProps {
   onClose: () => void;
   theme: string;
   toggleTheme: () => void;
+  hiddenNav?: boolean;
+  toggleHiddenNav?: () => void;
   user: UserInfo | null;
   updateUser: (data: Partial<UserInfo>) => void; // Function to update user data
 }
 
 type SettingsCategory = 'Appearance' | 'Debug' | 'Developer';
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, theme, toggleTheme, user, updateUser }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, theme, toggleTheme, hiddenNav,  toggleHiddenNav, user, updateUser }) => {
   /*const { user, updateUser } = useUser();
   const userRef = useRef(user);
     useEffect(() => {
@@ -59,6 +61,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, theme, t
       case 'Appearance':
       return (
         <>
+          {/* Dark/Light Theme Toggle */}
           <div className="setting-item">
             <div className="setting-label">
               {theme === "dark" ? <Sun className="setting-icon" /> : <Moon className="setting-icon" />}
@@ -73,6 +76,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, theme, t
               <span className="slider round"></span>
             </label>
           </div>
+
+          {/* Show Hidden Nav */}
+          {user?.Position === 'Developer' && (<div className="setting-item">
+            <div className="setting-label">
+              {!hiddenNav ? <EyeOff className="setting-icon" /> : <Eye className="setting-icon" />}
+              <span>{hiddenNav ? 'Show' : 'Hide'} Hidden Navigation</span>
+            </div>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                checked={!hiddenNav} 
+                onChange={toggleHiddenNav} 
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>)}
 
           {/* NEW: Custom Cursor Toggle */}
           <div className="setting-item">

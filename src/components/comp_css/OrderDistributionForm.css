@@ -579,17 +579,17 @@
 
 .unsaved-indicator {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: -5px;    /* Tweak these values to fit your design */
+  right: -5px;   
   background-color: red;
   color: white;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
+  width: 16px;  /* Slightly smaller for a cleaner look */
+  height: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: bold;
   box-shadow: 0 0 5px red;
   animation: pulse 1.5s infinite;
@@ -649,6 +649,15 @@
 .more-options-container {
   position: relative;
   display: inline-block;
+}
+
+.more-options-dropdown a {
+  position: relative; /* This creates the boundary for the absolute indicator */
+  display: flex;      /* Helps with alignment of icons and text */
+  align-items: center;
+  gap: 8px;           /* Space between icon and text */
+  text-decoration: none;
+  padding: 8px 12px;
 }
 
 .more-options-button {

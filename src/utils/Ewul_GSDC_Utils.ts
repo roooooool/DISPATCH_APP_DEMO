@@ -426,4 +426,15 @@ export const fetchSharepointAttachments = async ({
 
 
 
+export const handleNavigateError = (error: string, location: any, navigate: any) => {
+  navigate('/error', {
+    state: {
+      details: error,
+      actionText: "Return to Current Page",
+      actionPath: location.pathname,
+      required: true, // Mark this error as required to report
+    }
+  });
+}
+
 

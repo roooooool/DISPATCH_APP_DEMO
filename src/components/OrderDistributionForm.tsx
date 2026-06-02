@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { SaveIcon, Plus, Fuel, Printer, Replace, Ban, CheckCheck, Menu, ArrowRight, AtSign, Loader, Calendar, Loader2, Send, ClipboardList} from 'lucide-react';
+import { SaveIcon, Plus, Fuel, Printer, Replace, Ban, CheckCheck, Menu, ArrowRight, AtSign, Loader, Calendar, Loader2, Send, ClipboardList, FileSpreadsheet} from 'lucide-react';
 import Modal from './ewul_Modal';
 
 // POWER APPS SERVICES
@@ -29,6 +29,7 @@ import {
   GSDC_SEND_TO_CHAT_key,
   ATTENDANCE_SERVED_COUNTS_INITIAL,
   loaderTypeOptions,
+  // IR_TYPES,
 } from '../truth.config';
 
 
@@ -157,8 +158,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     fuelFetching = false, 
     driverHelperList 
   }, ref) => {
-    
-
 
 
     const { addTask } = useTaskWorker();
@@ -1908,6 +1907,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const disabledDoneGrp = prog_verified || prog_idx < 4 || !validateOE(formData).isValid;
 
     const discrepancy = formData.QTYDelivered != null && formData.QTYWithdrawn != null ?  formData.QTYWithdrawn - formData.QTYDelivered : 0;
+    const actualDiscrepancy = formData.QTYDelivered_Actual != null && formData.QTYWithdrawn_Actual != null ?  formData.QTYWithdrawn_Actual - formData.QTYDelivered_Actual : 0;
     return (
     <>
       <div className="order-dist-container animate-pop-in" style={style}>
@@ -1934,6 +1934,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 <button onClick={() => setMoreOptionsOpen(!isMoreOptionsOpen)} className={`control-btn ${isMoreOptionsOpen ? 'open' : 'close'}`} type="button" title='More Actions'>
                   {`ACTIONS`}
                   <Menu size={16} />
+                  {
+                    (
+                      (((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= 5)  && (formData.TripProgress === 'Done')) ||
+                      (!canChangeTrip && !fuelFetching)
+                    ) && !isMoreOptionsOpen
+                    && <span className="unsaved-indicator">!</span>
+                  }
                 </button>
                 {isMoreOptionsOpen && (
                   <div className="more-options-dropdown">
@@ -1963,7 +1970,18 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         null
                         }}>
                         <ClipboardList size={16} /> 
-                        Transaction Logs
+                        View History
+                    </a>
+                    <a 
+                      href="#" 
+                      className={!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= 5) || (formData.TripProgress !== 'Done') ? 'disabled' : ''} 
+                      onClick={(e) => {
+                        e.preventDefault(); 
+                        null
+                        }}>
+                        <FileSpreadsheet size={16} /> 
+                        Create IR
+                        {((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= 5)  && (formData.TripProgress === 'Done') && <span className="unsaved-indicator">!</span>}
                     </a>
                   </div>
                 )}
@@ -2529,7 +2547,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   <div className="input-group">
                     <label>Actual Discrepancy</label>
                     <div className="gradient-input-wrapper">
-                      <input disabled={disabledDoneGrp} type="number" value={(formData.QTYDelivered_Actual || 0)-(formData.QTYWithdrawn_Actual || 0 )} />
+                      <input disabled type="number" value={actualDiscrepancy} />
                     </div>
                   </div>
 

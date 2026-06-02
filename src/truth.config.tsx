@@ -159,33 +159,58 @@ export type StatusKey = keyof typeof ATTENDANCE_STATUS_COLORS;
 export const ATTENDANCE_SERVED_COUNTS_INITIAL = ["N", "Y", "X", "Z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "O", "P", "Q", "R", "S", "T", "U", "V", "W"];
 
 export const SPECIAL_POSITIONS = ['Developer', 'Admin', 'Execom', "Manager", "Supervisor"]; // Positions that bypass whitelist
-
 export const NAV_DESTINATIONS = [
   { 
     label: "Dashboard", 
     path: "/dash", 
-    whiteList: ["Admin", "Manager", "OD", "Coor"] 
+    whiteList: ["Admin", "Manager", "OD", "Coor"],
+    noSpecialAccess: false,
+    hidden: false
   },
   { 
     label: "Trip Dispatch", 
     path: "/order", 
-    whiteList: ["OD","Coor"] 
+    whiteList: ["OD","Coor"],
+    hidden: false
   },
   { 
     label: "Fleet Monitoring", 
     path: "/fleet", 
-    whiteList: ["Driver", "OD", "Coor"] 
+    whiteList: ["Driver", "OD", "Coor"],
+    noSpecialAccess: false,
+    hidden: false
   },
   { 
-    label: "Documents", 
-    path: "/wew", 
-    whiteList: ["POD"] 
+    label: "Incident Reports", 
+    path: "/incidents", 
+    whiteList: ["Admin", "Manager", "OD", "Coor"],
+    noSpecialAccess: false,
+    hidden: false 
   },
-  // { 
-  //   label: "Error", 
-  //   path: "/error", 
-  //   whiteList: ["Developer"] 
-  // },
+  { 
+    label: "Tickets", 
+    path: "/wew", 
+    whiteList: ["Developer"],
+    noSpecialAccess: true,
+    hidden: false 
+  },
+
+
+  { 
+    label: "Update Req", 
+    path: "/update-required", 
+    noSpecialAccess: true,
+    whiteList: ["Developer"],
+    hidden: true
+  },
+  { 
+    label: "Sys Maint", 
+    path: "/maintenance", 
+    whiteList: ["Developer"],
+    noSpecialAccess: true, // Cannot be accessed by special positions unless whitelisted
+    hidden: true
+  },
+
 ];
 
 
@@ -364,7 +389,7 @@ export const TRIP_STATUSES = [
 ];
 
 
-//Attendance Statuses
+// Attendance Statuses
 export const ATTENDANCE_STATUSES = [
 
   { seq: 0.0, Status: 'ABSENT', Alias: 'ABSENT', onduty: false, sort: 1.0  }, // ABSENT
@@ -382,6 +407,14 @@ export const ATTENDANCE_STATUSES = [
   { seq: 3.3, Status: "AWOL", Alias: "AWOL", onduty: false, sort: 998 },
   { seq: 3.4, Status: "SUSPENDED", Alias: "SUSPENDED", onduty: false, sort: 999 },
 
+]
+
+
+// IR Types
+export const IR_TYPES = [
+  {label: "Short Bags", value: "Short Bags"},
+  {label: "Idling", value: "Idling"},
+  {label: "Overspeeding", value: "Overspeeding"},
 ]
 
 
@@ -521,7 +554,7 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     { col: "cementType", alias: "Type" },
 
     { col: "ATW/LO#", alias: "ATW/LO#" },
-    { col: "Plant DR", alias: "PLANT DR" },
+    { col: "Plant DR", alias: "PLANT DR"},
     { col: "SO#", alias: "SO#" },
     { col: "GSDC DR", alias: "GSDC DR" },
     { col: "Planning", alias: "Dispatcher Remarks" },
@@ -561,7 +594,7 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)' : 'var(--color-bg-blue)'
   }), 
 
-  searchable_cols: ["OE", "Driver", "Helper", "Vehicle", "BO", "Source", "Destination"] as const
+  searchable_cols: ["OE", "Driver", "Helper", "Vehicle", "BO", "Source", "Destination", "ATW/LO#", "Plant DR", "SO#", "GSDC DR"] as const
 
 };
 
@@ -997,6 +1030,21 @@ export const FUEL_REQUESTS_TABLE_CONFIG: TableModuleConfig = {
   searchable_cols: ["OE", "fuelrequestID", "Requestedby"] as const
 
 }
+
+
+
+export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
+  table_config: [
+    { col: "OE_Reference", alias: "Trip OE#", portion: 1.5, sticky: true },
+    { col: "IncidentType", alias: "Type", portion: 1.2, filter: { type: "dropdown" } },
+    { col: "ActionStatus", alias: "Action Verdict", portion: 1.5, filter: { type: "dropdown" } },
+    { col: "Remarks", alias: "Quick Remarks", portion: 2 },
+    { col: "ReportedBy", alias: "Reporter", portion: 1.2 },
+    { col: "CreatedDateTime", alias: "Reported Date", portion: 1.5 }
+  ],
+  // Include both references so text highlights perfectly across special character variants
+  searchable_cols: ["OE_Reference", "IncidentType", "ReportedBy"]
+};
 
 
 

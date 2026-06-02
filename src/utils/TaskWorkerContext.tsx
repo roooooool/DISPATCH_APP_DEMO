@@ -35,6 +35,7 @@ interface TaskWorkerProviderProps {
 }
 
 export const TaskWorkerProvider: React.FC<TaskWorkerProviderProps> = ({ children, setNotifications }) => {
+
   const [_activeTaskIds, setActiveTaskIds] = useState<Set<string>>(new Set());
   const [_tasks, setTasks] = useState<Task[]>([]);
 
@@ -105,7 +106,7 @@ export const TaskWorkerProvider: React.FC<TaskWorkerProviderProps> = ({ children
               ...n, 
               state: 'failed', 
               message: 'An unexpected error occurred.', 
-              status: 'unseen' 
+              status: 'unseen'
             } 
           : n
       ));

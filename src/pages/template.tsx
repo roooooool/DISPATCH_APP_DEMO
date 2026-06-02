@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
   import { useNavigate } from "react-router-dom";
-  import Navbar from '../components/Navbar';
+  import Navbar, { type NavbarHandle } from '../components/Navbar';
   import {useUser} from '../utils/useUser';
   import { ArrowBigUp, ChevronUp, ChevronDown } from 'lucide-react'; // Match your dashboard icon
   //import { type Notification} from '../components/NotificationBell'; // Import Notification type if needed
@@ -32,6 +32,8 @@ import React, { useRef, useState, useEffect } from 'react';
 
     const [headerVisible, setHeaderVisible] = useState(true);
     const [showTopBtn, setShowTopBtn] = useState(false);
+
+    const navbarRef = useRef<NavbarHandle>(null);
 
     // --- 2. ALL EFFECTS ---
     
@@ -70,7 +72,7 @@ import React, { useRef, useState, useEffect } from 'react';
     return (
       <>
         <div className={`page-layout-wrapper ${className || ''}`}>
-          <Navbar user={user} onNavigate={(path) => updateUser({ CurrentNav: path })} />
+          <Navbar ref={navbarRef} user={user} onNavigate={(path) => updateUser({ CurrentNav: path })} />
           
           <div className="header-area">
             {!headerVisible && (

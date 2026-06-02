@@ -12,6 +12,7 @@ interface ErrorState {
   actionPath?: string;
   details?: string;
   priority?: SeverityLevel;
+  required?: boolean; // Optional flag to indicate if this error is critical and requires the user to submit a report before proceeding
 }
 
 const SEVERITY_HINTS: Record<string, string> = {
@@ -40,6 +41,7 @@ const ErrorPage = () => {
   const actionPath = state.actionPath || "/dash";
   const errorDetails = state.details || "Unknown Error.";
   const priority = state.priority || 'low';
+  const required = state.required || false; // Default to false if not provided
 
   const [severity, setSeverity] = useState<SeverityLevel>(priority || 'low'); // Default to 'low' if not provided in state
 
@@ -170,7 +172,7 @@ const ErrorPage = () => {
 
           {/* Core Layout Action Modals */}
           <div className="error-action-row">
-            {(user.user?.Position === 'Developer' || errorDetails === "No Error - User-Initiated Report") && (
+            {(user.user?.Position === 'Developer' || (!required)) && (
               <button 
                 className="error-action-btn secondary-back" 
                 onClick={handleAction}

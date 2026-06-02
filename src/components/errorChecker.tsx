@@ -1,6 +1,7 @@
 import React, { createContext, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppConfig } from '../components/maintenanceChecker';
+import {useUser} from '../utils/useUser';
 
 
 
@@ -10,6 +11,7 @@ export const ErrorCheckerContext = createContext(null);
 export const ErrorChecker: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const user = useUser();
 
     const { config } = useAppConfig();
 
@@ -73,11 +75,10 @@ export const ErrorChecker: React.FC<{ children: React.ReactNode }> = ({ children
         // Force navigate to your Error Page
         navigate('/error', {
           state: {
-            // title: randomTitle,
-            // message: "This is a system-generated chaos test to verify error reporting and UI responsiveness.",
             details: randomStack,
             actionText: "Return to Home",
-            actionPath: location.pathname
+            actionPath: location.pathname,
+            required: true, // Mark this error as required to report
           }
         });
       }
@@ -86,6 +87,38 @@ export const ErrorChecker: React.FC<{ children: React.ReactNode }> = ({ children
     window.addEventListener('click', handleGlobalClick);
     return () => window.removeEventListener('click', handleGlobalClick);
   }, [navigate]);
+
+  // dev go back
+  const useKeyboardShortcut = (callback: () => void) => {
+    useEffect(() => {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        // Check for Ctrl + Shift + Backspace
+        const isCtrl = event.ctrlKey || event.metaKey; // metaKey for Mac users
+        const isShift = event.shiftKey;
+        const isBackspace = event.key === 'Backspace';
+
+        if (isCtrl && isShift && isBackspace) {
+          // Prevent default browser behavior (if any)
+          event.preventDefault();
+          callback();
+        }
+      };
+
+      // Attach listener
+      window.addEventListener('keydown', handleKeyDown);
+
+      // Clean up on unmount
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }, [callback]);
+  };
+
+  useKeyboardShortcut(() => {
+    if (user.user?.Position !== "Developer") {console.log("Unauthorized user attempted to use dev shortcut"); return;}
+    user.updateUser({CurrentNav: "/dash"});
+    navigate(-1); // Go back to the previous page
+  });
 
   return (
     <ErrorCheckerContext.Provider value={null}>

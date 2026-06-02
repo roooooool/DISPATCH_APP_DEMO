@@ -227,6 +227,8 @@ const OrderManagement: React.FC = () => {
                 10000
             );
 
+            // console.log("Fetched new orders:", result);
+
 
             // 'result' is the actual Array now!
             if (result && result.length > 0) {
@@ -244,6 +246,7 @@ const OrderManagement: React.FC = () => {
         }
 
     }, [selectedRangeNewOrders]);
+    fetchNewOrders(); // Call it once on component mount to load initial data
 
     const fetchAttendanceServedCounts = useCallback(async (nocd: boolean = false) => {
 

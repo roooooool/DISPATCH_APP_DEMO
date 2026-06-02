@@ -1473,7 +1473,7 @@ const TableView: React.FC<TableViewProps> = ({
           <tbody>
             {isLoading && data.length === 0 ? (
               /* 1. SKELETON LOADING STATE */
-              [...Array(5)].map((_, i) => (
+              [...Array(20)].map((_, i) => (
                 <tr key={i} className="skeleton-row">
                   {/* Add extra skeleton cell if selection is enabled */}
                   {isSelectionMode && (
@@ -1583,7 +1583,7 @@ const TableView: React.FC<TableViewProps> = ({
                         : (row[column.col] ?? row[(column as any).rawCol]);
 
                       const isSearchable = searchCol.length > 0 
-                        ? searchCol.includes(column.col) 
+                        ? searchCol.includes((column as any).rawCol || column.col) 
                         : true;
                       
                       const conditionalStyle = column.cellStyle ? column.cellStyle(row) : {}; //CALCULATE CONDITIONAL FORMATTING

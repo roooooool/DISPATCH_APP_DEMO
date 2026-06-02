@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { NAV_DESTINATIONS, SPECIAL_POSITIONS, type UserInfo, GSDC_NAVIGATE_TO_TRIP_key } from "../truth.config";
 import "./comp_css/Navbar.css";
@@ -19,8 +19,12 @@ interface NavbarProps {
   onNavigate: (path: string) => void;
 }
 
+export interface NavbarHandle {
+  handleNavigateError: (error: string) => void;
+}
 
-const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
+
+const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate }, ref) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -30,6 +34,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
   const [unreadChatMessages, setUnreadChatMessages] = useState(0);
   const chatBoxRef = useRef<ChatBoxHandle>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [hiddenNav, setHiddenNav] = useState(true); // State to track hidden navigation toggle
 
 
   //const prev_notifications: Notification[] = notifications;
@@ -87,15 +92,12 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
-  const handleNavigate = (path: string) => {
+  const handleNavigate = (path: string, hiddenNav?: boolean) => {
     // 1. Notify the Parent (PageTemplate) to update the global state and localStorage
-    if (onNavigate) {
+    if (onNavigate && !hiddenNav) {
       onNavigate(path);
     }
-
-    // 2. Perform the actual navigation
-    // Note: We don't necessarily need state: { user } anymore because the 
-    // hook in the next page will read the updated localStorage automatically.
+    
     navigate(path);
     setIsMobileMenuOpen(false); // Close mobile menu on navigation
   };
@@ -104,6 +106,21 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
     localStorage.removeItem("gsdc_user");
     navigate("/");
   };
+
+  const handleNavigateError = (error: string) => {
+    navigate('/error', {
+      state: {
+        details: error,
+        actionText: "Return to Current Page",
+        actionPath: location.pathname,
+        required: true, // Mark this error as required to report
+      }
+    });
+  }
+
+  useImperativeHandle(ref, () => ({
+    handleNavigateError
+  }));
 
 
   useEffect(() => {
@@ -154,8 +171,16 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
   const allowedNavs = user ? NAV_DESTINATIONS.filter((nav) => {
       const isSpecial = SPECIAL_POSITIONS.includes(user.Position);
       const isWhitelisted = nav.whiteList.includes(user.Position);
+      const noSpecialAccess = nav.noSpecialAccess || false; // Default to false if not specified
       
-      return isSpecial || isWhitelisted;
+      // Check if the nav is marked as "hidden" (ends with *)
+      const isMarkedHidden = nav.hidden;
+
+      // Logic: 
+      const meetsSecurity = (isSpecial && !noSpecialAccess) || isWhitelisted;
+      const visibilityPass = isMarkedHidden ? (!hiddenNav === true && user.Position === 'Developer') : true;
+
+      return meetsSecurity && visibilityPass;
   }) : [];
 
   return (
@@ -196,7 +221,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
               key={nav.path} 
               // Optional: Add an 'active' class if this is the current path
               className={`nav-item ${location.pathname === nav.path ? 'active' : ''}`} 
-              onClick={() => handleNavigate(nav.path)} // Use our new helper
+              onClick={() => handleNavigate(nav.path,nav.hidden)} // Use our new helper
             >
               {nav.label}
             </button>
@@ -250,6 +275,8 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
         onClose={() => setIsSettingsOpen(false)} 
         theme={theme}
         toggleTheme={toggleTheme}
+        hiddenNav={hiddenNav}
+        toggleHiddenNav={() => setHiddenNav((prev) => !prev)}
         key={`${isSettingsOpen}`} // Force remount to reset internal state
         user={user}
         updateUser={updateUser}
@@ -264,6 +291,7 @@ const Navbar: React.FC<NavbarProps> = ({ user: _user, onNavigate }) => {
       />
     </nav>
   );
-};
+});
 
+Navbar.displayName = "Navbar"
 export default Navbar;

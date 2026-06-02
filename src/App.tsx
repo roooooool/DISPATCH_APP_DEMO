@@ -13,6 +13,7 @@ import MaintenancePage from "./pages/MaintenancePage";
 import DeveloperPage from './pages/DeveloperPage';
 import ErrorPage from "./pages/ErrorPage";
 import UpdateRequired from "./pages/UpdateRequiredPage";
+import IncidentManagement from "./pages/IncidentManagement";
 
 //CUSTOM
 import ProtectedRoute from "./components/ewul_ProtectedRoute"; // Route guard 
@@ -96,6 +97,7 @@ function MainContent() {
                   <Route path="/loading" element={<LoadingPage />} />
                   <Route path="/error" element={<ErrorPage />} />
                   <Route path="/update-required" element={<UpdateRequired />} />
+                  <Route path="/incidents" element={<ProtectedRoute><IncidentManagement /></ProtectedRoute>} />
                   <Route path="*" element={<Not_Found />} />
                 </Routes>
               </VersionGuard>
