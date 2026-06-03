@@ -16,4 +16,5 @@ export interface OP_IncidentReports {
   ModifiedBy?: string;
   CreatedDateTime?: string;
   ModifiedDateTime: string;
+  IncidentDateAsInt?: number;
 }

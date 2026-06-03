@@ -1032,16 +1032,69 @@ export const FUEL_REQUESTS_TABLE_CONFIG: TableModuleConfig = {
 }
 
 
+// INCIDENT REPORTS PAGE
+
+export const IR_REPORT_TYPES = [
+    { value: 'Short Bags', label: 'Short Bags' },
+    { value: 'Accident', label: 'Road Accident' },
+    { value: 'Idling', label: 'Unauthorized Idling' },
+    { value: 'Overspeeding', label: 'Overspeeding' },
+    { value: 'Other', label: 'Other / Miscellaneous' }
+];
+
+export const IR_ACTION_OPTIONS = [
+    { value: 'Inspection', label: 'Inspection', color: 'var(--color-border-info)' },
+    { value: 'Retrieval', label: 'Retrieval', color: 'var(--color-border-warning)' },
+    { value: 'Proceed Next Trip', label: 'Proceed Next Trip', color: 'var(--color-border-success)' }
+];
 
 export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
   table_config: [
-    { col: "OE_Reference", alias: "Trip OE#", portion: 1.5, sticky: true },
-    { col: "IncidentType", alias: "Type", portion: 1.2, filter: { type: "dropdown" } },
-    { col: "ActionStatus", alias: "Action Verdict", portion: 1.5, filter: { type: "dropdown" } },
+    { col: "OE_Reference", alias: "Trip OE#", sticky: true },
+    { col: "IncidentType", alias: "Type", portion: 0.2, filter: { type: "dropdown-multiple" } },
+    { 
+      col: "ActionStatus", 
+      alias: "Action", 
+      filter: { type: "dropdown-multiple" }, 
+      render: (val: any) => {
+        const actionOption = IR_ACTION_OPTIONS.find(option => option.value === val);
+        const pillColor = actionOption?.color || 'var(--color-border-info)'; 
+
+        return (
+          <span style={{ 
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '3px 12px',
+            borderRadius: '999px', // Perfect pill/capsule shape
+            fontSize: '12px',
+            fontWeight: '600',
+            color: pillColor,
+            // Mixes the CSS variable color with 12% opacity against a white background
+            backgroundColor: `color-mix(in srgb, ${pillColor} 12%, white)`,
+            // Creates a matching slightly darker border line
+            border: `1px solid color-mix(in srgb, ${pillColor} 30%, white)`,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            whiteSpace: 'nowrap'
+          }}>
+            {val}
+          </span>
+        );
+      }
+    },
     { col: "Remarks", alias: "Quick Remarks", portion: 2 },
-    { col: "ReportedBy", alias: "Reporter", portion: 1.2 },
+    { col: "ReportedBy", alias: "Reported By", portion: 1.2 },
     { col: "CreatedDateTime", alias: "Reported Date", portion: 1.5, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "datetime" }) },
+    { col: "", alias: "Age", portion: 0.5, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "duration" }) },
   ],
+
+  rowStyle: (row: any) => ({
+    backgroundColor: row._idx % 2 === 0
+      ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)'
+      : 'var(--color-bg-blue)'
+  }),
+  
+
   // Include both references so text highlights perfectly across special character variants
   searchable_cols: ["OE_Reference", "IncidentType", "ReportedBy"]
 };

@@ -2,7 +2,11 @@ import { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import SearchableDropdown, { type DropdownOption } from './SearchableDropdown';
 
-import { type UserInfo } from '../truth.config';
+import { 
+    type UserInfo,
+    IR_REPORT_TYPES,
+    IR_ACTION_OPTIONS 
+} from '../truth.config';
 
 import '../components/comp_css/OrderDistributionForm.css'; // Reusing for container styles
 
@@ -24,22 +28,24 @@ interface IncidentReportFormProps {
     user: UserInfo | null;
 }
 
-const REPORT_TYPES: DropdownOption[] = [
-    { value: 'Short Bags', label: 'Short Bags' },
-    { value: 'Accident', label: 'Road Accident' },
-    { value: 'Idling', label: 'Unauthorized Idling' },
-    { value: 'Overspeeding', label: 'Overspeeding' },
-    { value: 'Other', label: 'Other / Miscellaneous' }
-];
 
-const ACTION_OPTIONS: DropdownOption[] = [
-    { value: 'Inspection', label: 'Inspection' },
-    { value: 'Retrieval', label: 'Retrieval' },
-    { value: 'Proceed Next Trip', label: 'Proceed Next Trip' }
-];
 
 const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProps>(({ onClose, onSubmit, user }, ref) => {
     const { addTask } = useTaskWorker();
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+    const ACTION_OPTIONS: DropdownOption[] = IR_ACTION_OPTIONS.map(option => ({
+        value: option.value,
+        label: option.label
+    }));
+
+    const REPORT_TYPES: DropdownOption[] = IR_REPORT_TYPES.map(option => ({
+        value: option.value,
+        label: option.label
+    }));
+
     const [formData, setFormData] = useState<Partial<OP_IncidentReports>>({
         OE_Reference: '',
         IncidentType: REPORT_TYPES[0].value,
@@ -47,7 +53,8 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
         ReportedBy: user?.FullName || '',
         Remarks: ''
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+
+
 
     useEffect(() => {
         // Update ReportedBy if user object changes and it's not already set

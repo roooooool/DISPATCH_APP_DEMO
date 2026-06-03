@@ -11,9 +11,10 @@ interface ModalProps {
   contentStyle?: React.CSSProperties;
   overlayBlur?: number; // e.g., 5
   overlayColor?: string; // e.g., 'rgba(0, 8, 45, 0.85)'
+  hideX?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ onClose, children, width, height, contentClassName, contentStyle, overlayBlur, overlayColor }) => {
+const Modal: React.FC<ModalProps> = ({ onClose, children, width, height, contentClassName, contentStyle, overlayBlur, overlayColor, hideX = false }) => {
   const modalRoot = document.getElementById('modal-root') || document.body;
 
   const modalStyle: React.CSSProperties = {
@@ -38,7 +39,7 @@ const Modal: React.FC<ModalProps> = ({ onClose, children, width, height, content
         style={modalStyle}
         onClick={e => e.stopPropagation()}
       >
-        <button className="modal-close" onClick={onClose}>&times;</button>
+        {!hideX && <button className="modal-close" onClick={onClose}>&times;</button>}
         {children}
       </div>
     </div>,
