@@ -29,6 +29,7 @@ export * as LiveDriverDispatchedList_AllModel from './models/LiveDriverDispatche
 export * as LiveVehicleAssignmentLIstViewModel from './models/LiveVehicleAssignmentLIstViewModel';
 export * as Live_LatestFuelRequestsModel from './models/Live_LatestFuelRequestsModel';
 export * as NewTripsView_CEM_unfilteredModel from './models/NewTripsView_CEM_unfilteredModel';
+export * as OP_IncidentReportsModel from './models/OP_IncidentReportsModel';
 export * as Sp_fetchAttendanceCalendar2Model from './models/Sp_fetchAttendanceCalendar2Model';
 export * as Sp_fetchAttendanceCalendarModel from './models/Sp_fetchAttendanceCalendarModel';
 export * as Sp_GetLastLiquidatedOdometerModel from './models/Sp_GetLastLiquidatedOdometerModel';
@@ -70,6 +71,7 @@ export * from './services/LiveDriverDispatchedList_AllService';
 export * from './services/LiveVehicleAssignmentLIstViewService';
 export * from './services/Live_LatestFuelRequestsService';
 export * from './services/NewTripsView_CEM_unfilteredService';
+export * from './services/OP_IncidentReportsService';
 export * from './services/Sp_fetchAttendanceCalendar2Service';
 export * from './services/Sp_fetchAttendanceCalendarService';
 export * from './services/Sp_GetLastLiquidatedOdometerService';

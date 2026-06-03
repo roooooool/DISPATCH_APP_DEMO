@@ -34,7 +34,8 @@
         "vw_employeeservedtodaycount",
         "triptaskeditorlist",
         "gsdc_gitpat",
-        "triptickets"
+        "triptickets",
+        "op_incidentreports"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -101,6 +102,9 @@
             },
             "triptickets": {
               "tableName": "[dbo].[TripTickets]"
+            },
+            "op_incidentreports": {
+              "tableName": "[dbo].[OP_IncidentReports]"
             }
           }
         }

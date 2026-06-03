@@ -1040,7 +1040,7 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
     { col: "ActionStatus", alias: "Action Verdict", portion: 1.5, filter: { type: "dropdown" } },
     { col: "Remarks", alias: "Quick Remarks", portion: 2 },
     { col: "ReportedBy", alias: "Reporter", portion: 1.2 },
-    { col: "CreatedDateTime", alias: "Reported Date", portion: 1.5 }
+    { col: "CreatedDateTime", alias: "Reported Date", portion: 1.5, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "datetime" }) },
   ],
   // Include both references so text highlights perfectly across special character variants
   searchable_cols: ["OE_Reference", "IncidentType", "ReportedBy"]

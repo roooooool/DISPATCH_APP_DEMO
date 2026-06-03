@@ -905,6 +905,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "op_incidentreports": {
+    "tableId": "OP_IncidentReports",
+    "version": "v2",
+    "primaryKey": "IncidentID",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "triptaskeditorlist": {
     "tableId": "TripTaskEditorList",
     "version": "v2",

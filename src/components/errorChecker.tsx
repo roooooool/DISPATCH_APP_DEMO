@@ -56,9 +56,9 @@ export const ErrorChecker: React.FC<{ children: React.ReactNode }> = ({ children
         undefined,
     ];
 
+
   useEffect(() => {
     const handleGlobalClick = () => {
-        // console.log("current config prob: ", config.pt900.prob)
       if (Math.random() < config.pt900.prob) {
         if (location.pathname.startsWith('/error')) {
             return;

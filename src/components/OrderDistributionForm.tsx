@@ -333,7 +333,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (!data.Vehicle) {
         return { isValid: false, message: 'Truck must be assigned.' };
       }
-      if (!data.BO) {
+      if (!data.BO && data._tripGroup !== 'Mobilization') {
         return { isValid: false, message: 'Trailer must be assigned.' };
       }
 
@@ -653,7 +653,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (item.OE != null) {
         conflicts.push(`Is already assigned to trip: ${item.OE}.`);
       }
-      if (item.PairedTrailer == null) {
+      if (item.PairedTrailer == null && formData._tripGroup !== 'Mobilization') {
         conflicts.push('Does not have a paired trailer.');
       }
       if (item.TractorJrNumber != null || item.JR_Truck_approve != null || item._TractorDivertJR != null || item._TractorRescueJR != null) {
