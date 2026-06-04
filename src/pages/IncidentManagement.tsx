@@ -119,12 +119,12 @@ const IncidentManagement: React.FC = () => {
             >
                 <RefreshCcw size={18} /> Refresh
             </button>
-            <button className="header-action-btn primary" onClick={() => {
+            { false && (<button className="header-action-btn primary" onClick={() => {
                 setSelectedReport(null);
                 setIsModalOpen(true);
             }}>
                 <Plus size={18} /> New Report
-            </button>
+            </button>)}
         </div>
     );
 
@@ -204,9 +204,6 @@ const IncidentManagement: React.FC = () => {
                     })()}
                 </Modal>
             )}
-
-
-
         </PageTemplate>
     );
 };

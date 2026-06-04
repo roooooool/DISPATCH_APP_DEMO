@@ -1102,7 +1102,31 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
 };
 
 
+//LOGS
 
+export const TRIP_CONTEXT_TYPES = [
+    "Attendance",
+    "Pairing - Pair",
+    "Trip - Documents",
+    "Trip - Fuel Request",
+    "Trip - Save",
+    "Attach File - Documents",
+    "General",
+    "Trip - Fuel Request Update",
+    "Dispatch",
+    "Trip - Preload",
+    "Trip - Rejected",
+    "Trip - Assignment",
+    "Trip - Mobilization",
+    "Remarks",
+    "Trip - Reject",
+    "Trip - Divert/Change",
+    "Trip - Status",
+    "Trip - Progressed",
+    "Remarks - Reply",
+    "Trip - Cancelled",
+    "Remarks - Add"
+];
 
 
 

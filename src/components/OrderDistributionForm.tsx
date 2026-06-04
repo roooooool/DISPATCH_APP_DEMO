@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { SaveIcon, Plus, Fuel, Printer, Replace, Ban, CheckCheck, Menu, ArrowRight, AtSign, Loader, Calendar, Loader2, Send, ClipboardList, FileSpreadsheet} from 'lucide-react';
+import { SaveIcon, Plus, Fuel, Printer, Replace, Ban, CheckCheck, Menu, ArrowRight, AtSign, Loader, Calendar, Loader2, Send, ClipboardList, FileSpreadsheet, Undo2} from 'lucide-react';
 import Modal from './ewul_Modal';
 
 // POWER APPS SERVICES
@@ -15,6 +15,7 @@ import { type GSDC_AttendanceBase} from '../generated/models/GSDC_AttendanceMode
 import type { UpsertTripTaskTrackerRequest } from '../generated/models/UpsertTripTaskTrackerModel';
 import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
 import {CheckIfOEExistsService} from '../generated/services/CheckIfOEExistsService';
+import { Action_Logs_HistoryService } from '../generated/services/Action_Logs_HistoryService';
 
 //CSS
 import './comp_css/OrderDistributionForm.css';
@@ -41,6 +42,7 @@ import CustomFileAttachment, {type CustomFileAttachmentRef} from './DropFile';
 import { Assi_icon, DispSrc_icon, DispDst_icon, Done_icon, CheckCircleSolidIcon, XCircleIcon } from './ewul_Icons';
 import { MapPin } from 'lucide-react';
 import IncidentReportForm, { type IncidentFormHandle } from '../components/CreateIncidentReportForm';
+import TripTimeline from './TripTimeline';
 
 
 //Utils
@@ -229,6 +231,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     const [wsAttachmentItemID, setWsAttachmentItemID] = useState<string | undefined>(undefined);
     const [plantDrAttachmentItemID, setPlantDrAttachmentItemID] = useState<string | undefined>(undefined);
+
+
+    const [isTimelineOpen, setIsTimelineOpen] = useState(false);
+    const [selectedTimelineOE, setTimelineSelectedOE] = useState<string | null>(null);
+    const [tripLogs, setTripLogs] = useState<any[]>([]);
+    const [isLoadingLogs, setIsLoadingLogs] = useState(false);
 
     // State initialization using the model structure
     const [formData, setFormData] = useState<LiveDMSView_CEM>(() => {
@@ -1476,6 +1484,62 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     };
 
+    const handleTripRevert = async () => {
+      setIsSubmitting(true);
+
+      let ttID: string | null | undefined = undefined;
+      if (!formData.TripTicketID) {
+        ttID = await generateTripTicketID(formData.OE)
+      }
+
+      // If the trip hasn't been saved before, we need to create it first to get an ID for attachments
+
+      setOriginalFormData(formData); //unsave the save state
+
+      addTask({
+        id: `triprevert-${formData.OE}`, // Unique ID for this task
+        name: `Reverting trip ${formData.OE}`,
+        execute: async () => {
+          try {
+
+            const result = await DMS_CEMService.update(
+              formData.ID.toString(), 
+              {
+
+                Documented_x0020_Date: undefined, // Clear documented date when reverting
+                Verified_x0020_By: undefined, // Clear verifier when reverting
+
+              }
+            );
+
+            if (result.error) {
+              throw new Error(result.error.message);
+            }
+
+            return { success: true, data: result.data };
+
+          } catch (error) {
+            console.error('Failed to revert trip:', error);
+            return { success: false, error };
+          }
+        },
+        checkSuccess: (result: { success: boolean }) => result.success,
+        onSuccess: () => {
+          setIsSubmitting(false);
+          onRefreshTrips?.();
+          onProceed?.({ //update optimistically
+            ...formData, TripTicketID: ttID || formData.TripTicketID,
+          }, false);
+          handleUpdateTripTaskTracker(formData, !!formData.Completed_x0020_Date); // Trigger a sync for the task tracker in case of any assignment changes
+        },
+        onFailure: () => {setIsSubmitting(false);onRefreshTrips?.();},
+
+        message: `Reverting trip ${formData.OE}...`,
+        message_success: `Trip ${formData.OE} reverted successfully!`,
+        message_failure: (result) => `Failed to revert trip ${formData.OE}. Reason: ${result.error?.message || 'Unknown error'}`
+      });
+    };
+
 
 
 
@@ -1609,6 +1673,27 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       } else {
         onClose();
       }
+    };
+
+    const handleViewTripHistory = async (OE: string) => {
+        setTimelineSelectedOE(OE);
+        setIsTimelineOpen(true);
+        setIsLoadingLogs(true);
+
+        try {   
+            const result = await ewulFetchAll<any>(
+                Action_Logs_HistoryService, 
+                { filter: `OE eq '${OE}' or tripID eq '${formData.tripID}'` }, 
+                500,
+                'ID'
+            );
+
+            setTripLogs(result); // Use real data when available, fallback to sample data
+        } catch (error) {
+            console.error("Failed to fetch trip logs:", error);
+        } finally {
+            setIsLoadingLogs(false);
+        }
     };
 
     const getPersonnelIdByName = (name: string, role: string) => {
@@ -1974,8 +2059,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       href="#" 
                       className={!formData.OE ? 'disabled' : ''} 
                       onClick={(e) => {
-                        e.preventDefault(); 
-                        null
+                          e.preventDefault(); 
+                          handleViewTripHistory(formData.OE || '');
+                          setMoreOptionsOpen(false);
                         }}>
                         <ClipboardList size={16} /> 
                         View History
@@ -2586,22 +2672,34 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           <div className={`footer-validation-message ${!validation.isValid ? 'invalid' : 'valid'}`}>
             {prog_verified ? 'This trip has been concluded.' : validation.message}
           </div>
-          <button className="btn-cancel" onClick={handleOnClose}>Cancel</button>
-          <button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripSave();}} disabled={isSubmitting || prog_verified}>
-            {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
-            <SaveIcon size={'var(--font-size-vlg)'} />
-            Save
-          </button>
-          <button 
-            className="btn-proceed" 
-            onClick={() => {
-              if (isSubmitting) return;
-              handleTripProceed(prog_next);
-            }}
-            disabled={!validation.isValid || isSubmitting || prog_verified}
-          >
-            {prog_icon} {prog_verified ? 'Verified' : prog_next.replace('ed','')}
-          </button>
+          <button className="btn-cancel" onClick={handleOnClose}>Close</button>
+          {prog_verified ?
+
+            (<button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting}>
+              {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
+              <Undo2 size={'var(--font-size-vlg)'} />
+              Revert
+            </button>) :
+            (
+              <>
+                <button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripSave();}} disabled={isSubmitting || prog_verified}>
+                  {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
+                  <SaveIcon size={'var(--font-size-vlg)'} />
+                  Save
+                </button>
+                <button 
+                  className="btn-proceed" 
+                  onClick={() => {
+                    if (isSubmitting) return;
+                    handleTripProceed(prog_next);
+                  }}
+                  disabled={!validation.isValid || isSubmitting || prog_verified}
+                >
+                  {prog_icon} {prog_verified ? 'Verified' : prog_next.replace('ed','')}
+                </button>
+              </>
+            )
+          }
           {isSubmitting && (<Loader2 style={{animation: 'spin 1s linear infinite'}} size={'var(--font-size-vlg)'} />)}
         </div>
 
@@ -2970,6 +3068,44 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         }}
                         userName={editingUser?.FullName || 'Unknown User'}
                     />
+                </div>
+            </Modal>
+        )}
+
+
+        {/* TRIP HISTORY TIMELINE MODAL */}
+        {isTimelineOpen && (
+            <Modal 
+                onClose={() => setIsTimelineOpen(false)} 
+                width="35%" // Slightly wider than the IR form to accommodate the timeline layout
+            >
+                <div className="odform-create-ir-modal-header">
+                    Trip Logs History: {selectedTimelineOE}
+                </div>
+
+                <div style={{ 
+                    padding: '5px', 
+                    height: '70vh', // Fixed height for the modal content area
+                    display: 'flex', 
+                    flexDirection: 'column' 
+                }}>
+                    {isLoadingLogs ? (
+                        <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '10px' }}>
+                            <Loader2 className="animate-spin" size={32} color="#000080" />
+                            <span style={{ color: '#000080', fontWeight: 600 }}>Retrieving Trip History...</span>
+                        </div>
+                    ) : (
+                        <TripTimeline 
+                            logs={tripLogs} 
+                            oeReference={selectedTimelineOE} 
+                        />
+                    )}
+                </div>
+
+                <div className="sticky-footer order-dist-footer">
+                    <button className="btn-cancel" style={{ width: '100%' }} onClick={() => setIsTimelineOpen(false)}>
+                        Close History
+                    </button>
                 </div>
             </Modal>
         )}

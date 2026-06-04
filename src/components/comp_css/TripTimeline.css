@@ -1,0 +1,344 @@
+.trip-timeline-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 0.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.timeline-header h3 {
+    color: var(--color-darkslategray);
+    margin: 0 0 20px 0;
+    font-size: 1.2rem;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.timeline-header{
+    z-index: 5;
+}
+
+.timeline-body {
+    flex: 1;
+    overflow-y: auto;
+    z-index: 1;
+}
+
+.timeline-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 0; /* Managed by connector height */
+    position: relative;
+}
+
+/* THE LINE AND DOT */
+.timeline-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 32px;
+}
+
+.timeline-dot {
+    width: 32px;
+    height: 32px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    z-index: 2;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dot-active {
+    background: var(--color-primary);
+    color: white;
+}
+
+.timeline-line {
+    position: absolute;
+    top: 32px; /* Starts below the dot */
+    bottom: 0;   /* Stretches to the very bottom of the padded item */
+    width: 2px;
+    background: #e2e8f0;
+    z-index: 1;  /* Sits behind the dots */
+}
+
+.timeline-line.line-active{
+    position: absolute;
+    top: 32px; /* Starts below the dot */
+    bottom: 0;   /* Stretches to the very bottom of the padded item */
+    width: 2px;
+    background: var(--color-primary);
+    z-index: 1;  /* Sits behind the dots */
+}
+
+/* CONTENT CARD */
+.timeline-content {
+    flex: 1;
+    padding-bottom: 25px; /* Creates spacing between events */
+}
+
+.timeline-time-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.timeline-timestamp {
+    font-size: 0.75rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+}
+
+.timeline-context-tag {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 12px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.timeline-action-text {
+    font-size: 0.95rem;
+    color: #1e293b;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.timeline-footer {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.timeline-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 200px; /* Ensures it looks good even in small wrappers */
+    color: #64748b; /* Soft gray slate text */
+    text-align: center;
+    gap: 12px;
+}
+
+.timeline-empty-state p {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.timeline-empty-state .empty-icon {
+    color: #cbd5e1; /* Even softer gray for illustration icons */
+}
+
+/* --- Header Layout adjustments --- */
+.timeline-header {
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    z-index: 10;
+    padding: 8px 0px;
+    border-bottom: 2px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-title-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-title-section h3 {
+    margin: 0;
+    color: #000080; /* Navy blue primary */
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.filter-indicator-badge {
+    background: #fff5f5;
+    color: #e53e3e; /* Red Accent sub */
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 1px solid #fed7d7;
+}
+
+.filter-dropdown-container {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    height: 34px;
+    min-width: 210px;
+    background: var(--color-primary);
+    border-radius: 8px;
+    color: var(--color-text-2); /* Use your requested text color variable */
+}
+
+.filter-field-icon {
+    /* Set icon to match the text color variable */
+    color: var(--color-text-2); 
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.timeline-context-select {
+    border: none;
+    outline: none;
+    background: transparent;
+    /* Use your requested text color variable */
+    color: var(--color-text); 
+    font-size: 0.85rem;
+    font-weight: 500;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+    appearance: none; /* Removes default browser styling */
+}
+
+
+
+.filter-field-icon {
+    color: var(--color-text-2);
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.timeline-context-select {
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-text-2);
+    font-size: 0.85rem;
+    font-weight: 500;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+    padding-right: 4px;
+    font-weight: 600;
+}
+
+.timeline-context-select option{
+    color: var(--color-text);
+}
+
+/* --- Empty state secondary button adjustments --- */
+.clear-filter-btn {
+    margin-top: 6px;
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: #000080;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-filter-btn:hover {
+    background: #fff5f5;
+    border-color: #e53e3e;
+    color: #e53e3e;
+}
+
+/* Make the row look interactive */
+.timeline-item {
+    cursor: pointer;
+    transition: all 1s ease;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.timeline-item:hover {
+    background: color-mix(in srgb, var(--color-primary-light) 50%, transparent 80%);
+}
+
+.item-expanded {
+    background: #f1f5f9; /* Slightly darker when active */
+}
+
+/* Expanded Detail Container */
+.timeline-expanded-details.hide {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0 12px;
+    border: 0 solid var(--color-primary);
+    overflow: hidden;
+    visibility: hidden; /* Prevents screen reader/tab focus issues when hidden */
+    transition: 
+        max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.25s ease,
+        margin 0.3s ease,
+        padding 0.3s ease,
+        border-width 0.2s ease;
+}
+
+/* --- Active Open State --- */
+.timeline-expanded-details.show {
+    max-height: 1000px; /* High enough value to clear any large JSON strings */
+    opacity: 1;
+    margin: 12px 0;
+    padding: 12px;
+    border: 1px solid var(--color-primary);
+    visibility: visible;
+    overflow: hidden;
+    transition: 
+        max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.35s ease,
+        margin 0.3s ease,
+        padding 0.3s ease,
+        border-width 0.1s ease;
+}
+
+.details-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+/* Grid for JSON Data */
+.json-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.json-detail-item {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 4px;
+}
+
+.json-key {
+    color: var(--color-muted);
+    font-weight: 600;
+    font-size: 0.7rem;
+}
+
+.json-value {
+    color: var(--color-text);
+    word-break: break-all;
+}
