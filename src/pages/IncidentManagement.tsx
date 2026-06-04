@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import PageTemplate from './template';
-import TableView from '../components/ewul_TableFlex';
+import TableView, {type scrollToConfig} from '../components/ewul_TableFlex';
 import Modal from '../components/ewul_Modal';
 import IncidentReportForm, { type IncidentFormHandle } from '../components/CreateIncidentReportForm';
 import {IR_ShortBags_Form} from '../components/IR_ShortBags_Form';
@@ -34,6 +34,7 @@ const IncidentManagement: React.FC = () => {
     const [selectedReport, setSelectedReport] = useState<any>(null);
     const formRef = useRef<IncidentFormHandle>(null);
     const { user } = useUser();
+    const [scrollTo, setScrollTo] = useState<scrollToConfig | null>(null);
 
     const [incidentReports, setIncidentReports] = useState<any[]>([]);
     const [selectedDateRange, setSelectedDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
@@ -82,6 +83,12 @@ const IncidentManagement: React.FC = () => {
         fetchIncidentReports();
     }, [fetchIncidentReports]); // Re-fetch whenever the memoized fetchIncidentReports function changes (i.e., selectedDateRange changes)
 
+    useEffect(() => {
+        if (!isModalOpen) {
+            setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });
+        }
+    }, [isModalOpen]);
+
 
     const handleDateRangeChange = useCallback((range: { from: string; to: string }) => {
         setSelectedDateRange(range);
@@ -92,6 +99,7 @@ const IncidentManagement: React.FC = () => {
     const handleRowClick = (row: any) => {
         setSelectedReport(row);
         // setIsModalOpen(true);
+        setScrollTo({ search_col: 'IncidentID', key: row.IncidentID, highlight: 'success' });
         setTimeout(() => formRef.current?.setFormData(row), 50);
     };
 
@@ -134,6 +142,7 @@ const IncidentManagement: React.FC = () => {
                     theme="var(--color-primary)"
                     showNumbering={true}
                     highlightSelected={true}
+                    scrollTo={scrollTo}
                 />
             </div>
 
@@ -148,8 +157,7 @@ const IncidentManagement: React.FC = () => {
                             onClose={() => setIsModalOpen(false)}
                             onSubmit={async (data) => {
                                 console.log("Saving incident:", data);
-                                // For a real app, you would call OP_IncidentReportsService.postIncidentReport or .putIncidentReport here
-                                // For now, we'll simulate local update/add
+                                // Optimistic Update
                                 setIncidentReports(prev => {
                                     const existingIndex = prev.findIndex(r => r.IncidentID === data.IncidentID);
                                     if (existingIndex !== -1) {
@@ -163,10 +171,10 @@ const IncidentManagement: React.FC = () => {
                                     }
                                 });
                                 setIsModalOpen(false);
-                                // After submission, you might want to refetch the data from the backend
+                                // Refresh
                                 fetchIncidentReports();
                             }}
-                            user={user}
+                            userName={user?.FullName || null}
                         />
                     </div>
                 </Modal>
@@ -187,7 +195,7 @@ const IncidentManagement: React.FC = () => {
                         return (
                             <IR_ShortBags_Form 
                             initialUser={user?.FullName} 
-                            onClose={() => setSelectedReport(null)} 
+                            onClose={() => {setSelectedReport(null); setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });}} 
                             />
                         );
                         default:

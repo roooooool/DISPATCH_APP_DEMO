@@ -3,7 +3,6 @@ import { Save } from 'lucide-react';
 import SearchableDropdown, { type DropdownOption } from './SearchableDropdown';
 
 import { 
-    type UserInfo,
     IR_REPORT_TYPES,
     IR_ACTION_OPTIONS 
 } from '../truth.config';
@@ -25,12 +24,13 @@ export interface IncidentFormHandle {
 interface IncidentReportFormProps {
     onClose: () => void;
     onSubmit: (data: Partial<OP_IncidentReports>) => void;
-    user: UserInfo | null;
+    userName: string | null;
+    OE?: string; // Optional OE reference to pre-fill the form when creating from a specific trip context
 }
 
 
 
-const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProps>(({ onClose, onSubmit, user }, ref) => {
+const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProps>(({ onClose, onSubmit, userName, OE }, ref) => {
     const { addTask } = useTaskWorker();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,10 +47,10 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
     }));
 
     const [formData, setFormData] = useState<Partial<OP_IncidentReports>>({
-        OE_Reference: '',
+        OE_Reference: OE || '', // Pre-fill with OE if provided
         IncidentType: REPORT_TYPES[0].value,
         ActionStatus: ACTION_OPTIONS[0].value,
-        ReportedBy: user?.FullName || '',
+        ReportedBy: userName || '',
         Remarks: ''
     });
 
@@ -58,13 +58,13 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
 
     useEffect(() => {
         // Update ReportedBy if user object changes and it's not already set
-        if (user && !formData.ReportedBy) {
-            setFormData(prev => ({ ...prev, ReportedBy: user?.FullName || '' }));
-        } else if (!user && formData.ReportedBy) {
+        if (userName && !formData.ReportedBy) {
+            setFormData(prev => ({ ...prev, ReportedBy: userName }));
+        } else if (!userName && formData.ReportedBy) {
             // Clear if user logs out
             setFormData(prev => ({ ...prev, ReportedBy: '' }));
         }
-    }, [user, formData.ReportedBy]);
+    }, [userName, formData.ReportedBy]);
 
     const updateField = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -127,85 +127,87 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
                 OE_Reference: data.OE_Reference || '',
                 IncidentType: data.IncidentType || REPORT_TYPES[0].value,
                 ActionStatus: data.ActionStatus || ACTION_OPTIONS[0].value,
-                ReportedBy: data.ReportedBy || user?.FullName || '', // Prioritize passed data, then user full name
+                ReportedBy: data.ReportedBy || userName || '', // Prioritize passed data, then user full name
                 Remarks: data.Remarks || ''
             });
         }
     }));
 
     return (
-        <div className="order-dist-container">
-            <div className="scrollable-body">
-                
-                <div className="input-group-group">
-                    <div className="form-row" style={{ padding: '14px' }}>
-                        <div className="input-group">
-                            <label>OE Reference (Trip)</label>
-                            <div className="share-gradient-wrapper">
-                                <input 
-                                    className="share-textarea" 
-                                    style={{ height: '40px' }}
-                                    value={formData.OE_Reference} 
-                                    onChange={(e) => updateField('OE_Reference', e.target.value)} 
-                                    placeholder="OE-XXXXX" 
+        <div className="wew" style={{ display: 'flex', flexDirection: 'column', height: '100%'}}>
+            <div className="order-dist-container">
+                <div className="scrollable-body">
+                    
+                    <div className="input-group-group">
+                        <div className="form-row" style={{ padding: '14px' }}>
+                            <div className="input-group">
+                                <label>OE Reference (Trip)</label>
+                                <div className="share-gradient-wrapper">
+                                    <input 
+                                        className="share-textarea" 
+                                        style={{ height: '40px' }}
+                                        value={formData.OE_Reference} 
+                                        onChange={(e) => updateField('OE_Reference', e.target.value)} 
+                                        placeholder="OE-XXXXX" 
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="input-group">
+                                <label>Report Type</label>
+                                <SearchableDropdown
+                                    options={REPORT_TYPES}
+                                    value={formData.IncidentType}
+                                    onChange={(val) => updateField('ReportType', val)}
+                                    placeholder="Select Type..."
                                 />
                             </div>
                         </div>
 
-                        <div className="input-group">
-                            <label>Report Type</label>
-                            <SearchableDropdown
-                                options={REPORT_TYPES}
-                                value={formData.IncidentType}
-                                onChange={(val) => updateField('ReportType', val)}
-                                placeholder="Select Type..."
-                            />
+                        <div className="form-row" style={{ padding: '14px' }}>
+                            <div className="input-group">
+                                <label>Action</label>
+                                <SearchableDropdown
+                                    options={ACTION_OPTIONS}
+                                    value={formData.ActionStatus}
+                                    onChange={(val) => updateField('ActionStatus', val)}
+                                    placeholder="Select Action..."
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <label>Created By</label>
+                            <div className="share-gradient-wrapper">
+                                    <input
+                                        className="share-textarea"
+                                        style={{ height: '40px' }}
+                                        value={formData.ReportedBy}
+                                        placeholder="Your Name"
+                                        readOnly // Made read-only as it's auto-filled
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="form-row" style={{ padding: '14px' }}>
-                        <div className="input-group">
-                            <label>Action</label>
-                            <SearchableDropdown
-                                options={ACTION_OPTIONS}
-                                value={formData.ActionStatus}
-                                onChange={(val) => updateField('ActionStatus', val)}
-                                placeholder="Select Action..."
-                            />
-                        </div>
-
-                        <div className="input-group">
-                            <label>Created By</label>
-                        <div className="share-gradient-wrapper">
-                                <input
+                        <div className="input-group" style={{ padding: '0 14px 14px 14px' }}>
+                            <label>Quick Remarks</label>
+                            <div className="share-gradient-wrapper">
+                                <textarea
                                     className="share-textarea"
-                                    style={{ height: '40px' }}
-                                    value={formData.ReportedBy}
-                                    placeholder="Your Name"
-                                    readOnly // Made read-only as it's auto-filled
-                            />
-                        </div>
+                                    value={formData.Remarks}
+                                    onChange={(e) => updateField('Remarks', e.target.value)}
+                                    rows={5}
+                                />
                     </div>
-                </div>
-
-                    <div className="input-group" style={{ padding: '0 14px 14px 14px' }}>
-                        <label>Quick Remarks</label>
-                        <div className="share-gradient-wrapper">
-                            <textarea
-                                className="share-textarea"
-                                value={formData.Remarks}
-                                onChange={(e) => updateField('Remarks', e.target.value)}
-                                rows={5}
-                            />
                 </div>
             </div>
-        </div>
-        </div>
-            <div className="sticky-footer order-dist-footer">
-                <button disabled={isSubmitting} className="btn-cancel" onClick={onClose}>Cancel</button>
-                <button disabled={isSubmitting} className="btn-proceed" onClick={() => {handleSubmit(formData); setIsSubmitting(true);}}>
-                    <Save size={18} /> Create Incident Report
-                </button>
+            </div>
+                <div className="sticky-footer order-dist-footer">
+                    <button disabled={isSubmitting} className="btn-cancel" onClick={onClose}>Cancel</button>
+                    <button disabled={isSubmitting} className="btn-proceed" onClick={() => {handleSubmit(formData); setIsSubmitting(true);}}>
+                        <Save size={18} /> Create Incident Report
+                    </button>
+                </div>
             </div>
         </div>
     );

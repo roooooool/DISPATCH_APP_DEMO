@@ -30,6 +30,7 @@ import {
   ATTENDANCE_SERVED_COUNTS_INITIAL,
   loaderTypeOptions,
   // IR_TYPES,
+  SHORT_BAGS_LIMIT,
 } from '../truth.config';
 
 
@@ -39,6 +40,7 @@ import CustomDateTimePicker from './ModernTimestampInput';
 import CustomFileAttachment, {type CustomFileAttachmentRef} from './DropFile';
 import { Assi_icon, DispSrc_icon, DispDst_icon, Done_icon, CheckCircleSolidIcon, XCircleIcon } from './ewul_Icons';
 import { MapPin } from 'lucide-react';
+import IncidentReportForm, { type IncidentFormHandle } from '../components/CreateIncidentReportForm';
 
 
 //Utils
@@ -50,7 +52,7 @@ import { useTaskWorker } from '../utils/TaskWorkerContext';
 export type FormUserInfo = {
   BusinessUnit: string;
   Position: string;
-  id: string; // Unique identifier for the user, can be used for more robust localStorage handling
+  id: string; 
   FullName?: string;
 };
 
@@ -162,6 +164,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     const { addTask } = useTaskWorker();
     const [isMoreOptionsOpen, setMoreOptionsOpen] = useState(false);
+    const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
+    const incidentFormRef = useRef<IncidentFormHandle>(null);
     const [showTruckConflictModal, setShowTruckConflictModal] = useState(false);
     const [truckConflictInfo, setTruckConflictInfo] = useState<string[]>([]);
     const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
@@ -1940,7 +1944,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   <Menu size={16} />
                   {
                     (
-                      (((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= 5)  && (formData.TripProgress === 'Done')) ||
+                      (((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT)  && (formData.TripProgress === 'Done')) ||
                       (!canChangeTrip && !fuelFetching)
                     ) && !isMoreOptionsOpen
                     && <span className="unsaved-indicator">!</span>
@@ -1978,14 +1982,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     </a>
                     <a 
                       href="#" 
-                      className={!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= 5) || (formData.TripProgress !== 'Done') ? 'disabled' : ''} 
+                      className={!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') ? 'disabled' : ''} 
                       onClick={(e) => {
                         e.preventDefault(); 
-                        null
+                        setIsIncidentModalOpen(true);
                         }}>
                         <FileSpreadsheet size={16} /> 
                         Create IR
-                        {((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= 5)  && (formData.TripProgress === 'Done') && <span className="unsaved-indicator">!</span>}
+                        {((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT)  && (formData.TripProgress === 'Done') && <span className="unsaved-indicator">!</span>}
                     </a>
                   </div>
                 )}
@@ -2947,6 +2951,27 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             </div>
           </Modal>,
           document.body
+        )}
+
+
+        {isIncidentModalOpen && (
+            <Modal onClose={() => setIsIncidentModalOpen(false)} hideX={true} width="30%">
+                <div className="odform-create-ir-modal-header">
+                    Create Incident Report
+                </div>
+                <div style={{ padding: '5px', height: '100%' }}>
+                    <IncidentReportForm
+                        OE={formData.OE}
+                        ref={incidentFormRef}
+                        onClose={() => setIsIncidentModalOpen(false)}
+                        onSubmit={async (data) => {
+                            console.log("Saving incident:", data);
+                            setIsIncidentModalOpen(false)
+                        }}
+                        userName={editingUser?.FullName || 'Unknown User'}
+                    />
+                </div>
+            </Modal>
         )}
 
 

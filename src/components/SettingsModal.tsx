@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import { Sun, Moon, Trash2, SlidersHorizontal, Code2, Eye, EyeOff } from 'lucide-react';
 import "./comp_css/SettingsModal.css";
 
-import { type UserInfo } from "../truth.config";
+import { type UserInfo, APP_VERSION } from "../truth.config";
 import { useNavigate } from "react-router-dom";
 
 
@@ -163,6 +163,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, theme, t
             <button className="dev-full-nav-btn" onClick={handleNavigateToDeveloper}>
               Open Developer Control Center
             </button>
+            <span>v{APP_VERSION}</span>
           </div>
         );
       default:

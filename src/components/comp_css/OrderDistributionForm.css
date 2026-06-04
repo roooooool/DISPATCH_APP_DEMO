@@ -1092,3 +1092,33 @@ select.status-new {
 }
 
 
+
+
+.odform-create-ir-modal-header {
+    /* Theme Colors: Navy Blue primary */
+    color: var(--color-primary); 
+    
+    /* Typography: Bold and clean */
+    font-size: 1.5rem;
+    font-weight: 700;
+    
+    /* Spacing & Layout */
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    text-align: left;
+    
+    /* Gentle Design: Subtle bottom border to separate from inputs */
+    border-bottom: 2px solid var(--color-muted); 
+    
+    /* Ensures it spans the width of the modal body */
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.wew {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Important: Tells the form to fill the Modal's inner height */
+  width: 100%;
+}

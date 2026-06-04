@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../pages/css/LoadingPage.css'; // Create this for styling
 import gsdcLogo from "../../public/gsdc_logo.png";
+import { APP_VERSION } from '../truth.config'; // Import the app version for display
 
 const LOADING_STEPS = [
   "Authenticating session...",
@@ -64,7 +65,7 @@ const LoadingOverlayMask: React.FC<LoadingOverlayMaskProps> = ({ onProgressChang
           className="loading-logo"
         />
         <div className="loader-logo">GSDC DISPATCH APP</div>
-
+        <span>v{APP_VERSION}</span>
         <h2 className="loading-status-text">{statusText}</h2>
 
         <div className="progress-container">

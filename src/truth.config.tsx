@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.4.0"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "2.4.1"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -1047,6 +1047,8 @@ export const IR_ACTION_OPTIONS = [
     { value: 'Retrieval', label: 'Retrieval', color: 'var(--color-border-warning)' },
     { value: 'Proceed Next Trip', label: 'Proceed Next Trip', color: 'var(--color-border-success)' }
 ];
+
+export const SHORT_BAGS_LIMIT = 0;
 
 export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
   table_config: [
