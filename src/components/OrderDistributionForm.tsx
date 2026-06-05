@@ -32,6 +32,7 @@ import {
   loaderTypeOptions,
   // IR_TYPES,
   SHORT_BAGS_LIMIT,
+  SPECIAL_POSITIONS
 } from '../truth.config';
 
 
@@ -1432,6 +1433,16 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             ...formData, TripTicketID: ttID || formData.TripTicketID,
           }, false);
           handleUpdateTripTaskTracker(formData, !!formData.Completed_x0020_Date); // Trigger a sync for the task tracker in case of any assignment changes
+          logDmsUpdate({ //log trip update
+            userName: editingUser?.FullName || '', 
+            userID: Number(editingUser?.id) || 0,
+            inputOE: formData.OE || '',
+            action: `Trip details saved`,
+            value: formData.OE || '',
+            isRecordJSON: true,
+            context: `Trip - Saved`,
+            role: editingUser?.Position || '',
+          });
         },
         onFailure: () => {setIsSubmitting(false);onRefreshTrips?.();},
 
@@ -1487,6 +1498,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const handleTripRevert = async () => {
       setIsSubmitting(true);
 
+      console.log("Reverting trip with data:", formData);
+
       let ttID: string | null | undefined = undefined;
       if (!formData.TripTicketID) {
         ttID = await generateTripTicketID(formData.OE)
@@ -1497,7 +1510,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       setOriginalFormData(formData); //unsave the save state
 
       addTask({
-        id: `triprevert-${formData.OE}`, // Unique ID for this task
+        id: `triprevert-${formData.OE}-${Date.now()}`, // Unique ID for this task
         name: `Reverting trip ${formData.OE}`,
         execute: async () => {
           try {
@@ -1506,13 +1519,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               formData.ID.toString(), 
               {
 
-                Documented_x0020_Date: undefined, // Clear documented date when reverting
-                Verified_x0020_By: undefined, // Clear verifier when reverting
-
-              }
+                Documented_x0020_Date: null, // Clear documented date when reverting
+                Verified_x0020_By: null, // Clear verifier when reverting
+  
+              } as any
             );
 
             if (result.error) {
+              console.log("Error reverting trip:", result.error);
               throw new Error(result.error.message);
             }
 
@@ -1529,8 +1543,20 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           onRefreshTrips?.();
           onProceed?.({ //update optimistically
             ...formData, TripTicketID: ttID || formData.TripTicketID,
+            Documented_x0020_Date: undefined,
+            Verified_x0020_By: undefined, 
           }, false);
-          handleUpdateTripTaskTracker(formData, !!formData.Completed_x0020_Date); // Trigger a sync for the task tracker in case of any assignment changes
+          logDmsUpdate({ //log trip update
+            userName: editingUser?.FullName || '', 
+            userID: Number(editingUser?.id) || 0,
+            inputOE: formData.OE || '',
+            action: `Trip reverted for resubmission.`,
+            value: formData.OE || '',
+            isRecordJSON: true,
+            context: `Trip - Reverted`,
+            role: editingUser?.Position || '',
+          });
+
         },
         onFailure: () => {setIsSubmitting(false);onRefreshTrips?.();},
 
@@ -2675,7 +2701,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           <button className="btn-cancel" onClick={handleOnClose}>Close</button>
           {prog_verified ?
 
-            (<button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting}>
+            (<button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting || !['POD', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')  }>
               {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
               <Undo2 size={'var(--font-size-vlg)'} />
               Revert
