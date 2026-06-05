@@ -21,7 +21,10 @@ import {
     // logDmsUpdate,
 } from '../utils/Ewul_GSDC_Utils';
 
+
+//power apps
 import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
+import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
 
 // Define a loading key for incident reports
 const FETCH_LOADING_KEYS = {
@@ -31,7 +34,7 @@ const FETCH_LOADING_KEYS = {
 
 const IncidentManagement: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedReport, setSelectedReport] = useState<any>(null);
+    const [selectedReport, setSelectedReport] = useState<OP_IncidentReports | null>(null);
     const formRef = useRef<IncidentFormHandle>(null);
     const { user } = useUser();
     const [scrollTo, setScrollTo] = useState<scrollToConfig | null>(null);
@@ -119,7 +122,7 @@ const IncidentManagement: React.FC = () => {
             >
                 <RefreshCcw size={18} /> Refresh
             </button>
-            { false && (<button className="header-action-btn primary" onClick={() => {
+            { user?.Position === 'Developer' && (<button className="header-action-btn primary" onClick={() => {
                 setSelectedReport(null);
                 setIsModalOpen(true);
             }}>
@@ -143,13 +146,15 @@ const IncidentManagement: React.FC = () => {
                     showNumbering={true}
                     highlightSelected={true}
                     scrollTo={scrollTo}
+                    onRefresh={fetchIncidentReports}
+                    overflowX={true}
                 />
             </div>
 
             {isModalOpen && (
                 <Modal onClose={() => setIsModalOpen(false)} width="30%">
                     <div className="modal-header">
-                        <h2>{selectedReport ? `Incident Report: ${selectedReport.OE}` : 'Create Incident Report'}</h2>
+                        <h2>{selectedReport ? `Incident Report: ${selectedReport.OE_Reference}` : 'Create Incident Report'}</h2>
                     </div>
                     <div style={{ padding: '20px' }}>
                         <IncidentReportForm
@@ -194,12 +199,13 @@ const IncidentManagement: React.FC = () => {
                         case 'Short Bags':
                         return (
                             <IR_ShortBags_Form 
-                            initialUser={user?.FullName} 
-                            onClose={() => {setSelectedReport(null); setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });}} 
+                                incidentReportItem={selectedReport}
+                                initialUser={user?.FullName} 
+                                onClose={() => {setSelectedReport(null); setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });}} 
                             />
                         );
                         default:
-                        return null;
+                        return (<div>{selectedReport.IRID || ''}</div>);
                     }
                     })()}
                 </Modal>

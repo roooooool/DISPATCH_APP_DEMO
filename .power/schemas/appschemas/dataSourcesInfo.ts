@@ -1076,6 +1076,30 @@ export const dataSourcesInfo = {
           }
         ]
       },
+      "GenerateIRID": {
+        "path": "/dbo.GenerateIRID",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "IncidentType",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "CreatedDateTime",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "GeneratedIRID",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
       "GenerateNewTripTicket": {
         "path": "/dbo.GenerateNewTripTicket",
         "method": "POST",

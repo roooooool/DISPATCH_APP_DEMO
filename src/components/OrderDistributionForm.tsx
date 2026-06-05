@@ -167,6 +167,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     const { addTask } = useTaskWorker();
     const [isMoreOptionsOpen, setMoreOptionsOpen] = useState(false);
+    const [showIncidentPrompt, setShowIncidentPrompt] = useState(false);
     const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
     const incidentFormRef = useRef<IncidentFormHandle>(null);
     const [showTruckConflictModal, setShowTruckConflictModal] = useState(false);
@@ -1323,6 +1324,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           onRefreshTrips?.();
           onRefreshDriverHelpers?.();
           handleUpdateTripTaskTracker({...formData, TripProgress: progress_next}, !!updatedData.Completed_x0020_Date);
+
+          if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT ) setShowIncidentPrompt(true);
+
         },
         onFailure: () => {setIsSubmitting(false); onRefreshTrips?.();},
         message: `${progress_next.replace('ed', 'ing')}...`,
@@ -2698,7 +2702,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           <div className={`footer-validation-message ${!validation.isValid ? 'invalid' : 'valid'}`}>
             {prog_verified ? 'This trip has been concluded.' : validation.message}
           </div>
-          <button className="btn-cancel" onClick={handleOnClose}>Close</button>
+          <button className="btn-cancel" onClick={() => {handleOnClose()}}>Close</button>
           {prog_verified ?
 
             (<button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting || !['POD', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')  }>
@@ -3075,6 +3079,34 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             </div>
           </Modal>,
           document.body
+        )}
+
+        { showIncidentPrompt && (
+          <Modal onClose={() => {setIsIncidentModalOpen(false); setShowIncidentPrompt(false);}} width={'35%'} height={'30%'}>
+            <div className="incident-report-prompt-modal">
+              <h3>Create Short-bags Incident Report?</h3>
+              <p>The selected trip has been detected with short-bags. Would you like to create an incident report now?</p>
+              <span className="modal-hint-text">
+                * You can still file this report anytime via the trip's action history or details panel.
+              </span>
+              <div className="incident-report-prompt-modal-actions">
+                {/* Soft, neutral button for dismissing for now */}
+                <button 
+                  className="btn-later" 
+                  onClick={() => {setIsIncidentModalOpen(false); setShowIncidentPrompt(false);}}
+                >
+                  I'll do it later
+                </button>
+                {/* Primary action button using your accent styling */}
+                <button 
+                  className="btn-create-now" 
+                  onClick={() => {setIsIncidentModalOpen(true); setShowIncidentPrompt(false);}}
+                >
+                  Create Now
+                </button>
+              </div>
+            </div>
+          </Modal>
         )}
 
 

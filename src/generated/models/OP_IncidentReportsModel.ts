@@ -17,4 +17,7 @@ export interface OP_IncidentReports {
   CreatedDateTime?: string;
   ModifiedDateTime: string;
   IncidentDateAsInt?: number;
+  reportJSON?: string;
+  IRStatus?: string;
+  IRID?: string;
 }

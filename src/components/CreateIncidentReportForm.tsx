@@ -12,9 +12,14 @@ import '../components/comp_css/OrderDistributionForm.css'; // Reusing for contai
 //power apps
 import {OP_IncidentReportsService} from '../generated/services/OP_IncidentReportsService';
 import {type OP_IncidentReports} from '../generated/models/OP_IncidentReportsModel';
+import {GenerateIRIDService} from '../generated/services/GenerateIRIDService';
 
 //utils
 import { useTaskWorker } from '../utils/TaskWorkerContext';
+
+
+//incident forms model
+import {type IR_ShortBags_Form_Model} from './IR_ShortBags_Form';
 
 
 export interface IncidentFormHandle {
@@ -26,6 +31,7 @@ interface IncidentReportFormProps {
     onSubmit: (data: Partial<OP_IncidentReports>) => void;
     userName: string | null;
     OE?: string; // Optional OE reference to pre-fill the form when creating from a specific trip context
+    preFill?: IR_ShortBags_Form_Model | object;
 }
 
 
@@ -51,7 +57,8 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
         IncidentType: REPORT_TYPES[0].value,
         ActionStatus: ACTION_OPTIONS[0].value,
         ReportedBy: userName || '',
-        Remarks: ''
+        Remarks: '',
+        IRStatus: 'Pending'
     });
 
 
@@ -80,8 +87,18 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
         execute: async () => {
             let result = null
             try {
-                console.log("Submitting incident report:", submittedData);
-                result = await OP_IncidentReportsService.create(submittedData);
+                console.log("Submitting incident report");
+
+                const resIRID = await GenerateIRIDService.GenerateIRID({
+                    IncidentType: submittedData.IncidentType
+                } as any);
+
+                const table1 = resIRID.data?.ResultSets?.Table1 as any[] | undefined;
+                if (!table1 || table1.length <= 0) {
+                    throw new Error("Failed to generate ID: ");
+                }
+
+                result = await OP_IncidentReportsService.create({...submittedData, IRID: table1[0].NewIRID || 'NA'});
 
                 if (result.error) {
                     throw new Error(result.error.message);
@@ -116,7 +133,9 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
 
        })
 
+
        setIsSubmitting(false);
+       onClose();
 
 
     };
@@ -135,7 +154,7 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
 
     return (
         <div className="wew" style={{ display: 'flex', flexDirection: 'column', height: '100%'}}>
-            <div className="order-dist-container">
+            <div className="order-dist-container create-incident-container">
                 <div className="scrollable-body">
                     
                     <div className="input-group-group">
@@ -158,7 +177,7 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
                                 <SearchableDropdown
                                     options={REPORT_TYPES}
                                     value={formData.IncidentType}
-                                    onChange={(val) => updateField('ReportType', val)}
+                                    onChange={(val) => updateField('IncidentType', val)}
                                     placeholder="Select Type..."
                                 />
                             </div>
@@ -202,7 +221,7 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
                 </div>
             </div>
             </div>
-                <div className="sticky-footer order-dist-footer">
+                <div className="sticky-footer order-dist-footer create-incident-footer">
                     <button disabled={isSubmitting} className="btn-cancel" onClick={onClose}>Cancel</button>
                     <button disabled={isSubmitting} className="btn-proceed" onClick={() => {handleSubmit(formData); setIsSubmitting(true);}}>
                         <Save size={18} /> Create Incident Report

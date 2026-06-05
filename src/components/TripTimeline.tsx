@@ -137,7 +137,7 @@ const TripTimeline: React.FC<TripTimelineProps> = ({ logs }) => {
                                 <div className="timeline-time-row">
                                     <span className="timeline-timestamp">
                                         <Clock size={12} style={{ marginRight: '4px' }} />
-                                        {new Date(log.Timestamp).toLocaleString('en-PH')}
+                                        {new Date(log.Timestamp.replace('Z','')).toLocaleString('en-PH')}
                                     </span>
                                     <span className="timeline-context-tag">{log.ContextType}</span>
                                 </div>

@@ -1122,3 +1122,78 @@ select.status-new {
   height: 100%; /* Important: Tells the form to fill the Modal's inner height */
   width: 100%;
 }
+
+.incident-report-prompt-modal {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.incident-report-prompt-modal h3 {
+    color: var(--color-primary, #000080);
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.incident-report-prompt-modal p {
+    color: #475569;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin: 0 0 20px 0;
+}
+
+.incident-report-prompt-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+/* Clear Now - Accent/Action button */
+.btn-create-now {
+    background: var(--color-primary, #000080);
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-create-now:hover {
+    background: #e53e3e; /* Transitions cleanly to your red accent on hover */
+}
+
+/* Later - Neutral secondary button */
+.btn-later {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-later:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+/* Gentle Microcopy styling */
+.modal-hint-text {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-green); /* Muted slate gray */
+    font-style: italic;
+    text-align: center;
+    margin-bottom: auto;
+}

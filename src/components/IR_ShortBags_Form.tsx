@@ -1,18 +1,57 @@
 import React, { useState } from 'react';
 import { Printer, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react'; // Clear, modern utility icons
 import '../components/comp_css/IR_ShortBags_Form.css';
+import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
+
+export type IR_ShortBags_Form_Model = {
+  // IR details
+  irReferenceNo: string;
+  tripReferenceNo: string;
+  irType: string;
+  irAction: string;
+  irIsResolved: boolean;
+  date: string;
+
+
+  // FORM details
+  empName: string;
+  empPosition: string;
+  businessUnit: string;
+  buHead: string;
+  unitHawak: string;
+  lokasyon: string;
+  petsa: string;
+  oras: string;
+  detalyeNgInsidente: string;
+  yarda: string;
+  yardaOthers: string;
+  reportDate: string;
+  reportName: string;
+  reportPosition: string;
+  reportDept: string;
+
+};
 
 interface IR_ShortBags_Props {
   initialUser?: string;
+  incidentReportItem: Partial<OP_IncidentReports>;
   onClose?: () => void;
   onSubmit?: (data: any) => void;
 }
 
-export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, onClose}) => {
+export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, incidentReportItem, onClose}) => {
   const [zoom, setZoom] = useState<number>(1.0); // 1.0 = 100% original scale
-  const [formData, setFormData] = useState({
-    irReferenceNo: '',
-    date: '',
+  const [formData, setFormData] = useState<Partial<IR_ShortBags_Form_Model>>({
+    // IR details
+    irReferenceNo: incidentReportItem.IRID || '',
+    tripReferenceNo: incidentReportItem.OE_Reference || '',
+    irType: incidentReportItem.IncidentType,
+    irAction: incidentReportItem.ActionStatus,
+    irIsResolved: incidentReportItem.IRStatus === 'Resolved' ? true : false,
+    date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : '',
+
+
+    // FORM details
     empName: '',
     empPosition: '',
     businessUnit: '',
@@ -159,9 +198,10 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, o
 
 
   const handleNewLine  = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    const lineCount = (formData.detalyeNgInsidente.match(/\n/g) || []).length + 1;
+    const detalyeNgInsidenteValue = formData.detalyeNgInsidente || '';
+    const lineCount = (detalyeNgInsidenteValue.match(/\n/g) || []).length + 1;
     if (e.key === 'Enter') {
-      if (lineCount >= 5) {
+      if (lineCount >= 5) { 
         e.preventDefault();
       }
     }
@@ -225,7 +265,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, o
             <div className="ir-sb-company-info">
               <h2>GREAT SIERRA DEVELOPMENT CORPORATION</h2>
               <p>Lot 2, Block 1, Grand Industrial Estate Subdivision Bo. Parulan Plaridel, Bulacan</p>
-              <h1>INCIDENT REPORT (SHORT BAGS)</h1>
+              <h1>INCIDENT REPORT ({formData.irType?.toUpperCase()})</h1>
             </div>
             <div className="ir-sb-header-spacer" aria-hidden="true"/> 
           </div>
@@ -234,11 +274,30 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, o
           <div className="ir-sb-meta-row">
             <div className="ir-sb-input-group flex-2">
               <span className="ir-sb-label">IR Reference No:</span>
-              <input type="text" name="irReferenceNo" value={formData.irReferenceNo} onChange={handleChange} className="ir-sb-line-input" />
+              <input type="text" name="irReferenceNo" value={formData.irReferenceNo} onChange={() => null} className="ir-sb-line-input" />
+            </div>
+            <div className="ir-sb-input-group flex-2">
+              <span className="ir-sb-label">Trip Ref No:</span>
+              <input type="text" name="tripReferenceNo" value={formData.tripReferenceNo} onChange={() => null} className="ir-sb-line-input" />
             </div>
             <div className="ir-sb-input-group flex-1">
               <span className="ir-sb-label">Date:</span>
-              <input type="date" name="date" value={formData.date} onChange={handleChange} className={`ir-sb-line-input ${!formData.date ? 'is-empty-print' : ''}`} />
+              <input type="date" name="date" value={formData.date} onChange={() => null} className={`ir-sb-line-input ${!formData.date ? 'is-empty-print' : ''}`} />
+            </div>
+          </div>
+
+          <div className="ir-sb-meta-row">
+            <div className="ir-sb-input-group flex-2">
+              <span className="ir-sb-label">Incident Type:</span>
+              <input type="text" name="irType" value={formData.irType} onChange={() => null} className="ir-sb-line-input" />
+            </div>
+            <div className="ir-sb-input-group flex-2">
+              <span className="ir-sb-label">Action Taken:</span>
+              <input type="text" name="irAction" value={formData.irAction} onChange={() => null} className="ir-sb-line-input" />
+            </div>
+            <div className="ir-sb-input-group flex-1">
+              <span className="ir-sb-label">Resolved:</span>
+              <input type="text" name="irIsResolved" value={formData.irIsResolved ? 'YES' : ''} onChange={() => null} className={`ir-sb-line-input`} />
             </div>
           </div>
 

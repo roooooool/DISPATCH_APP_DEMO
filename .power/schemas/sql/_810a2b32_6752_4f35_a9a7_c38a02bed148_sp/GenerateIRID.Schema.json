@@ -1,0 +1,41 @@
+{
+  "name": "[dbo].[GenerateIRID]",
+  "title": "[dbo].[GenerateIRID]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "IncidentType": {
+          "title": "IncidentType",
+          "type": "string"
+        },
+        "CreatedDateTime": {
+          "title": "CreatedDateTime",
+          "type": "string"
+        },
+        "GeneratedIRID": {
+          "title": "GeneratedIRID",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

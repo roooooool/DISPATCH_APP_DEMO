@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.4.2"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "2.4.3"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -1036,9 +1036,10 @@ export const FUEL_REQUESTS_TABLE_CONFIG: TableModuleConfig = {
 
 export const IR_REPORT_TYPES = [
     { value: 'Short Bags', label: 'Short Bags' },
-    { value: 'Accident', label: 'Road Accident' },
-    { value: 'Idling', label: 'Unauthorized Idling' },
+    { value: 'Road Accident', label: 'Road Accident' },
+    { value: 'Unauthorized Stop', label: 'Unauthorized Stop' },
     { value: 'Overspeeding', label: 'Overspeeding' },
+    { value: 'Fuel Issue', label: 'Fuel Issue' },
     { value: 'Other', label: 'Other / Miscellaneous' }
 ];
 
@@ -1053,6 +1054,17 @@ export const SHORT_BAGS_LIMIT = 0;
 export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
   table_config: [
     { col: "OE_Reference", alias: "Trip OE#", sticky: true },
+    { col: "IRStatus", alias: "Status", 
+      cellStyle: (row: any) => {
+        let style: React.CSSProperties = { color: 'var(--color-muted)'};
+        if (row.IRStatus === "Rejected") style = { color: 'var(--color-border-danger)' };
+        if (row.IRStatus === "Pending") style = { color: 'var(--color-border-warning)' };
+        if (row.IRStatus === "Processing") style = { color: 'var(--color-border-info)' };
+        if (row.IRStatus === "Resolved") style = { color: 'var(--color-border-success)' };
+        style.fontWeight = 'bold';
+        return style;
+      }
+    },
     { col: "IncidentType", alias: "Type", portion: 0.2, filter: { type: "dropdown-multiple" } },
     { 
       col: "ActionStatus", 
