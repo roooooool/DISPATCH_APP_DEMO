@@ -47,7 +47,8 @@ const IncidentManagement: React.FC = () => {
             console.log("No valid date range selected for incident reports fetch, skipping.");
             return;
         }
-        if (!canFetch(FETCH_LOADING_KEYS.incidentReports)) return;
+        setLoadingFor(FETCH_LOADING_KEYS.incidentReports, true);
+        if (!canFetch(FETCH_LOADING_KEYS.incidentReports,2000)) {setLoadingFor(FETCH_LOADING_KEYS.incidentReports, false); return;}
 
         console.log("Fetching incident reports with date range:", selectedDateRange);
 
@@ -60,7 +61,7 @@ const IncidentManagement: React.FC = () => {
             orderBy: ["IncidentDateAsInt desc"],
         };
 
-        setLoadingFor(FETCH_LOADING_KEYS.incidentReports, true);
+        
         try {
             const result = await ewulFetchAll<any>(
                 OP_IncidentReportsService,

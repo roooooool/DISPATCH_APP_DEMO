@@ -26,17 +26,29 @@ export interface IncidentFormHandle {
     setFormData: (data: Partial<OP_IncidentReports>) => void;
 }
 
+export type CreateIR_EmployeeDetails = {
+    EmployeeName: string;
+    EmployeeID: string;
+    EmployeePosition: string;
+    EmployeeBUHead?: string;
+    EmployeeTractor?: string;
+    EmployeeTrailer?: string;
+
+    flexValue?: any;
+}
+
 interface IncidentReportFormProps {
     onClose: () => void;
     onSubmit: (data: Partial<OP_IncidentReports>) => void;
     userName: string | null;
     OE?: string; // Optional OE reference to pre-fill the form when creating from a specific trip context
+    employeeDetails: CreateIR_EmployeeDetails;
     preFill?: IR_ShortBags_Form_Model | object;
 }
 
 
 
-const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProps>(({ onClose, onSubmit, userName, OE }, ref) => {
+const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProps>(({ onClose, onSubmit, userName, OE, preFill, employeeDetails }, ref) => {
     const { addTask } = useTaskWorker();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +70,9 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
         ActionStatus: ACTION_OPTIONS[0].value,
         ReportedBy: userName || '',
         Remarks: '',
-        IRStatus: 'Pending'
+        IRStatus: 'Pending',
+
+        ...{ ...employeeDetails, flexValue: employeeDetails.flexValue.toString() }
     });
 
 
@@ -98,7 +112,7 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
                     throw new Error("Failed to generate ID: ");
                 }
 
-                result = await OP_IncidentReportsService.create({...submittedData, IRID: table1[0].NewIRID || 'NA'});
+                result = await OP_IncidentReportsService.create({...submittedData, IRID: table1[0].NewIRID || 'NA', reportJSON: JSON.stringify(preFill)});
 
                 if (result.error) {
                     throw new Error(result.error.message);

@@ -42,8 +42,9 @@ import CustomDateTimePicker from './ModernTimestampInput';
 import CustomFileAttachment, {type CustomFileAttachmentRef} from './DropFile';
 import { Assi_icon, DispSrc_icon, DispDst_icon, Done_icon, CheckCircleSolidIcon, XCircleIcon } from './ewul_Icons';
 import { MapPin } from 'lucide-react';
-import IncidentReportForm, { type IncidentFormHandle } from '../components/CreateIncidentReportForm';
+import IncidentReportForm, { type IncidentFormHandle, type CreateIR_EmployeeDetails } from '../components/CreateIncidentReportForm';
 import TripTimeline from './TripTimeline';
+import { type IR_ShortBags_Form_Model} from './IR_ShortBags_Form';
 
 
 //Utils
@@ -3125,6 +3126,24 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                             setIsIncidentModalOpen(false)
                         }}
                         userName={editingUser?.FullName || 'Unknown User'}
+                        employeeDetails={{
+                              EmployeeName: formData.Driver,
+                              EmployeeID: '123',
+                              EmployeePosition: 'Driver',
+                              EmployeeBUHead: '',
+                              EmployeeTractor: formData.Head_Full,
+                              EmployeeTrailer: formData.BO_Full,
+                              flexValue: discrepancy,
+                        } as CreateIR_EmployeeDetails}
+                        preFill={{
+                          tripReferenceNo: formData.OE,
+                          Customer: formData.Customer,
+                          TripGroup: formData._tripGroup,
+                          CementType: formData.cementType,
+                          Source: formData.Source,
+                          Destination: formData.Destination,
+                          ServedDate: formData.Completed_x0020_Date,
+                        } as IR_ShortBags_Form_Model}
                     />
                 </div>
             </Modal>

@@ -20,4 +20,13 @@ export interface OP_IncidentReports {
   reportJSON?: string;
   IRStatus?: string;
   IRID?: string;
+  EmployeeName?: string;
+  EmployeeID?: string;
+  EmployeePosition?: string;
+  EmployeeBUHead?: string;
+  EmployeeTractor?: string;
+  EmployeeTrailer?: string;
+  ResolvedDate?: string;
+  ResolvedDateAsInt?: number;
+  flexValue?: string;
 }
