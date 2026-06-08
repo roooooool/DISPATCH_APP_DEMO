@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.4.3"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "2.4.4"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -574,6 +574,11 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     { col: "QTYDelivered", alias: "QTY Delivered" },
     { col: "Driver Unloader", alias: "Driver Unloader" },
     { col: "Helper Unloader", alias: "Helper Unloader" },
+    { col: '', alias: "Discrepancy", calculate: (row: any) => {
+        const discrepancy = row.QTYDelivered != null && row.QTYWithdrawn != null ?  row.QTYDelivered - row.QTYWithdrawn : 0;
+        const actualDiscrepancy = row.QTYDelivered_Actual != null && row.QTYWithdrawn_Actual != null ?  row.QTYDelivered_Actual - row.QTYWithdrawn_Actual : 0;
+        return actualDiscrepancy ? actualDiscrepancy : (discrepancy || 0);
+    }, useCalculatedSort: true },
 
 
     // Completed

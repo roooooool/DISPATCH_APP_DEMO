@@ -132,6 +132,43 @@ const IncidentManagement: React.FC = () => {
         </div>
     );
 
+    const handleSubmit = (data: any) => {
+        setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });
+        console.log(data.length);
+
+        setIncidentReports(prev => {
+            const existingIndex = prev.findIndex(r => r.IncidentID === data.IncidentID);
+            if (existingIndex !== -1) {
+                // Update existing report
+                const updated = [...prev];
+                updated[existingIndex] = { ...updated[existingIndex], ...data };
+                return updated;
+            } else {
+                // Add new report
+                return [...prev, { ...data, IncidentID: `temp-${Date.now()}` }]; // Assign temp ID for new reports
+            }
+        });
+        
+    }
+
+    const handleSave = (data: any) => {
+        setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });
+        console.log(data.length);
+
+        setIncidentReports(prev => {
+            const existingIndex = prev.findIndex(r => r.IncidentID === data.IncidentID);
+            if (existingIndex !== -1) {
+                // Update existing report
+                const updated = [...prev];
+                updated[existingIndex] = { ...updated[existingIndex], ...data };
+                return updated;
+            } else {
+                // Add new report
+                return [...prev, { ...data, IncidentID: `temp-${Date.now()}` }]; // Assign temp ID for new reports
+            }
+        });
+    }
+
     return (
         <PageTemplate title="Incident Management" actions={headerActions}>
 
@@ -201,8 +238,10 @@ const IncidentManagement: React.FC = () => {
                         return (
                             <IR_ShortBags_Form 
                                 incidentReportItem={selectedReport}
-                                initialUser={user?.FullName} 
-                                onClose={() => {setSelectedReport(null); setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });}} 
+                                        initialUser={user ?? undefined}
+                                        onClose={() => {setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });}}
+                                        onSubmit={handleSubmit}
+                                        onSave={handleSave}
                             />
                         );
                         default:

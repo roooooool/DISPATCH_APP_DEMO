@@ -42,7 +42,7 @@ interface IncidentReportFormProps {
     onSubmit: (data: Partial<OP_IncidentReports>) => void;
     userName: string | null;
     OE?: string; // Optional OE reference to pre-fill the form when creating from a specific trip context
-    employeeDetails: CreateIR_EmployeeDetails;
+    employeeDetails?: CreateIR_EmployeeDetails;
     preFill?: IR_ShortBags_Form_Model | object;
 }
 
@@ -71,8 +71,7 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
         ReportedBy: userName || '',
         Remarks: '',
         IRStatus: 'Pending',
-
-        ...{ ...employeeDetails, flexValue: employeeDetails.flexValue.toString() }
+        ...{ ...employeeDetails, flexValue: employeeDetails?.flexValue.toString() }
     });
 
 

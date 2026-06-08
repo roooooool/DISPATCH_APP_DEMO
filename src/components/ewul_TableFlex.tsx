@@ -64,6 +64,7 @@ export interface ColumnConfig {
   portion?: number;
   sticky?: boolean;
   calculate?: (row: any) => any;
+  useCalculatedSort?: boolean;
   cellStyle?: (row: any) => React.CSSProperties;
   render?: (val: any, row: any, searchTerm: string, addTask?: (task: Omit<Task, 'id'>) => void, fontSize?: number) => React.ReactNode; 
 }
@@ -980,14 +981,29 @@ const TableView: React.FC<TableViewProps> = ({
 
 
   //SORT
+  // SORT ENGINE WITH CALCULATED VALUE ROUTING
   const sortedData = useMemo(() => {
     if (multiSort.length === 0) return processedData;
 
+    // PERFORMANCE OPTIMIZATION: Map columns once before launching array sort matrix
+    const configMap = columns.reduce((acc, c) => {
+      acc[c.col] = c;
+      return acc;
+    }, {} as Record<string, ColumnConfig>);
+
     return [...processedData].sort((a, b) => {
-      // Use .entries() to get the index (i) of the current sort rule
       for (const [i, { col, dir }] of multiSort.entries()) {
-        let aVal = a[col];
-        let bVal = b[col];
+        const colConfig = configMap[col];
+        const useCalcSort = colConfig?.useCalculatedSort ?? false;
+
+        // Extract value via calculation rule if enabled, otherwise fall back to raw key registers
+        let aVal = (useCalcSort && colConfig?.calculate)
+          ? colConfig.calculate(a) // Passes true to let your function know it's sorting
+          : (a[col] ?? a[(colConfig as any)?.rawCol]);
+
+        let bVal = (useCalcSort && colConfig?.calculate)
+          ? colConfig.calculate(b)
+          : (b[col] ?? b[(colConfig as any)?.rawCol]);
 
         const aIsEmpty = aVal === null || aVal === undefined || aVal === '';
         const bIsEmpty = bVal === null || bVal === undefined || bVal === '';
@@ -995,14 +1011,11 @@ const TableView: React.FC<TableViewProps> = ({
         if (aIsEmpty && bIsEmpty) continue; 
 
         if (aIsEmpty || bIsEmpty) {
-          // Apply sortBlanks if it's the ONLY sort OR if it's not the primary sort
           const shouldApplySortBlanks = multiSort.length === 1 || i > 0;
-
           if (shouldApplySortBlanks && sortBlanks) {
             const isAsc = dir === 'asc';
             return aIsEmpty ? (isAsc ? -1 : 1) : (isAsc ? 1 : -1);
           } else {
-            // Default: Always push blanks to the bottom
             return aIsEmpty ? 1 : -1;
           }
         }
@@ -1014,7 +1027,7 @@ const TableView: React.FC<TableViewProps> = ({
       }
       return 0;
     });
-  }, [processedData, multiSort, sortBlanks]); // Ensure sortBlanks is in the dependency array
+  }, [processedData, multiSort, sortBlanks, columns]); // Included columns dependency
 
   const totalPages = Math.ceil(sortedData.length / pageSize) || 1;
   const paginatedData = useMemo(() => {

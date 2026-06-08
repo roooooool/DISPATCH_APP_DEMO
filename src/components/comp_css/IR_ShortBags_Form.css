@@ -86,12 +86,40 @@
    ========================================================================== */
 .ir-sb-document {
   width: 100%;
-  max-width: 720px; /* Fits comfortably inside wide modal screens */
+  max-width: 816px; /* Fits comfortably inside wide modal screens */
   min-height: 297mm; /* True A4 aspect sizing */
-  padding: 15mm;
-  background: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  background: transparent;
+  /* box-shadow: 0 0 10px rgba(0,0,0,0.05); */
   box-sizing: border-box;
+  gap: 24px;
+}
+
+.ir-sb-page {
+  background-color: #ffffff;
+  padding: 50px 60px; /* Generous real-world padding */
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  width: 100%;
+  position: relative;
+  
+  /* CRITICAL: Fixes the height on screen so they look identical */
+  min-height: 1056px; /* Standard proportions ratio to 816px width */
+  display: flex;
+  flex-direction: column;
+}
+
+.ir-sb-page-break {
+  position: relative;
+}
+
+.ir-sb-print-image-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  width: 100%;
+  margin-top: 20px;
+  flex-grow: 1; /* Pushes content down nicely inside the strict page boundary */
 }
 
 .ir-sb-header {
@@ -289,6 +317,34 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  .ir-sb-document {
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ir-sb-page {
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+  }
+
+  .ir-sb-page-break {
+    page-break-before: always !important;
+    break-before: page !important;
+    margin-top: 0 !important;
+    padding-top: 1.5cm !important; /* Spacing for the fresh sheet header */
+  }
+
+  /* Completely hide the page separation layout badges when printing on paper sheets */
+  .ir-sb-page-break::before {
+    display: none !important;
+  }
 }
 
 
@@ -392,3 +448,399 @@
 }
 
 
+/* Screen Layout View Overrides */
+.ir-sb-page-break {
+    margin-top: 50px;
+    border-top: 3px double #e1e1e1;
+    padding-top: 30px;
+    position: relative;
+}
+
+/* Screen Layout Badge indicator showing where Page 2 starts on-screen */
+.ir-sb-page-break::before {
+    content: "PAGE 2 (ATTACHMENTS SECTION)";
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: #ffffff;
+    padding: 0 10px;
+    font-size: 11px;
+    color: #3a4efc;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Hide UI interactive structures like buttons or upload dash pads entirely when printing */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
+
+
+
+/* Base Style for Upload Drop-Zone */
+.ir-sb-upload-zone {
+  position: relative; /* Targets absolute placement context for child input */
+  padding: 30px 20px;
+  border: 2px dashed #3a4efc;
+  border-radius: 8px;
+  text-align: center;
+  margin: 15px 0;
+  background: rgba(58, 78, 252, 0.02);
+  cursor: pointer;
+  
+  /* Smooth transform transitions for hover / clicking events */
+  transition: all 0.25s ease-in-out;
+}
+
+/* 1. HOVER CUES: Brightens layout and pulses border slightly */
+.ir-sb-upload-zone:hover {
+  background: rgba(58, 78, 252, 0.06);
+  border-color: #000080; /* Primary navy blue focus color */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(58, 78, 252, 0.08);
+}
+
+/* Highlight the internal browse text line on hover */
+.ir-sb-upload-zone:hover .browse-link {
+  color: #000080;
+  text-decoration: underline;
+}
+
+/* 2. DRAGGING STATE CUES: Triggers when dragging file directly above element canvas */
+.ir-sb-upload-zone.is-dragging {
+  background: rgba(58, 78, 252, 0.12);
+  border-color: #ff4d4d; /* Changes color path to accent red */
+  border-style: solid;
+  transform: scale(1.015);
+  box-shadow: 0 6px 16px rgba(58, 78, 252, 0.15);
+}
+
+/* 3. ACTIVE/CLICK CUES: Pulls downward slightly to acknowledge a mouse click code strike */
+.ir-sb-upload-zone:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow: 0 2px 4px rgba(58, 78, 252, 0.04);
+}
+
+/* Hidden input proxy layout stretching over the total clickable element matrix square */
+.ir-sb-upload-zone input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Typography styles inside the zone */
+.ir-sb-upload-zone .upload-text {
+  margin: 0;
+  color: #555;
+  font-size: 13px;
+  pointer-events: none; /* Passes mouse actions through down to the input file target */
+}
+
+.ir-sb-upload-zone .browse-link {
+  color: #3a4efc;
+  font-weight: bold;
+  transition: color 0.2s ease;
+}
+
+/* Card Layout Enhancements */
+.ir-sb-print-img-card {
+  border: 1px solid #e1e1e1;
+  border-radius: 6px;
+  padding: 12px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.ir-sb-img-desc-box {
+  margin-top: 10px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Base print text controller visibility */
+.print-only-text {
+  display: none;
+}
+
+
+
+
+/* ==========================================================================
+   Image Flex Cards Print Configuration Updates
+   ========================================================================== */
+
+/* 1. Force strict column limits on the grid container */
+.ir-sb-print-image-container {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important; 
+  gap: 5px !important;
+  width: 100% !important;
+  margin-top: 20px !important;
+  
+  /* CRITICAL: Remove flex-grow or heights from grid wrapper in print */
+  flex-grow: 0 !important; 
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* 2. Control card bounding blocks from scaling out of proportion */
+.ir-sb-print-img-card {
+  border: 1px solid #e1e1e1 !important;
+  border-radius: 6px !important;
+  padding: 10px !important;
+  background-color: #fff !important;
+  
+  /* CRITICAL: Override flexbox behaviors when printing to stop border extensions */
+  display: block !important; 
+  height: auto !important;
+  
+  /* CRITICAL: Tell printer drivers explicitly never to sever this specific item box */
+  page-break-inside: avoid !important; 
+  break-inside: avoid !important;
+  page-break-after: auto !important;
+  page-break-before: auto !important;
+}
+
+/* 3. Constrain the raw content dimensions inside the card anchor */
+.ir-sb-print-img-card img {
+  display: block !important;
+  width: 100% !important; /* Forces layout scaling bounded by the container column card */
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 5.5cm !important; /* Slightly brought down to comfortably clear text notes and title margins */
+  object-fit: contain !important;
+  margin: 0 auto !important;
+}
+
+/* 4. Fix description text container expansion */
+.ir-sb-img-desc-box {
+  margin-top: 8px !important;
+  display: block !important; /* Keeps sizing layout predictable */
+  width: 100% !important;
+}
+
+/* ==========================================================================
+   Media Print Specific Overrides
+   ========================================================================== */
+@media print {
+  .print-only-text {
+    display: block !important;
+    word-break: break-all !important; /* Prevents text overflow breaks */
+    font-size: 11px !important;
+    margin-top: 6px !important;
+  }
+
+  .ir-sb-print-img-card {
+    border: 1px solid #999 !important; /* Flat dark rule for generic monochrome hardware printers */
+    background: #ffffff !important;
+  }
+}
+
+
+/* ==========================================================================
+   Interactive Evidence Viewer Portal CSS Rules
+   ========================================================================== */
+.ir-sb-viewer-modal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+/* Header Context */
+.ir-sb-viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e1e4e8;
+  background: #f8f9fa;
+}
+
+.ir-sb-viewer-meta h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #000080; /* Primary Navy Blue Title Accent */
+}
+
+.ir-sb-viewer-meta p {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: #555;
+}
+
+.ir-sb-viewer-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #888;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.15s ease;
+}
+
+.ir-sb-viewer-close-btn:hover {
+  color: #ff4d4d; /* Red accent hover alert state */
+}
+
+/* Bounding Image Frame */
+.ir-sb-viewer-frame {
+  flex: 1;
+  background-color: #11141a; /* Dark blueprint backdrop contrasts file colors nicely */
+  overflow: hidden; /* Prevents zoomed canvas elements from leaking into modal edges */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+}
+
+.ir-sb-viewer-transform-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.ir-sb-viewer-transform-container img {
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  border-radius: 4px;
+}
+
+/* Control Toolbar Layout */
+.ir-sb-viewer-toolbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-top: 1px solid #e1e4e8;
+  background: #f8f9fa;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background-color: #d1d5db;
+}
+
+.ir-sb-viewer-toolbar button {
+  background: #ffffff;
+  border: 1px solid #c4cacf;
+  border-radius: 6px; /* Gentle design rounded corner profile preference */
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.ir-sb-viewer-toolbar button:hover:not(:disabled) {
+  border-color: #3a4efc; /* Highlights your secondary blue on hover action checks */
+  color: #3a4efc;
+  background: rgba(58, 78, 252, 0.02);
+}
+
+.ir-sb-viewer-toolbar button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ir-sb-viewer-toolbar .btn-reset {
+  background-color: #f3f4f6;
+}
+
+.ir-sb-viewer-toolbar .btn-reset:hover {
+  background-color: #000080 !important; /* Resets into clean standard Navy Blue */
+  color: #ffffff !important;
+  border-color: #000080 !important;
+}
+
+.zoom-badge {
+  font-size: 11px;
+  font-weight: bold;
+  color: #555;
+  background: #e5e7eb;
+  padding: 3px 8px;
+  border-radius: 10px;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Ensure the print copy doesn't affect screen rendering or break anything */
+@media print {
+  .print-only-img-fallback {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 5.5cm !important;
+    object-fit: contain !important;
+  }
+}
+
+
+/* Container rules to keep icon and file text locked on one row */
+.ir-sb-filename-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  width: 100%;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+/* Ensure the Lucide SVG icon never shrinks or warps */
+.ir-sb-filename-label svg {
+  flex-shrink: 0;
+}
+
+/* Truncates ultra-long logistics filenames with an elegant trailing (...) ellipsis */
+.ir-sb-filename-text {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  flex: 1;
+}
+
+/* Sets up a pan-grab indicator look for the image view canvas wrapper */
+.ir-sb-viewer-frame {
+  cursor: grab;
+}
+
+/* While actively tracking mouse path dragging, use the locked closed fist cursor */
+.ir-sb-viewer-frame:active,
+.ir-sb-viewer-frame.is-dragging-canvas {
+  cursor: grabbing;
+}
+
+/* Ensure the image element doesn't intercept selection logic triggers */
+.ir-sb-viewer-transform-container img {
+  user-select: none;
+  -webkit-user-drag: none;
+}

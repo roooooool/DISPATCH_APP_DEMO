@@ -2030,8 +2030,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const disabledOEEntGrp = prog_verified;
     const disabledDoneGrp = prog_verified || prog_idx < 4 || !validateOE(formData).isValid;
 
-    const discrepancy = formData.QTYDelivered != null && formData.QTYWithdrawn != null ?  formData.QTYWithdrawn - formData.QTYDelivered : 0;
-    const actualDiscrepancy = formData.QTYDelivered_Actual != null && formData.QTYWithdrawn_Actual != null ?  formData.QTYWithdrawn_Actual - formData.QTYDelivered_Actual : 0;
+    const discrepancy = formData.QTYDelivered != null && formData.QTYWithdrawn != null ?  formData.QTYDelivered - formData.QTYWithdrawn : 0;
+    const actualDiscrepancy = formData.QTYDelivered_Actual != null && formData.QTYWithdrawn_Actual != null ?  formData.QTYDelivered_Actual - formData.QTYWithdrawn_Actual : 0;
     return (
     <>
       <div className="order-dist-container animate-pop-in" style={style}>
@@ -3133,7 +3133,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                               EmployeeBUHead: '',
                               EmployeeTractor: formData.Head_Full,
                               EmployeeTrailer: formData.BO_Full,
-                              flexValue: discrepancy,
+                              flexValue: actualDiscrepancy ? actualDiscrepancy : discrepancy,
                         } as CreateIR_EmployeeDetails}
                         preFill={{
                           tripReferenceNo: formData.OE,
@@ -3143,6 +3143,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                           Source: formData.Source,
                           Destination: formData.Destination,
                           ServedDate: formData.Completed_x0020_Date,
+                          QtyDelivered: formData.QTYDelivered_Actual ? formData.QTYDelivered_Actual : formData.QTYDelivered,
+                          QtyWithdrawn: formData.QTYWithdrawn_Actual ? formData.QTYWithdrawn_Actual : formData.QTYWithdrawn,
+                          ShortBags: actualDiscrepancy ? actualDiscrepancy : discrepancy,
                         } as IR_ShortBags_Form_Model}
                     />
                 </div>
