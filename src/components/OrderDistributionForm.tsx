@@ -3125,7 +3125,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                             console.log("Saving incident:", data);
                             setIsIncidentModalOpen(false)
                         }}
-                        userName={editingUser?.FullName || 'Unknown User'}
+                        ReportBy={editingUser?.FullName || 'Unknown User'}
+                        ReporterPosition={editingUser?.Position}
                         employeeDetails={{
                               EmployeeName: formData.Driver,
                               EmployeeID: '123',

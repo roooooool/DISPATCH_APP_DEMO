@@ -29,4 +29,5 @@ export interface OP_IncidentReports {
   ResolvedDate?: string;
   ResolvedDateAsInt?: number;
   flexValue?: string;
+  ReporterPosition?: string;
 }

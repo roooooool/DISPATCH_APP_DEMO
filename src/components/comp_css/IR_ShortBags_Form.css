@@ -32,15 +32,70 @@
   top: 0;
   right: 0;
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 8px 24px;
-  width: 100%;
-  z-index: 10; /* Keeps buttons safely hovering above document content */
-  pointer-events: none; /* Mouse actions pass right through the empty header strip */
-  background: transparent;
-  box-sizing: border-box;
+  align-items: center;
+  z-index: 50;
+  background: var(--color-bg);
+  box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.08);
+  border-bottom-left-radius: 8px; /* Gentle design rounded corner profile preference */
+  padding: 4px 16px 4px 0; /* Left padding omitted to accommodate the handle */
+  
+  /* Smooth transform sliding interpolation transitions */
+  transform: translateX(0);
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s ease;
 }
+
+.ir-sb-actions-bar.collapsed {
+  /* Shifts the entire container exactly past its width rightward, leaving the toggle handle visible */
+  transform: translateX(100%); 
+  background: transparent;
+  box-shadow: none;
+}
+
+.ir-sb-actions-bar.collapsed .ir-sb-actions-inner-content {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.ir-sb-actions-bar.collapsed .ir-sb-actions-toggle-handle {
+  background: var(--color-primary);
+}
+
+.ir-sb-actions-toggle-handle {
+  position: absolute;
+  left: -32px; /* Positioned directly outside the left edge */
+  top: 50%;    /* 1. Push down to the middle of the parent bar */
+  transform: translateY(-50%); /* 2. Offset perfectly by its own height to anchor the dead-center */
+  
+  width: 32px;
+  height: 38px; /* 3. Use a clean fixed height instead of 100% stretching */
+  cursor: pointer;
+  background: var(--bg-2);
+  
+  /* 4. Flex centering layout properties */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+
+}
+
+.ir-sb-actions-toggle-handle svg {
+  display: block;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.ir-sb-actions-inner-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease;
+}
+
+
 
 .ir-sb-btn {
   display: inline-flex;   
@@ -253,7 +308,7 @@
 
 .ir-sb-checkbox-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   padding-left: 10px;
 }
@@ -343,6 +398,9 @@
 
   /* Completely hide the page separation layout badges when printing on paper sheets */
   .ir-sb-page-break::before {
+    display: none !important;
+  }
+  .ir-sb-page-1::before {
     display: none !important;
   }
 }
@@ -458,7 +516,20 @@
 
 /* Screen Layout Badge indicator showing where Page 2 starts on-screen */
 .ir-sb-page-break::before {
-    content: "PAGE 2 (ATTACHMENTS SECTION)";
+    content: "PAGE 2: ATTACHMENTS";
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: #ffffff;
+    padding: 0 10px;
+    font-size: 11px;
+    color: #3a4efc;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.ir-sb-page-1::before {
+    content: "PAGE 1: MAIN";
     position: absolute;
     top: -12px;
     left: 20px;
@@ -700,15 +771,34 @@
 
 /* Bounding Image Frame */
 .ir-sb-viewer-frame {
-  flex: 1;
-  background-color: #11141a; /* Dark blueprint backdrop contrasts file colors nicely */
-  overflow: hidden; /* Prevents zoomed canvas elements from leaking into modal edges */
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+  flex: 1;
+  transition: background-color 0.3s ease, background-image 0.3s ease;
+
+  background-image: 
+    linear-gradient(45deg, #e9ebf0 25%, transparent 25%), 
+    linear-gradient(-45deg, #e9ebf0 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #e9ebf0 75%), 
+    linear-gradient(-45deg, transparent 75%, #e9ebf0 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
 }
+
+.ir-sb-viewer-frame.canvas-dark-theme {
+  background-color: #1a1a24 !important; /* Rich Dark Charcoal Navy tint */
+  background-image: 
+    linear-gradient(45deg, #13131a 25%, transparent 25%), 
+    linear-gradient(-45deg, #13131a 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #13131a 75%), 
+    linear-gradient(-45deg, transparent 75%, #13131a 75%) !important;
+  background-size: 20px 20px !important;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0 !important;
+}
+
 
 .ir-sb-viewer-transform-container {
   display: flex;
@@ -844,3 +934,97 @@
   user-select: none;
   -webkit-user-drag: none;
 }
+
+/* Media container positioning layer */
+.ir-sb-img-card-media-wrapper {
+  position: relative !important;
+  width: 100%;
+  display: block;
+}
+
+/* Base floating fullscreen action tag style */
+.ir-sb-img-card-fullscreen-btn {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 5;
+  
+  /* Layout Sizing & Visuals matching your theme's gentle design style */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  
+  border: 1px solid rgba(58, 78, 252, 0.15) !important;
+  border-radius: 6px !important; /* Matches your rounded layout preferences */
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #3a4efc !important; /* Secondary Primary Blue Accent */
+  
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  opacity: 0.7; /* Sits quietly until actively engaged */
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Hover style enhancements */
+.ir-sb-img-card-fullscreen-btn:hover {
+  opacity: 1 !important;
+  background: color-mix(in srgb, var(--color-primary-2), transparent 30%) !important; /* Swaps to main Navy Blue on active target focus */
+  color: #ffffff !important;
+  border-color: var(--color-muted) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 128, 0.2) !important;
+  transform: scale(1.05);
+}
+
+/* Ensure the floating trigger gets wiped cleanly during printer parsing */
+@media print {
+  .ir-sb-img-card-fullscreen-btn {
+    display: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   Stuck Message Footer Container
+   ========================================================================== */
+.ir-sb-message-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  
+  /* Layout adjustments */
+  background: color-mix(in srgb, var(--color-bg-danger), transparent 30%); /* Navy blue theme background */
+  padding: 12px 24px;
+  box-sizing: border-box;
+  z-index: 10; /* Sits cleanly over document contents */
+  
+  /* Gentle design profile */
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+
+  border: 1px solid  var(--color-border-danger);
+
+  /* FROSTED GLASS BLUR EFFECT */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.ir-sb-message-text {
+  margin: 0;
+  color: var(--color-border-danger);
+  font-size: 13px;
+  text-align: left;
+}
+
+/* Ensure the scrollable document view doesn't get hidden behind the container */
+.ir-sb-document-wrapper {
+  padding-bottom: 60px !important; /* Offset by the approximate height of the message bar */
+}
+
+
+
+
+            

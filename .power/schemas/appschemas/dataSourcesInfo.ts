@@ -1112,6 +1112,24 @@ export const dataSourcesInfo = {
           }
         ]
       },
+      "GetEmployeeServedCount": {
+        "path": "/dbo.GetEmployeeServedCount",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "EmployeeNames",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "TargetDate",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
       "GetLastLiquidatedOdometer": {
         "path": "/dbo.GetLastLiquidatedOdometer",
         "method": "POST",

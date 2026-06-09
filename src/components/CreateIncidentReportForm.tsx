@@ -40,7 +40,8 @@ export type CreateIR_EmployeeDetails = {
 interface IncidentReportFormProps {
     onClose: () => void;
     onSubmit: (data: Partial<OP_IncidentReports>) => void;
-    userName: string | null;
+    ReportBy: string | null | undefined;
+    ReporterPosition?: string;
     OE?: string; // Optional OE reference to pre-fill the form when creating from a specific trip context
     employeeDetails?: CreateIR_EmployeeDetails;
     preFill?: IR_ShortBags_Form_Model | object;
@@ -48,7 +49,7 @@ interface IncidentReportFormProps {
 
 
 
-const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProps>(({ onClose, onSubmit, userName, OE, preFill, employeeDetails }, ref) => {
+const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProps>(({ onClose, onSubmit, ReportBy, ReporterPosition, OE, preFill, employeeDetails }, ref) => {
     const { addTask } = useTaskWorker();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,7 +69,8 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
         OE_Reference: OE || '', // Pre-fill with OE if provided
         IncidentType: REPORT_TYPES[0].value,
         ActionStatus: ACTION_OPTIONS[0].value,
-        ReportedBy: userName || '',
+        ReportedBy: ReportBy || '',
+        ReporterPosition: ReporterPosition || '',
         Remarks: '',
         IRStatus: 'Pending',
         ...{ ...employeeDetails, flexValue: employeeDetails?.flexValue.toString() }
@@ -78,13 +80,13 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
 
     useEffect(() => {
         // Update ReportedBy if user object changes and it's not already set
-        if (userName && !formData.ReportedBy) {
-            setFormData(prev => ({ ...prev, ReportedBy: userName }));
-        } else if (!userName && formData.ReportedBy) {
+        if (ReportBy && !formData.ReportedBy) {
+            setFormData(prev => ({ ...prev, ReportedBy: ReportBy }));
+        } else if (!ReportBy && formData.ReportedBy) {
             // Clear if user logs out
             setFormData(prev => ({ ...prev, ReportedBy: '' }));
         }
-    }, [userName, formData.ReportedBy]);
+    }, [ReportBy, formData.ReportedBy]);
 
     const updateField = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -159,7 +161,8 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
                 OE_Reference: data.OE_Reference || '',
                 IncidentType: data.IncidentType || REPORT_TYPES[0].value,
                 ActionStatus: data.ActionStatus || ACTION_OPTIONS[0].value,
-                ReportedBy: data.ReportedBy || userName || '', // Prioritize passed data, then user full name
+                ReportedBy: data.ReportedBy || ReportBy || '', // Prioritize passed data, then user full name
+                ReporterPosition: data.ReporterPosition || '',
                 Remarks: data.Remarks || ''
             });
         }

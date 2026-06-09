@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.4.4"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "2.5.4"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -1056,9 +1056,17 @@ export const IR_ACTION_OPTIONS = [
 
 export const SHORT_BAGS_LIMIT = 0;
 
+const ir_status_option = [
+  { value: "Pending", label: "Pending" },
+  { value: "Rejected", label: "Rejected" },
+  { value: "Processing", label: "Processing" },
+  { value: "Resolved", label: "Resolved" },
+];
+
 export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
   table_config: [
-    { col: "OE_Reference", alias: "Trip OE#", sticky: true },
+    { col: "IRID", alias: "IR ID", sticky: true },
+    { col: "OE_Reference", alias: "Trip OE#"},
     { col: "IRStatus", alias: "Status", 
       cellStyle: (row: any) => {
         let style: React.CSSProperties = { color: 'var(--color-muted)'};
@@ -1068,13 +1076,29 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
         if (row.IRStatus === "Resolved") style = { color: 'var(--color-border-success)' };
         style.fontWeight = 'bold';
         return style;
-      }
+      },
+      filter: { type: "dropdown-multiple", options: ir_status_option }
     },
-    { col: "IncidentType", alias: "Type", portion: 0.2, filter: { type: "dropdown-multiple" } },
+    { col: "IncidentType", alias: "Type", portion: 0.2, filter: { type: "dropdown-multiple", options: IR_REPORT_TYPES } },
+    { col: "flexValue", alias: "Value", portion: 0.2, 
+      render: (val, row) => {
+        if (val) {
+
+          switch (row.IncidentType) {
+
+              case 'Short Bags': return `${Number(val).toFixed(2)} bags`;
+
+
+
+              default: return val;
+          }
+        }
+      },
+    },
     { 
       col: "ActionStatus", 
       alias: "Action", 
-      filter: { type: "dropdown-multiple" }, 
+      filter: { type: "dropdown-multiple", options: IR_ACTION_OPTIONS }, 
       render: (val: any) => {
         const actionOption = IR_ACTION_OPTIONS.find(option => option.value === val);
         const pillColor = actionOption?.color || 'var(--color-border-info)'; 
@@ -1103,8 +1127,14 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
     },
     { col: "Remarks", alias: "Quick Remarks", portion: 2 },
     { col: "ReportedBy", alias: "Reported By", portion: 1.2 },
-    { col: "CreatedDateTime", alias: "Reported Date", portion: 1.5, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "datetime" }) },
+    { col: "CreatedDateTime", alias: "Reported Date", portion: 1, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "datetime" }) },
     { col: "", alias: "Age", portion: 0.5, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "duration" }) },
+
+    { col: "ModifiedBy", alias: "Modified By", portion: 1.2 },
+    { col: "ModifiedDateTime", alias: "Modified", portion: 1, calculate: (row: any) => formatDate(row.ModifiedDateTime, { mode: "datetime" }) },
+
+    { col: "ResolvedBy", alias: "Resolved By", portion: 1.2 },
+    { col: "ResolvedDate", alias: "Resolved", portion: 1, calculate: (row: any) => formatDate(row.ModifiedDateTime, { mode: "date" }) },
   ],
 
   rowStyle: (row: any) => ({

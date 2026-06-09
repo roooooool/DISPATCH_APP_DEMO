@@ -1,0 +1,37 @@
+{
+  "name": "[dbo].[GetEmployeeServedCount]",
+  "title": "[dbo].[GetEmployeeServedCount]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "EmployeeNames": {
+          "title": "EmployeeNames",
+          "type": "string"
+        },
+        "TargetDate": {
+          "title": "TargetDate",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

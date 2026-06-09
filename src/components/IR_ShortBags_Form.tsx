@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Printer, ZoomIn, ZoomOut, RotateCcw, FileImage } from 'lucide-react'; // Clear, modern utility icons
+import { Printer, ZoomIn, ZoomOut, RotateCcw, FileImage, Maximize2, ChevronLeft, ChevronRight, ThumbsDown, Sun, Moon, DeleteIcon } from 'lucide-react'; // Clear, modern utility icons
 import '../components/comp_css/IR_ShortBags_Form.css';
 import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
 import {  OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
@@ -61,6 +61,8 @@ export type IR_ShortBags_Form_Model = {
   reportPosition: string;
   reportDept: string;
 
+  resolvedBy: string;
+
 
   attachedImages?: {
     src: string;        // Holds the Base64/Blob url data string
@@ -76,9 +78,10 @@ interface IR_ShortBags_Props {
   onClose?: () => void;
   onSubmit?: (data: Partial<IR_ShortBags_Form_Model>) => void; // Updated type
   onSave?: (data: Partial<IR_ShortBags_Form_Model>) => void; // Added for save functionality
+  onDelete?: (data: Partial<IR_ShortBags_Form_Model>) => void; 
 }
 
-export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, incidentReportItem, onClose, onSubmit, onSave }) => {
+export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, incidentReportItem, onClose, onSubmit, onSave, onDelete }) => {
   const { addTask } = useTaskWorker();
   const [zoom, setZoom] = useState<number>(1.0); // 1.0 = 100% original scale
   const jsonDetails = incidentReportItem.reportJSON ? JSON.parse(incidentReportItem.reportJSON) as Partial<IR_ShortBags_Form_Model> : {} as Partial<IR_ShortBags_Form_Model>;
@@ -88,7 +91,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
     tripReferenceNo: incidentReportItem.OE_Reference || '',
     irType: incidentReportItem.IncidentType || '', // Ensure it's a string
     irAction: incidentReportItem.ActionStatus || '', // Ensure it's a string
-    dateResolved: incidentReportItem.IRStatus === 'Resolved' ? incidentReportItem.ResolvedDate : '',
+    dateResolved: incidentReportItem.IRStatus === 'Resolved' && incidentReportItem.ResolvedDate ? new Date(incidentReportItem.ResolvedDate).toISOString().slice(0, 10) : '',
     date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : '',
 
     // Initialize other form fields as empty or default
@@ -105,30 +108,72 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
     TripGroup: jsonDetails.TripGroup || '',
     QtyWithdrawn: jsonDetails.QtyWithdrawn || 0,
     QtyDelivered: jsonDetails.QtyDelivered || 0,
-    ShortBags: jsonDetails.QtyWithdrawn ? jsonDetails.QtyWithdrawn - (jsonDetails.QtyDelivered || 0) : 0,
+    ShortBags: jsonDetails.QtyWithdrawn ? (jsonDetails.QtyDelivered || 0) - jsonDetails.QtyWithdrawn : 0,
     CementType: jsonDetails.CementType || '',
-    ServedDate: jsonDetails.ServedDate || '',
-    incident_date: jsonDetails.incident_date || '',
+    ServedDate: jsonDetails.ServedDate ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10) : '',
+    incident_date: jsonDetails.incident_date ? new Date(jsonDetails.incident_date).toISOString().slice(0, 10) : '',
     incident_time: jsonDetails.incident_time || '',
     incident_details: jsonDetails.incident_details || '',
     yard: jsonDetails.yard || '',
     yardOthers: jsonDetails.yardOthers || '',
     reportDate: jsonDetails.reportDate || '',
-    reportName: initialUser?.FullName || '',
-    reportPosition: '',
+    reportName: incidentReportItem.ReportedBy || '',
+    reportPosition: incidentReportItem.ReporterPosition,
     reportDept: '',
+    resolvedBy: incidentReportItem.ResolvedBy,
 
 
     attachedImages: jsonDetails.attachedImages || [],
   });
 
+  
+  const [error, setError] = useState<string | null >(null);
+  const validateForm = (currentData = formData): string | null => {
+
+    if (!currentData.incident_date) { return "Incident date is required.";}
+    if (!currentData.incident_time) { return "Incident time is required (HH:MM AM/PM).";}
+    // Check Time Format
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
+    if (!timeRegex.test(currentData.incident_time)) {
+      return "Please provide a valid 24-hour clock timestamp format (HH:MM AM/PM).";
+    }
+    // Chech Time range
+    const [hours, minutes] = currentData.incident_time.split(':').map(Number);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      return "The provided clock hour boundaries are outside permissible ranges.";
+    }
+
+
+    if (!currentData.incident_details || !currentData.incident_details.trim()) {
+      return "Please provide an incident description overview.";
+    }
+
+    if (!currentData.attachedImages || currentData.attachedImages.length === 0) {
+      return "You must append at least one asset picture file as documentation evidence.";
+    }
+
+    return null
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const nextState = { ...formData, [name]: value };
+  
+    setFormData(nextState);
+    setError(validateForm(nextState)) ;
   };
 
   const handleCheckbox = (yardName: string) => {
-    setFormData(prev => ({ ...prev, yard: yardName }));
+    const nextState = { ...formData, yard: yardName };
+  
+    setFormData(nextState);
+    setError(validateForm(nextState));
+  };
+
+  const handleRemoveAttachedImage = (idx: number) => {
+    const nextState = { ...formData, attachedImages: formData.attachedImages?.filter((_, itemIdx) => itemIdx !== idx)  };
+    setFormData(nextState);
+    setError(validateForm(nextState));
   };
 
   const handlePrint = () => {
@@ -293,6 +338,48 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
               }
             }
 
+            /* Target the webkit datetime internal layout wrapper when your empty class is active */
+            input.is-empty-print::-webkit-datetime-edit {
+                color: transparent !important;
+            }
+
+            /* Fallback protection for specific printing engine variations */
+            input.is-empty-print {
+                color: transparent !important;
+            }
+
+            /* ==========================================================================
+              FLEXBOX MATRIX OVERRIDES FOR PRINT ENGINES
+              ========================================================================== */
+            .ir-sb-meta-row {
+              display: flex !important;
+              flex-direction: row !important;
+              width: 100% !important;
+              gap: 20px !important; /* Clean structural spacing on sheets */
+              margin-bottom: 12px !important;
+            }
+
+
+            /* Force the 2/3rds ratio layout rule explicitly */
+            .ir-sb-meta-row .flex-2 {
+              flex: 2 2 66.66% !important;
+              width: 66.66% !important;
+              max-width: 66.66% !important;
+            }
+
+            /* Force the 1/3rd ratio layout rule explicitly */
+            .ir-sb-meta-row .flex-1 {
+              flex: 1 1 33.33% !important;
+              width: 33.33% !important;
+              max-width: 33.33% !important;
+            }
+
+            /* Ensure underlying inner inputs stretch completely to fill their relative ratio box */
+            .ir-sb-input-group .ir-sb-line-input {
+              flex: 1 !important;
+              width: 100% !important;
+            }
+
           </style>
         </head>
         <body>
@@ -420,6 +507,31 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.7)); // Cap zoom minimum at 70%
   const handleResetZoom = () => setZoom(1.0);
 
+  const [isActionsBarExpanded, setIsActionsBarExpanded] = useState<boolean>(true);
+  const [isCanvasDarkMode, setIsCanvasDarkMode] = useState<boolean>(() => {
+    // 1. Check if the application uses a data attribute on the html element (e.g., <html data-theme="dark">)
+    const htmlTheme = document.documentElement.getAttribute('data-theme');
+    if (htmlTheme) {
+      return htmlTheme === 'dark';
+    }
+
+    // 2. Fallback: Check if the application appends a class to the body or html tag (e.g., <body className="dark-theme">)
+    const hasDarkClass = document.documentElement.classList.contains('dark') || 
+                        document.body.classList.contains('dark') ||
+                        document.body.classList.contains('dark-theme');
+    if (hasDarkClass) {
+      return true;
+    }
+
+    // 3. Fallback: Check the user's operating system hardware level media query preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return true;
+    }
+
+    // Default fallback if no theme configuration is detected
+    return false; 
+  });
+
   const handleSave = () => {
     if (onSave) {
 
@@ -473,7 +585,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
 
 
       })
-
+      if (onClose) onClose();
     }
   };
 
@@ -482,7 +594,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
 
       addTask({
         id: `submitir-${incidentReportItem.IRID}`,
-        name: `Creating Incident Report for ${incidentReportItem.IRID}`,
+        name: `Submitting Incident Report for ${incidentReportItem.IRID}`,
         execute: async () => {
             let result = null
             try {
@@ -494,6 +606,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   ModifiedBy: initialUser?.FullName,
                   ModifiedDateTime: new Date().toISOString(),
                   ResolvedDate: formData.date,
+                  ResolvedBy: initialUser?.FullName,
                 } as Omit<Partial<OP_IncidentReports>, "IncidentID">  ;
   
                 result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), {...ir_details, IRStatus: 'Resolved' , reportJSON: JSON.stringify(formData)});
@@ -530,7 +643,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
 
 
       })
-
+      if (onClose) onClose();
     }
   };
 
@@ -587,52 +700,128 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
 
 
       })
-
+      if (onClose) onClose();
     }
   };
+
+  const handleDelete = () => {
+    if (onDelete) {
+
+      addTask({
+        id: `deleteir-${incidentReportItem.IRID}`,
+        name: `Deleting Incident Report for ${incidentReportItem.IRID}`,
+        execute: async () => {
+            try {
+                console.log("Submitting incident report");
+
+                if (incidentReportItem.IncidentID === undefined) return;
+
+  
+                await OP_IncidentReportsService.delete(incidentReportItem.IncidentID.toString());
+
+            } catch (error) {
+                console.error("Failed to upload attendance records:", error);
+                return {success: false, error};
+            } finally {
+                return {success: true, data:{data: incidentReportItem}};
+            }
+        },
+        checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
+          return result.success;
+        },
+        onSuccess: async (result: any) => {
+            onDelete(result.data.data);
+
+            console.log('success', result.length);
+        },
+        onFailure: async (result: any) => {
+            console.log('failed', result.length);
+        },
+        message: `Deleting...`,
+        message_success: `Incident Report deleted successfully for ${incidentReportItem.IRID}`,
+        message_failure: `Failed to delete Incident Report for ${incidentReportItem.IRID}`,
+
+      })
+      if (onClose) onClose();
+    }
+  };
+
+  useEffect(() => {
+    setError(validateForm(formData));
+  },[]);
+
+  const getStatusColor =  (status: string) => {
+    let style: React.CSSProperties = { color: 'var(--color-muted)'};
+    if (status === "Rejected") style = { color: 'var(--color-border-danger)' };
+    if (status === "Pending") style = { color: 'var(--color-border-warning)' };
+    if (status === "Processing") style = { color: 'var(--color-border-info)' };
+    if (status === "Resolved") style = { color: 'var(--color-border-success)' };
+    style.fontWeight = 'bold';
+    return {...style, fontWeight: '800'} as React.CSSProperties;
+  }
 
   return (
     <>
       <div className="ir-sb-container">
 
         {/* Screen-Only Action Header inside Modal[cite: 3] */}
-        <div className="ir-sb-actions-bar">
-          {/* Zoom Control Group */}
-          <div className="ir-sb-zoom-controls">
-            {zoom !== 1.0 && (
-              <button type="button" onClick={handleResetZoom} className="ir-sb-btn ir-sb-zoom-btn reset" title="Reset Zoom">
-                <RotateCcw size={13} />
+        <div className={`ir-sb-actions-bar no-print ${!isActionsBarExpanded ? 'collapsed' : ''}`}>
+          {/* The Toggle Toggle Handle Bar Button */}
+          <button 
+            type="button" 
+            className="ir-sb-actions-toggle-handle"
+            onClick={() => setIsActionsBarExpanded(!isActionsBarExpanded)}
+            title={isActionsBarExpanded ? "Collapse Controls" : "Expand Controls"}
+          >         
+            {isActionsBarExpanded ? <ChevronRight size={18} strokeWidth={3} color='var(--color-primary)' /> : <ChevronLeft size={18} color='var(--color-text-2)' strokeWidth={3} />}
+          </button>
+
+          {/* Wrapped controls inside a dedicated inner container to manage spacing transitions neatly */}
+          <div className="ir-sb-actions-inner-content">
+            {/* Zoom Control Group */}
+            <div className="ir-sb-zoom-controls">
+              {zoom !== 1.0 && (
+                <button type="button" onClick={handleResetZoom} className="ir-sb-btn ir-sb-zoom-btn reset" title="Reset Zoom">
+                  <RotateCcw size={13} />
+                </button>
+              )}
+              <button type="button" onClick={handleZoomOut} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom Out" disabled={zoom <= 0.7}>
+                <ZoomOut size={14} />
+              </button>
+              <span className="ir-sb-zoom-indicator">{Math.round(zoom * 100)}%</span>
+              <button type="button" onClick={handleZoomIn} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom In" disabled={zoom >= 1.5}>
+                <ZoomIn size={14} />
+              </button>
+            </div>
+
+            <span className="ir-sb-actions-divider">|</span>
+
+            {/* Action Button Group */}
+            <button type="button" onClick={handlePrint} className="ir-sb-btn ir-sb-print-btn">
+              <Printer size={14} /> Print Report
+            </button>
+            <button type="button" onClick={handleSave} className="ir-sb-btn btn-save">
+              Save
+            </button>
+            <button type="button" onClick={handleSubmit} disabled={!!error} className="ir-sb-btn ir-sb-submit-btn btn-proceed">
+              Submit
+            </button>
+            <button type="button" onClick={handleReject} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
+              <ThumbsDown size={14}/>
+              Reject
+            </button>
+            { initialUser?.Position === 'Developer' && 
+              (<button type="button" onClick={handleDelete} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
+                <DeleteIcon size={14}/>
+                Delete
+              </button>)
+            }
+            {onClose && (
+              <button type="button" onClick={onClose} className="ir-sb-btn ir-sb-close-btn">
+                Close
               </button>
             )}
-            <button type="button" onClick={handleZoomOut} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom Out" disabled={zoom <= 0.7}>
-              <ZoomOut size={14} />
-            </button>
-            <span className="ir-sb-zoom-indicator">{Math.round(zoom * 100)}%</span>
-            <button type="button" onClick={handleZoomIn} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom In" disabled={zoom >= 1.5}>
-              <ZoomIn size={14} />
-            </button>
           </div>
-
-          <span className="ir-sb-actions-divider">|</span>
-
-          {/* Action Button Group[cite: 3] */}
-          <button type="button" onClick={handlePrint} className="ir-sb-btn ir-sb-print-btn">
-            <Printer size={14} /> Print Report
-          </button>
-          <button type="button" onClick={handleSave} className="ir-sb-btn btn-save">
-            Save
-          </button>
-          <button type="button" onClick={handleSubmit} className="ir-sb-btn ir-sb-submit-btn btn-proceed">
-            Submit
-          </button>
-          <button type="button" onClick={handleReject} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
-            Reject
-          </button>
-          {onClose && (
-            <button type="button" onClick={onClose} className="ir-sb-btn ir-sb-close-btn">
-              Close
-            </button>
-          )}
         </div>
 
         {/* Scrollable Document Wrapper[cite: 3] */}
@@ -645,7 +834,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
               marginBottom: `${(zoom - 1) * 350}px` // Offsets the visual gap scaling creates at bottom layout boundaries
             }}
           >
-            <div className="ir-sb-page">
+            <div className="ir-sb-page ir-sb-page-1">
               {/* Header Section[cite: 3] */}
               <div className="ir-sb-header">
                 <div className="ir-sb-logo-container">
@@ -667,8 +856,18 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   <input type="text" name="irReferenceNo" value={formData.irReferenceNo} onChange={() => null} className="ir-sb-line-input" />
                 </div>
                 <div className="ir-sb-input-group flex-1">
-                  <span className="ir-sb-label">Date:</span>
+                  <span className="ir-sb-label">Report Date:</span>
                   <input type="date" name="date" value={formData.date} onChange={() => null} className={`ir-sb-line-input ${!formData.date ? 'is-empty-print' : ''}`} />
+                </div>
+              </div>
+
+              <div className="ir-sb-meta-row">
+                <div className="ir-sb-input-group flex-2">
+                  <span className="ir-sb-label">Resolved By:</span><input type="text" name="resolvedBy" value={initialUser?.FullName} onChange={() => null} className="ir-sb-line-input" />
+                </div>
+                <div className="ir-sb-input-group flex-1">
+                  <span className="ir-sb-label">Resolved Date:</span>
+                  <input type="text" name="dateResolved" onChange={() => null} className={`ir-sb-line-input`} />
                 </div>
               </div>
 
@@ -679,11 +878,19 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   <span className="ir-sb-label">Action Taken:</span>
                   <input type="text" name="irAction" value={formData.irAction} onChange={() => null} className="ir-sb-line-input" />
                 </div>
-                <div className="ir-sb-input-group flex-1">
-                  <span className="ir-sb-label">Resolved:</span>
-                  <input type="text" name="dateResolved" onChange={() => null} className={`ir-sb-line-input`} />
+                <div className="ir-sb-input-group flex-1 no-print">
+                  <span className="ir-sb-label">Status:</span>
+                  <input 
+                    type="text" 
+                    name="" 
+                    value={incidentReportItem.IRStatus} 
+                    onChange={() => null} 
+                    className="ir-sb-line-input" 
+                    style={getStatusColor(incidentReportItem.IRStatus || '')} 
+                  />
                 </div>
               </div>
+
 
               {/* Section: Impormasyon ng Empleado[cite: 3] */}
               <h3 className="ir-sb-section-head">EMPLOYEE DETAILS</h3>
@@ -718,8 +925,8 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   
                 </div>
                 <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Incident Date:</span><input type="date" name="incident_date" onChange={handleChange} className="ir-sb-line-input" />
-                  <span className="ir-sb-label">Time:</span><input type="time" name="incident_time" onChange={handleChange} className="ir-sb-line-input" />
+                  <span className="ir-sb-label">Incident Date:</span><input type="date" value={formData.incident_date} name="incident_date" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_date ? 'is-empty-print' : ''}`} />
+                  <span className="ir-sb-label">Time:</span><input type="time" value={formData.incident_time} name="incident_time" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_time ? 'is-empty-print' : ''}`}/>
                 </div>
               </div>
               
@@ -731,7 +938,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   <input type="text" name="tripReferenceNo" value={formData.tripReferenceNo} onChange={() => null} className="ir-sb-line-input" />
                 </div>
                 <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Served Date:</span><input type="date" name="ServedDate" onChange={handleChange} className="ir-sb-line-input" />
+                  <span className="ir-sb-label">Served Date:</span><input type="date" name="ServedDate" value={formData.ServedDate} onChange={handleChange} className="ir-sb-line-input" />
                 </div>
               </div>
 
@@ -801,10 +1008,12 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
               {/* Section: Detalye ng Nag Report[cite: 3] */}
               <h3 className="ir-sb-section-head">REPORTER DETAILS</h3>
               <div className="ir-sb-grid col-2">
-                <div className="ir-sb-input-group"><span className="ir-sb-label">Date Processed:</span><input type="date" name="reportDate" onChange={() => null} className="ir-sb-line-input" /></div>
-                <div className="ir-sb-input-group"><span className="ir-sb-label">Reporter:</span><input type="text" name="reportName" value={formData.reportName} onChange={() => null} className="ir-sb-line-input" /></div>
+                <div className="ir-sb-input-group"><span className="ir-sb-label">Reported By:</span><input type="text" name="reportName" value={formData.reportName} onChange={() => null} className="ir-sb-line-input" /></div>
+                <div className="ir-sb-input-group"><span className="ir-sb-label">Position:</span><input type="text" name="reportPosition" value={formData.reportPosition}  onChange={() => null} className="ir-sb-line-input" /></div>
+              </div>
+              <div className="ir-sb-grid col-2">
+                <div className="ir-sb-input-group"><span className="ir-sb-label">Signed Date:</span><input type="date" name="reportDate" onChange={() => null} className="ir-sb-line-input" /></div>
                 <div className="ir-sb-signature-box"><span className="ir-sb-label">Signature:</span><div className="line"></div></div>
-                <div className="ir-sb-input-group"><span className="ir-sb-label">Position:</span><input type="text" name="reportPosition"  onChange={() => null} className="ir-sb-line-input" /></div>
               </div>
             </div>
 
@@ -850,23 +1059,42 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   Drag and drop logistics incident evidence images here or <span className="browse-link">click to browse</span>
                 </p>
                 <input 
-                  type="file" multiple accept="image/*" 
-                  onChange={(e) => {
-                    if (e.target.files) {
-                      Array.from(e.target.files).forEach(file => {
+                  type="file" 
+                  multiple 
+                  accept="image/*" 
+                  onChange={async (e) => {
+                    if (!e.target.files || e.target.files.length === 0) return;
+
+                    // 1. Map each file to a promise that reads it as a DataURL base64 string
+                    const filePromises = Array.from(e.target.files).map(file => {
+                      return new Promise<{ src: string; fileName: string; description: string }>((resolve) => {
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          setFormData(prev => ({
-                            ...prev,
-                            attachedImages: [
-                              ...(prev.attachedImages || []), 
-                              { src: reader.result as string, fileName: file.name, description: '' }
-                            ]
-                          }));
+                          resolve({
+                            src: reader.result as string,
+                            fileName: file.name,
+                            description: ''
+                          });
                         };
                         reader.readAsDataURL(file);
                       });
-                    }
+                    });
+
+                    // 2. Wait for all file loaders to fully execute simultaneously 
+                    const newLoadedImages = await Promise.all(filePromises);
+
+                    // 3. Save the completely computed nextState configuration object to a reusable const
+                    const nextState = {
+                      ...formData,
+                      attachedImages: [
+                        ...(formData.attachedImages || []),
+                        ...newLoadedImages
+                      ]
+                    };
+
+                    // 4. Safely execute your states and validation against the finalized snapshot
+                    setFormData(nextState);
+                    setError(validateForm(nextState));
                   }} 
                 />
               </div>
@@ -876,16 +1104,33 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                 <div className="ir-sb-print-image-container">
                   {formData.attachedImages.map((imgItem, idx) => (
                     <div key={idx} className="ir-sb-print-img-card">
-                      <img 
-                        src={imgItem.src} 
-                        alt={`Evidence Asset Tracking Row ${idx + 1}`} 
-                        className="no-print"
-                        style={{ cursor: 'zoom-in' }} 
-                        onClick={() => {
-                          setSelectedPreviewImg({ src: imgItem.src, fileName: imgItem.fileName });
-                          handleModalReset(); // Clears old transforms from previous selections
-                        }}
-                      />
+                      
+                      {/* Isolated Positioning Frame for the image asset and its floating triggers */}
+                      <div className="ir-sb-img-card-media-wrapper">
+                        <img 
+                          src={imgItem.src} 
+                          alt={`Evidence Asset Tracking Row ${idx + 1}`} 
+                          className="no-print"
+                          style={{ cursor: 'zoom-in' }} 
+                          onClick={() => {
+                            setSelectedPreviewImg({ src: imgItem.src, fileName: imgItem.fileName });
+                            handleModalReset();
+                          }}
+                        />
+
+                        {/* Floating Upper-Right Corner Fullscreen Action Button */}
+                        <button
+                          type="button"
+                          className="ir-sb-img-card-fullscreen-btn no-print"
+                          title="Open Image Workspace Viewer"
+                          onClick={() => {
+                            setSelectedPreviewImg({ src: imgItem.src, fileName: imgItem.fileName });
+                            handleModalReset();
+                          }}
+                        >
+                          <Maximize2 className='no-print' size={14} />
+                        </button>
+                      </div>
                       
                       {/* Individual Dynamic Description Box Area */}
                       <div className="ir-sb-img-desc-box">
@@ -912,16 +1157,20 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                           value={imgItem.description}
                           onChange={(e) => {
                             const updatedDescText = e.target.value;
-                            setFormData(prev => {
-                              const safeImages = [...(prev.attachedImages || [])];
-                              safeImages[idx] = { ...safeImages[idx], description: updatedDescText };
-                              return { ...prev, attachedImages: safeImages };
-                            });
+
+
+                            const safeImages = [...(formData.attachedImages || [])];
+                            safeImages[idx] = { ...safeImages[idx], description: updatedDescText };
+                            const nextState = { ...formData, attachedImages: safeImages };
+                            
+                            setFormData(nextState);
+                            setError(validateForm(nextState)); // validate
+
                           }}
                           style={{ fontSize: '12px', marginTop: '4px', width: '100%' }}
                         />
 
-                        {/* Print-Only Layout (Combines File Name and Notes nicely on the physical paper sheet) */}
+                        {/* Print-Only Layout */}
                         <div className="print-only-text" style={{ margin: '8px 0 0 0', fontSize: '11px', textAlign: 'left', lineHeight: '1.4' }}>
                           <p style={{ margin: '0', fontStyle: 'italic', color: '#222' }}>
                             <strong style={{ fontStyle: 'normal', color: '#000080' }}>Notes:</strong> {imgItem.description || 'No descriptive comments logged.'}
@@ -934,10 +1183,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                         className="no-print" 
                         style={{ background: '#ff4d4d', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', marginTop: '10px', width: '100%' }}
                         onClick={() => {
-                          setFormData(prev => ({
-                            ...prev,
-                            attachedImages: prev.attachedImages?.filter((_, itemIdx) => itemIdx !== idx)
-                          }));
+                          handleRemoveAttachedImage(idx);
                         }}
                       >
                         Remove Image
@@ -950,12 +1196,26 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   No incident validation imagery attached to this documentation index.
                 </div>
               )}
-
             </div>
-
-
           </div>
+
+
         </div>
+
+
+        {error && (
+          <div 
+            className="ir-sb-message-footer no-print" 
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <h3 style={{ margin: 0, whiteSpace: 'nowrap', fontWeight: 800, color: 'var(--color-border-danger)' }}>Validation Message:</h3>
+            <p className="ir-sb-message-text" style={{ margin: 0 }}>
+              {error}
+            </p>
+          </div>
+        )}
+
+
       </div>
       
       {selectedPreviewImg && createPortal(
@@ -970,14 +1230,14 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
               <div className="ir-sb-viewer-header">
                 <div className="ir-sb-viewer-meta">
                   <h3>Evidence Workspace View</h3>
-                  <p>📁 {selectedPreviewImg.fileName}</p>
+                  <p>{selectedPreviewImg.fileName}</p>
                 </div>
                 <button className="ir-sb-viewer-close-btn" onClick={() => setSelectedPreviewImg(null)}>×</button>
               </div>
 
-              {/* Interactive Image Frame Canvas (Captures Panning Interventions) */}
+              {/* Interactive Image Frame Canvas (Appends the Dynamic Theme Contrast Class) */}
               <div 
-                className={`ir-sb-viewer-frame ${isDraggingImage ? 'is-dragging-canvas' : ''}`}
+                className={`ir-sb-viewer-frame ${isCanvasDarkMode ? 'canvas-dark-theme' : 'canvas-light-theme'} ${isDraggingImage ? 'is-dragging-canvas' : ''}`}
                 onMouseDown={handleImgMouseDown}
                 onMouseMove={handleImgMouseMove}
                 onMouseUp={handleImgMouseUpOrLeave}
@@ -988,7 +1248,6 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   className="ir-sb-viewer-transform-container"
                   style={{
                     transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${previewZoom}) rotate(${previewRotation}deg)`,
-                    // CRITICAL: Disable transitions during manual dragging to ensure perfectly crisp, immediate movement responses
                     transition: isDraggingImage ? 'none' : 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
                   }}
                 >
@@ -1033,12 +1292,35 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   
                   <button 
                     onClick={handleModalReset} 
-                    title="Reset Controls" 
+                    title="Reset Controls"
                     className="btn-reset ir-sb-btn-icon-inline"
                   >
                     <RotateCcw size={16} style={{ transform: 'scaleX(-1)' }} /> Reset View 
                   </button>
                 </div>
+
+                <div className="toolbar-divider" />
+
+                {/* THEME BACKGROUND TOGGLE GROUP */}
+                <div className="toolbar-group">
+                  <button
+                    type="button"
+                    onClick={() => setIsCanvasDarkMode(!isCanvasDarkMode)}
+                    title={isCanvasDarkMode ? "Switch to Light Canvas Background" : "Switch to Dark Canvas Background"}
+                    className="ir-sb-btn-icon-inline btn-theme-toggle"
+                  >
+                    {isCanvasDarkMode ? (
+                      <>
+                        <Sun size={16} /> Light View
+                      </>
+                    ) : (
+                      <>
+                        <Moon size={16} /> Dark View
+                      </>
+                    )}
+                  </button>
+                </div>
+
               </div>
             </div>
           </Modal>,

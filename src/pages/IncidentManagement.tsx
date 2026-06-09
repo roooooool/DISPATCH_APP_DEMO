@@ -169,6 +169,19 @@ const IncidentManagement: React.FC = () => {
         });
     }
 
+    const handleDelete = (data: any) => { // Assuming data is of type OP_IncidentReports for better typing
+        setSelectedReport(null);
+        setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' }); // Reset scroll highlight
+        console.log("incident to be deleted: ",data );
+        setIncidentReports(prev => {
+            // Filter out the report with the matching IncidentID
+            return prev.filter(report => report.IncidentID !== data.IncidentID);
+        });
+    }
+
+
+
+
     return (
         <PageTemplate title="Incident Management" actions={headerActions}>
 
@@ -217,7 +230,8 @@ const IncidentManagement: React.FC = () => {
                                 // Refresh
                                 fetchIncidentReports();
                             }}
-                            userName={user?.FullName || null}
+                            ReportBy={user?.FullName}
+                            ReporterPosition={user?.Position}
                         />
                     </div>
                 </Modal>
@@ -238,10 +252,11 @@ const IncidentManagement: React.FC = () => {
                         return (
                             <IR_ShortBags_Form 
                                 incidentReportItem={selectedReport}
-                                        initialUser={user ?? undefined}
-                                        onClose={() => {setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });}}
-                                        onSubmit={handleSubmit}
-                                        onSave={handleSave}
+                                initialUser={user ?? undefined}
+                                onClose={() => {setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });}}
+                                onSubmit={handleSubmit}
+                                onSave={handleSave}
+                                onDelete={handleDelete}
                             />
                         );
                         default:
