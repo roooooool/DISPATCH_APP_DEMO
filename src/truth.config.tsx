@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.5.4"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "2.5.5"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -1057,10 +1057,9 @@ export const IR_ACTION_OPTIONS = [
 export const SHORT_BAGS_LIMIT = 0;
 
 const ir_status_option = [
-  { value: "Pending", label: "Pending" },
-  { value: "Rejected", label: "Rejected" },
-  { value: "Processing", label: "Processing" },
-  { value: "Resolved", label: "Resolved" },
+  { value: "Open", label: "Open" },
+  { value: "Cancelled", label: "Cancelled" },
+  { value: "Closed", label: "Closed" },
 ];
 
 export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
@@ -1070,10 +1069,9 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
     { col: "IRStatus", alias: "Status", 
       cellStyle: (row: any) => {
         let style: React.CSSProperties = { color: 'var(--color-muted)'};
-        if (row.IRStatus === "Rejected") style = { color: 'var(--color-border-danger)' };
-        if (row.IRStatus === "Pending") style = { color: 'var(--color-border-warning)' };
-        if (row.IRStatus === "Processing") style = { color: 'var(--color-border-info)' };
-        if (row.IRStatus === "Resolved") style = { color: 'var(--color-border-success)' };
+        if (row.IRStatus === "Cancelled") style = { color: 'var(--color-border-warning)' };
+        if (row.IRStatus === "Open") style = { color: 'var(--color-border-info)' };
+        if (row.IRStatus === "Closed") style = { color: 'var(--color-border-success)' };
         style.fontWeight = 'bold';
         return style;
       },

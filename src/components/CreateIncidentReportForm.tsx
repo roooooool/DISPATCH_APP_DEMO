@@ -24,6 +24,7 @@ import {type IR_ShortBags_Form_Model} from './IR_ShortBags_Form';
 
 export interface IncidentFormHandle {
     setFormData: (data: Partial<OP_IncidentReports>) => void;
+    submit: () => Promise<OP_IncidentReports | null>;
 }
 
 export type CreateIR_EmployeeDetails = {
@@ -92,67 +93,120 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleSubmit = (data: Partial<OP_IncidentReports>) => {
+    // 1. Rewrite handleSubmit to return a Promise containing the record data or null
+    const handleSubmit = (data: Partial<OP_IncidentReports>): Promise<OP_IncidentReports | null> => {
+        const submittedData = data as Omit<OP_IncidentReports, "IncidentID">;
 
-        const submittedData = data as Omit<OP_IncidentReports, "IncidentID">
+        // Return a new Promise so the parent component can cleanly "await" the result
+        return new Promise((resolve) => {
+            addTask({
+                id: `createreport-${data.OE_Reference}`,
+                name: `Creating Incident Report for ${data.OE_Reference}`,
+                execute: async () => {
+                    let result = null;
+                    try {
+                        console.log("Submitting incident report");
 
-       addTask({
-        id: `createreport-${data.OE_Reference}`,
-        name: `Creating Incident Report for ${data.OE_Reference}`,
-        execute: async () => {
-            let result = null
-            try {
-                console.log("Submitting incident report");
+                        const resIRID = await GenerateIRIDService.GenerateIRID({
+                            IncidentType: submittedData.IncidentType
+                        } as any);
 
-                const resIRID = await GenerateIRIDService.GenerateIRID({
-                    IncidentType: submittedData.IncidentType
-                } as any);
+                        const table1 = resIRID.data?.ResultSets?.Table1 as any[] | undefined;
+                        if (!table1 || table1.length <= 0) {
+                            throw new Error("Failed to generate ID: ");
+                        }
 
-                const table1 = resIRID.data?.ResultSets?.Table1 as any[] | undefined;
-                if (!table1 || table1.length <= 0) {
-                    throw new Error("Failed to generate ID: ");
-                }
+                        result = await OP_IncidentReportsService.create({
+                            ...submittedData, 
+                            IRID: table1[0].NewIRID || 'NA', 
+                            reportJSON: JSON.stringify(preFill)
+                        });
 
-                result = await OP_IncidentReportsService.create({...submittedData, IRID: table1[0].NewIRID || 'NA', reportJSON: JSON.stringify(preFill)});
+                        if (result.error) {
+                            throw new Error(result.error.message);
+                        }
 
-                if (result.error) {
-                    throw new Error(result.error.message);
-                }
+                        if (!result || !result.data) {
+                            throw new Error("Unexpected response from server: " + JSON.stringify(result));
+                        }
 
-                if (!result || !result.data) {
-                    throw new Error("Unexpected response from server: " + JSON.stringify(result));
-                }
+                        // Return success and include the newly generated record data payload
+                        return { success: true, data: result.data };
+                    } catch (error) {
+                        console.error("Failed to upload attendance records:", error);
+                        return { success: false, error };
+                    }
+                },
+                checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
+                    return result.success;
+                },
+                onSuccess: async (result: any) => {
+                    // Extracts the raw record payload coming back from OP_IncidentReportsService
+                    const createdItem = result.data?.data;
+                    onSubmit(createdItem);
+                    resolve(createdItem); // Resolves the parent call promise with the new object
+                },
+                onFailure: async (result: any) => {
+                    console.log(result);
+                    resolve(null); // Resolves as null so the parent wrapper knows it failed
+                },
+                message: `Please wait while we create an Incident Report....`,
+                message_success: `Incident Report created successfully for ${formData.OE_Reference}`,
+                message_failure: `Failed to create Incident Report for ${formData.OE_Reference}`,
+            });
 
-            } catch (error) {
-                console.error("Failed to upload attendance records:", error);
-                return {success: false, error};
-            } finally {
-                return {success: true, data: result};
+            setIsSubmitting(false);
+            onClose();
+        });
+    };
+
+    const handleExternalSubmit = async (data: Partial<OP_IncidentReports>): Promise<OP_IncidentReports | null> => {
+        const submittedData = data as Omit<OP_IncidentReports, "IncidentID">;
+        setIsSubmitting(true); // Set loading state before making network requests
+
+        try {
+            console.log("Submitting incident report");
+
+            console.log("2")
+
+            // 1. Await the ID Generator Service
+            const resIRID = await GenerateIRIDService.GenerateIRID({
+                IncidentType: submittedData.IncidentType
+            } as any);
+
+            console.log("1")
+
+            const table1 = resIRID.data?.ResultSets?.Table1 as any[] | undefined;
+            if (!table1 || table1.length <= 0) {
+                throw new Error("Failed to generate ID: ");
             }
-        },
-        checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
-          return result.success;
-        },
-        onSuccess: async (result: any) => {
-            onSubmit(result.data.data);
-            console.log(result);
-        },
-        onFailure: async (result: any) => {
-            console.log(result);
-        },
-        message: `Please wait while we create an Incident Report....`,
-        message_success: `Incident Report created successfully for ${formData.OE_Reference}`,
-        message_failure: `Failed to create Incident Report for ${formData.OE_Reference}`,
+            console.log("prefill: ", preFill)
+            // 2. Await the Creation Service
+            const result = await OP_IncidentReportsService.create({
+                ...submittedData, 
+                IRID: table1[0].NewIRID || 'NA',
+                reportJSON: JSON.stringify(preFill)
+            });
 
+            if (result.error) {
+                throw new Error(result.error.message);
+            }
 
+            if (!result || !result.data) {
+                throw new Error("Unexpected response from server: " + JSON.stringify(result));
+            }
 
-       })
+            // Return the clean data model block straight to the await caller
+            return result.data;
 
-
-       setIsSubmitting(false);
-       onClose();
-
-
+        } catch (error) {
+            console.error("Failed to upload attendance records:", error);
+            return null; // Gracefully pass back null if things break down
+            
+        } finally {
+            // 3. Clean up interaction states after operations conclude
+            setIsSubmitting(false);
+        }
     };
 
     useImperativeHandle(ref, () => ({
@@ -161,10 +215,14 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
                 OE_Reference: data.OE_Reference || '',
                 IncidentType: data.IncidentType || REPORT_TYPES[0].value,
                 ActionStatus: data.ActionStatus || ACTION_OPTIONS[0].value,
-                ReportedBy: data.ReportedBy || ReportBy || '', // Prioritize passed data, then user full name
+                ReportedBy: data.ReportedBy || ReportBy || '',
                 ReporterPosition: data.ReporterPosition || '',
                 Remarks: data.Remarks || ''
             });
+        },
+        // Parent can now trigger this manually via ref.current.submit()
+        submit: () => {
+            return handleExternalSubmit(formData);
         }
     }));
 

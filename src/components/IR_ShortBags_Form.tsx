@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Printer, ZoomIn, ZoomOut, RotateCcw, FileImage, Maximize2, ChevronLeft, ChevronRight, ThumbsDown, Sun, Moon, DeleteIcon } from 'lucide-react'; // Clear, modern utility icons
+import { Printer, ZoomIn, ZoomOut, RotateCcw, FileImage, Maximize2, ChevronLeft, ChevronRight, ThumbsDown, Sun, Moon, DeleteIcon, CheckCheck, CheckCircle, XCircle } from 'lucide-react'; // Clear, modern utility icons
 import '../components/comp_css/IR_ShortBags_Form.css';
 import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
 import {  OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
 import Modal from './ewul_Modal';
+import gsdcLogo from "../../public/logo/logo-trimmed.png";
 
 //utils
 import { useTaskWorker } from '../utils/TaskWorkerContext';
@@ -12,7 +13,15 @@ import { useTaskWorker } from '../utils/TaskWorkerContext';
 // truth
 import { 
     type UserInfo,
+    IR_ACTION_OPTIONS
  } from '../truth.config';
+
+export type FormUserInfo = {
+  BusinessUnit: string;
+  Position: string;
+  id: string; 
+  FullName?: string;
+};
 
 export type IR_ShortBags_Form_Model = {
   // IR details
@@ -73,7 +82,7 @@ export type IR_ShortBags_Form_Model = {
 };
 
 interface IR_ShortBags_Props {
-  initialUser?: UserInfo;
+  initialUser?: FormUserInfo | UserInfo;
   incidentReportItem: Partial<OP_IncidentReports>;
   onClose?: () => void;
   onSubmit?: (data: Partial<IR_ShortBags_Form_Model>) => void; // Updated type
@@ -81,10 +90,13 @@ interface IR_ShortBags_Props {
   onDelete?: (data: Partial<IR_ShortBags_Form_Model>) => void; 
 }
 
-export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, incidentReportItem, onClose, onSubmit, onSave, onDelete }) => {
+export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete }) => {
   const { addTask } = useTaskWorker();
+  const incidentReportItem = item || {};
   const [zoom, setZoom] = useState<number>(1.0); // 1.0 = 100% original scale
-  const jsonDetails = incidentReportItem.reportJSON ? JSON.parse(incidentReportItem.reportJSON) as Partial<IR_ShortBags_Form_Model> : {} as Partial<IR_ShortBags_Form_Model>;
+  const jsonDetails = (incidentReportItem && incidentReportItem.reportJSON)
+    ? (JSON.parse(incidentReportItem.reportJSON) as Partial<IR_ShortBags_Form_Model>)
+    : ({} as Partial<IR_ShortBags_Form_Model>);
   const [formData, setFormData] = useState<Partial<IR_ShortBags_Form_Model>>({
     // Prefill
     irReferenceNo: incidentReportItem.IRID || '',
@@ -126,36 +138,39 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
     attachedImages: jsonDetails.attachedImages || [],
   });
 
-  
-  const [error, setError] = useState<string | null >(null);
-  const validateForm = (currentData = formData): string | null => {
+  interface errorInterface {valid: boolean, msg: string, final?: boolean};
+  const [error, setError] = useState<errorInterface | null>(null);
+  const validateForm = (currentData = formData): errorInterface | null => {
 
-    if (!currentData.incident_date) { return "Incident date is required.";}
-    if (!currentData.incident_time) { return "Incident time is required (HH:MM AM/PM).";}
+    if (!currentData.incident_date) { return {valid: false, msg: "Incident date is required."};}
+    if (!currentData.incident_time) { return {valid: false, msg: "Incident time is required (HH:MM AM/PM)."};}
     // Check Time Format
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
     if (!timeRegex.test(currentData.incident_time)) {
-      return "Please provide a valid 24-hour clock timestamp format (HH:MM AM/PM).";
+      return {valid: false, msg: "Please provide a valid 24-hour clock timestamp format (HH:MM AM/PM)."};
     }
     // Chech Time range
     const [hours, minutes] = currentData.incident_time.split(':').map(Number);
     if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-      return "The provided clock hour boundaries are outside permissible ranges.";
+      return {valid: false, msg: "The provided clock hour boundaries are outside permissible ranges."};
     }
 
 
     if (!currentData.incident_details || !currentData.incident_details.trim()) {
-      return "Please provide an incident description overview.";
+      return {valid: false, msg: "Please provide an incident description overview."};
     }
 
     if (!currentData.attachedImages || currentData.attachedImages.length === 0) {
-      return "You must append at least one asset picture file as documentation evidence.";
+      return {valid: false, msg: "You must append at least one asset picture file as documentation evidence."};
     }
 
+    if (currentData.irAction !== 'Proceed Next Trip') { return {valid: false, msg: "All requirements completed! Set the Action to [Proceed Next Trip] to Complete & Close the IR.", final: true} }
+    else { { return {valid: true, msg: "You may now complete the form.", final: true} } }
+    
     return null
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     const nextState = { ...formData, [name]: value };
   
@@ -803,12 +818,25 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
             <button type="button" onClick={handleSave} className="ir-sb-btn btn-save">
               Save
             </button>
-            <button type="button" onClick={handleSubmit} disabled={!!error} className="ir-sb-btn ir-sb-submit-btn btn-proceed">
-              Submit
+            <button 
+              type="button" 
+              onClick={handleSubmit} 
+              disabled={!error?.valid} 
+              className="ir-sb-btn ir-sb-submit-btn btn-proceed"
+              style={{ position: 'relative' }} /* Anchor point for the absolute badge */
+            >
+              <CheckCheck size={14} /> Complete
+
+              {/* Render the pulsing badge only when error.valid is true */}
+              {error?.valid && (
+                <span className="ir-sb-button-badge">
+                  !
+                </span>
+              )}
             </button>
             <button type="button" onClick={handleReject} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
               <ThumbsDown size={14}/>
-              Reject
+              Cancel IR
             </button>
             { initialUser?.Position === 'Developer' && 
               (<button type="button" onClick={handleDelete} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
@@ -838,7 +866,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
               {/* Header Section[cite: 3] */}
               <div className="ir-sb-header">
                 <div className="ir-sb-logo-container">
-                  <img src="/logo/logo-trimmed.png" alt="GSDC Logo" className="ir-sb-logo-img" />
+                  <img src={gsdcLogo} alt="GSDC Logo" className="ir-sb-logo-img" />
                 </div>
 
                 <div className="ir-sb-company-info">
@@ -872,11 +900,25 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
               </div>
 
               <div className="ir-sb-meta-row">
-                <div className="ir-sb-input-group flex-2">
+                <div className="ir-sb-input-group flex-2 equal-split-row">
                   <span className="ir-sb-label">Incident Type:</span>
                   <input type="text" name="irType" value={formData.irType} onChange={() => null} className="ir-sb-line-input" />
                   <span className="ir-sb-label">Action Taken:</span>
-                  <input type="text" name="irAction" value={formData.irAction} onChange={() => null} className="ir-sb-line-input" />
+                  <div className="ir-sb-select-wrapper">
+                    <select 
+                      name="irAction" 
+                      value={formData.irAction} 
+                      onChange={handleChange} 
+                      className={`ir-sb-line-input ir-sb-dropdown ${!formData.irAction ? 'is-empty-print' : ''}`}
+                    >
+                      <option value="" disabled>-- Select Action --</option>
+                      {IR_ACTION_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className="ir-sb-input-group flex-1 no-print">
                   <span className="ir-sb-label">Status:</span>
@@ -1203,14 +1245,14 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
         </div>
 
 
-        {error && (
+        {(!error?.valid || (error?.valid && error?.final) ) && (
           <div 
-            className="ir-sb-message-footer no-print" 
+            className={`ir-sb-message-footer no-print ${error?.final ? 'to-complete' : ''}`}
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            <h3 style={{ margin: 0, whiteSpace: 'nowrap', fontWeight: 800, color: 'var(--color-border-danger)' }}>Validation Message:</h3>
+            <h3>{error?.valid ? (<CheckCircle/>) : (<XCircle/>)}</h3>
             <p className="ir-sb-message-text" style={{ margin: 0 }}>
-              {error}
+              {error?.msg}
             </p>
           </div>
         )}

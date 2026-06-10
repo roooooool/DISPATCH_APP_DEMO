@@ -1012,6 +1012,11 @@
   -webkit-backdrop-filter: blur(8px);
 }
 
+.ir-sb-message-footer.to-complete {
+  background: color-mix(in srgb, var(--color-bg-success), transparent 30%);
+  border: 1px solid  var(--color-border-success);
+}
+
 .ir-sb-message-text {
   margin: 0;
   color: var(--color-border-danger);
@@ -1019,12 +1024,135 @@
   text-align: left;
 }
 
+.ir-sb-message-footer h3 { 
+  margin: 0; 
+  white-space: nowrap; 
+  font-weight: 800; 
+  color: var(--color-border-danger);
+}
+
+.ir-sb-message-footer.to-complete .ir-sb-message-text {
+  color: var(--color-border-success);
+}
+
+.ir-sb-message-footer.to-complete h3 {
+  color: var(--color-border-success) !important;
+}
+
+
 /* Ensure the scrollable document view doesn't get hidden behind the container */
 .ir-sb-document-wrapper {
   padding-bottom: 60px !important; /* Offset by the approximate height of the message bar */
 }
 
+/* Container to help position custom arrow rules safely */
+.ir-sb-select-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
 
+/* Style the dropdown line element natively */
+select.ir-sb-dropdown {
+  width: 100%;
+  cursor: pointer;
+  padding-right: 24px; /* Leaves space for the dropdown arrow indicator */
+  appearance: none; /* Removes aggressive browser native dropdown skins */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+}
+
+/* Add a clean, modern chevron indicator custom arrow pointer */
+.ir-sb-select-wrapper::after {
+  content: "▼";
+  font-size: 10px;
+  color: #3a4efc; /* Primary secondary theme blue */
+  position: absolute;
+  right: 8px;
+  pointer-events: none; /* Allows click events to pass directly through to the select node */
+}
+
+/* ==========================================================================
+   NESTED SELECT PROPORTIONAL CORRECTIONS
+   ========================================================================== */
+
+/* 1. Ensure the 2/3rds container distributes its space evenly between its fields */
+.ir-sb-input-group.equal-split-row {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 16px !important; /* Space between fields */
+}
+
+/* 2. Force both the input and the select wrapper to expand to equal proportions */
+.ir-sb-input-group.equal-split-row .ir-sb-line-input:not(select),
+.ir-sb-input-group.equal-split-row .ir-sb-select-wrapper {
+  flex: 1 1 50% !important; /* Forces a perfect 50/50 layout split on the left side */
+  width: 50% !important;
+}
+
+/* 3. THE CRITICAL FIX: Force the inner select element to fill its wrapper completely */
+.ir-sb-select-wrapper select.ir-sb-dropdown {
+  width: 100% !important; /* Stretches the select box to match the wrapper's width */
+  display: block !important;
+}
+
+
+/* ==========================================================================
+   FLOATING PULSING BUTTON BADGE
+   ========================================================================== */
+.ir-sb-button-badge {
+  position: absolute;
+  top: -6px;    /* Pulls it slightly above the top border line */
+  right: -6px;  /* Pulls it slightly past the right border line */
+  
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-red, #ff4d4d); /* Accent red color */
+  color: #ffffff;
+  
+  /* Font layout positioning */
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Gentle design profile rounding */
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(255, 77, 77, 0.4);
+  z-index: 5;
+  
+  /* Attach the pulsing keyframe animation */
+  animation: badge-pulse 1.5s infinite ease-in-out;
+  pointer-events: none; /* Clicking the badge triggers the button behind it */
+}
+
+/* Print Protection: Ensure the badge gets stripped cleanly when printing */
+@media print {
+  .ir-sb-button-badge {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   PULSING ANIMATION KEYFRAMES
+   ========================================================================== */
+@keyframes badge-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7);
+  }
+  70% {
+    transform: scale(1.12); /* Subtle scale transformation change */
+    box-shadow: 0 0 0 6px rgba(255, 77, 77, 0); /* Expands out into a fading ripple ring */
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 77, 77, 0);
+  }
+}
 
 
             

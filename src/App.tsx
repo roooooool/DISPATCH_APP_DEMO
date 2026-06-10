@@ -84,23 +84,23 @@ function MainContent() {
           <MaintenanceChecker>
             <NotificationFetcher onDataLoaded={handleNewToasts} stopFetching={overlayProgress < 99} />
               <ErrorChecker>
-              <VersionGuard>
-                <Routes>
-                  <Route path="/" element={<Navigate to="/loading" replace />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/dash" element={<ProtectedRoute><DASHPage/></ProtectedRoute>} />
-                  <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT/></ProtectedRoute>} />
-                  <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring/></ProtectedRoute>} />
-                  <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
-                  <Route path="/maintenance" element={<MaintenancePage details={{}} />} />
-                  <Route path="/developer" element={<ProtectedRoute><DeveloperPage /></ProtectedRoute>} />
-                  <Route path="/loading" element={<LoadingPage />} />
-                  <Route path="/error" element={<ErrorPage />} />
-                  <Route path="/update-required" element={<UpdateRequired />} />
-                  <Route path="/incidents" element={<ProtectedRoute><IncidentManagement /></ProtectedRoute>} />
-                  <Route path="*" element={<Not_Found />} />
-                </Routes>
-              </VersionGuard>
+                <VersionGuard>
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/loading" replace />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/dash" element={<ProtectedRoute><DASHPage/></ProtectedRoute>} />
+                    <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT/></ProtectedRoute>} />
+                    <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring/></ProtectedRoute>} />
+                    <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
+                    <Route path="/maintenance" element={<MaintenancePage details={{}} />} />
+                    <Route path="/developer" element={<ProtectedRoute><DeveloperPage /></ProtectedRoute>} />
+                    <Route path="/loading" element={<LoadingPage />} />
+                    <Route path="/error" element={<ErrorPage />} />
+                    <Route path="/update-required" element={<UpdateRequired />} />
+                    <Route path="/incidents" element={<ProtectedRoute><IncidentManagement /></ProtectedRoute>} />
+                    <Route path="*" element={<Not_Found />} />
+                  </Routes>
+                </VersionGuard>
               </ErrorChecker>
           </MaintenanceChecker>
         </HashRouter>

@@ -16,6 +16,7 @@ import type { UpsertTripTaskTrackerRequest } from '../generated/models/UpsertTri
 import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
 import {CheckIfOEExistsService} from '../generated/services/CheckIfOEExistsService';
 import { Action_Logs_HistoryService } from '../generated/services/Action_Logs_HistoryService';
+import {type OP_IncidentReports} from '../generated/models/OP_IncidentReportsModel';
 
 //CSS
 import './comp_css/OrderDistributionForm.css';
@@ -44,7 +45,7 @@ import { Assi_icon, DispSrc_icon, DispDst_icon, Done_icon, CheckCircleSolidIcon,
 import { MapPin } from 'lucide-react';
 import IncidentReportForm, { type IncidentFormHandle, type CreateIR_EmployeeDetails } from '../components/CreateIncidentReportForm';
 import TripTimeline from './TripTimeline';
-import { type IR_ShortBags_Form_Model} from './IR_ShortBags_Form';
+import { type IR_ShortBags_Form_Model, IR_ShortBags_Form} from './IR_ShortBags_Form';
 
 
 //Utils
@@ -1571,6 +1572,29 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       });
     };
 
+    const [createdIR, setCreatedIR] = useState<OP_IncidentReports | null | undefined>(null);
+    const [isCreatingIR, setIsCreatingIR] = useState<boolean>(false);
+    const handleTripCreateIR = async () => {
+      if (incidentFormRef.current) {
+        try {
+          console.log("Pre-Creating IR...");
+          setIsCreatingIR(true);
+          setIsIncidentModalOpen(true); // Open modal instantly so user sees the loading state
+          
+          const data = await incidentFormRef.current.submit();
+          console.log('Created IR: ', data);
+          
+          setCreatedIR(data);
+        } catch (e) {
+          setIsIncidentModalOpen(false);
+          setCreatedIR(null);
+          console.error(e);
+        } finally {
+          setIsCreatingIR(false); // Turn off loading spinner regardless of success/fail
+        }
+      }
+    };
+
 
 
 
@@ -2699,11 +2723,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
       </div>
+
+
         <div className="order-dist-footer sticky-footer">
           <div className={`footer-validation-message ${!validation.isValid ? 'invalid' : 'valid'}`}>
             {prog_verified ? 'This trip has been concluded.' : validation.message}
           </div>
-          <button className="btn-cancel" onClick={() => {handleOnClose()}}>Close</button>
+          <button className="btn-cancel" onClick={() => {handleOnClose() /*setShowIncidentPrompt(true)*/}}>Close</button>
           {prog_verified ?
 
             (<button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting || !['POD', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')  }>
@@ -2733,6 +2759,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           }
           {isSubmitting && (<Loader2 style={{animation: 'spin 1s linear infinite'}} size={'var(--font-size-vlg)'} />)}
         </div>
+
+
 
         {personnelValidationModal?.isOpen && createPortal(
           <Modal onClose={() => setPersonnelValidationModal(null)} width={'35%'} height={'30%'}>
@@ -3101,7 +3129,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 {/* Primary action button using your accent styling */}
                 <button 
                   className="btn-create-now" 
-                  onClick={() => {setIsIncidentModalOpen(true); setShowIncidentPrompt(false);}}
+                  onClick={() => {setIsIncidentModalOpen(true); setShowIncidentPrompt(false); handleTripCreateIR();}}
                 >
                   Create Now
                 </button>
@@ -3110,47 +3138,95 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           </Modal>
         )}
 
+        <div style={{display: 'None'}}>
+          <IncidentReportForm
+              OE={formData.OE}
+              ref={incidentFormRef}
+              onClose={() => setIsIncidentModalOpen(false)}
+              onSubmit={async (data) => {
+                  console.log("Saving incident:", data);
+                  setIsIncidentModalOpen(false)
+              }}
+              ReportBy={editingUser?.FullName || 'Unknown User'}
+              ReporterPosition={editingUser?.Position}
+              employeeDetails={{
+                    EmployeeName: formData.Driver,
+                    EmployeeID: '123',
+                    EmployeePosition: 'Driver',
+                    EmployeeBUHead: '',
+                    EmployeeTractor: formData.Head_Full,
+                    EmployeeTrailer: formData.BO_Full,
+                    flexValue: actualDiscrepancy ? actualDiscrepancy : discrepancy,
+              } as CreateIR_EmployeeDetails}
+              preFill={{
+                tripReferenceNo: formData.OE,
+                Customer: formData.Customer,
+                TripGroup: formData._tripGroup,
+                CementType: formData.cementType,
+                Source: formData.Source,
+                Destination: formData.Destination,
+                ServedDate: formData.Completed_x0020_Date,
+                QtyDelivered: formData.QTYDelivered_Actual ? formData.QTYDelivered_Actual : formData.QTYDelivered,
+                QtyWithdrawn: formData.QTYWithdrawn_Actual ? formData.QTYWithdrawn_Actual : formData.QTYWithdrawn,
+                ShortBags: actualDiscrepancy ? actualDiscrepancy : discrepancy,
+              } as IR_ShortBags_Form_Model}
+          />
+        </div>
+
 
         {isIncidentModalOpen && (
-            <Modal onClose={() => setIsIncidentModalOpen(false)} hideX={true} width="30%">
-                <div className="odform-create-ir-modal-header">
-                    Create Incident Report
-                </div>
-                <div style={{ padding: '5px', height: '100%' }}>
-                    <IncidentReportForm
-                        OE={formData.OE}
-                        ref={incidentFormRef}
-                        onClose={() => setIsIncidentModalOpen(false)}
-                        onSubmit={async (data) => {
-                            console.log("Saving incident:", data);
-                            setIsIncidentModalOpen(false)
-                        }}
-                        ReportBy={editingUser?.FullName || 'Unknown User'}
-                        ReporterPosition={editingUser?.Position}
-                        employeeDetails={{
-                              EmployeeName: formData.Driver,
-                              EmployeeID: '123',
-                              EmployeePosition: 'Driver',
-                              EmployeeBUHead: '',
-                              EmployeeTractor: formData.Head_Full,
-                              EmployeeTrailer: formData.BO_Full,
-                              flexValue: actualDiscrepancy ? actualDiscrepancy : discrepancy,
-                        } as CreateIR_EmployeeDetails}
-                        preFill={{
-                          tripReferenceNo: formData.OE,
-                          Customer: formData.Customer,
-                          TripGroup: formData._tripGroup,
-                          CementType: formData.cementType,
-                          Source: formData.Source,
-                          Destination: formData.Destination,
-                          ServedDate: formData.Completed_x0020_Date,
-                          QtyDelivered: formData.QTYDelivered_Actual ? formData.QTYDelivered_Actual : formData.QTYDelivered,
-                          QtyWithdrawn: formData.QTYWithdrawn_Actual ? formData.QTYWithdrawn_Actual : formData.QTYWithdrawn,
-                          ShortBags: actualDiscrepancy ? actualDiscrepancy : discrepancy,
-                        } as IR_ShortBags_Form_Model}
-                    />
-                </div>
-            </Modal>
+          <Modal 
+            onClose={() => null} 
+            height="100%"
+            overlayBlur={4}
+            overlayColor="rgba(11, 19, 43, 0.4)" /* Deep custom navy overlay tint */
+            hideX={true} /* Hide default close button */
+          >
+            {isCreatingIR ? (
+              /* --- LOADING STATE CONTAINER --- */
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                minHeight: '300px',
+                backgroundColor: '#ffffff',
+                borderRadius: '12px', /* Gentle rounded corners */
+                padding: '24px'
+              }}>
+                {/* Custom Navy/Red Gradient Spinner Rim */}
+                <div className="ir-loading-spinner" style={{
+                  width: '50px',
+                  height: '50px',
+                  border: '5px solid #f3f3f3',
+                  borderTop: '5px solid #3a4efc', /* Theme primary blue */
+                  borderRight: '5px solid #3a4efc',
+                  borderBottom: '5px solid #ef4444', /* Theme sub red accent */
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <p style={{ 
+                  marginTop: '16px', 
+                  color: '#0b132b', /* Deep navy text */
+                  fontWeight: 600,
+                  fontFamily: 'sans-serif' 
+                }}>
+                  Generating Incident Report, please wait...
+                </p>
+              </div>
+            ) : (
+              /* --- ACTUAL FORM CONTENT --- */
+              <IR_ShortBags_Form 
+                incidentReportItem={createdIR as Partial<OP_IncidentReports>}
+                initialUser={editingUser ?? undefined}
+                onClose={() => {
+                  setCreatedIR(null); 
+                  setIsIncidentModalOpen(false);
+                }}
+              />
+            )}
+          </Modal>
         )}
 
 

@@ -8,7 +8,7 @@ const UpdateRequired: React.FC = () => {
   const { newVersion, isMajor } = location.state || { newVersion: "Latest", isMajor: false };
 
   const handleRefresh = () => {
-    window.location.reload();
+    window.location.href = window.location.pathname + window.location.search;
   };
 
   return (
