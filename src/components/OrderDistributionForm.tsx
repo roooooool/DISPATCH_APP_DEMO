@@ -226,7 +226,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       attendancePayload?: GSDC_AttendanceBase[];
     } | null>(null);
 
-    const [pendingAssignmentConfirmation, setPendingAssignmentConfirmation] = useState<((confirmed: boolean) => void) | null>(null);
+    const [pendingAssignmentConfirmation, setPendingAssignmentConfirmation] = useState<((value: GSDC_AttendanceBase[] | null) => void) | null>(null);
     const [servedDate, setServedDate] = useState<Date>(new Date());
 
     const [tempPlantDrAttachments, setTempPlantDrAttachments] = useState<File[]>([]);
@@ -924,7 +924,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       let coorApps_AttendancePayload = null;
       if (newData.TripProgress === 'Done' && !noAttPayload) {
-        setServedDate(new Date());
+        console.log('Initial Served date: ', servedDate);
         coorApps_AttendancePayload = await generateAttendancePayload(newData, editingUser?.FullName || 'Unknown User');
       }
 
@@ -957,17 +957,19 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       setAssignmentChanges({
         ...changes,
-        attendancePayload: coorApps_AttendancePayload // Pass it here
+        attendancePayload: coorApps_AttendancePayload
       });
       setShowAssignmentConfirmModal(true);
 
-      const userConfirmed = await new Promise<boolean>((resolve) => {
+      // 💡 CHANGE 1: The promise now resolves with the final array payload or null from the modal
+      const finalPayloadToUpload = await new Promise<any[] | null>((resolve) => {
         setPendingAssignmentConfirmation(() => resolve);
       });
 
-      if (!userConfirmed) {
+      // 💡 CHANGE 2: If the user cancels, finalPayloadToUpload is null
+      if (!finalPayloadToUpload) {
         console.log("Assignment changes cancelled by user.");
-        return false; // User cancelled, stop the process
+        return false; 
       }
 
       // User confirmed, now execute the logic
@@ -1007,56 +1009,48 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (changes.newVehicle) _logupdate(newData.Vehicle || 'None', 'Truck');
       if (changes.newBO) _logupdate(newData.BO || 'None', 'Trailer');
 
-      if (newData.TripProgress === 'Done' && coorApps_AttendancePayload) {
+      // 💡 CHANGE 3: Check only for 'Done' status. Don't use the stale coorApps_AttendancePayload check here
+      if (newData.TripProgress === 'Done') {
         console.log("Starting Attendance Log Upload...");
 
-        const recordsToUpload = coorApps_AttendancePayload;
+        // 💡 CHANGE 4: Use the fresh records directly returned from the modal promise resolve action
+        const recordsToUpload = finalPayloadToUpload;
 
-        addTask({
-          name: 'Uploading attendance records to Coor Apps.',
-          execute: async () => {
-            try {
-                // Use for...of to handle async calls sequentially and safely
-                for (const record of recordsToUpload) {
-                  console.log(`Uploading attendance for ${record.EmployeeName} with status ${record.OE}...`);
-                    await GSDC_AttendanceService.create({
-                            ...record,
-                            SecondTrip: ATTENDANCE_SERVED_COUNTS_INITIAL[ record.SecondTrip ? Math.max(Number(record.SecondTrip), 0) : 0],
-                            Date: servedDate ? servedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0], // Use the served date captured at the time of confirmation
-                            In: servedDate.toISOString() || new Date().toISOString(),
-                    });
-                    console.log(`Successfully logged attendance for: ${record.EmployeeName}`);
-                }
-                
-                // Optional: Show a success notification here
-                // toast.success("Attendance records uploaded successfully.");
-                
-            } catch (error) {
-                console.error("Failed to upload attendance records:", error);
-                return {success: false, error};
-                // Optional: Show an error notification here
-                // toast.error("Failed to upload attendance records. Please try again.");
-            } finally {
-                console.log("Attendance log upload process completed.");
-                return {success: true};
-            }
-          },
-          checkSuccess: (result: { success: boolean }) => result.success,
-          onSuccess: () => {null},
-          onFailure: () => {null},
-          message: `Finalizing trip attendance...`,
-          message_failure: () => `Failed to sync attendance logs.`,
-          message_success: () => `Attendance records synced successfully.`, 
-        });
-        
-
-
-
+        if (recordsToUpload.length > 0) {
+          addTask({
+            name: 'Uploading attendance records to Coor Apps.',
+            execute: async () => {
+              try {
+                  for (const record of recordsToUpload) {
+                    console.log(`Uploading attendance for ${record.EmployeeName} with status ${record.OE}...`);
+                      await GSDC_AttendanceService.create({
+                              ...record,
+                              SecondTrip: ATTENDANCE_SERVED_COUNTS_INITIAL[record.SecondTrip ? Math.max(Number(record.SecondTrip), 0) : 0],
+                              // // 💡 CHANGE 5: Read directly from the stateful servedDate reference to preserve picker inputs
+                              // Date: servedDate ? servedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 
+                              // In: servedDate ? servedDate.toISOString() : new Date().toISOString(),
+                      });
+                      console.log(`Successfully logged attendance for: ${record.EmployeeName}`);
+                  }
+              } catch (error) {
+                  console.error("Failed to upload attendance records:", error);
+                  return {success: false, error};
+              } finally {
+                  console.log("Attendance log upload process completed.");
+                  return {success: true};
+              }
+            },
+            checkSuccess: (result: { success: boolean }) => result.success,
+            onSuccess: () => {null},
+            onFailure: () => {null},
+            message: `Finalizing trip attendance...`,
+            message_failure: () => `Failed to sync attendance logs.`,
+            message_success: () => `Attendance records synced successfully.`, 
+          });
+        }
       }
 
-
-
-      return true; // Changes were confirmed and processed
+      return true; 
     };
 
 
@@ -1524,10 +1518,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             const result = await DMS_CEMService.update(
               formData.ID.toString(), 
               {
-
+                Trip_x0020_Status: 'ITD',
+                TripProgress: 'Dispatched To Destination',
+                Completed_x0020_Date: null,
                 Documented_x0020_Date: null, // Clear documented date when reverting
                 Verified_x0020_By: null, // Clear verifier when reverting
-  
               } as any
             );
 
@@ -1807,6 +1802,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     }
 
     const generateAttendancePayload = async (formData: LiveDMSView_CEM, userName: string): Promise<GSDC_AttendanceBase[]> => {
+      console.log('SD :', formData.SD);
       const colTemp: any[] = [];
       const tripKM = Number(formData.TripKM || 0);
       const tripIndex = Number(formData.TripIndex || 0);
@@ -1836,7 +1832,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       const uniqueNames = Array.from(new Set(rawNamesList));
 
       // BATCH FETCH EXECUTION
-      const activeServedCounts = await fetchServedCounts(uniqueNames, formData.SD);
+      const activeServedCounts = await fetchServedCounts(uniqueNames, servedDate);
 
       // Helper function to push to our temp collection
       const addToTemp = (
@@ -1899,17 +1895,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           addToTemp("Helper", hlp, "", { kmMult: 1, tiMult: 1 });
       }
 
-
+      console.log('served Date:', servedDate);
       const finalPayload = colTemp.map(item => ({
           OE: formData.OE,
           TripKM: item.TripKM,
           SD: formData.SD,
-          Date: new Date().toISOString(),
+          Date: servedDate ? new Date(servedDate).toISOString() : new Date().toISOString(),
           AttendanceDetail: item.TripIndex,
           SecondTrip: item.TripCount, 
           Creator: userName,
           TCVC: formData.OE?.startsWith("SOTC") ? "TC" : "VC",
-          In: new Date().toISOString(),
+          In: servedDate ? new Date(servedDate).toISOString() : new Date().toISOString(),
           Position: item.Role,
           TransactionType: item.Position,
           EmployeeName: item.SName,
@@ -1917,8 +1913,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       })) as GSDC_AttendanceBase[];
 
       //test:
-      console.log("--- GENERATED ATTENDANCE PAYLOAD ---");
-      console.log(finalPayload); // Renders as an easily readable tabular grid sheet
+      // console.log("--- GENERATED ATTENDANCE PAYLOAD ---");
+      // console.log(finalPayload); // Renders as an easily readable tabular grid sheet
 
       return finalPayload;
 
@@ -1985,14 +1981,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           try {
             console.log("Served Date changed! Recalculating attendance metrics for:", servedDate.toDateString());
             
-            // 1. Pass the updated date context embedded inside your form payload tracking variables
-            const updatedFormData = {
-              ...formData,
-              SD: servedDate.toISOString() // Temporarily override standard trip date with selected servedDate
-            };
 
             // 2. Await the new async batch count payload execution sequence
-            const freshPayload = await generateAttendancePayload(updatedFormData, editingUser?.FullName || '');
+            const freshPayload = await generateAttendancePayload(formData, editingUser?.FullName || '');
 
             // 3. Update the modal's state object tree layout with the updated counts
             setAssignmentChanges(prev => prev ? {
@@ -2223,6 +2214,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       className={!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') ? 'disabled' : ''} 
                       onClick={(e) => {
                         e.preventDefault(); 
+                        if (!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done')) return;
                         setIsIncidentModalOpen(false);
                         setShowIncidentPrompt(true);
                         }}>
@@ -2828,14 +2820,16 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             {prog_verified ? 'This trip has been concluded.' : validation.message}
           </div>
           <button className="btn-cancel" onClick={() => {handleOnClose() /*setShowIncidentPrompt(true)*/}}>Close</button>
-          {prog_verified ?
+          {(prog_verified || (editingUser?.Position === 'Developer' && formData.TripProgress === 'Done')) ?
 
-            (<button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting || !['POD', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')  }>
+            (<button className="btn-cancel" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting || !['POD', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')  }>
               {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
               <Undo2 size={'var(--font-size-vlg)'} />
               Revert
-            </button>) :
-            (
+            </button>) : (null)
+          }
+
+          { !prog_verified &&  (
               <>
                 <button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripSave();}} disabled={isSubmitting || prog_verified}>
                   {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
@@ -3050,13 +3044,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           <Modal
             onClose={() => {
               setShowAssignmentConfirmModal(false);
-              pendingAssignmentConfirmation?.(false,); // Resolves the promise with 'false' on close
+              pendingAssignmentConfirmation?.(null); // Resolves the promise with 'false' on close
               setIsSubmitting(false);
             }}
              width={'35%'} height={'auto'}
           >
             <div className="assignment-changes-preview" style={{overflowY: 'auto', maxHeight: '70vh', padding: '20px'}}>
-              <h4>Trip Assignment Changes: {`[${formData.OE}]`} </h4>
+              <h4>Trip Assignment Changes: {`[${formData.OE}]`}</h4>
               <p>Please review and confirm the following changes: </p>
               <ul>
                 {assignmentChanges.newDriver && (
@@ -3200,7 +3194,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 className="btn-cancel"
                 onClick={() => {
                   setShowAssignmentConfirmModal(false);
-                  pendingAssignmentConfirmation?.(false);
+                  pendingAssignmentConfirmation?.(null);
                   setIsSubmitting(false);
                 }}
               >
@@ -3210,7 +3204,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 className="btn-proceed"
                 onClick={() => {
                   setShowAssignmentConfirmModal(false);
-                  pendingAssignmentConfirmation?.(true);
+                  pendingAssignmentConfirmation?.(assignmentChanges.attendancePayload || []);
                   setIsSubmitting(false);
                 }}
                 disabled={isFetchingServedCounts}

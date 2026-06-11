@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.5.6"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "2.7.6"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -548,6 +548,7 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
         return row.TripProgress
       },
     },
+    { col: "Customer", cellStyle: () => {return { textAlign: 'left' }} },
     { col: "Source", cellStyle: () => {return { textAlign: 'left' }} },
     { col: "Destination", cellStyle: () => {return { textAlign: 'left' }}},
     { col: "_tripGroup", alias: "Group", filter: {type: "dropdown-multiple", options: tripgroupOptions}},

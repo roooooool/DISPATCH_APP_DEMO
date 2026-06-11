@@ -2,6 +2,7 @@ import React from 'react';
 import { TriangleAlert, Sparkles, RefreshCw } from 'lucide-react'; // Import icons
 import { useLocation } from 'react-router-dom';
 import './css/UpdateRequiredPage.css';
+import clickRefreshImg from '../../public/images/clickrefresh.png';
 
 const UpdateRequired: React.FC = () => {
   const location = useLocation();
@@ -36,15 +37,12 @@ const UpdateRequired: React.FC = () => {
         {/* Refresh Instructions Image */}
         <div className="instruction-image-wrapper">
           <img 
-            src="/images/clickrefresh.png" 
+            src={clickRefreshImg} 
             alt="How to refresh" 
             className="refresh-instruction-img"
           />
           <p className="instruction-caption">Click the refresh icon in your browser to update.</p>
         </div>
-
-
-
 
         <button className="refresh-btn" onClick={handleRefresh}>
           <RefreshCw size={18} className="btn-icon" />
@@ -52,6 +50,7 @@ const UpdateRequired: React.FC = () => {
         </button>
       </div>
     </div>
+    
   );
 };
 

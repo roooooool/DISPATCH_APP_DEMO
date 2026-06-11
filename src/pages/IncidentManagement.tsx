@@ -199,6 +199,8 @@ const IncidentManagement: React.FC = () => {
                     scrollTo={scrollTo}
                     onRefresh={fetchIncidentReports}
                     overflowX={true}
+                    overflowY={true}
+                    showRowCount={50}
                 />
             </div>
 
