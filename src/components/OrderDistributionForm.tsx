@@ -17,6 +17,7 @@ import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTa
 import {CheckIfOEExistsService} from '../generated/services/CheckIfOEExistsService';
 import { Action_Logs_HistoryService } from '../generated/services/Action_Logs_HistoryService';
 import {type OP_IncidentReports} from '../generated/models/OP_IncidentReportsModel';
+import { GetEmployeeServedCountService } from '../generated/services/GetEmployeeServedCountService';
 
 //CSS
 import './comp_css/OrderDistributionForm.css';
@@ -93,7 +94,6 @@ interface OrderDistributionProps {
   allTrips?: LiveDMSView_CEM[]; // Add this to receive all trips for validation
   lsList?: any[];
   driverHelperList?: any[];
-  attendanceServedCounts?: any[];
 
 
   editingUser?: FormUserInfo | null;
@@ -157,7 +157,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     truckOptions, 
     trailerOptions, 
     sourceOptions, 
-    attendanceServedCounts,
     allTrips: _wew = [], 
     lsList = [] , 
     editingUser, 
@@ -926,7 +925,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       let coorApps_AttendancePayload = null;
       if (newData.TripProgress === 'Done' && !noAttPayload) {
         setServedDate(new Date());
-        coorApps_AttendancePayload = generateAttendancePayload(newData, editingUser?.FullName || 'Unknown User');
+        coorApps_AttendancePayload = await generateAttendancePayload(newData, editingUser?.FullName || 'Unknown User');
       }
 
       const newDriverLastAttendance = driverOptions?.find(opt => opt.label === newData.Driver)?.record.DMS_Attendance;
@@ -1785,9 +1784,31 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       return n + (s[(v - 20) % 10] || s[v] || s[0]);
     };
 
-    const generateAttendancePayload = (formData: LiveDMSView_CEM, userName: string): GSDC_AttendanceBase[] => {
+    const [isFetchingServedCounts, setIsFetchingServedCounts] = useState<boolean>(false);
+    const fetchServedCounts = async (names: string[], date: any) => {
+      setIsFetchingServedCounts(true);
+      let table1 = [];
+      try{
+        const result = await GetEmployeeServedCountService.GetEmployeeServedCount({
+          EmployeeNames: names.join('|'),
+          TargetDate: new Date(date).toDateString(),
+        } as any);
+
+        const table = result.data?.ResultSets?.Table1 as any[];
+        if (table && table.length > 0) {
+            table1 = table
+        }
+      } catch(e) {
+        console.log('Failed to fetch served counts: ',e)
+      } finally {
+        setIsFetchingServedCounts(false);
+      }
+      return table1;
+    }
+
+    const generateAttendancePayload = async (formData: LiveDMSView_CEM, userName: string): Promise<GSDC_AttendanceBase[]> => {
       const colTemp: any[] = [];
-      const tripKM = Number(formData.TripKM|| 0);
+      const tripKM = Number(formData.TripKM || 0);
       const tripIndex = Number(formData.TripIndex || 0);
 
       const getTypeMultipliers = (typeName: string | null | undefined, fallback: number) => {
@@ -1801,7 +1822,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         };
       };
 
-      // 1. RESOLVE VALUES (Mirroring the 'With' block)
+      // RESOLVE VALUES (Mirroring the 'With' block)
       const drvU = (formData.Driver_x0020_Unloader || formData.Driver || "").trim();
       const drvL = (formData.Driver_x0020_Loader || formData.Driver || "").trim();
       const drv = (formData.Driver || "").trim();
@@ -1810,28 +1831,39 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       const hlpL = (formData.Helper_x0020_Loader || formData.Helper || "").trim();
       const hlp = (formData.Helper || "").trim();
 
-      console.log(attendanceServedCounts?.find(att => att.EmployeeName === 'Apple'));
+      // Extract and compile all distinct names configured for this trip payload
+      const rawNamesList = [drvU, drvL, drv, hlpU, hlpL, hlp].filter(name => name.length > 0);
+      const uniqueNames = Array.from(new Set(rawNamesList));
+
+      // BATCH FETCH EXECUTION
+      const activeServedCounts = await fetchServedCounts(uniqueNames, formData.SD);
 
       // Helper function to push to our temp collection
-        const addToTemp = (
-          role: "Driver" | "Helper",
-          name: string,
-          pos: string,
-          multipliers: { kmMult: number; tiMult: number }
-        ) => {
-          if (!name) return;
-          const servedCountsRecord = attendanceServedCounts?.find(att => att.EmployeeName === name);
-          colTemp.push({
-              Role: role,
-              SName: name,
-              Position: pos,
-                TripKM: tripKM * multipliers.kmMult,
-                TripIndex: tripIndex * multipliers.tiMult,
-              TripCount: servedCountsRecord ? servedCountsRecord.TotalServedDates : 0,
-          });
+      const addToTemp = (
+        role: "Driver" | "Helper",
+        name: string,
+        pos: string,
+        multipliers: { kmMult: number; tiMult: number }
+      ) => {
+        if (!name) return;
+        
+        //Cross reference the batch dataset using the columns returned by your SQL view (Name / Count)
+        const servedCountsRecord = activeServedCounts?.find(
+          (att: any) => (att.Name || att.EmployeeName) === name
+        );
+
+        colTemp.push({
+          Role: role,
+          SName: name,
+          Position: pos,
+          TripKM: tripKM * multipliers.kmMult,
+          TripIndex: tripIndex * multipliers.tiMult,
+          // Map the view's item counter value; fall back to 0 if they haven't run previous log dispatches
+          TripCount: servedCountsRecord ? Number(servedCountsRecord.Count || servedCountsRecord.TotalServedDates || 0) : 0,
+        });
       };
 
-      // 2. BUILD DRIVER COLLECTION
+      // DRIVER COLLECTION
       if (drvU && drvL) {
           if (drvU === drvL) {
             addToTemp("Driver", drvU, "", { kmMult: 1, tiMult: 1 });
@@ -1842,14 +1874,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             addToTemp("Driver", drvL, driverLoaderType, getTypeMultipliers(formData.DriverLoaderType, 0.25));
           }
       } else if (!drvU && drvL) {
-          addToTemp("Driver", drvL, "", { kmMult: 1, tiMult: 1 }); //temp - add restriction
+          addToTemp("Driver", drvL, "", { kmMult: 1, tiMult: 1 });
       } else if (drvU && !drvL) {
-          addToTemp("Driver", drvU, "", { kmMult: 1, tiMult: 1 }); // oks
+          addToTemp("Driver", drvU, "", { kmMult: 1, tiMult: 1 });
       } else if (drv) {
-          addToTemp("Driver", drv, "", { kmMult: 1, tiMult: 1 }); // oks
+          addToTemp("Driver", drv, "", { kmMult: 1, tiMult: 1 });
       }
 
-      // 3. BUILD HELPER COLLECTION
+      // HELPER COLLECTION
       if (hlpU && hlpL) {
           if (hlpU === hlpL) {
             addToTemp("Helper", hlpU, "", { kmMult: 1, tiMult: 1 });
@@ -1860,16 +1892,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             addToTemp("Helper", hlpL, helperLoaderType, getTypeMultipliers(formData.HelperLoaderType, 0.25));
           }
       } else if (!hlpU && hlpL) {
-          // ? no attendance
-          addToTemp("Helper", hlpL, "", { kmMult: 1, tiMult: 1 }); // oks ? compute credits
+          addToTemp("Helper", hlpL, "", { kmMult: 1, tiMult: 1 });
       } else if (hlpU && !hlpL) {
-          addToTemp("Helper", hlpU, "", { kmMult: 1, tiMult: 1 }); //oks ? compute credits
+          addToTemp("Helper", hlpU, "", { kmMult: 1, tiMult: 1 });
       } else if (hlp) {
-          addToTemp("Helper", hlp, "", { kmMult: 1, tiMult: 1 }); // oks
+          addToTemp("Helper", hlp, "", { kmMult: 1, tiMult: 1 });
       }
 
-      // 4. MAP TO FINAL SHAREPOINT SCHEMA (The 'Patch' block)
-      return colTemp.map(item => ({
+
+      const finalPayload = colTemp.map(item => ({
           OE: formData.OE,
           TripKM: item.TripKM,
           SD: formData.SD,
@@ -1884,6 +1915,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           EmployeeName: item.SName,
           hrID: getPersonnelIdByName(item.SName, item.Role) 
       })) as GSDC_AttendanceBase[];
+
+      //test:
+      console.log("--- GENERATED ATTENDANCE PAYLOAD ---");
+      console.log(finalPayload); // Renders as an easily readable tabular grid sheet
+
+      return finalPayload;
+
     };
 
 
@@ -1891,6 +1929,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const handleUpdateAttendance = (name: string, empId: string, empType: string, attendance?: string, refresh?: boolean) => {
 
       onUpdateDriverHelperAttendance?.(name,attendance || 'PRESENT',empType as 'Driver' | 'Helper');
+
+      const served_date = servedDate ? new Date(servedDate) : new Date();
 
       addTask({
         id: `attendance-update-${name}`,
@@ -1901,7 +1941,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   UpsertAttendanceLogService.UpsertAttendanceLog({ 
                     EmployeeName: name,
                     EmployeeID: empId,
-                    AttendanceDate: new Date().toISOString().split('T')[0],
+                    AttendanceDate: served_date.toISOString().split('T')[0],
                     AttendanceStatus: attendance || 'PRESENT',
                     OE: formData.OE || '',
                   } as any);
@@ -1936,6 +1976,42 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         message_failure: `${name} failed to be tagged '${attendance || 'PRESENT'}'.`
       });
     };
+
+    useEffect(() => {
+      // Only trigger recalculation if the modal is actively open and has an existing payload layout
+      if (showAssignmentConfirmModal && assignmentChanges?.attendancePayload) {
+        
+        const recalculateAttendanceCount = async () => {
+          try {
+            console.log("Served Date changed! Recalculating attendance metrics for:", servedDate.toDateString());
+            
+            // 1. Pass the updated date context embedded inside your form payload tracking variables
+            const updatedFormData = {
+              ...formData,
+              SD: servedDate.toISOString() // Temporarily override standard trip date with selected servedDate
+            };
+
+            // 2. Await the new async batch count payload execution sequence
+            const freshPayload = await generateAttendancePayload(updatedFormData, editingUser?.FullName || '');
+
+            // 3. Update the modal's state object tree layout with the updated counts
+            setAssignmentChanges(prev => prev ? {
+              ...prev,
+              attendancePayload: freshPayload
+            } : null);
+
+          } catch (error) {
+            console.error("Failed to recalculate served count allocations:", error);
+          }
+        };
+
+        recalculateAttendanceCount();
+      }
+    }, [servedDate, showAssignmentConfirmModal])
+
+
+
+
 
     const handlePrintDMS = () => {
       if (!formData.tripID) {
@@ -3070,7 +3146,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                               <td style={{ fontSize: '0.8rem', color: record.TransactionType ? 'var(--color-accent)' : 'var(--color-muted)' }}>
                                 {record.TransactionType || 'Full Trip'}
                               </td>
-                              <td style={{ fontWeight: 'bold'}}>{getOrdinalServedCount(record.SecondTrip ? Number(record.SecondTrip) : 1)}</td>
+                              <td style={{ fontWeight: 'bold', position: 'relative', minWidth: '60px' }}>
+                                {isFetchingServedCounts ? (
+                                  /* --- INLINE CELL LOADING STATE --- */
+                                  <div className="payload-cell-spinner-wrapper">
+                                    <div className="payload-cell-mini-spinner" />
+                                  </div>
+                                ) : (
+                                  /* --- RENDER ORDINAL COUNT ONCE RESOLVED --- */
+                                  getOrdinalServedCount(record.SecondTrip === null ? 1 : Number(record.SecondTrip)+1)
+                                )}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -3096,8 +3182,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <input
                       type="date"
                       className="served-date-custom-date-input"
-                      value={servedDate.toISOString().split('T')[0]} // Assuming you used the state variable from previous step
-                      onChange={(e) => setServedDate(new Date(e.target.value))}
+                      value={servedDate.toISOString().split('T')[0]}
+                      disabled={isFetchingServedCounts as boolean} // Disable input while executing active requests
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setServedDate(new Date(e.target.value));
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -3122,10 +3213,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   pendingAssignmentConfirmation?.(true);
                   setIsSubmitting(false);
                 }}
+                disabled={isFetchingServedCounts}
                 style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 {assignmentChanges.attendancePayload && assignmentChanges.attendancePayload.length > 0 && (<CheckCheck/>)}
-                {assignmentChanges.attendancePayload && assignmentChanges.attendancePayload.length > 0 ? 'Trip Complete' : 'Confirm Changes'}
+                {isFetchingServedCounts ? 'Calculating...' : assignmentChanges.attendancePayload && assignmentChanges.attendancePayload.length > 0 ? 'Trip Complete' : 'Confirm Changes'}
               </button>
             </div>
           </Modal>,

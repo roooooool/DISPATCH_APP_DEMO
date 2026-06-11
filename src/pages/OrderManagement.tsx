@@ -37,7 +37,6 @@ import { type FctFinal } from '../generated/models/FctFinalModel';
 import { DMS_TripFuelRequestsListService} from '../generated/services/DMS_TripFuelRequestsListService';
 import { GetLastLiquidatedOdometerService } from '../generated/services/GetLastLiquidatedOdometerService';
 import FuelRequestManager from '../components/FuelRequestManager';
-import {Vw_EmployeeServedTodayCountService} from '../generated/services/Vw_EmployeeServedTodayCountService';
 import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
 import { TripTicketsService } from '../generated/services/TripTicketsService';
 
@@ -105,7 +104,6 @@ const OrderManagement: React.FC = () => {
     const [destinationOptions, setDestinationOptions] = useState<any[]>([]);
     const [stationOptions, setStationOptions] = useState<any[]>([]);
     const [fuelRequests, setFuelRequests] = useState<any[]>([]);
-    const [employeeServedAttendance, setEmployeeServedAttendance] = useState<any[]>([]);
 
 
     const [previewTrip, setPreviewTrip] = useState<any>({});
@@ -248,28 +246,6 @@ const OrderManagement: React.FC = () => {
     }, [selectedRangeNewOrders]);
     fetchNewOrders(); // Call it once on component mount to load initial data
 
-    const fetchAttendanceServedCounts = useCallback(async (nocd: boolean = false) => {
-
-        if (!nocd && employeeServedAttendance.length > 0 && !canFetch(`${FETCH_LOADING_KEYS.fetchAttendanceServedCounts}`)) return;
-        setLoadingFor(`${FETCH_LOADING_KEYS.fetchAttendanceServedCounts}`, true);
-
-
-        try {
-            const requestsResults = await ewulFetchAll<any>(
-                Vw_EmployeeServedTodayCountService,
-                { filter: '' },
-                2000,
-                'EmployeeName'
-            );
-            setEmployeeServedAttendance(requestsResults);
-
-
-        } catch (err) {
-            console.error("Fetch Error during fuel request batching:", err);
-        } finally {
-            setLoadingFor(`${FETCH_LOADING_KEYS.fetchAttendanceServedCounts}`, false);
-        }
-    }, []);
 
 
 
@@ -813,7 +789,6 @@ const OrderManagement: React.FC = () => {
 
         fetchFCTRoutes();
 
-        fetchAttendanceServedCounts();
 
     },[]); 
 
@@ -1070,8 +1045,6 @@ const OrderManagement: React.FC = () => {
             
             lsList={LSlist}
             driverHelperList={driverHelperList}
-
-            attendanceServedCounts={employeeServedAttendance}
 
             editingUser={localUser}
 
