@@ -64,4 +64,9 @@ export interface DMS_CEM {
   OE_x0020_Date?: string;
   MonitoredBy?: string;
   DispatchedBy?: string;
+  DriverLoaderType?: string;
+  DriverUnloaderType?: string;
+  HelperLoaderType?: string;
+  HelperUnloaderType?: string;
+  ServedDate?: string;
 }

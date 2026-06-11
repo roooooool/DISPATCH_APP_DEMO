@@ -1233,6 +1233,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
             if (progress_next === 'Done' && !formData.Completed_x0020_Date) {
               updatedData.Completed_x0020_Date = new Date().toISOString(); // Set completed date to now if progressing to Done and completed date is not already set
+              updatedData.ServedDate = new Date(servedDate).toISOString();
             }
 
 
@@ -2074,8 +2075,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const disabledOEEntGrp = prog_verified;
     const disabledDoneGrp = prog_verified || prog_idx < 4 || !validateOE(formData).isValid;
 
-    const discrepancy = formData.QTYDelivered != null && formData.QTYWithdrawn != null ?  formData.QTYDelivered - formData.QTYWithdrawn : 0;
-    const actualDiscrepancy = formData.QTYDelivered_Actual != null && formData.QTYWithdrawn_Actual != null ?  formData.QTYDelivered_Actual - formData.QTYWithdrawn_Actual : 0;
+    const discrepancy = formData.QTYDelivered == null || formData.QTYWithdrawn == null ? 0 : formData.QTYDelivered - formData.QTYWithdrawn;
+    const actualDiscrepancy = formData.QTYDelivered_Actual == null || formData.QTYWithdrawn_Actual == null ? 0 :  formData.QTYDelivered_Actual - formData.QTYWithdrawn_Actual;
     return (
     <>
       <div className="order-dist-container animate-pop-in" style={style}>

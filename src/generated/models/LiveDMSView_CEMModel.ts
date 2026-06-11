@@ -45,6 +45,7 @@ export interface LiveDMSView_CEM {
   QTYWithdrawn?: number;
   QTYDelivered?: number;
   Completed_x0020_Date?: string;
+  ServedDate?: string;
   BO?: string;
   Status?: string;
   TripProgress: string;

@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.5.5"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "2.5.6"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -574,7 +574,7 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     { col: "QTYDelivered", alias: "QTY Delivered" },
     { col: "Driver Unloader", alias: "Driver Unloader" },
     { col: "Helper Unloader", alias: "Helper Unloader" },
-    { col: '', alias: "Discrepancy", calculate: (row: any) => {
+    { col: 'wew', alias: "Discrepancy", calculate: (row: any) => {
         const discrepancy = row.QTYDelivered != null && row.QTYWithdrawn != null ?  row.QTYDelivered - row.QTYWithdrawn : 0;
         const actualDiscrepancy = row.QTYDelivered_Actual != null && row.QTYWithdrawn_Actual != null ?  row.QTYDelivered_Actual - row.QTYWithdrawn_Actual : 0;
         return actualDiscrepancy ? actualDiscrepancy : (discrepancy || 0);
@@ -1124,7 +1124,7 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
       }
     },
     { col: "Remarks", alias: "Quick Remarks", portion: 2 },
-    { col: "ReportedBy", alias: "Reported By", portion: 1.2 },
+    { col: "ReportedBy", alias: "Reported By", portion: 1.2, filter: { type: "dropdown-multiple"}, },
     { col: "CreatedDateTime", alias: "Reported Date", portion: 1, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "datetime" }) },
     { col: "", alias: "Age", portion: 0.5, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "duration" }) },
 
