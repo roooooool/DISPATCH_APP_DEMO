@@ -908,9 +908,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
 
-    const checkAssignmentChanges = async (newData: LiveDMSView_CEM, noAttPayload: boolean = false): Promise<boolean> => {
+    const checkAssignmentChanges = async (newData: LiveDMSView_CEM, noAttPayload: boolean = false): Promise<{ canProceed: boolean; attdate?: string }> => {
       const oldData = originalFormData;
-      if (!oldData) return true; // No original data to compare against
+      if (!oldData) return { canProceed: true }; // No original data to compare against
 
       const changes: any = {};
       let attendanceStatus: string;
@@ -952,7 +952,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       // If no relevant changes were detected, proceed without confirmation.
       if (Object.keys(changes).length === 0 && newData.TripProgress !== 'Done') {
-        return true;
+        return { canProceed: true};
       }
 
       setAssignmentChanges({
@@ -969,7 +969,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       // 💡 CHANGE 2: If the user cancels, finalPayloadToUpload is null
       if (!finalPayloadToUpload) {
         console.log("Assignment changes cancelled by user.");
-        return false; 
+        return { canProceed: false }; 
       }
 
       // User confirmed, now execute the logic
@@ -986,22 +986,25 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         });
       };
 
+      const attdate = finalPayloadToUpload.length > 0 ? finalPayloadToUpload[0].Date : undefined
+
+
       if (changes.newDriver || changes.oldDriver) {
         if (changes.newDriver) {
-          handleUpdateAttendance(changes.newDriver.name, driverOptions?.find(opt => opt.label === changes.newDriver.name)?.record.Id, 'Driver', changes.newDriver.status, false);
+          handleUpdateAttendance(changes.newDriver.name, driverOptions?.find(opt => opt.label === changes.newDriver.name)?.record.Id, 'Driver', changes.newDriver.status, false, attdate);
         }
         if (changes.oldDriver) {
-          handleUpdateAttendance(changes.oldDriver.name, driverOptions?.find(opt => opt.label === changes.oldDriver.name)?.record.Id, 'Driver', assignmentChanges?.oldDriver?.newStatus, false);
+          handleUpdateAttendance(changes.oldDriver.name, driverOptions?.find(opt => opt.label === changes.oldDriver.name)?.record.Id, 'Driver', assignmentChanges?.oldDriver?.newStatus, false, attdate);
         }
         _logupdate(newData.Driver || 'None', 'Driver');
       }
 
       if (changes.newHelper || changes.oldHelper) {
         if (changes.newHelper) {
-          handleUpdateAttendance(changes.newHelper.name, helperOptions?.find(opt => opt.label === changes.newHelper.name)?.record.Id, 'Helper', changes.newHelper.status, false);
+          handleUpdateAttendance(changes.newHelper.name, helperOptions?.find(opt => opt.label === changes.newHelper.name)?.record.Id, 'Helper', changes.newHelper.status, false, attdate);
         }
         if (changes.oldHelper) {
-          handleUpdateAttendance(changes.oldHelper.name, helperOptions?.find(opt => opt.label === changes.oldHelper.name)?.record.Id, 'Helper', assignmentChanges?.oldHelper?.newStatus, false);
+          handleUpdateAttendance(changes.oldHelper.name, helperOptions?.find(opt => opt.label === changes.oldHelper.name)?.record.Id, 'Helper', assignmentChanges?.oldHelper?.newStatus, false, attdate);
         }
         _logupdate(newData.Helper || 'None', 'Helper');
       }
@@ -1050,7 +1053,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         }
       }
 
-      return true; 
+      return { canProceed: true, attdate: attdate };
     };
 
 
@@ -1094,12 +1097,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const [ShowOEDuplicateWarningModal, setShowOEDuplicateWarningModal] = useState(false);
     const handleTripProceed = async (progress_next: string) => {
       setIsSubmitting(true);
-
+      let confirmedAttDate: string | undefined = undefined;
       //check for assignment changes
       const doDeselect = progress_next === 'Assigned'; // Deselect if moving back to Assigned
       if (!doDeselect && formData.TripProgress !== 'Done') {
-          const canProceed = await checkAssignmentChanges({...formData, TripProgress: progress_next});
-          if (!canProceed) return; // Stop if user cancels changes
+          const { canProceed, attdate } = await checkAssignmentChanges({...formData, TripProgress: progress_next});
+          if (!canProceed) {setIsSubmitting(false); return;} // Stop if user cancels changes
+          confirmedAttDate = attdate;
       };
 
       let deselectAfterVerified = formData.TripProgress === 'Done' && !!formData.Completed_x0020_Date; // Deselect after verification if moving to Done
@@ -1277,8 +1281,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             if (progress_next === 'Assigned' && result.data.ID) await DMS_CEMService.update(result.data.ID.toString(), {tripID: result.data.ID});
 
             if (formData.TripProgress !== 'Done') { // dont update attendance when trip is already done
-              handleUpdateAttendance(formData.Driver || '', driverOptions?.find(option => option.label === formData.Driver)?.record.Id, 'Driver', attendanceStatus || 'ON TRIP', false);
-              handleUpdateAttendance(formData.Helper || '', helperOptions?.find(option => option.label === formData.Helper)?.record.Id, 'Helper', attendanceStatus || 'ON TRIP', false);
+              handleUpdateAttendance(formData.Driver || '', driverOptions?.find(option => option.label === formData.Driver)?.record.Id, 'Driver', attendanceStatus || 'ON TRIP', false, confirmedAttDate);
+              handleUpdateAttendance(formData.Helper || '', helperOptions?.find(option => option.label === formData.Helper)?.record.Id, 'Helper', attendanceStatus || 'ON TRIP', false, confirmedAttDate);
             }
 
             // Assuming the result contains the created record, you might want to use it
@@ -1922,11 +1926,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-    const handleUpdateAttendance = (name: string, empId: string, empType: string, attendance?: string, refresh?: boolean) => {
-
+    const handleUpdateAttendance = (name: string, empId: string, empType: string, attendance?: string, refresh?: boolean, attdate?: string) => {
+    
       onUpdateDriverHelperAttendance?.(name,attendance || 'PRESENT',empType as 'Driver' | 'Helper');
-
-      const served_date = servedDate ? new Date(servedDate) : new Date();
 
       addTask({
         id: `attendance-update-${name}`,
@@ -1937,7 +1939,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   UpsertAttendanceLogService.UpsertAttendanceLog({ 
                     EmployeeName: name,
                     EmployeeID: empId,
-                    AttendanceDate: served_date.toISOString().split('T')[0],
+                    AttendanceDate: attdate ? new Date(attdate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                     AttendanceStatus: attendance || 'PRESENT',
                     OE: formData.OE || '',
                   } as any);
