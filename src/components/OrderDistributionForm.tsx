@@ -1595,6 +1595,26 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       }
     };
 
+    const [isConfirmIRCloseOpen, setIsConfirmIRCloseOpen] = useState<boolean>(false);
+
+    // This function now just raises our secondary modal instead of halting thread execution
+    const handleConfirmIRClose = () => {
+      setIsConfirmIRCloseOpen(true);
+    };
+
+    // This function handles the absolute wipeout execution when they confirm "Yes"
+    const handleForceDiscardIR = () => {
+      setIsConfirmIRCloseOpen(false);
+      setCreatedIR(null);
+      setIsIncidentModalOpen(false);
+    };
+
+    const handleForceCloseIR = () => {
+      setIsConfirmIRCloseOpen(false);
+      setCreatedIR(null);
+      setIsIncidentModalOpen(false);
+    };
+
 
 
 
@@ -2126,7 +2146,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       className={!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') ? 'disabled' : ''} 
                       onClick={(e) => {
                         e.preventDefault(); 
-                        setIsIncidentModalOpen(true);
+                        setIsIncidentModalOpen(false);
+                        setShowIncidentPrompt(true);
                         }}>
                         <FileSpreadsheet size={16} /> 
                         Create IR
@@ -3176,42 +3197,19 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
         {isIncidentModalOpen && (
           <Modal 
-            onClose={() => null} 
+            onClose={() => {
+              setCreatedIR(null); 
+              setIsIncidentModalOpen(false);
+            }} 
             height="100%"
             overlayBlur={4}
             overlayColor="rgba(11, 19, 43, 0.4)" /* Deep custom navy overlay tint */
             hideX={true} /* Hide default close button */
           >
             {isCreatingIR ? (
-              /* --- LOADING STATE CONTAINER --- */
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                minHeight: '300px',
-                backgroundColor: '#ffffff',
-                borderRadius: '12px', /* Gentle rounded corners */
-                padding: '24px'
-              }}>
-                {/* Custom Navy/Red Gradient Spinner Rim */}
-                <div className="ir-loading-spinner" style={{
-                  width: '50px',
-                  height: '50px',
-                  border: '5px solid #f3f3f3',
-                  borderTop: '5px solid #3a4efc', /* Theme primary blue */
-                  borderRight: '5px solid #3a4efc',
-                  borderBottom: '5px solid #ef4444', /* Theme sub red accent */
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
-                <p style={{ 
-                  marginTop: '16px', 
-                  color: '#0b132b', /* Deep navy text */
-                  fontWeight: 600,
-                  fontFamily: 'sans-serif' 
-                }}>
+              <div className="ir-modal-loading-container">
+                <div className="ir-modal-loading-spinner" />
+                <p className="ir-modal-loading-text">
                   Generating Incident Report, please wait...
                 </p>
               </div>
@@ -3228,6 +3226,82 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             )}
           </Modal>
         )}
+
+        {/* ==========================================================================
+          PRIMARY WORKSPACE WORKFLOW MODAL
+          ========================================================================== */}
+        {isIncidentModalOpen && (
+          <Modal 
+            onClose={handleConfirmIRClose} 
+            height="100%"
+            overlayBlur={4}
+            overlayColor="rgba(11, 19, 43, 0.4)"
+            hideX={true}
+          >
+            {isCreatingIR ? (
+              <div className="ir-modal-loading-container">
+                <div className="ir-modal-loading-spinner" />
+                <p className="ir-modal-loading-text">Generating Incident Report, please wait...</p>
+              </div>
+            ) : (
+              <IR_ShortBags_Form 
+                incidentReportItem={createdIR as Partial<OP_IncidentReports>}
+                initialUser={editingUser ?? undefined}
+                onClose={handleConfirmIRClose} 
+                onSubmit={() => {
+                  console.log("Submitted successfully");
+                  handleForceCloseIR(); 
+                }}
+                onSave={() => {
+                  console.log("Saved successfully");
+                  handleForceCloseIR();
+                }}
+
+              />
+            )}
+
+          </Modal>
+        )}
+
+        {isConfirmIRCloseOpen && (
+          <Modal
+            onClose={() => setIsConfirmIRCloseOpen(false)} // Clicking backdrop turns off the warning layer
+            height="auto"
+            overlayBlur={6} // Slightly high blur depth emphasizes structural focal priority
+            overlayColor="rgba(11, 19, 43, 0.6)" // Darker navy overlay focus tint
+            hideX={true}
+            width={'35%'}
+          >
+            <div className="ir-confirm-prompt-box">
+              <h3 className="ir-confirm-title">Are you done editing?</h3>
+              <p className="ir-confirm-body">
+                Are you sure you want to exit? Any unsaved changes will be lost.
+              </p>
+              <p className="ir-confirm-body-hint">
+                You may still edit this later on Incident Reports Page.
+              </p>
+              
+              <div className="ir-confirm-actions">
+                <button 
+                  type="button" 
+                  className="ir-confirm-btn btn-keep" 
+                  onClick={() => setIsConfirmIRCloseOpen(false)}
+                >
+                  Continue Editing
+                </button>
+                <button 
+                  type="button" 
+                  className="ir-confirm-btn btn-discard" 
+                  onClick={handleForceDiscardIR}
+                >
+                  I'm Done
+                </button>
+              </div>
+            </div>
+          </Modal>
+        )}
+
+
 
 
         {/* TRIP HISTORY TIMELINE MODAL */}

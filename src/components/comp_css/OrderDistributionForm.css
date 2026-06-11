@@ -1197,3 +1197,155 @@ select.status-new {
     text-align: center;
     margin-bottom: auto;
 }
+
+
+
+/* ==========================================================================
+   INCIDENT REPORT MODAL LOADING WORKSPACE
+   ========================================================================== */
+
+/* Outer structural container */
+.ir-modal-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  background-color: #ffffff;
+  border-radius: 12px; /* Gentle rounded corners */
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Custom Navy/Red Gradient Spinner Rim */
+.ir-modal-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  
+  /* Apply your theme's primary navy to red accent gradient directly */
+  background: var(--bg-gradient-main, linear-gradient(135deg, #0b132b 0%, #3a4efc 25%, #ef4444 100%));
+  
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Fire your rotating keyframe loop */
+  animation: ir-spin 1s linear infinite;
+}
+
+/* The Mask: Hallows out the interior of the gradient block to match a 5px rim thickness */
+.ir-modal-loading-spinner::before {
+  content: "";
+  position: absolute;
+  
+  /* Calculates the hollow core surface space offsets (5px rim sizes on all edges) */
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  
+  background-color: #ffffff; /* Must match your loading container's background color */
+  border-radius: 50%;
+}
+
+/* Informational message text block */
+.ir-modal-loading-text {
+  margin-top: 16px;
+  color: #0b132b; /* Deep navy text */
+  font-weight: 600;
+  font-family: sans-serif;
+}
+
+/* Print Rule: Prevent showing loading views if an iframe/window print triggers */
+@media print {
+  .ir-modal-loading-container {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   SPINNER ANIMATION KEYFRAMES
+   ========================================================================== */
+@keyframes ir-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ==========================================================================
+   CUSTOM REUSABLE CONFIRMATION MODAL CARD
+   ========================================================================== */
+.ir-confirm-prompt-box {
+  background-color: #ffffff;
+  padding: 28px;
+  border-radius: 12px; /* Gentle design rounded corners */
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.ir-confirm-title {
+  margin: 0 0 12px 0;
+  color: #0b132b; /* Theme Deep Navy blue */
+  font-size: 18px;
+  font-weight: 700;
+  font-family: sans-serif;
+}
+
+.ir-confirm-body {
+  margin: 0 0 24px 0;
+  color: #555555;
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: sans-serif;
+}
+
+/* Horizontal button distribution footprint */
+.ir-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* Base button defaults */
+.ir-confirm-btn {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px; /* Smooth responsive curves */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: none;
+}
+
+/* "Continue Editing" Primary Action Button */
+.ir-confirm-btn.btn-keep {
+  background-color: #3a4efc; /* Theme primary 2nd blue */
+  color: #ffffff;
+}
+.ir-confirm-btn.btn-keep:hover {
+  background-color: #2839d8;
+}
+
+/* "Discard Changes" Warning Button */
+.ir-confirm-btn.btn-discard {
+  background-color: var(--color-bg-success); /* Subdued lighter text background */
+  color: var(--color-border-success); /* Theme accent sub red */
+  border: 1px solid var(--color-border-success);
+}
+.ir-confirm-btn.btn-discard:hover {
+  background-color: var(--color-border-success);
+  color: var(--color-text-2);
+  border-color:var(--color-border-success);
+}
+
+.ir-confirm-body-hint {
+  color: var(--color-primary-2)
+}

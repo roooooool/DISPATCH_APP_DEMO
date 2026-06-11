@@ -333,7 +333,7 @@ const OrderManagement: React.FC = () => {
             const result = await ewulFetchAll<any>(
                 Vw_FCT_RouteNodeListService,
                 { filter: ''},
-                10000,
+                2000,
                 'Route'
             );
 
@@ -517,39 +517,18 @@ const OrderManagement: React.FC = () => {
         }
     }, [selectedRange]); // ONLY depend on the range
 
-    const [LSlist, setLSList] = useState<any[]>([]);
-    const fetchLSThisMonth = useCallback(async () => {
-        if (!canFetch(FETCH_LOADING_KEYS.lsList)) return;
-        console.log("Fetching LS list for this month...");
-
-        const now = new Date();
-        const firstDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-        const firstDayInt = ISOtoInt(firstDay.toISOString()); // YYYYMMDD
-
-        const lastDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
-        const lastDayInt = ISOtoInt(lastDay.toISOString());
+    const LSlist = useMemo(() => {
+        const encodedLSKey = enc('Loading Sequence');
         
-
-        const dateFilter = `OEDateAsInt ge ${firstDayInt} and OEDateAsInt le ${lastDayInt} and TripProgress ne 'Done' and TripProgress ne 'PLD Done' `;
-
-        setLoadingFor(FETCH_LOADING_KEYS.lsList, true);
-        try {
-            const result = await ewulFetchAll<any>(
-                LiveDMSView_CEMService, 
-                { filter: dateFilter, orderBy: ["OEDateAsInt desc"], select: [`${enc('Loading Sequence')},ID,OE`] }, 
-                5000,
-                'ID'
-            );
-
-            // Only update if the result is actually different or exists
-            setLSList(result || []);
-    
-        } catch (err) {
-            console.error("Fetch Error:", err);
-        } finally {
-            setLoadingFor(FETCH_LOADING_KEYS.lsList, false);
-        }
-    }, []);
+        // Filter out 'Done' items since fetchTrips only handles 'PLD Done'
+        return trips
+            .filter(trip => trip.TripProgress !== 'Done')
+            .map(trip => ({
+                [encodedLSKey]: trip[encodedLSKey],
+                ID: trip.ID,
+                OE: trip.OE
+            }));
+    }, [trips]);
 
 
 
@@ -807,25 +786,38 @@ const OrderManagement: React.FC = () => {
         generateAdditionalOE('Mobilization');
     };
 
-    useEffect(() => {
-        generateTripTicketID();
-        generateAdditionalOE('Preload');
-        generateAdditionalOE('Mobilization');
-    }, []); // Call once on mount to have it ready for when the user clicks Preload or Mobilization
+    // useEffect(() => {
+    //     generateTripTicketID();
+    //     generateAdditionalOE('Preload');
+    //     generateAdditionalOE('Mobilization');
+    // }, []); // Call once on mount to have it ready for when the user clicks Preload or Mobilization
 
     // MAIN REFRESH
-    const handleRefresh = useCallback(() => {
+    const handleRefresh = useCallback( () => {
+
         fetchTruckList();
+
         fetchDriverHelperList();
+
         generateTripTicketID();
+
         generateAdditionalOE('Preload');
+
         generateAdditionalOE('Mobilization');
+
         fetchTrips();
-        fetchLSThisMonth();
+
+        // fetchLSThisMonth();
+
         //fetchSourceList();
+
         fetchFCTRoutes();
+
         fetchAttendanceServedCounts();
-    }, []);
+
+    },[]); 
+
+
 
     useEffect(() => {
         handleRefresh();
@@ -837,7 +829,7 @@ const OrderManagement: React.FC = () => {
         const intervalId = setInterval(() => {
             console.log("Performing scheduled refresh...");
             handleRefresh();
-        }, 60000); // 60 seconds
+        }, 60000 * 2); // 60 seconds
 
         return () => clearInterval(intervalId); // Cleanup on unmount
     }, [handleRefresh]);
