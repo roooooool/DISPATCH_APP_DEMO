@@ -176,6 +176,8 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
   
     setFormData(nextState);
     setError(validateForm(nextState)) ;
+
+    // console.log('action taken changed: ' , formData);
   };
 
   const handleCheckbox = (yardName: string) => {
@@ -563,10 +565,9 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                 const ir_details = {
                   ModifiedBy: initialUser?.FullName,
                   ModifiedDateTime: new Date().toISOString(),
-                  IRStatus: 'Processing',
                 } as Omit<Partial<OP_IncidentReports>, "IncidentID">  ;
   
-                result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), {...ir_details, reportJSON: JSON.stringify(formData)});
+                result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), {...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData)});
 
                 if (result.error) {
                     throw new Error(result.error.message);
@@ -624,7 +625,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   ResolvedBy: initialUser?.FullName,
                 } as Omit<Partial<OP_IncidentReports>, "IncidentID">  ;
   
-                result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), {...ir_details, IRStatus: 'Resolved' , reportJSON: JSON.stringify(formData)});
+                result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), {...ir_details, ActionStatus: formData.irAction, IRStatus: 'Closed' , reportJSON: JSON.stringify(formData)});
 
                 if (result.error) {
                     throw new Error(result.error.message);

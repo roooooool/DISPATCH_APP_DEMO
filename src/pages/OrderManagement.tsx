@@ -525,6 +525,7 @@ const OrderManagement: React.FC = () => {
 
             setLiveTruckAssignment(result);
 
+            // console.log('tractor: ',result.find((item: any) => item.Head == 'H-1020'));
 
             const truck_options: DropdownOption[] = result
             .filter((item: any) => item.Head) // Only include if a head exists
@@ -534,7 +535,7 @@ const OrderManagement: React.FC = () => {
                 return {
                     value: item.Head ?? '',
                     label: item.Head_Full ?? '',
-                    subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.PairedTrailer ?? 'NO BO'} | ${item.OE ?? 'NO TRIP'} |  ${item.TractorJRNumber ? item.TractorJRNumber + ': ' + item.Tractor_JRStatus : 'NO UR '} `,
+                    subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.PairedTrailer ?? 'NO BO'} | ${item.OE ?? 'NO TRIP'} |  ${item.TractorJRNumber ? item.TractorJRNumber + ': ' + item.Tractor_JRStatus : 'NO UR '} | ${item.TractorIRID ? item.TractorIRID : 'NO IR'}`,
                     type: 'multi',
                     record: item
                 };
@@ -542,13 +543,17 @@ const OrderManagement: React.FC = () => {
 
             const trailer_options: DropdownOption[] = result
                 .filter((item: any) => item.PairedTrailer) // Only include if a trailer exists
-                .map((item: any) => ({
-                    value: item.PairedTrailer ?? '',
-                    label: item.Trailer_Full ?? '',
-                    subtext: 'Trailer Unit',
-                    type: 'multi',
-                    record: item // Store the original record for later use when an option is selected
-                }));
+                .map((item: any) => {
+                    const statusEmoji = GPS_STATUS_EMOJIS[item.GpsStatus] ?? '⚫';
+                    
+                    return {
+                        value: item.PairedTrailer ?? '',
+                        label: item.Trailer_Full ?? '',
+                        subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.Head ?? 'NO HEAD'} | ${item.OE ?? 'NO TRIP'} |  ${item.TrailerJRNumber ? item.TrailerJRNumber + ': ' + item.Trailer_JRStatus : 'NO UR '} | ${item.TrailerIRID ? item.TrailerIRID : 'NO IR'}`,
+                        type: 'multi',
+                        record: item // Store the original record for later use when an option is selected
+                    }
+                });
 
             const dummyOption: DropdownOption = {
                 value: 'Apple',
@@ -567,6 +572,55 @@ const OrderManagement: React.FC = () => {
             setLoadingFor(FETCH_LOADING_KEYS.truckList, false);
         }
     }, [activeView, sidebarVisible]);
+
+    const handleUpdateTruckTrailerOptions = (item: any) => {
+
+        const result = livetruckassignment.map((oldItem) => 
+            oldItem.Id === item.Id ? { ...oldItem, ...item } : oldItem
+        );
+        
+        setLiveTruckAssignment(result);
+
+        const truck_options: DropdownOption[] = result
+            .filter((item: any) => item.Head) // Only include if a head exists
+            .map((item: any) => {
+                const statusEmoji = GPS_STATUS_EMOJIS[item.GpsStatus] ?? '⚫';
+                
+                return {
+                    value: item.Head ?? '',
+                    label: item.Head_Full ?? '',
+                    subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.PairedTrailer ?? 'NO BO'} | ${item.OE ?? 'NO TRIP'} |  ${item.TractorJRNumber ? item.TractorJRNumber + ': ' + item.Tractor_JRStatus : 'NO UR '} | ${item.TractorIRID ? item.TractorIRID : 'NO IR'}`,
+                    type: 'multi',
+                    record: item
+                };
+            });
+
+        const trailer_options: DropdownOption[] = result
+            .filter((item: any) => item.PairedTrailer) // Only include if a trailer exists
+            .map((item: any) => {
+                const statusEmoji = GPS_STATUS_EMOJIS[item.GpsStatus] ?? '⚫';
+                
+                return {
+                    value: item.PairedTrailer ?? '',
+                    label: item.Trailer_Full ?? '',
+                    subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.Head ?? 'NO HEAD'} | ${item.OE ?? 'NO TRIP'} |  ${item.TrailerJRNumber ? item.TrailerJRNumber + ': ' + item.Trailer_JRStatus : 'NO UR '} | ${item.TrailerIRID ? item.TrailerIRID : 'NO IR'}`,
+                    type: 'multi',
+                    record: item // Store the original record for later use when an option is selected
+                }
+            });
+
+        const dummyOption: DropdownOption = {
+            value: 'Apple',
+            label: 'Apple',
+            type: 'multi',
+            subtext: 'TESTING'
+        };
+
+        // 3. Update dropdown states
+        setTruckOptions([dummyOption, ...truck_options]);
+        setTrailerOptions([dummyOption, ...trailer_options]);
+
+    };
 
 
     const mapToCardOption = (item: any, _fullList: any[]): DropdownOption => {
@@ -941,7 +995,8 @@ const OrderManagement: React.FC = () => {
                 if (isMaximized) {
                     setIsFormMaximized(false);
                 } else {
-                    setActiveView('dashboard');
+                    // setActiveView('dashboard');
+                    setSidebarVisible(false);
                     setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'warning' });
                     setSelectedOrder(null);
                     setPreviewTrip({});
@@ -1024,6 +1079,7 @@ const OrderManagement: React.FC = () => {
                 // Note: No more sorting or setOptions calls here! 
                 // useMemo catches the change to driverHelperList automatically.
             }}
+            onUpdateTruckTrailers={handleUpdateTruckTrailerOptions}
             onShowFuelRequest={(tripData) => {
                 setShowFuelRequestModal({
                     show: true,

@@ -18,6 +18,7 @@ import {CheckIfOEExistsService} from '../generated/services/CheckIfOEExistsServi
 import { Action_Logs_HistoryService } from '../generated/services/Action_Logs_HistoryService';
 import {type OP_IncidentReports} from '../generated/models/OP_IncidentReportsModel';
 import { GetEmployeeServedCountService } from '../generated/services/GetEmployeeServedCountService';
+import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
 
 //CSS
 import './comp_css/OrderDistributionForm.css';
@@ -78,6 +79,7 @@ interface OrderDistributionProps {
   onRefreshDriverHelpers?: () => void;
   onRefreshTrucksTrailers?: () => void;
   onUpdateDriverHelperAttendance?: (Name: string, Attendance: string, position: 'Driver' | 'Helper') => void;
+  onUpdateTruckTrailers?: (item: any) => void;
 
   onClearSelectedTrip?: () => void;
 
@@ -150,6 +152,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     onClearSelectedTrip, 
     onRequestChangeTrip, 
     onUpdateDriverHelperAttendance, 
+    onUpdateTruckTrailers,
     style, 
     maxHeight, 
     driverOptions, 
@@ -644,6 +647,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       });
     };
 
+    const [processTruckIR, setProcessTruckIR] = useState<{irid: string, conflict?: string} | null>(null);
     const handleTruckChange = (truckValue: string | number) => {
       if (!formData || !formData.OE) {
         onOEInputClick?.(); // Prompt user to select an OE
@@ -676,6 +680,20 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       }
       if (item.TrailerJrNumber != null || item.JR_Trailer_approve != null || item._TrailerDivertJR != null || item._TrailerRescueJR != null) {
         conflicts.push('The paired trailer has an active job request (Repair, Divert, or Rescue).');
+      }
+
+      if (item.TractorIRID != null) {
+        setProcessTruckIR({
+          irid: item.TractorIRID,
+          conflict: 'The selected Truck has an open Incident Report.'
+        });
+      }
+
+      if (item.TrailerIRID != null) {
+        setProcessTruckIR({
+          irid: item.TrailerIRID,
+          conflict: 'The selected Trailer has an open Incident Report.'
+        });
       }
 
       if (conflicts.length > 0) {
@@ -2137,6 +2155,65 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       setShowShareModal(true);
     };
 
+    const handleConfirmProcessIR = async (irid: string) => {
+       
+        console.log("Fetching incident reports with id:", irid);
+
+
+        const options = {
+            filter: `IRID eq '${irid}'`,
+            orderBy: ["IncidentDateAsInt desc"],
+        };
+
+        
+        try {
+            const result = await ewulFetchAll<any>(
+                OP_IncidentReportsService,
+                options,
+                1
+            );
+
+            if (result && result.length > 0) {
+                setCreatedIR(result[0]);
+                setIsIncidentModalOpen(true);
+            } else {
+                setCreatedIR(null);
+                setIsIncidentModalOpen(false);
+            }
+        } catch (err) {
+            console.error("Fetch Error fetching incident reports:", err);
+            setCreatedIR(null);
+            setIsIncidentModalOpen(false);
+        } finally {
+            setIsCreatingIR(false);
+            console.log("Fetch incident reports completed."); // Removed count as state update is async
+        }
+    };
+
+    const handleUpdateTruckTrailerIRdetails = (createdIR: any) => {
+      console.log('updating truck/trailer ir details: ', createdIR);
+      try {
+        const truckItem = truckOptions?.find((item: any) => item.Head === createdIR?.EmployeeTractor);
+        const trailerItem = trailerOptions?.find((item: any) => item.PairedTrailer === createdIR?.EmployeeTrailer);
+        if (onUpdateTruckTrailers){
+          if (truckItem) {
+            onUpdateTruckTrailers(
+              {...truckItem.record, TractorIRID: createdIR.IRStatus === 'Open' ? createdIR?.IRID : null}
+            );
+          };
+          if (trailerItem && truckItem?.record.Head !== trailerItem.record.Head) {
+            onUpdateTruckTrailers(
+              {...trailerItem.record, TractorIRID: createdIR.IRStatus === 'Open' ? createdIR?.IRID : null}
+            );
+          };
+        }
+      } catch (e) {
+        console.log('failed to update truck/trailer ir details: ', e);
+      }
+    };
+
+
+
     const disabledDstGrp = prog_verified || prog_idx < 3 || !validateOE(formData).isValid;
     const disabledSrcGrp = prog_verified || prog_idx < 2 || !validateOE(formData).isValid;
     const disabledAssGrp = prog_verified || !validateOE(formData).isValid;
@@ -2942,6 +3019,20 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           document.body
         )}
 
+        {processTruckIR && createPortal(
+          <Modal onClose={() => {setProcessTruckIR(null); setIsCreatingIR(false);}} width={'35%'} height={'auto'}>
+            <div className="personnel-validation-modal">
+              <h2 style={{fontSize: 'var(--font-size-lg)', fontWeight: 'bold'}}>Do you want to process this Incident Report [{processTruckIR.irid}] now? </h2>
+              <p style={{fontSize: 'var(--font-size-lg)', color: 'var(--color-accent)'}}>{processTruckIR.conflict}</p>
+              <div className="modal-actions">
+                <button className="btn-proceed" onClick={() => {handleConfirmProcessIR(processTruckIR.irid); setProcessTruckIR(null); setIsCreatingIR(true);}}>OK</button>
+                <button className="btn-cancel" onClick={() => {setProcessTruckIR(null); setIsCreatingIR(false);}}>NOT NOW</button>
+              </div>
+            </div>
+          </Modal>,
+          document.body
+        )}
+
         {showCannotChangeTripModal && createPortal(
           <Modal onClose={() => setShowCannotChangeTripModal(null)} width={'35%'} height={'auto'}>
             <div className="personnel-validation-modal">
@@ -3299,7 +3390,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               <div className="ir-modal-loading-container">
                 <div className="ir-modal-loading-spinner" />
                 <p className="ir-modal-loading-text">
-                  Generating Incident Report, please wait...
+                  Fetching Incident Report, please wait...
                 </p>
               </div>
             ) : (
@@ -3337,13 +3428,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 incidentReportItem={createdIR as Partial<OP_IncidentReports>}
                 initialUser={editingUser ?? undefined}
                 onClose={handleConfirmIRClose} 
-                onSubmit={() => {
+                onSubmit={(data: any) => {
                   console.log("Submitted successfully");
-                  handleForceCloseIR(); 
+                  handleForceCloseIR();
+                  handleUpdateTruckTrailerIRdetails({data});
                 }}
-                onSave={() => {
+                onSave={(data: any) => {
                   console.log("Saved successfully");
                   handleForceCloseIR();
+                  handleUpdateTruckTrailerIRdetails(data);
                 }}
 
               />

@@ -10,7 +10,7 @@ export interface LiveVehicleAssignmentLIstView {
   Assignment?: string;
   PlateNo?: string;
   Brand?: string;
-  WheelerType?: number;
+  WheelerType?: string;
   Bu?: string;
   PairedTrailer?: string;
   Trailer_Full?: string;
@@ -50,6 +50,8 @@ export interface LiveVehicleAssignmentLIstView {
   TractorJO_Activity?: string;
   TrailerJO_Activity?: string;
   isPaired: number;
+  TractorIRID?: string;
+  TrailerIRID?: string;
   rn?: number;
   _TractorDivertJR?: string;
   _TrailerDivertJR?: string;
