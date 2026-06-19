@@ -16,4 +16,5 @@ export interface TripTaskTracker {
   LastUpdated?: string;
   LastUpdatedAsInt?: number;
   HasFuelDisapproved: boolean;
+  TripJSON?: string;
 }

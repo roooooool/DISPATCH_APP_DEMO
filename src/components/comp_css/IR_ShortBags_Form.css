@@ -1154,5 +1154,51 @@ select.ir-sb-dropdown {
   }
 }
 
+.is-req {
+  color: var(--color-border-danger)
+}
 
-            
+
+/* Container to orchestrate absolute positioning targets */
+.ir-sb-select-container-relative {
+  position: relative;
+  width: 100%;
+}
+
+/* Pulsing Badge formatting layer */
+.ir-pulse-badge {
+
+  position: absolute;
+  right: -18px;
+  width: 18px;
+  height: 18px;
+  background-color: #ff3b3b; /* Accent theme Red */
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%; /* Gentle rounded profile layout */
+  box-shadow: 0 0 0 0 rgba(255, 59, 59, 0.7);
+  animation: ir-badge-pulse 1.6s infinite cubic-bezier(0.66, 0, 0, 1);
+  cursor: default;
+  z-index: 10;
+  user-select: none;
+}
+
+/* Pulse animation sequence timeline */
+@keyframes ir-badge-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 59, 59, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(255, 59, 59, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 59, 59, 0);
+  }
+}

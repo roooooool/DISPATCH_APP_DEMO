@@ -35,7 +35,8 @@ import {
   loaderTypeOptions,
   // IR_TYPES,
   SHORT_BAGS_LIMIT,
-  SPECIAL_POSITIONS
+  SPECIAL_POSITIONS,
+  GSDC_ANNOUNCEMENT_ENDPOINT,
 } from '../truth.config';
 
 
@@ -51,7 +52,14 @@ import { type IR_ShortBags_Form_Model, IR_ShortBags_Form} from './IR_ShortBags_F
 
 
 //Utils
-import { ewulFetchAll, formatDate, logDmsUpdate, fetchSharepointAttachments} from '../utils/Ewul_GSDC_Utils';
+import { 
+  ewulFetchAll, 
+  formatDate, 
+  logDmsUpdate, 
+  fetchSharepointAttachments, 
+  type FormatDateOptions,
+  convertFormDataToHtmlTable,
+} from '../utils/Ewul_GSDC_Utils';
 import { useTaskWorker } from '../utils/TaskWorkerContext';
 
 
@@ -1098,6 +1106,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           EditorName: editingUser?.FullName || 'Unknown User',
 
+          TripJSON: JSON.stringify({
+            SourceName: formData.Source,
+            TripGroup: formData._tripGroup,
+            CementType: formData.cementType
+          })
 
         };
       
@@ -1474,12 +1487,35 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       });
     };
 
-    const handleCancelTrip = () => {
+    const [skipBroadcast, setSkipBroadcast] = useState(false);
+    const [cancelRemarks, setCancelRemarks] = useState<string>("");
+    const [attachedCancellationImage, setAttachedCancellationImage] = useState<{ name: string; base64: string } | null>(null);
+    const handleCancellatioFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        // Strip the prefix (e.g. "data:image/png;base64,") to get the raw content
+        const rawBase64 = base64String.split(',')[1];
+        
+        setAttachedCancellationImage({
+          name: file.name,
+          base64: rawBase64
+        });
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const handleCancelTrip = (remarks?: string, broadcast?: boolean) => {
       if (!formData.ID) {
         console.log("Cannot cancel a trip that has not been saved.");
         onClose(); // Or show a message
         return;
       }
+
+      console.log(remarks);
 
       addTask({
           id: `tripcancel-${formData.OE}`,
@@ -1508,7 +1544,28 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               }
           },
           checkSuccess: (result: { success: boolean }) => result.success,
-          onSuccess: () => {onRefreshTrips?.(); if (formData.OE) {handleUpdateTripTaskTracker(formData, true);} },
+          onSuccess: () => {
+            onRefreshTrips?.(); 
+            if (formData.OE) {
+              handleUpdateTripTaskTracker(formData, true); 
+              if (broadcast){
+                handleTripAnnounce(
+                  `TRIP CANCELLATION`,
+                  `
+                    <p>The trip <strong>[${formData.TripTicketID}]</strong> was cancelled and all of its dispatch data was cleared from DMS. If you did not intend this please raise a concern.</p>
+                    <br>
+                    <p>Reason: ${remarks}</p> 
+                    ${convertFormDataToHtmlTable(formData)}
+                  ` 
+                  || '',
+                  false,
+                  true,
+                  attachedCancellationImage?.name,
+                  attachedCancellationImage?.base64
+                )
+              };
+            } 
+          },
           onFailure: () => {onRefreshTrips?.();},
           message: `Cancelling trip ${formData.OE}...`,
           message_success: `Trip ${formData.OE} has been cancelled successfully.`,
@@ -1516,6 +1573,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       });
 
     };
+
+
 
     const handleTripRevert = async () => {
       setIsSubmitting(true);
@@ -1579,7 +1638,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             context: `Trip - Reverted`,
             role: editingUser?.Position || '',
           });
-
+           handleTripAnnounce(
+            'TRIP REVERSION',
+            'The trip was reverted back to [Dispatch To Destination] status for Correction / Resubmission. All ASSIGNMENT changes will be made must be coordinated with the Team.', 
+            true
+          );
         },
         onFailure: () => {setIsSubmitting(false);onRefreshTrips?.();},
 
@@ -1587,6 +1650,61 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         message_success: `Trip ${formData.OE} reverted successfully!`,
         message_failure: (result) => `Failed to revert trip ${formData.OE}. Reason: ${result.error?.message || 'Unknown error'}`
       });
+    };
+
+    const handleTripAnnounce = async (title: string, message: string, hasDeepLink?: boolean, composeMessage?: boolean, imageName?: string, imageData?: string) => {
+      const chat = 'dispapp';
+      const now = Date.now();
+      const appID = import.meta.env.VITE_APP_ID;
+      const tenantID = import.meta.env.VITE_TENANT_ID;
+      const sourceTime = now; // e.g., 1777457556546
+
+      const liveUrl = `https://apps.powerapps.com/play/e/${appID}?tenantId=${tenantID}&sourcetime=${sourceTime}&oe=${encodeURIComponent(formData.OE || '')}`;
+      
+      const deepLink = liveUrl;
+
+      console.log(`Broadcasting announcement for Trip [${formData.OE}]...`);
+
+      const customOptions: FormatDateOptions = {
+        format: {
+          month: 'long',
+          day: '2-digit',
+          hour: 'numeric',
+          minute: '2-digit', 
+          hour12: true,  
+        },
+        alreadyLocal: false 
+      };
+
+      try {
+        // 2. Perform the direct native fetch call
+        const response = await fetch(GSDC_ANNOUNCEMENT_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            chat: chat,
+            messageTitle: `${title} - ${formData.OE} - ${formatDate(now, customOptions).replace(',', ' ')}`,
+            message: message,
+            messagedBy: editingUser?.FullName,
+            referenceLink: hasDeepLink ? deepLink : '',
+            referenceMessage: hasDeepLink ? `View Trip Details here` : '',
+            imageName: imageName || '',
+            imageData: imageData || '',
+            compose: composeMessage || false
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        console.log(`Announcement for [${formData.OE}] successfully posted to ${chat}!`);
+        
+      } catch (error) {
+        console.error(`Failed to broadcast announcement for [${formData.OE}]:`, error);
+      }
     };
 
     const [createdIR, setCreatedIR] = useState<OP_IncidentReports | null | undefined>(null);
@@ -1608,6 +1726,31 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           console.error(e);
         } finally {
           setIsCreatingIR(false); // Turn off loading spinner regardless of success/fail
+          handleTripAnnounce(
+            'TRIP INCIDENT REPORT',
+            `
+              <p>A [Short-Bags] Incident report has been created for trip <strong>[${formData.OE}]</strong> with the following details:</p>
+              <br />
+              <ul style="list-style-type: none; padding-left: 0; margin: 0; font-family: sans-serif; line-height: 1.6;">
+                <li style="margin-bottom: 6px;">
+                  <strong>OE:</strong> ${formData.OE || '---'}
+                </li>
+                <li style="margin-bottom: 6px;">
+                  <strong>Employee:</strong> ${formData.Driver || '---'}
+                </li>
+                <li style="margin-bottom: 6px;">
+                  <strong>Unit:</strong> ${formData.Vehicle || '---'} / ${formData.BO || '---'}
+                </li>
+                <li style="margin-bottom: 6px;">
+                  <strong>Short-Bags:</strong> ${actualDiscrepancy || discrepancy || '0'}
+                </li>
+              </ul>
+              <br>
+              <em>Note: Units involved on an active IR will not be available for dispatch. Please process and complete the IR first to prevent delay on operations.</em>
+            `, 
+            true,
+            true
+          );
         }
       }
     };
@@ -2263,7 +2406,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <a href="#" className={!formData.Latlong ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); setMoreOptionsOpen(false);}}><MapPin size={16}  /> Check GPS</a>
                     <a href="#" className={!formData.tripID ? 'disabled' : ''} onClick={(e) => {e.preventDefault();if (!formData.tripID) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
                     <a href="#" className={!formData.tripID || !canChangeTrip ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if (!formData.tripID || !canChangeTrip) {handleCannotChangeTrip(); return;} onRequestChangeTrip?.(formData,progress_idx() > 2 ? 'Divert' : 'Change'); setMoreOptionsOpen(false);}}><Replace size={16} /> {`${progress_idx() > 2 ? 'Divert' : 'Change'} Trip`}</a>
-                    <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip || formData.TripProgress === 'Done') && editingUser?.Position !== 'Developer' ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if ((!formData.tripID || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && editingUser?.Position !== 'Developer') {handleCannotChangeTrip(); return;} setShowCancelConfirmModal(true); setMoreOptionsOpen(false);}}><Ban size={16} /> Cancel Trip</a>
+                    <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip || formData.TripProgress === 'Done') && editingUser?.Position !== 'Developer' ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if ((!formData.tripID || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && editingUser?.Position !== 'Developer') {handleCannotChangeTrip(); return;} setCancelRemarks(""); setAttachedCancellationImage(null); setSkipBroadcast(false); setShowCancelConfirmModal(true); setMoreOptionsOpen(false);}}><Ban size={16} /> Cancel Trip</a>
                     <a 
                       href="#" 
                       className={!formData.OE ? 'disabled' : ''} 
@@ -2901,7 +3044,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           <button className="btn-cancel" onClick={() => {handleOnClose() /*setShowIncidentPrompt(true)*/}}>Close</button>
           {(prog_verified || (editingUser?.Position === 'Developer' && formData.TripProgress === 'Done')) ?
 
-            (<button className="btn-cancel" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting || !['POD', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')  }>
+            (<button className="btn-cancel" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting || !['POD', 'DCC', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')  }>
               {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
               <Undo2 size={'var(--font-size-vlg)'} />
               Revert
@@ -3047,18 +3190,93 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         )}
 
         {showCancelConfirmModal && createPortal(
-          <Modal onClose={() => setShowCancelConfirmModal(false)} width={'25%'} height={'auto'}>
+          <Modal onClose={() => { setShowCancelConfirmModal(false); setCancelRemarks(""); setSkipBroadcast(false); }} width={'25%'} height={'auto'}>
             <div className="personnel-validation-modal">
-              <h3 style={{color: 'var(--color-accent)'}}>Confirm Cancellation</h3>
+              <h3 className="modal-title">Confirm Cancellation</h3>
               <p>Are you sure you want to cancel trip <strong>{formData.OE}</strong>? This action cannot be undone.</p>
+              
+              {/* --- Cancellation Remarks Field --- */}
+              <div className="remarks-field-container">
+                <label className="field-label">
+                  Cancellation Remarks <span className="required-asterisk">*</span>
+                </label>
+                
+                <div className="gradient-input-wrapper">
+                  <textarea
+                    rows={3}
+                    placeholder="Please specify the reason for cancellation..."
+                    value={cancelRemarks}
+                    onChange={(e) => setCancelRemarks(e.target.value)}
+                    className="modal-textarea"
+                  />
+                </div>
+              </div>
+
+              {/* --- Image Attachment Field --- */}
+              <div className="image-field-container">
+                <label className="field-label">
+                  Reference Image <span className="optional-tag">(Optional)</span>
+                </label>
+                
+                <div className="gradient-input-wrapper">
+                  <div className="image-input-container-box">
+                    {attachedCancellationImage ? (
+                      <div className="attached-image-info">
+                        <span className="image-filename">
+                          📎 {attachedCancellationImage.name}
+                        </span>
+                        <button 
+                          onClick={() => setAttachedCancellationImage(null)}
+                          className="btn-remove-image"
+                          title="Remove Image"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="file-upload-label">
+                        Choose Image...
+                        <input 
+                          type="file" 
+                          accept="image/png, image/jpeg, image/jpg" 
+                          onChange={handleCancellatioFileChange} 
+                          className="hidden-file-input"
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* --- Developer Broadcast Bypass Field --- */}
+              {editingUser?.Position === 'Developer' && (
+                <div className="broadcast-bypass-container" style={{ margin: '15px 0 5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="checkbox"
+                    id="bypassTeamsBroadcast"
+                    checked={skipBroadcast}
+                    onChange={(e) => setSkipBroadcast(e.target.checked)}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                  />
+                  <label htmlFor="bypassTeamsBroadcast" style={{ fontSize: '13px', fontWeight: '500', color: '#ff3b3b', cursor: 'pointer', userSelect: 'none' }}>
+                    Do not broadcast to Teams
+                  </label>
+                </div>
+              )}
+
+              {/* --- Modal Actions --- */}
               <div className="modal-actions">
-                <button className="btn-proceed" onClick={() => setShowCancelConfirmModal(false)}>GO BACK</button>
+                <button className="btn-proceed" onClick={() => { setShowCancelConfirmModal(false); setSkipBroadcast(false); }}>GO BACK</button>
                 <button 
                   className={`btn-cancel-wait ${isCancelDisabled ? 'disabled' : 'enabled'}`}
                   onClick={() => {
                     if (!isCancelDisabled) {
-                      handleCancelTrip();
+                      // If checked, pass false (Do not broadcast). If unchecked or not a developer, defaults to true.
+                      const shouldBroadcast = !skipBroadcast;
+                      handleCancelTrip(cancelRemarks.trim(), shouldBroadcast);
+                      
                       setShowCancelConfirmModal(false);
+                      setSkipBroadcast(false); // Reset field tracking
                     }
                   }}
                   disabled={isCancelDisabled}
@@ -3070,6 +3288,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           </Modal>,
           document.body
         )}
+
 
         {showUnsavedChangesModal && createPortal(
           <Modal onClose={() => setShowUnsavedChangesModal(false)} width={'35%'} height={'30%'}>
@@ -3366,7 +3585,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 CementType: formData.cementType,
                 Source: formData.Source,
                 Destination: formData.Destination,
-                ServedDate: formData.Completed_x0020_Date,
+                ServedDate: new Date(servedDate).toISOString(),
                 QtyDelivered: formData.QTYDelivered_Actual ? formData.QTYDelivered_Actual : formData.QTYDelivered,
                 QtyWithdrawn: formData.QTYWithdrawn_Actual ? formData.QTYWithdrawn_Actual : formData.QTYWithdrawn,
                 ShortBags: actualDiscrepancy ? actualDiscrepancy : discrepancy,

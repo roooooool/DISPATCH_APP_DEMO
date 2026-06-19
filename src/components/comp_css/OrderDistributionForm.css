@@ -1398,3 +1398,124 @@ select.status-new {
     transform: rotate(360deg);
   }
 }
+
+
+/* Layout containers and typography */
+.personnel-validation-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.personnel-validation-modal .modal-title {
+  color: var(--color-accent);
+  margin: 0;
+}
+
+.personnel-validation-modal p {
+  margin: 0;
+}
+
+.remarks-field-container,
+.image-field-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--navy-blue, #001f3f);
+}
+
+.required-asterisk {
+  color: red;
+}
+
+.optional-tag {
+  font-weight: normal;
+  color: #666;
+  font-size: 0.75rem;
+}
+
+/* Gradient Outer Boundaries */
+.gradient-input-wrapper {
+  background: linear-gradient(135deg, var(--navy-blue, #001f3f), red);
+  padding: 1px;
+  border-radius: 8px; /* Soft layout accent */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Textarea Layout Rules */
+.modal-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  padding: 10px;
+  background-color: #ffffff;
+  border-radius: 7px; /* Marginally downscaled to keep outline concentric */
+  resize: none;
+  font-size: 0.9rem;
+  font-family: inherit;
+  display: block;
+}
+
+/* File Attachment Content Layout */
+.image-input-container-box {
+  background-color: #ffffff;
+  border-radius: 7px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 40px;
+}
+
+.file-upload-label {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.attached-image-info {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.image-filename {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 80%;
+  color: #333;
+}
+
+.btn-remove-image {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  padding: 0;
+}
+
+/* Action alignment configurations */
+.personnel-validation-modal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}

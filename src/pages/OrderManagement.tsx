@@ -15,6 +15,7 @@ import {
 } from '../truth.config';
 import { RefreshCcw, Download, Maximize2, X, Menu } from 'lucide-react';
 
+import { getContext } from "@microsoft/power-apps/app";
 
 // CSS
 import './css/OrderManagement.css';
@@ -121,25 +122,31 @@ const OrderManagement: React.FC = () => {
 
     const formRef = useRef<OrderDistributionFormRef>(null);
 
-    const [searchParams, _setSearchParams] = useSearchParams();
-    const targetOE = searchParams.get("oe");
-    useEffect(() => {
-        if (targetOE && trips.length > 0) {
-            console.log("Deep link detected for OE:", targetOE);
-            
-            // Logic to find the trip in your local list
-            const trip = trips.find(t => String(t.OE) === String(targetOE));
-            
-            if (trip) {
-                // Trigger your existing table click/row selection logic
-                handleTripsTableOnClick(trip,true); // dont do deselect
-                
-                // OPTIONAL: Clear the URL param so it doesn't re-trigger on refresh
-                // setSearchParams({}, { replace: true });
-            }
-        }
-    }, [targetOE, trips]); // Runs when trips load or OE param changes
 
+    const [searchParams, _setSearchParams] = useSearchParams();
+    useEffect(() => {
+        const handlePowerAppsDeepLink = async () => {
+        try {
+            // 1. Fetch the native Power Apps Code App context container
+            const ctx = await getContext();
+            const queryParams = ctx.app.queryParams;
+            
+            // 2. Look specifically for your tracking 'oe' parameter
+            const targetOE = queryParams?.['oe'];
+            
+            if (targetOE && displayData.length > 0) {
+                const oeRecord = displayData.find(item => item.OE === targetOE);
+                handleTripsTableOnClick(oeRecord);
+            }
+            console.log('Did not go to target OE for table is not fully loaded.');
+
+        } catch (error) {
+            console.error("Failed to parse query params via Power Apps SDK:", error);
+        }
+        };
+
+        handlePowerAppsDeepLink();
+    }, [searchParams, trips]);
 
 
 

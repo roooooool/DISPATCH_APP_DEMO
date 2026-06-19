@@ -1397,6 +1397,12 @@ export const dataSourcesInfo = {
             "in": "body",
             "required": false,
             "type": "boolean"
+          },
+          {
+            "name": "TripJSON",
+            "in": "body",
+            "required": false,
+            "type": "string"
           }
         ]
       }

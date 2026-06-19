@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.7.6"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "2.9.7"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -163,27 +163,34 @@ export const NAV_DESTINATIONS = [
   { 
     label: "Dashboard", 
     path: "/dash", 
-    whiteList: ["Admin", "Manager", "OD", "Coor"],
+    whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC'],
     noSpecialAccess: false,
     hidden: false
   },
   { 
     label: "Trip Dispatch", 
     path: "/order", 
-    whiteList: ["OD","Coor"],
+    whiteList: ["OD","Coor", 'DCC', 'LCC'],
     hidden: false
   },
   { 
     label: "Fleet Monitoring", 
     path: "/fleet", 
-    whiteList: ["Driver", "OD", "Coor"],
+    whiteList: ["Driver", "OD", "Coor", 'DCC', 'LCC'],
     noSpecialAccess: false,
     hidden: false
   },
   { 
     label: "Incident Reports", 
     path: "/incidents", 
-    whiteList: ["Admin", "Manager", "OD", "Coor"],
+    whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC'],
+    noSpecialAccess: false,
+    hidden: false 
+  },
+  { 
+    label: "Command Center", 
+    path: "/wew", 
+    whiteList: ["Developer"],
     noSpecialAccess: false,
     hidden: false 
   },
@@ -593,6 +600,7 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     { col: "Verified By", alias: "Verified By" },
     { col: "Documented Date", alias: "Documented Date", calculate: (row: any) => formatDate(row[enc("Documented Date")],{mode: "datetime", alreadyLocal: true})  },
 
+    { col: "ServedDate", alias: "Credited Date", calculate: (row: any) => formatDate(row[enc("Completed Date")],{mode: "date", alreadyLocal: true})  },
 
   ],
 
@@ -1209,6 +1217,8 @@ export const DMS_ATTACHMENTS_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.
 export const PRINT_DMS_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/5c158d3bd1b742c8a929a68cd8bf6ac9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aQVY8keLswpB0k_34fv2uAZJK4dO-vt3P6JvQvnAqxU";
 export const UPLOAD_ATTACHMENTS_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/956d4fbec4db4bd78f0c5f99aae41c6c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=RB-nyQsBDWEy0aux94IfIhw6CLVTSjGb9M-vixmyn6o";
 export const ERROR_EMAIL_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/25910ba44d244d92aaa23ab1aaf9d146/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=n3Pva4B7ioglK0TIhBoyv3yGd2xizzVc32Eyt3Ri70E";
+export const GSDC_ANNOUNCEMENT_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/578d19e838174478a31d68bc3c20b2c9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZhsPaRPlvhhlywgCr7aEoywbQl3jn2fT2Rlrc5IT7s4";
+
 
 export const DEVBOT_USERID = '-1432';
 export const ITDEV_USERID = '251';

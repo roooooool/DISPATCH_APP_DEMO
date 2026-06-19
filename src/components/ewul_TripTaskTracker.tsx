@@ -27,16 +27,45 @@ const TripTaskRow = ({
   getEditorInfo: (oe: string, taskName: string) => any
 }) => {
 
+  // Safe JSON Parsing for TripJSON data context
+  const parsedTripJSON = (() => {
+    if (!data.TripJSON) return null;
+    if (typeof data.TripJSON === 'object') return data.TripJSON;
+    try {
+      return JSON.parse(data.TripJSON);
+    } catch (e) {
+      console.error("Failed to parse TripJSON for OE:", data.OE, e);
+      return null;
+    }
+  })();
+
+  const sourceName = parsedTripJSON?.SourceName || '';
+  const cementType = parsedTripJSON?.CementType || '';
+
+  // Evaluate exemption rule matching SQL: LIKE conditions & exact match logic
+  const isExemptedFromATW_SO = (() => {
+    const keywords = ['GNPOWER', 'GMEC', 'SEM-CALACA', 'SEM CAL', 'APEC', 'UPPC'];
+    const upperSourceName = sourceName.toUpperCase();
+    
+    const matchesSource = keywords.some(keyword => upperSourceName.includes(keyword));
+    const matchesCement = cementType.toLowerCase() === 'limestone';
+
+    return matchesSource || matchesCement;
+  })();
 
   // Define the bits to track based on your schema
-  const tasks = [
+  const allTasks = [
     { label: 'Assigned Unit', status: data.AssignedUnit, progress: 'Assigned', key: 'AssignedUnit' },
     { label: 'Assigned Driver', status: data.AssignedDriver, progress: 'Assigned', key: 'AssignedDriver' },
-    { label: 'ATW Document', status: data.HasATW, progress: 'Assigned', key: 'HasATW' },
-    { label: 'Sales Order', status: data.HasSO, progress: 'Assigned', key: 'HasSO' },
+    { label: 'ATW Document', status: data.HasATW, progress: 'Assigned', key: 'HasATW', isExemptible: true },
+    { label: 'Sales Order', status: data.HasSO, progress: 'Assigned', key: 'HasSO', isExemptible: true },
     { label: 'Fuel Request', status: data.HasFuelRequest, progress: 'Assigned', key: 'HasFuelRequest' },
     { label: 'Fuel PO', status: data.HasFuelPO, progress: 'Assigned', key: 'HasFuelPO', invalidStatus: data.HasFuelDisapproved, invalidMessage: 'Fuel has been Disapproved.' },
   ];
+
+  const tasks = isExemptedFromATW_SO 
+    ? allTasks.filter(task => !task.isExemptible) 
+    : allTasks;
 
   const filteredTasks = tasks.filter(t => t.progress === data.TripProgress || !t.status)
   const taskTotalCount = filteredTasks.length;

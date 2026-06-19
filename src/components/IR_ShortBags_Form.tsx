@@ -100,7 +100,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
   const [formData, setFormData] = useState<Partial<IR_ShortBags_Form_Model>>({
     // Prefill
     irReferenceNo: incidentReportItem.IRID || '',
-    tripReferenceNo: incidentReportItem.OE_Reference || '',
+    tripReferenceNo: incidentReportItem.OE_Reference || jsonDetails.tripReferenceNo || '',
     irType: incidentReportItem.IncidentType || '', // Ensure it's a string
     irAction: incidentReportItem.ActionStatus || '', // Ensure it's a string
     dateResolved: incidentReportItem.IRStatus === 'Resolved' && incidentReportItem.ResolvedDate ? new Date(incidentReportItem.ResolvedDate).toISOString().slice(0, 10) : '',
@@ -682,7 +682,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   ResolvedDate: formData.date,
                 } as Omit<Partial<OP_IncidentReports>, "IncidentID">  ;
   
-                result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), {...ir_details, IRStatus: 'Rejected' , reportJSON: JSON.stringify(formData)});
+                result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), {...ir_details, IRStatus: 'Cancelled' , reportJSON: JSON.stringify(formData)});
 
                 if (result.error) {
                     throw new Error(result.error.message);
@@ -768,10 +768,9 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
 
   const getStatusColor =  (status: string) => {
     let style: React.CSSProperties = { color: 'var(--color-muted)'};
-    if (status === "Rejected") style = { color: 'var(--color-border-danger)' };
-    if (status === "Pending") style = { color: 'var(--color-border-warning)' };
-    if (status === "Processing") style = { color: 'var(--color-border-info)' };
-    if (status === "Resolved") style = { color: 'var(--color-border-success)' };
+    if (status === "Cancelled") style = { color: 'var(--color-border-warning)' };
+    if (status === "Open") style = { color: 'var(--color-border-info)' };
+    if (status === "Closed") style = { color: 'var(--color-border-success)' };
     style.fontWeight = 'bold';
     return {...style, fontWeight: '800'} as React.CSSProperties;
   }
@@ -892,10 +891,10 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
 
               <div className="ir-sb-meta-row">
                 <div className="ir-sb-input-group flex-2">
-                  <span className="ir-sb-label">Resolved By:</span><input type="text" name="resolvedBy" value={initialUser?.FullName} onChange={() => null} className="ir-sb-line-input" />
+                  <span className="ir-sb-label">Completed By:</span><input type="text" name="resolvedBy" value={initialUser?.FullName} onChange={() => null} className="ir-sb-line-input" />
                 </div>
                 <div className="ir-sb-input-group flex-1">
-                  <span className="ir-sb-label">Resolved Date:</span>
+                  <span className="ir-sb-label">Completed Date:</span>
                   <input type="text" name="dateResolved" onChange={() => null} className={`ir-sb-line-input`} />
                 </div>
               </div>
@@ -906,6 +905,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   <input type="text" name="irType" value={formData.irType} onChange={() => null} className="ir-sb-line-input" />
                   <span className="ir-sb-label">Action Taken:</span>
                   <div className="ir-sb-select-wrapper">
+                    {error && !error.valid && error.final && (<span className='ir-pulse-badge no-print'>!</span>)}
                     <select 
                       name="irAction" 
                       value={formData.irAction} 
@@ -968,8 +968,8 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   
                 </div>
                 <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Incident Date:</span><input type="date" value={formData.incident_date} name="incident_date" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_date ? 'is-empty-print' : ''}`} />
-                  <span className="ir-sb-label">Time:</span><input type="time" value={formData.incident_time} name="incident_time" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_time ? 'is-empty-print' : ''}`}/>
+                  <span className="ir-sb-label"><span className='no-print is-req'>* </span>Incident Date:</span><input type="date" value={formData.incident_date} name="incident_date" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_date ? 'is-empty-print' : ''}`} />
+                  <span className="ir-sb-label"><span className='no-print is-req'>* </span>Time:</span><input type="time" value={formData.incident_time} name="incident_time" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_time ? 'is-empty-print' : ''}`}/>
                 </div>
               </div>
               
@@ -981,7 +981,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   <input type="text" name="tripReferenceNo" value={formData.tripReferenceNo} onChange={() => null} className="ir-sb-line-input" />
                 </div>
                 <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Served Date:</span><input type="date" name="ServedDate" value={formData.ServedDate} onChange={handleChange} className="ir-sb-line-input" />
+                  <span className="ir-sb-label"><span className='no-print is-req'>* </span>Served Date:</span><input type="date" name="ServedDate" value={formData.ServedDate} onChange={handleChange} className="ir-sb-line-input" />
                 </div>
               </div>
 
@@ -1016,7 +1016,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
 
               <div className="ir-sb-grid col-1">
                 <div className="ir-sb-input-group full-width">
-                  <span className="ir-sb-label block">DESCRIPTION</span>
+                  <span className="ir-sb-label block"><span className='no-print is-req'>* </span>DESCRIPTION</span>
                   <textarea
                     name="incident_details"
                     value={formData.incident_details}

@@ -73,7 +73,7 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
         ReportedBy: ReportBy || '',
         ReporterPosition: ReporterPosition || '',
         Remarks: '',
-        IRStatus: 'Pending',
+        IRStatus: 'Open',
         ...{ ...employeeDetails, flexValue: employeeDetails?.flexValue.toString() }
     });
 

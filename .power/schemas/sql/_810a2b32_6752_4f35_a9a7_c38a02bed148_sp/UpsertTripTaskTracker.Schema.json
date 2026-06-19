@@ -60,6 +60,10 @@
         "deleteAnyways": {
           "title": "deleteAnyways",
           "type": "boolean"
+        },
+        "TripJSON": {
+          "title": "TripJSON",
+          "type": "string"
         }
       }
     },

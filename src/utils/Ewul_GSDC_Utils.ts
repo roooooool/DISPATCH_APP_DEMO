@@ -85,7 +85,7 @@ export const ewulFetchAll = async <T>(
  * @returns A formatted date string.
  */
 
-interface FormatDateOptions {
+export interface FormatDateOptions {
   mode?: 'date' | 'datetime' | 'duration';
   compareTo?: string | Date; // For duration mode, defaults to now
   format?: Intl.DateTimeFormatOptions;
@@ -436,5 +436,41 @@ export const handleNavigateError = (error: string, location: any, navigate: any)
     }
   });
 }
+
+
+export const convertFormDataToHtmlTable = (data: Record<string, any>): string => {
+  const rows = Object.entries(data)
+    // Filter out internal objects, arrays, or empty values to keep it clean
+    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => {
+      // Format keys nicely (e.g., "tripStatus" -> "Trip Status")
+      const formattedKey = key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (str) => str.toUpperCase())
+        .trim();
+
+      return `
+        <tr>
+          <td style="padding: 6px; font-weight: bold; width: 40%; vertical-align: top;">${formattedKey}</td>
+          <td style="padding: 6px; width: 60%; vertical-align: top;">${String(value)}</td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  return `
+    <table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">
+      <thead>
+        <tr style="text-align: left;">
+          <th style="padding: 6px; width: 40%;">Field</th>
+          <th style="padding: 6px; width: 60%;">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+};
 
 
