@@ -2406,7 +2406,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <a href="#" className={!formData.Latlong ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); setMoreOptionsOpen(false);}}><MapPin size={16}  /> Check GPS</a>
                     <a href="#" className={!formData.tripID ? 'disabled' : ''} onClick={(e) => {e.preventDefault();if (!formData.tripID) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
                     <a href="#" className={!formData.tripID || !canChangeTrip ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if (!formData.tripID || !canChangeTrip) {handleCannotChangeTrip(); return;} onRequestChangeTrip?.(formData,progress_idx() > 2 ? 'Divert' : 'Change'); setMoreOptionsOpen(false);}}><Replace size={16} /> {`${progress_idx() > 2 ? 'Divert' : 'Change'} Trip`}</a>
-                    <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip || formData.TripProgress === 'Done') && editingUser?.Position !== 'Developer' ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if ((!formData.tripID || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && editingUser?.Position !== 'Developer') {handleCannotChangeTrip(); return;} setCancelRemarks(""); setAttachedCancellationImage(null); setSkipBroadcast(false); setShowCancelConfirmModal(true); setMoreOptionsOpen(false);}}><Ban size={16} /> Cancel Trip</a>
+                    <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip /*|| formData.TripProgress === 'Done'*/) && !(['Developer','IT SUPPORT'].includes(editingUser?.Position || ''))  ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if ((!formData.tripID || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && !(['Developer','IT SUPPORT'].includes(editingUser?.Position || ''))) {handleCannotChangeTrip(); return;} setCancelRemarks(""); setAttachedCancellationImage(null); setSkipBroadcast(false); setShowCancelConfirmModal(true); setMoreOptionsOpen(false);}}><Ban size={16} /> Cancel Trip</a>
                     <a 
                       href="#" 
                       className={!formData.OE ? 'disabled' : ''} 
@@ -3042,7 +3042,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             {prog_verified ? 'This trip has been concluded.' : validation.message}
           </div>
           <button className="btn-cancel" onClick={() => {handleOnClose() /*setShowIncidentPrompt(true)*/}}>Close</button>
-          {(prog_verified || (editingUser?.Position === 'Developer' && formData.TripProgress === 'Done')) ?
+          {(prog_verified || (['Developer','IT SUPPORT'].includes(editingUser?.Position || '') && formData.TripProgress === 'Done')) ?
 
             (<button className="btn-cancel" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting || !['POD', 'DCC', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')  }>
               {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
@@ -3249,7 +3249,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               </div>
 
               {/* --- Developer Broadcast Bypass Field --- */}
-              {editingUser?.Position === 'Developer' && (
+              {['Developer','IT SUPPORT'].includes(editingUser?.Position || '') && (
                 <div className="broadcast-bypass-container" style={{ margin: '15px 0 5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input
                     type="checkbox"

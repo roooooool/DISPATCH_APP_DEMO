@@ -70,13 +70,63 @@ const MAP_STYLES = {
   }
 } as const;
 
+
+interface AnimatedMarkerProps {
+  latitude: number;
+  longitude: number;
+  anchor?: "center" | "top" | "bottom" | "left" | "right";
+  children: React.ReactNode;
+}
+
+const AnimatedMarker = ({ latitude, longitude, anchor = "bottom", children }: AnimatedMarkerProps) => {
+  const [pos, setPos] = useState({ lat: latitude, lng: longitude });
+  const animRef = useRef<number | null>(null);
+  
+  // Track previous target coordinates to detect changes
+  const prevTarget = useRef({ lat: latitude, lng: longitude });
+
+  if (prevTarget.current.lat !== latitude || prevTarget.current.lng !== longitude) {
+    prevTarget.current = { lat: latitude, lng: longitude };
+    
+    // Smoothly interpolate towards the target coordinates
+    const animate = () => {
+      setPos((current) => {
+        const dLat = latitude - current.lat;
+        const dLng = longitude - current.lng;
+        
+        // Adjust 0.1 to tweak speed (lower = slower/smoother, higher = snappier)
+        const step = 0.1; 
+
+        // If close enough, snap to target and stop loop
+        if (Math.abs(dLat) < 0.00001 && Math.abs(dLng) < 0.00001) {
+          return { lat: latitude, lng: longitude };
+        }
+
+        animRef.current = requestAnimationFrame(animate);
+        return {
+          lat: current.lat + dLat * step,
+          lng: current.lng + dLng * step,
+        };
+      });
+    };
+
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+    animRef.current = requestAnimationFrame(animate);
+  }
+
+  return (
+    <Marker latitude={pos.lat} longitude={pos.lng} anchor={anchor}>
+      {children}
+    </Marker>
+  );
+};
+
 const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol, labelCol, highlight = null, isolateHighlighted = false, renderMarker }, ref) => {
     const [currentStyle, setCurrentStyle] = useState<keyof typeof MAP_STYLES>("satellite");
     const [showStylePicker, setShowStylePicker] = useState(false);
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const mapRef = useRef<MapRef>(null);  
 
-    // Expose the "Scroll To" logic to the parent
     useImperativeHandle(ref, () => ({
         scrollTo: (lat: number, lng: number, zoom = 12, offsetX: number | string = 0) => {
             const mapCanvas = mapRef.current?.getCanvas();
@@ -85,11 +135,8 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
             let finalOffsetX = 0;
 
             if (typeof offsetX === 'string' && offsetX.endsWith('%')) {
-                const percentValue = parseFloat(offsetX) / 100; // e.g., 0.2 for '20%'
+                const percentValue = parseFloat(offsetX) / 100;
                 const width = mapCanvas.clientWidth;
-                
-                // MapLibre offset [0,0] is center. 
-                // We subtract 0.5 so 50% becomes 0, 0% becomes -0.5, 100% becomes +0.5
                 finalOffsetX = (percentValue - 0.5) * width;
             } else {
                 finalOffsetX = Number(offsetX);
@@ -104,7 +151,6 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
         }
     }));
 
-    // Helper: get highlight color
     const getHighlightBorder = (type: string) => {
       switch (type) {
         case 'success': return 'var(--color-border-success)';
@@ -121,7 +167,7 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
         {/* STYLE SELECTOR OVERLAY */}
         <div className="map-style-picker">
             <button 
-            type="button" // Prevents form submission if map is inside a form
+            type="button" 
             className="style-toggle-btn" 
             onClick={() => setShowStylePicker(!showStylePicker)}
             >
@@ -148,17 +194,15 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
             )}
         </div>
 
-
-
         <Map
             ref={mapRef}
-            initialViewState={{ longitude: 121.0, latitude: 14.6, zoom: 10 }} // Default to Manila/Philippines area
-            mapStyle={MAP_STYLES[currentStyle] as any} // A nice dark/navy style
+            initialViewState={{ longitude: 121.0, latitude: 14.6, zoom: 10 }} 
+            mapStyle={MAP_STYLES[currentStyle] as any} 
             style={{ width: '100%', height: '100%' }}
         >
             <NavigationControl position="top-right" />
 
-
+            {/* CHUNK 1: ISOLATED HIGHLIGHT MAP VIEW */}
             {(isolateHighlighted && highlight && highlight.col_key && typeof highlight.key !== 'undefined')
               ? data.filter(item => item[highlight.col_key] === highlight.key).map((item) => {
                   const lat = parseFloat(item[latCol]);
@@ -168,7 +212,7 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
                   let highlightType = highlight.type || 'info';
                   const highlightColor = getHighlightBorder(highlightType);
                   return (
-                    <Marker 
+                    <AnimatedMarker 
                         key={truckId} 
                         latitude={lat} 
                         longitude={lng}
@@ -177,6 +221,7 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
                         <div 
                         className={`animated-map-marker highlighted-map-marker`}
                         style={{ '--highlight-color': highlightColor } as React.CSSProperties}
+                        onClick={() => setSelectedItem(item)}
                         >
                         <span className="marker-label">📍 {item[labelCol]}</span>
                         {renderMarker ? (
@@ -195,20 +240,20 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
                           </>  
                         )}
                         </div>
-                    </Marker>
+                    </AnimatedMarker>
                   );
                 })
+              
+              /* CHUNK 2: REGULAR DATA DATASET MAP VIEW */
               : data.map((item) => {
               const lat = parseFloat(item[latCol]);
               const lng = parseFloat(item[lngCol]);
               const truckId = item[labelCol];
 
-              // If coordinates are missing or invalid, don't render this marker
               if (isNaN(lat) || isNaN(lng)) {
                 return null; 
               }
 
-                // Highlight logic
                 let isHighlighted = false;
                 let highlightType = 'info';
                 if (highlight && highlight.col_key && typeof highlight.key !== 'undefined') {
@@ -217,7 +262,7 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
                 }
                 const highlightColor = isHighlighted ? getHighlightBorder(highlightType) : 'transparent';
                 return (
-                  <Marker 
+                  <AnimatedMarker 
                     key={truckId} 
                     latitude={lat} 
                     longitude={lng}
@@ -226,12 +271,13 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
                     <div 
                     className={`animated-map-marker${isHighlighted ? ' highlighted-map-marker' : ''}`}
                     style={{ '--highlight-color': highlightColor } as React.CSSProperties}
+                    onClick={() => setSelectedItem(item)}
                     >
                     <span className="marker-label">
                       {isHighlighted ? `📍 ${item[labelCol]}` : item[labelCol]}
                     </span>
                         {renderMarker ? (
-                          renderMarker(item, true)
+                          renderMarker(item, isHighlighted)
                         ) : (
                         <>
                           <TruckIcon 
@@ -247,14 +293,14 @@ const GSDCMap = forwardRef<GSDCMapHandle, GSDCMapProps>(({ data, latCol, lngCol,
                           />
                         </> )}
                     </div>
-                  </Marker>
+                  </AnimatedMarker>
                 );
                 })}
 
             {selectedItem && (
             <Popup
-                latitude={selectedItem[latCol]}
-                longitude={selectedItem[lngCol]}
+                latitude={parseFloat(selectedItem[latCol])}
+                longitude={parseFloat(selectedItem[lngCol])}
                 onClose={() => setSelectedItem(null)}
                 closeButton={false}
                 className="gsdc-custom-popup"

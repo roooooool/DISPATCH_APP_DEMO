@@ -570,8 +570,9 @@ const OrderManagement: React.FC = () => {
             };
 
             // 3. Update dropdown states
-            setTruckOptions([dummyOption, ...truck_options]);
-            setTrailerOptions([dummyOption, ...trailer_options]);
+            const prefix = user?.Position === 'Developer' ? [dummyOption] : [];
+            setTruckOptions([...prefix, ...truck_options]);
+            setTrailerOptions([...prefix, ...trailer_options]);
 
         } catch (err) {
             console.error("Truck List Fetch Error:", err);
@@ -623,10 +624,13 @@ const OrderManagement: React.FC = () => {
             subtext: 'TESTING'
         };
 
-        // 3. Update dropdown states
-        setTruckOptions([dummyOption, ...truck_options]);
-        setTrailerOptions([dummyOption, ...trailer_options]);
 
+        // 3. Update dropdown states
+        const prefix = user?.Position === 'Developer' ? [dummyOption] : [];
+        setTruckOptions([...prefix, ...truck_options]);
+        setTrailerOptions([...prefix, ...trailer_options]);
+
+        
     };
 
 
