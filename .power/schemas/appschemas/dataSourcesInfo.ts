@@ -863,6 +863,20 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "jr_jo_details": {
+    "tableId": "[app.jr_jo_details]",
+    "version": "",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
+  "jr_jo_details_test": {
+    "tableId": "jr_jo_details_test",
+    "version": "v2",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "liveactionlogsview": {
     "tableId": "LiveActionLogsView",
     "version": "v2",

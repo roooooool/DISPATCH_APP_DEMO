@@ -373,6 +373,7 @@ const OrderManagement: React.FC = () => {
     },[]);
 
 
+
     const handleFuelRequestSubmit = async (formData: FctFinal, attachmentSPID?: string, tripID?: string) => {
         setShowFuelRequestModal(null);
         console.log("Submitting new fuel request...");
@@ -693,31 +694,47 @@ const OrderManagement: React.FC = () => {
         return { drivers, helpers };
     };
 
-    const dummyOption: DropdownOption = {
-        value: 'Apple',
-        label: 'Apple',
-        type: 'multi',
-        record: {Id: 'test', FullName: 'Apple', DMS_Attendance: 'PRESENT'}
-    };
+    const dummyOption: DropdownOption[] = [
+        {
+            value: 'Apple',
+            label: 'Apple',
+            type: 'multi',
+            record: {Id: 'test', FullName: 'Apple', DMS_Attendance: 'PRESENT'}
+        },
+        {
+            value: 'Cherry',
+            label: 'Cherry',
+            type: 'multi',
+            record: {Id: 'test3', FullName: 'Cherry', DMS_Attendance: 'PRESENT'}
+        }
+    ];
 
-    const dummyOption2: DropdownOption = {
-        value: 'Berry',
-        label: 'Berry',
-        type: 'single',
-        record: {Id: 'test2', FullName: 'Berry'}
-    };
+    const dummyOption2: DropdownOption[] = [
+        {
+            value: 'Berry',
+            label: 'Berry',
+            type: 'single',
+            record: {Id: 'test2', FullName: 'Berry'}
+        },
+        {
+            value: 'Dates',
+            label: 'Dates',
+            type: 'multi',
+            record: {Id: 'test4', FullName: 'Dates', DMS_Attendance: 'PRESENT'}
+        }
+    ];
 
     //const [driverOptions, setDriverOptions] = useState<any[]>([]);
     //const [helperOptions, setHelperOptions] = useState<any[]>([]);
     const { driverOptions, helperOptions } = useMemo(() => {
         const { drivers, helpers } = processPersonnelData(driverHelperList);
+        const isDeveloper = user?.Position === 'Developer';
         
-        // Add your dummy options here
         return {
-            driverOptions: [dummyOption, ...drivers],
-            helperOptions: [dummyOption2, ...helpers]
+            driverOptions: isDeveloper ? [...dummyOption, ...drivers] : drivers,
+            helperOptions: isDeveloper ? [...dummyOption2, ...helpers] : helpers
         };
-    }, [driverHelperList]);
+    }, [driverHelperList, user?.Position]);
 
 
 

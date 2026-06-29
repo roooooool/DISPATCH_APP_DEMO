@@ -177,6 +177,28 @@
           }
         }
       }
+    },
+    "356fc7e6-192f-408f-acb1-a1d41172791c": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sql",
+      "displayName": "SQL Server",
+      "dataSources": [
+        "jr_jo_details",
+        "jr_jo_details_test"
+      ],
+      "authenticationType": "sqlAuthentication",
+      "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/83b64d81b1354b088d0d0c982b3783d1",
+      "dataSets": {
+        "localhost,CEMCARGO_SALES_APP": {
+          "dataSources": {
+            "jr_jo_details": {
+              "tableName": "[app.jr_jo_details]"
+            },
+            "jr_jo_details_test": {
+              "tableName": "[dbo].[jr_jo_details_test]"
+            }
+          }
+        }
+      }
     }
   },
   "databaseReferences": {}

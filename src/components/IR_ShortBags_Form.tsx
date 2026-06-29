@@ -51,6 +51,7 @@ export type IR_ShortBags_Form_Model = {
   QtyWithdrawn: number;
   QtyDelivered: number;
   ShortBags: number;
+  RetrievedBags: number;
   CementType: string;
   ServedDate: string;
 
@@ -121,6 +122,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
     QtyWithdrawn: jsonDetails.QtyWithdrawn || 0,
     QtyDelivered: jsonDetails.QtyDelivered || 0,
     ShortBags: jsonDetails.QtyWithdrawn ? (jsonDetails.QtyDelivered || 0) - jsonDetails.QtyWithdrawn : 0,
+    RetrievedBags: jsonDetails.RetrievedBags,
     CementType: jsonDetails.CementType || '',
     ServedDate: jsonDetails.ServedDate ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10) : '',
     incident_date: jsonDetails.incident_date ? new Date(jsonDetails.incident_date).toISOString().slice(0, 10) : '',
@@ -1010,7 +1012,10 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
 
               <div className="ir-sb-grid col-2">
                   <div className="ir-sb-input-group">
-                    <span className="ir-sb-label">Short Bages:</span><input type="text" name="ShortBags" value={formData.ShortBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
+                    <span className="ir-sb-label">Short Bags:</span><input type="text" name="ShortBags" value={formData.ShortBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
+                  </div>
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label">Retrieved Bags:</span><input type="text" name="ShortBags" value={formData.RetrievedBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
                   </div>
               </div>
 
