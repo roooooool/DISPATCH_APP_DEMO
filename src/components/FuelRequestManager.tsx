@@ -21,7 +21,7 @@ import {
     GPS_STATUS_COLOR,
 } from '../truth.config';
 
-import { ewulFetchAll, fetchSharepointAttachments, formatDate } from '../utils/Ewul_GSDC_Utils';
+import { ewulFetchAll, fetchSharepointAttachments, formatDate, formatToLocalISO } from '../utils/Ewul_GSDC_Utils';
 import type { LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
 
 
@@ -44,7 +44,7 @@ const yesnoOptions: GradientRadioOption[] = [
 
 // Helper function to map Live_LatestFuelRequests to FctFinal
 const mapLiveRequestToFctFinal = (liveRequest: Partial<Live_LatestFuelRequests>): Partial<FctFinal> => {
- let mappedRequest: Partial<FctFinal> = { ...liveRequest }; // Start with the base data
+    let mappedRequest: Partial<FctFinal> = { ...liveRequest }; // Start with the base data
 
     if (liveRequest.Frstatus === 'New') {
         const oeRef = liveRequest.Orderentryref?.toLowerCase() || '';
@@ -53,6 +53,10 @@ const mapLiveRequestToFctFinal = (liveRequest: Partial<Live_LatestFuelRequests>)
         else if (oeRef.includes('mob')) { mappedRequest.Orderentrystatus = 'MOBILIZATION';}
         else {mappedRequest.Orderentrystatus = 'OE REFERENCE';}
     }
+
+    if (mappedRequest.Ts1) mappedRequest.Ts1 = new Date(mappedRequest.Ts1).toISOString().replace('Z','');
+    if (mappedRequest.Created) mappedRequest.Created = new Date(mappedRequest.Created).toISOString().replace('Z','');
+    
 
 
     return mappedRequest;
@@ -358,8 +362,8 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
             Frstatus: formData.Frstatus || 'Request',
             Fromdispapp: "Yes V2",
             Driversname: formData.Driversname || '',
-            Ts1: formData.Ts1 || '',
-            Created: formData.Created || '',
+            Ts1: formData.Ts1?.toString() || formatToLocalISO(new Date().toISOString()),
+            Created: formData.Created?.toString() ||  formatToLocalISO(new Date().toISOString()),
             Sukattank: formData.Sukattank || '',
             Sukatcompressor: formData.Sukatcompressor || '',
             Karga: formData.Karga || '',
@@ -1145,7 +1149,7 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                                                 <input
                                                     disabled
                                                     type="text" 
-                                                    value={formatDate(formData.Created || new Date().toISOString())} 
+                                                    value={formData.Created ? formatDate(formData.Created,{mode: "date", alreadyLocal: true})  : '' } 
                                                     onChange={e => handleInputChange('Created', e.target.value)}
                                                 />
                                             </div>

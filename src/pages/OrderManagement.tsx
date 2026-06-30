@@ -65,6 +65,8 @@ import {
 
     logDmsUpdate,
 
+    formatToLocalISO,
+
 
 } from '../utils/Ewul_GSDC_Utils';
 import { useTaskWorker } from '../utils/TaskWorkerContext';
@@ -1532,13 +1534,13 @@ const OrderManagement: React.FC = () => {
                                         Frstatus: 'New',
 
                                         CreatedBy: localUser?.FullName || '',
-                                        Created: new Date().toISOString(),
+                                        Created: formatToLocalISO(new Date().toISOString()) ,
                                         Businessunit: 'SBUO-1A',
                                         Requestedby: localUser?.FullName || '',
 
                                         Karga: showFuelRequestModal.data?.QTYWithdrawn || '',
 
-                                        Ts1: new Date().toISOString(),
+                                        Ts1: formatToLocalISO(new Date().toISOString()),
 
                                     } as Partial<FctFinal>;
                                 })()}

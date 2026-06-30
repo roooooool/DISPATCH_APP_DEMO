@@ -474,3 +474,20 @@ export const convertFormDataToHtmlTable = (data: Record<string, any>): string =>
 };
 
 
+export const formatToLocalISO = (utcString: string): string => {
+  if (!utcString) return "";
+  
+  const date = new Date(utcString); // Automatically converts UTC to your local time (GMT+8)
+  
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  
+  const hh = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+  
+  // Combines them with the "T" separator
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
+};
+
