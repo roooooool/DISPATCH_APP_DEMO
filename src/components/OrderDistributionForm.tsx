@@ -273,6 +273,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       return finalData;
     });
 
+    const NAOption: DropdownOption = {
+        value: 'N/A',
+        label: 'N/A',
+        type: 'single',
+        record: {Id: 'na', FullName: 'N/A', DMS_Attendance: 'N/A'}
+    };
+
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     useEffect(() => {
       const hasPendingFiles = tempPlantDrAttachments.length > 0 || tempWsAttachments.length > 0;
@@ -385,6 +392,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         return { isValid: false, message: 'Preload must be divert to an actual trip before proceeding.' };
       }
 
+      if (!data.Driver_x0020_Loader) {
+        return { isValid: false, message: 'Driver Loader must be specified or N/A if none.' };
+      }
+
+      if (!data.Helper_x0020_Loader) {
+        return { isValid: false, message: 'Helper Loader must be specified or N/A if none.' };
+      }
+
+
       if (!data.QTYWithdrawn || data.QTYWithdrawn < 1) {
         return { isValid: false, message: 'QTY Withdrawn must be greater than 0.' };
       }
@@ -443,8 +459,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           return { isValid: false, message: 'Driver loader type must be "Loader Only" for same driver & loader.'};
       }
 
+      if ('N/A' === data.Helper_x0020_Loader && data.HelperLoaderType !== 'No Loader') {
+          return { isValid: false, message: 'Driver loader type must be "No Loader" if Helper Loader is "N/A".'};
+      }
+      if ('N/A' === data.Helper_x0020_Unloader && data.HelperUnloaderType !== 'No Unloader') {
+          return { isValid: false, message: 'Driver unloader type must be "No Unloader" if Helper Unloader is "N/A".'};
+      }
+
       return { isValid: true, message: 'Loader/Unloader details are valid.' };
     };
+
+    
 
     const validateDispatchedToDestination = (data: LiveDMSView_CEM) => {
       const sourceValidation = validateDispatchedToSource(data);
@@ -453,6 +478,16 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (data.Driver || data.Helper) {
         const loaderUnloaderValidation = validateLoaderUnloader(data);
         if (!loaderUnloaderValidation.isValid) return loaderUnloaderValidation;
+      }
+
+
+
+      if (!data.Driver_x0020_Unloader) {
+        return { isValid: false, message: 'Driver Unloader must be specified or N/A if none.' };
+      }
+
+      if (!data.Helper_x0020_Unloader) {
+        return { isValid: false, message: 'Helper Unloader must be specified or N/A if none.' };
       }
         
 
@@ -640,11 +675,46 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         }
       }
 
+
       setFormData(prevData => {
-        const newData = { ...prevData, [key]: value };
+        let newData = { ...prevData, [key]: value };
         console.log('Updated formData:', newData);
         const validationResult = runValidation(newData);
         setValidation(validationResult);
+
+
+
+        if (key === 'Driver_x0020_Loader' && value === formData.Driver) {
+          newData.DriverLoaderType = 'Loader Only'
+        };
+
+        if (key === 'Driver_x0020_Unloader' && value === formData.Driver) {
+          newData.DriverUnloaderType = 'Unloader Only'
+        };
+
+        if (key === 'Helper_x0020_Loader' && value === formData.Helper) {
+          newData.HelperLoaderType = 'Loader Only'
+        };
+
+        if (key === 'Helper_x0020_Unloader' && value === formData.Helper) {
+          newData.HelperUnloaderType = 'Unloader Only'
+        };
+
+        if (key === 'Helper_x0020_Loader' && value === 'N/A') {
+          newData.HelperLoaderType = 'No Loader'
+        };
+
+        if (key === 'Helper_x0020_Unloader' && value === 'N/A') {
+          newData.HelperUnloaderType = 'No Unloader'
+        };
+
+        if (key === 'Driver_x0020_Loader' && value === 'N/A') {
+          newData.DriverLoaderType = 'No Loader'
+        };
+
+        if (key === 'Driver_x0020_Unloader' && value === 'N/A') {
+          newData.DriverUnloaderType = 'No Unloader'
+        };
         
         // Also call the parent's onFormDataChange if it exists
         if (onFormDataChange) {
@@ -653,6 +723,46 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         
         return newData;
       });
+    };
+
+    const getDriverLoaderOptions = (formData: any) => {
+      if (formData.Driver_x0020_Loader === formData.Driver) {
+        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'Loader Only');
+      }
+      if (formData.Driver_x0020_Loader === "N/A") {
+        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'No Loader');
+      }
+      return LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy' && l.value !== 'Unloader Only' && l.value !== 'No Loader' && l.value !== 'No Unloader');
+    };
+
+    const getHelperLoaderOptions = (formData: any) => {
+      if (formData.Helper_x0020_Loader === formData.Helper) {
+        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'Loader Only');
+      }
+      if (formData.Helper_x0020_Loader === "N/A") {
+        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'No Loader');
+      }
+      return LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy' && l.value !== 'Unloader Only' && l.value !== 'No Loader' && l.value !== 'No Unloader');
+    };
+
+    const getDriverUnloaderOptions = (formData: any) => {
+      if (formData.Driver_x0020_Unloader === formData.Driver) {
+        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'Unloader Only');
+      }
+      if (formData.Driver_x0020_Unloader === "N/A") {
+        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'No Unloader');
+      }
+      return LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy' && l.value !== 'Loader Only' && l.value !== 'No Loader' && l.value !== 'No Unloader');
+    };
+
+    const getHelperUnloaderOptions = (formData: any) => {
+      if (formData.Helper_x0020_Unloader === formData.Helper) {
+        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'Unloader Only');
+      }
+      if (formData.Helper_x0020_Unloader === "N/A") {
+        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'No Unloader');
+      }
+      return LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Loader Only' && l.value !== 'No Loader' && l.value !== 'No Unloader');
     };
 
     const [processTruckIR, setProcessTruckIR] = useState<{irid: string, conflict?: string} | null>(null);
@@ -1652,6 +1762,45 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       });
     };
 
+    const handleImagePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+      const items = e.clipboardData?.items;
+      
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          
+          if (file) {
+            // 1. Generate a file name for the pasted snippet
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const fileName = `Pasted_Image_${timestamp}.png`;
+
+            // 2. Use FileReader to convert the snippet into a base64 string
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const result = reader.result as string;
+              
+              // Strip out the data URL prefix (e.g., "data:image/png;base64,") 
+              // if your Power Automate flow expects JUST the raw base64 string.
+              const base64String = result.split(',')[1] || result;
+
+              // 3. Match your exact state signature
+              setAttachedCancellationImage({
+                name: fileName,
+                base64: base64String
+              });
+            };
+
+            reader.readAsDataURL(file);
+            
+            e.preventDefault();
+            break;
+          }
+        }
+      }
+    };
+
     const handleTripAnnounce = async (title: string, message: string, hasDeepLink?: boolean, composeMessage?: boolean, imageName?: string, imageData?: string) => {
       const chat = 'dispapp';
       const now = Date.now();
@@ -1983,13 +2132,18 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         };
       };
 
+      const notNA = (value: any) => { //return value if not null, undefined, N/A or empty string, else return null
+        const isNA = value !== null && value !== undefined && value !== 'N/A' && value !== ''
+        return isNA ? null : value;
+      }; 
+
       // RESOLVE VALUES (Mirroring the 'With' block)
-      const drvU = (formData.Driver_x0020_Unloader || formData.Driver || "").trim();
-      const drvL = (formData.Driver_x0020_Loader || formData.Driver || "").trim();
+      const drvU = (notNA(formData.Driver_x0020_Unloader) || formData.Driver || "").trim();
+      const drvL = (notNA(formData.Driver_x0020_Loader) || formData.Driver || "").trim();
       const drv = (formData.Driver || "").trim();
 
-      const hlpU = (formData.Helper_x0020_Unloader || formData.Helper || "").trim();
-      const hlpL = (formData.Helper_x0020_Loader || formData.Helper || "").trim();
+      const hlpU = (notNA(formData.Helper_x0020_Unloader) || formData.Helper || "").trim();
+      const hlpL = (notNA(formData.Helper_x0020_Loader) || formData.Helper || "").trim();
       const hlp = (formData.Helper || "").trim();
 
       // Extract and compile all distinct names configured for this trip payload
@@ -2730,14 +2884,32 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               {/*(prog_verified || prog_idx < 2 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
               
               <div className="form-row">
-                <SearchableDropdown disabled={disabledSrcGrp}  label="Loader Driver" options={driverOptions} value={formData.Driver_x0020_Loader || ''} onChange={val => handleFieldChange('Driver_x0020_Loader', String(val))} />
-                <SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper" options={helperOptions} value={formData.Helper_x0020_Loader || ''} onChange={val => handleFieldChange('Helper_x0020_Loader', String(val))} />
+                <SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver" options={driverOptions} value={formData.Driver_x0020_Loader || ''} onChange={val => handleFieldChange('Driver_x0020_Loader', String(val))} />
+                <SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Loader || ''} onChange={val => handleFieldChange('Helper_x0020_Loader', String(val))} />
               </div>
-
-              {(formData.Driver_x0020_Loader || formData.Helper_x0020_Loader) && (<div className="form-row">
-                {formData.Driver_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Driver_x0020_Loader === formData.Driver ? (l.value == 'Loader Only') : (l.value !== 'Convoy' && l.value !== 'Unloader Only'))} value={formData.DriverLoaderType} onChange={val => handleFieldChange('DriverLoaderType', String(val))} />)}
-                {formData.Helper_x0020_Loader && (<SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Helper_x0020_Loader === formData.Helper ? (l.value == 'Loader Only') : (l.value !== 'Convoy' && l.value !== 'Unloader Only'))} value={formData.HelperLoaderType} onChange={val => handleFieldChange('HelperLoaderType', String(val))} />)}
-              </div>)}
+                
+              {(formData.Driver_x0020_Loader || formData.Helper_x0020_Loader) && (
+                <div className="form-row">
+                  {formData.Driver_x0020_Loader && (
+                    <SearchableDropdown 
+                      disabled={disabledSrcGrp} 
+                      label="Loader Driver Type *" 
+                      options={getDriverLoaderOptions(formData)} 
+                      value={formData.DriverLoaderType} 
+                      onChange={val => handleFieldChange('DriverLoaderType', String(val))} 
+                    />
+                  )}
+                  {formData.Helper_x0020_Loader && (
+                    <SearchableDropdown 
+                      disabled={disabledSrcGrp} 
+                      label="Loader Helper Type *" 
+                      options={getHelperLoaderOptions(formData)} 
+                      value={formData.HelperLoaderType} 
+                      onChange={val => handleFieldChange('HelperLoaderType', String(val))} 
+                    />
+                  )}
+                </div>
+              )}
 
               <div className='form-row'>
                 <div className="input-group">
@@ -2812,13 +2984,31 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               
               <div className="form-row">
                 <SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver" options={driverOptions} value={formData.Driver_x0020_Unloader || ''} onChange={val => handleFieldChange('Driver_x0020_Unloader', String(val))} />
-                <SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper" options={helperOptions} value={formData.Helper_x0020_Unloader || ''} onChange={val => handleFieldChange('Helper_x0020_Unloader', String(val))} />
+                <SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Unloader || ''} onChange={val => handleFieldChange('Helper_x0020_Unloader', String(val))} />
               </div>
 
-              {(formData.Driver_x0020_Unloader || formData.Helper_x0020_Unloader) && (<div className="form-row">
-                {formData.Driver_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Driver_x0020_Unloader === formData.Driver ? (l.value == 'Unloader Only') : (l.value !== 'Convoy' && l.value !== 'Loader Only'))} value={formData.DriverUnloaderType} onChange={val => handleFieldChange('DriverUnloaderType', String(val))} />)}
-                {formData.Helper_x0020_Unloader && (<SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper Type *" options={LOADER_TYPE_OPTIONS.filter(l => formData.Helper_x0020_Unloader === formData.Helper ? (l.value == 'Unloader Only') : (l.value !== 'Loader Only'))} value={formData.HelperUnloaderType} onChange={val => handleFieldChange('HelperUnloaderType', String(val))} />)}
-              </div>)}
+              {(formData.Driver_x0020_Unloader || formData.Helper_x0020_Unloader) && (
+                <div className="form-row">
+                  {formData.Driver_x0020_Unloader && (
+                    <SearchableDropdown 
+                      disabled={disabledDstGrp} 
+                      label="Unloader Driver Type *" 
+                      options={getDriverUnloaderOptions(formData)} 
+                      value={formData.DriverUnloaderType} 
+                      onChange={val => handleFieldChange('DriverUnloaderType', String(val))} 
+                    />
+                  )}
+                  {formData.Helper_x0020_Unloader && (
+                    <SearchableDropdown 
+                      disabled={disabledDstGrp} 
+                      label="Unloader Helper Type *" 
+                      options={getHelperUnloaderOptions(formData)} 
+                      value={formData.HelperUnloaderType} 
+                      onChange={val => handleFieldChange('HelperUnloaderType', String(val))} 
+                    />
+                  )}
+                </div>
+              )}
 
               <div className='form-row'>
                 <div className="input-group">
@@ -3219,7 +3409,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 </label>
                 
                 <div className="gradient-input-wrapper">
-                  <div className="image-input-container-box">
+                  <div 
+                    className="image-input-container-box"
+                    onPaste={handleImagePaste}
+                    tabIndex={0} // Allows the box to accept focus for pasting
+                    style={{ outline: 'none' }} // Prevents default browser focus rings if undesirable
+                  >
                     {attachedCancellationImage ? (
                       <div className="attached-image-info">
                         <span className="image-filename">
@@ -3234,8 +3429,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         </button>
                       </div>
                     ) : (
-                      <label className="file-upload-label">
-                        Choose Image...
+                      <label className="file-upload-label" style={{ cursor: 'pointer' }}>
+                        Choose Image or Paste (Ctrl + V)...
                         <input 
                           type="file" 
                           accept="image/png, image/jpeg, image/jpg" 
@@ -3247,6 +3442,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   </div>
                 </div>
               </div>
+
+              {/* --- TEST --- */}
 
               {/* --- Developer Broadcast Bypass Field --- */}
               {['Developer','IT SUPPORT'].includes(editingUser?.Position || '') && (

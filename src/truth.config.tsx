@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.10.7"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "2.11.8"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -189,14 +189,14 @@ export const NAV_DESTINATIONS = [
   },
   { 
     label: "Command Center", 
-    path: "/wew", 
+    path: "/comcenter", 
     whiteList: ["Developer"],
     noSpecialAccess: false,
     hidden: false 
   },
   { 
     label: "Tickets", 
-    path: "/wew", 
+    path: "/tickets", 
     whiteList: ["Developer"],
     noSpecialAccess: true,
     hidden: false 
@@ -513,6 +513,8 @@ export const loaderTypeOptions = [
   {value: "Short Trip Loader", label: "Short Trip", type: "multi", subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", record: {tcMult: .25,tiMult: .25,kmMult: .25,}},
   {value: "Half Trip Loader", label: "Half Trip", type: "multi", subtext: "0.50 Trip Count | 0.50 Index | 0.50 KM", record: {tcMult: .50,tiMult: .50,kmMult: .50,}},
   {value: "Long Trip Loader", label: "Long Trip", type: "multi", subtext: "0.75 Trip Count | 0.75 Index | 0.75 KM", record: {tcMult: .75,tiMult: .75,kmMult: .75,}},
+  {value: "No Loader", label: "No Loader", type: "multi", subtext: "0 Trip Count | 0 Index | 0 KM", record: {tcMult: 0,tiMult: 0,kmMult: 0,}},
+  {value: "No Unloader", label: "No Unloader", type: "multi", subtext: "0 Trip Count | 0 Index | 0 KM", record: {tcMult: 0,tiMult: 0,kmMult: 0,}},
   {value: "Convoy", label: "Convoy", type: "multi", subtext: "0 Trip Count | 0 Index | 0 KM", record: {tcMult: 0,tiMult: 0,kmMult: 0,}},
 ]
 
