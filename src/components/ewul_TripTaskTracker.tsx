@@ -44,7 +44,7 @@ const TripTaskRow = ({
 
   // Evaluate exemption rule matching SQL: LIKE conditions & exact match logic
   const isExemptedFromATW_SO = (() => {
-    const keywords = ['GNPOWER', 'GMEC', 'SEM-CALACA', 'SEM CAL', 'APEC', 'UPPC'];
+    const keywords = ['GNPD', 'GNPOWER', 'GMEC', 'SEM-CALACA', 'SEM CAL', 'APEC', 'UPPC'];
     const upperSourceName = sourceName.toUpperCase();
     
     const matchesSource = keywords.some(keyword => upperSourceName.includes(keyword));

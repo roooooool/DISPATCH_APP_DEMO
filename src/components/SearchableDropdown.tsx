@@ -37,6 +37,7 @@ interface SearchableDropdownProps {
     optionTextColor?: string;
     [key: string]: any;
   };
+  noClear?: boolean;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -50,6 +51,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   disabled = false,
   className = '',
   styleOverrides = {},
+  noClear = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -252,7 +254,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
             )}
           </div>
 
-          <button
+          {!noClear && (<button
             className="dropdown-clear-btn"
             onClick={e => {
               e.stopPropagation();
@@ -265,7 +267,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
             disabled={allowMultiple ? Array.isArray(value) && value.length === 0 : !value}
           >
             {allowMultiple ? 'Clear All' : 'Clear'}
-          </button>
+          </button>)}
         </div>
       )}
     </div>

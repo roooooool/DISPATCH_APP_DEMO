@@ -388,9 +388,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       const assignedValidation = validateAssigned(data);
       if (!assignedValidation.isValid) return assignedValidation;
 
-      if ((data._tripGroup === 'Preload') && (TRIP_PROGRESS.find(p => p.Progress === data.TripProgress)?.idx ?? 0) >= 2) {
-        return { isValid: false, message: 'Preload must be divert to an actual trip before proceeding.' };
-      }
+      // if ((data._tripGroup === 'Preload') && (TRIP_PROGRESS.find(p => p.Progress === data.TripProgress)?.idx ?? 0) >= 2) {
+      //   return { isValid: false, message: 'Preload must be divert to an actual trip before proceeding.' };
+      // }
 
       if (!data.Driver_x0020_Loader) {
         return { isValid: false, message: 'Driver Loader must be specified or N/A if none.' };
@@ -400,6 +400,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         return { isValid: false, message: 'Helper Loader must be specified or N/A if none.' };
       }
 
+      if (data.Driver_x0020_Loader && !data.DriverLoaderType) {
+        return { isValid: false, message: 'Please specify a Driver Loader type.'};
+      }
+      if (data.Helper_x0020_Loader && !data.HelperLoaderType) {
+        return { isValid: false, message: 'Please specify a Helper Loader type.'};
+      }
+
+      
 
       if (!data.QTYWithdrawn || data.QTYWithdrawn < 1) {
         return { isValid: false, message: 'QTY Withdrawn must be greater than 0.' };
@@ -455,9 +463,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (!data.Driver_x0020_Loader && data.Driver_x0020_Unloader) {
         return { isValid: false, message: 'Please specify a Driver Loader, either the assigned Driver or another valid driver.'};
       }
-      if (data.Driver === data.Driver_x0020_Loader && data.DriverLoaderType !== 'Loader Only') {
-          return { isValid: false, message: 'Driver loader type must be "Loader Only" for same driver & loader.'};
-      }
+
 
       if ('N/A' === data.Helper_x0020_Loader && data.HelperLoaderType !== 'No Loader') {
           return { isValid: false, message: 'Driver loader type must be "No Loader" if Helper Loader is "N/A".'};
@@ -642,6 +648,40 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       });
     };
 
+    const updateEmployeeTypes = (
+      data: any,
+      empPos: 'Driver' | 'Helper'
+    ) => {
+      const employee = data[empPos];
+
+      const loader = data[`${empPos}_x0020_Loader`];
+      const unloader = data[`${empPos}_x0020_Unloader`];
+
+      const bothAssigned =
+        loader === employee &&
+        unloader === employee;
+
+      data[`${empPos}LoaderType`] =
+        loader === 'N/A'
+          ? 'No Loader'
+          : bothAssigned
+            ? 'Full Trip'
+            : loader === employee
+              ? 'Loader Only'
+              : undefined;
+
+      data[`${empPos}UnloaderType`] =
+        unloader === 'N/A'
+          ? 'No Unloader'
+          : bothAssigned
+            ? 'Full Trip'
+            : unloader === employee
+              ? 'Unloader Only'
+              : undefined;
+
+      return data;
+    };
+
     const handleFieldChange = async (key: keyof LiveDMSView_CEM, value: any) => {
         if (!formData || !formData.OE) {
           onOEInputClick?.(); // Prompt user to select an OE
@@ -678,92 +718,62 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       setFormData(prevData => {
         let newData = { ...prevData, [key]: value };
+        const match = key.match(/^(Driver|Helper)_x0020_(Loader|Unloader)$/);
+
+        if (match) {
+          const [, empPos] = match;
+
+          newData = updateEmployeeTypes(
+            newData,
+            empPos as 'Driver' | 'Helper'
+          );
+        }
+
         console.log('Updated formData:', newData);
+
         const validationResult = runValidation(newData);
         setValidation(validationResult);
 
-
-
-        if (key === 'Driver_x0020_Loader' && value === formData.Driver) {
-          newData.DriverLoaderType = 'Loader Only'
-        };
-
-        if (key === 'Driver_x0020_Unloader' && value === formData.Driver) {
-          newData.DriverUnloaderType = 'Unloader Only'
-        };
-
-        if (key === 'Helper_x0020_Loader' && value === formData.Helper) {
-          newData.HelperLoaderType = 'Loader Only'
-        };
-
-        if (key === 'Helper_x0020_Unloader' && value === formData.Helper) {
-          newData.HelperUnloaderType = 'Unloader Only'
-        };
-
-        if (key === 'Helper_x0020_Loader' && value === 'N/A') {
-          newData.HelperLoaderType = 'No Loader'
-        };
-
-        if (key === 'Helper_x0020_Unloader' && value === 'N/A') {
-          newData.HelperUnloaderType = 'No Unloader'
-        };
-
-        if (key === 'Driver_x0020_Loader' && value === 'N/A') {
-          newData.DriverLoaderType = 'No Loader'
-        };
-
-        if (key === 'Driver_x0020_Unloader' && value === 'N/A') {
-          newData.DriverUnloaderType = 'No Unloader'
-        };
-        
-        // Also call the parent's onFormDataChange if it exists
         if (onFormDataChange) {
           onFormDataChange(newData, key, validationResult.isValid);
         }
-        
+
         return newData;
       });
+
     };
 
-    const getDriverLoaderOptions = (formData: any) => {
-      if (formData.Driver_x0020_Loader === formData.Driver) {
-        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'Loader Only');
+    const getEmployeeOptions = (
+      formData: any,
+      empPos: 'Driver' | 'Helper',
+      type: 'Loader' | 'Unloader'
+    ) => {
+      const filteredOptions = LOADER_TYPE_OPTIONS.filter(l => l.record.empPos.includes(empPos));
+
+      const field = formData[`${empPos}_x0020_${type}`];
+      const otherField = formData[`${empPos}_x0020_${type === 'Loader' ? 'Unloader' : 'Loader'}`];
+      const employee = formData[empPos];
+
+      if (field === employee && field === otherField) {
+        return filteredOptions.filter(l => l.value === 'Full Trip');
       }
-      if (formData.Driver_x0020_Loader === "N/A") {
-        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'No Loader');
+
+      if (field === employee) {
+        return filteredOptions.filter(l => l.value === `${type} Only`);
       }
-      return LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy' && l.value !== 'Unloader Only' && l.value !== 'No Loader' && l.value !== 'No Unloader');
+
+      if (field === "N/A") {
+        return filteredOptions.filter(l => l.value === `No ${type}`);
+      }
+
+      return filteredOptions.filter(l => l.record.multicase);
     };
 
-    const getHelperLoaderOptions = (formData: any) => {
-      if (formData.Helper_x0020_Loader === formData.Helper) {
-        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'Loader Only');
-      }
-      if (formData.Helper_x0020_Loader === "N/A") {
-        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'No Loader');
-      }
-      return LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy' && l.value !== 'Unloader Only' && l.value !== 'No Loader' && l.value !== 'No Unloader');
-    };
+    const getLoaderOptions = (formData: any, empPos: 'Driver' | 'Helper') =>
+      getEmployeeOptions(formData, empPos, 'Loader');
 
-    const getDriverUnloaderOptions = (formData: any) => {
-      if (formData.Driver_x0020_Unloader === formData.Driver) {
-        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'Unloader Only');
-      }
-      if (formData.Driver_x0020_Unloader === "N/A") {
-        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'No Unloader');
-      }
-      return LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Convoy' && l.value !== 'Loader Only' && l.value !== 'No Loader' && l.value !== 'No Unloader');
-    };
-
-    const getHelperUnloaderOptions = (formData: any) => {
-      if (formData.Helper_x0020_Unloader === formData.Helper) {
-        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'Unloader Only');
-      }
-      if (formData.Helper_x0020_Unloader === "N/A") {
-        return LOADER_TYPE_OPTIONS.filter(l => l.value === 'No Unloader');
-      }
-      return LOADER_TYPE_OPTIONS.filter(l => l.value !== 'Loader Only' && l.value !== 'No Loader' && l.value !== 'No Unloader');
-    };
+    const getUnloaderOptions = (formData: any, empPos: 'Driver' | 'Helper') =>
+      getEmployeeOptions(formData, empPos, 'Unloader');
 
     const [processTruckIR, setProcessTruckIR] = useState<{irid: string, conflict?: string} | null>(null);
     const handleTruckChange = (truckValue: string | number) => {
@@ -1280,8 +1290,26 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             const tripTicketID = await generateTripTicketID(formData.OE);
             let attendanceStatus: string;
             let tripStatus: string | null | undefined;
+            let driverLoader: string | undefined;
+            let driverUnloader: string | undefined;
+            let helperLoader: string | undefined;
+            let helperUnloader: string | undefined;
+            let fulltrip: string | undefined;
 
             switch (progress_next) {
+              case 'Assigned':
+                  driverLoader = formData.Driver
+                  driverUnloader = formData.Driver
+                  helperLoader = formData.Helper
+                  helperUnloader = formData.Helper
+                  fulltrip = "Full Trip"
+                  attendanceStatus = 'ON TRIP';
+                  tripStatus = undefined;
+                break;
+              case 'Dispatched To Source':
+                attendanceStatus = 'ON TRIP';
+                tripStatus = 'ITS';
+                break;
               case 'Dispatched To Source':
                 attendanceStatus = 'ON TRIP';
                 tripStatus = 'ITS';
@@ -1326,9 +1354,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 Destination_x0020_in: convNaive(formData.Destination_x0020_in),
                 Destination_x0020_out: convNaive(formData.Destination_x0020_out),
 
-                Driver_x0020_Loader: formData.Driver_x0020_Loader,
-                Driver_x0020_Unloader: formData.Driver_x0020_Unloader,
-                
+                Driver_x0020_Loader: driverLoader || formData.Driver_x0020_Loader,
+                Driver_x0020_Unloader: driverUnloader || formData.Driver_x0020_Unloader,
 
                 Aissigned_x0020_By_x0020_OD: formData.Aissigned_x0020_By_x0020_OD,
                 Loading_x0020_Sequence: formData.Loading_x0020_Sequence,
@@ -1342,8 +1369,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
                 Modified: new Date().toISOString(), // Update modified date to current time
                 //LastModifiedBy: formData.LastModifiedBy,
-                Helper_x0020_Loader: formData.Helper_x0020_Loader,
-                Helper_x0020_Unloader: formData.Helper_x0020_Unloader,
+                Helper_x0020_Loader: helperLoader || formData.Helper_x0020_Loader,
+                Helper_x0020_Unloader: helperUnloader || formData.Helper_x0020_Unloader,
                 Baranggay_Fee_Total: formData.Baranggay_Fee_Total,
                 FlatTire_Fee_Total: formData.FlatTire_Fee_Total,
                 Toll_Fee_Total: formData.Toll_Fee_Total,
@@ -1355,10 +1382,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 QTYDelivered_Actual: formData.QTYDelivered_Actual,
                 GSDC_x0020_DR: formData.GSDC_x0020_DR,
 
-                DriverLoaderType: formData.DriverLoaderType,
-                HelperLoaderType: formData.HelperLoaderType,
-                DriverUnloaderType: formData.DriverUnloaderType,
-                HelperUnloaderType: formData.HelperUnloaderType,
+                DriverLoaderType: fulltrip || formData.DriverLoaderType,
+                HelperLoaderType: fulltrip || formData.HelperLoaderType,
+                DriverUnloaderType: fulltrip || formData.DriverUnloaderType,
+                HelperUnloaderType: fulltrip || formData.HelperUnloaderType,
 
 
               } as Partial<LiveDMSView_CEM>;
@@ -2133,17 +2160,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       };
 
       const notNA = (value: any) => { //return value if not null, undefined, N/A or empty string, else return null
-        const isNA = value !== null && value !== undefined && value !== 'N/A' && value !== ''
+        const isNA = value === 'N/A'
         return isNA ? null : value;
       }; 
 
       // RESOLVE VALUES (Mirroring the 'With' block)
-      const drvU = (notNA(formData.Driver_x0020_Unloader) || formData.Driver || "").trim();
-      const drvL = (notNA(formData.Driver_x0020_Loader) || formData.Driver || "").trim();
+      const drvU = (notNA(formData.Driver_x0020_Unloader) || "").trim();
+      const drvL = (notNA(formData.Driver_x0020_Loader) || "").trim();
       const drv = (formData.Driver || "").trim();
 
-      const hlpU = (notNA(formData.Helper_x0020_Unloader) || formData.Helper || "").trim();
-      const hlpL = (notNA(formData.Helper_x0020_Loader) || formData.Helper || "").trim();
+      const hlpU = (notNA(formData.Helper_x0020_Unloader) || "").trim();
+      const hlpL = (notNA(formData.Helper_x0020_Loader) || "").trim();
       const hlp = (formData.Helper || "").trim();
 
       // Extract and compile all distinct names configured for this trip payload
@@ -2170,49 +2197,68 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         colTemp.push({
           Role: role,
           SName: name,
-          Position: pos,
-          TripKM: tripKM * multipliers.kmMult,
+          Position: pos === 'Full Trip' ? '' : pos,
+          TripKM: Math.round(tripKM * multipliers.kmMult * 100) / 100,
           TripIndex: tripIndex * multipliers.tiMult,
           // Map the view's item counter value; fall back to 0 if they haven't run previous log dispatches
           TripCount: servedCountsRecord ? Number(servedCountsRecord.Count || servedCountsRecord.TotalServedDates || 0) : 0,
         });
       };
 
-      // DRIVER COLLECTION
-      if (drvU && drvL) {
-          if (drvU === drvL) {
-            addToTemp("Driver", drvU, "", { kmMult: 1, tiMult: 1 });
-          } else {
-            const driverUnloaderType = formData.DriverUnloaderType || 'Long Trip Unloader';
-            const driverLoaderType = formData.DriverLoaderType || 'Loader Only';
-            addToTemp("Driver", drvU, driverUnloaderType, getTypeMultipliers(formData.DriverUnloaderType, 0.75));
-            addToTemp("Driver", drvL, driverLoaderType, getTypeMultipliers(formData.DriverLoaderType, 0.25));
-          }
-      } else if (!drvU && drvL) {
-          addToTemp("Driver", drvL, "", { kmMult: 1, tiMult: 1 });
-      } else if (drvU && !drvL) {
-          addToTemp("Driver", drvU, "", { kmMult: 1, tiMult: 1 });
-      } else if (drv) {
-          addToTemp("Driver", drv, "", { kmMult: 1, tiMult: 1 });
-      }
+      let tobeAddedtoTemps: { role: "Driver" | "Helper"; name: string; type: string; mult: { kmMult: number; tiMult: number } }[] = [];
+      tobeAddedtoTemps.push({role: "Driver", name: drvL, type: formData.DriverLoaderType || "", mult: getTypeMultipliers(formData.DriverLoaderType, 0.25)});
+      tobeAddedtoTemps.push({role: "Driver", name: drvU, type: formData.DriverUnloaderType || "", mult: getTypeMultipliers(formData.DriverUnloaderType, 0.75)});
+      tobeAddedtoTemps.push({role: "Helper", name: hlpL, type: formData.HelperLoaderType || "", mult: getTypeMultipliers(formData.HelperLoaderType, 0.25)});
+      tobeAddedtoTemps.push({role: "Helper", name: hlpU, type: formData.HelperUnloaderType || "", mult: getTypeMultipliers(formData.HelperUnloaderType, 0.75)});
 
-      // HELPER COLLECTION
-      if (hlpU && hlpL) {
-          if (hlpU === hlpL) {
-            addToTemp("Helper", hlpU, "", { kmMult: 1, tiMult: 1 });
-          } else {
-            const helperUnloaderType = formData.HelperUnloaderType || 'Long Trip Unloader';
-            const helperLoaderType = formData.HelperLoaderType || 'Loader Only';
-            addToTemp("Helper", hlpU, helperUnloaderType, getTypeMultipliers(formData.HelperUnloaderType, 0.75));
-            addToTemp("Helper", hlpL, helperLoaderType, getTypeMultipliers(formData.HelperLoaderType, 0.25));
-          }
-      } else if (!hlpU && hlpL) {
-          addToTemp("Helper", hlpL, "", { kmMult: 1, tiMult: 1 });
-      } else if (hlpU && !hlpL) {
-          addToTemp("Helper", hlpU, "", { kmMult: 1, tiMult: 1 });
-      } else if (hlp) {
-          addToTemp("Helper", hlp, "", { kmMult: 1, tiMult: 1 });
-      }
+      const uniqueToBeAdded = [
+        ...new Map(tobeAddedtoTemps.map(item => [item.name, item])).values()
+      ];
+
+      uniqueToBeAdded.forEach(item => {
+        if (item.name) {
+          addToTemp(item.role, item.name, item.type, item.mult);
+        }
+      });
+
+      // console.log("helper loader:", notNA(formData.Helper_x0020_Loader), " credit:", {role: "Helper", name: hlpL, type: formData.HelperLoaderType || "", mult: getTypeMultipliers(formData.HelperLoaderType, 0.25)})
+
+      // // DRIVER COLLECTION
+      // if (drvU && drvL) {
+      //     if (drvU === drvL) {
+      //       addToTemp("Driver", drvU, "", { kmMult: 1, tiMult: 1 });
+      //     } else {
+      //       const driverUnloaderType = formData.DriverUnloaderType || 'Long Trip Unloader';
+      //       const driverLoaderType = formData.DriverLoaderType || 'Loader Only';
+      //       addToTemp("Driver", drvU, driverUnloaderType, getTypeMultipliers(formData.DriverUnloaderType, 0.75));
+      //       addToTemp("Driver", drvL, driverLoaderType, getTypeMultipliers(formData.DriverLoaderType, 0.25));
+      //     }
+      // } else if (!drvU && drvL) {
+      //     addToTemp("Driver", drvL, "", { kmMult: 1, tiMult: 1 });
+      // } else if (drvU && !drvL) {
+      //     addToTemp("Driver", drvU, "", { kmMult: 1, tiMult: 1 });
+      // } else if (drv) {
+      //     addToTemp("Driver", drv, "", { kmMult: 1, tiMult: 1 });
+      // }
+
+      // // HELPER COLLECTION
+      // if (hlpU && hlpL) {
+      //     if (hlpU === hlpL) {
+      //       addToTemp("Helper", hlpU, "", { kmMult: 1, tiMult: 1 });
+      //     } else {
+      //       console.log('Hey!');
+      //       const helperUnloaderType = formData.HelperUnloaderType || 'Long Trip Unloader';
+      //       const helperLoaderType = formData.HelperLoaderType || 'Loader Only';
+      //       addToTemp("Helper", hlpU, helperUnloaderType, getTypeMultipliers(formData.HelperUnloaderType, 0.75));
+      //       addToTemp("Helper", hlpL, helperLoaderType, getTypeMultipliers(formData.HelperLoaderType, 0.25));
+      //     }
+      // } else if (!hlpU && hlpL) {
+      //     addToTemp("Helper", hlpL, "", { kmMult: 1, tiMult: 1 });
+      // } else if (hlpU && !hlpL) {
+      //     addToTemp("Helper", hlpU, "", { kmMult: 1, tiMult: 1 });
+      // } else if (hlp) {
+      //     addToTemp("Helper", hlp, "", { kmMult: 1, tiMult: 1 });
+      // }
 
       console.log('served Date:', servedDate);
       const finalPayload = colTemp.map(item => ({
@@ -2884,32 +2930,33 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               {/*(prog_verified || prog_idx < 2 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
               
               <div className="form-row">
-                <SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver" options={driverOptions} value={formData.Driver_x0020_Loader || ''} onChange={val => handleFieldChange('Driver_x0020_Loader', String(val))} />
-                <SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Loader || ''} onChange={val => handleFieldChange('Helper_x0020_Loader', String(val))} />
+                <SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver" options={driverOptions} value={formData.Driver_x0020_Loader || ''} onChange={val => handleFieldChange('Driver_x0020_Loader', String(val))} noClear />
+                <SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Loader || ''} onChange={val => handleFieldChange('Helper_x0020_Loader', String(val))} noClear />
               </div>
                 
-              {(formData.Driver_x0020_Loader || formData.Helper_x0020_Loader) && (
+
                 <div className="form-row">
-                  {formData.Driver_x0020_Loader && (
+  
                     <SearchableDropdown 
                       disabled={disabledSrcGrp} 
                       label="Loader Driver Type *" 
-                      options={getDriverLoaderOptions(formData)} 
+                      options={getLoaderOptions(formData,'Driver')} 
                       value={formData.DriverLoaderType} 
                       onChange={val => handleFieldChange('DriverLoaderType', String(val))} 
+                      noClear 
                     />
-                  )}
-                  {formData.Helper_x0020_Loader && (
+
                     <SearchableDropdown 
                       disabled={disabledSrcGrp} 
                       label="Loader Helper Type *" 
-                      options={getHelperLoaderOptions(formData)} 
+                      options={getLoaderOptions(formData,'Helper')} 
                       value={formData.HelperLoaderType} 
                       onChange={val => handleFieldChange('HelperLoaderType', String(val))} 
+                      noClear 
                     />
-                  )}
+           
                 </div>
-              )}
+    
 
               <div className='form-row'>
                 <div className="input-group">
@@ -2983,32 +3030,33 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               {/*(prog_verified || prog_idx < 3 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
               
               <div className="form-row">
-                <SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver" options={driverOptions} value={formData.Driver_x0020_Unloader || ''} onChange={val => handleFieldChange('Driver_x0020_Unloader', String(val))} />
-                <SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Unloader || ''} onChange={val => handleFieldChange('Helper_x0020_Unloader', String(val))} />
+                <SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver" options={driverOptions} value={formData.Driver_x0020_Unloader || ''} onChange={val => handleFieldChange('Driver_x0020_Unloader', String(val))} noClear />
+                <SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Unloader || ''} onChange={val => handleFieldChange('Helper_x0020_Unloader', String(val))} noClear />
               </div>
 
-              {(formData.Driver_x0020_Unloader || formData.Helper_x0020_Unloader) && (
+
                 <div className="form-row">
-                  {formData.Driver_x0020_Unloader && (
+
                     <SearchableDropdown 
                       disabled={disabledDstGrp} 
                       label="Unloader Driver Type *" 
-                      options={getDriverUnloaderOptions(formData)} 
+                      options={getUnloaderOptions(formData, 'Driver')} 
                       value={formData.DriverUnloaderType} 
                       onChange={val => handleFieldChange('DriverUnloaderType', String(val))} 
+                      noClear 
                     />
-                  )}
-                  {formData.Helper_x0020_Unloader && (
+
                     <SearchableDropdown 
                       disabled={disabledDstGrp} 
                       label="Unloader Helper Type *" 
-                      options={getHelperUnloaderOptions(formData)} 
+                      options={getUnloaderOptions(formData, 'Helper')} 
                       value={formData.HelperUnloaderType} 
                       onChange={val => handleFieldChange('HelperUnloaderType', String(val))} 
+                      noClear 
                     />
-                  )}
+         
                 </div>
-              )}
+        
 
               <div className='form-row'>
                 <div className="input-group">
@@ -3645,8 +3693,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                               <td style={{color: record.Position === 'Driver' ? 'var(--color-orange)' : 'var(--color-primary)', fontWeight: 'bold'}}>{record.Position}</td>
                               <td style={{ fontWeight: 'bold' }}>{record.TripKM}</td>
                               <td style={{ fontWeight: 'bold' }}>{record.AttendanceDetail}</td>
-                              <td>x{Number(record.TripKM) / Number(formData?.TripKM || 1)}</td>
-                              <td style={{ fontSize: '0.8rem', color: record.TransactionType ? 'var(--color-accent)' : 'var(--color-muted)' }}>
+                              <td>
+                                x{Math.round((Number(record.TripKM) / Number(formData?.TripKM || 1)) * 100) / 100}
+                              </td>
+                              <td style={{ fontSize: '0.8rem', color: record.TransactionType !== 'Full Trip' ? 'var(--color-accent)' : 'var(--color-muted)' }}>
                                 {record.TransactionType || 'Full Trip'}
                               </td>
                               <td style={{ fontWeight: 'bold', position: 'relative', minWidth: '60px' }}>

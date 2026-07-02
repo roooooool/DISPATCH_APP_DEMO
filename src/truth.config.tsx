@@ -508,14 +508,136 @@ const tripgroupOptions = TRIP_GROUPS.map(item => {
 });
 
 export const loaderTypeOptions = [
-  {value: "Loader Only", label: "Loader Only", type: "multi", subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", record: {tcMult: .25,tiMult: .25,kmMult: .25,}},
-  {value: "Unloader Only", label: "Unloader Only", type: "multi", subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", record: {tcMult: .25,tiMult: .25,kmMult: .25,}},
-  {value: "Short Trip Loader", label: "Short Trip", type: "multi", subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", record: {tcMult: .25,tiMult: .25,kmMult: .25,}},
-  {value: "Half Trip Loader", label: "Half Trip", type: "multi", subtext: "0.50 Trip Count | 0.50 Index | 0.50 KM", record: {tcMult: .50,tiMult: .50,kmMult: .50,}},
-  {value: "Long Trip Loader", label: "Long Trip", type: "multi", subtext: "0.75 Trip Count | 0.75 Index | 0.75 KM", record: {tcMult: .75,tiMult: .75,kmMult: .75,}},
-  {value: "No Loader", label: "No Loader", type: "multi", subtext: "0 Trip Count | 0 Index | 0 KM", record: {tcMult: 0,tiMult: 0,kmMult: 0,}},
-  {value: "No Unloader", label: "No Unloader", type: "multi", subtext: "0 Trip Count | 0 Index | 0 KM", record: {tcMult: 0,tiMult: 0,kmMult: 0,}},
-  {value: "Convoy", label: "Convoy", type: "multi", subtext: "0 Trip Count | 0 Index | 0 KM", record: {tcMult: 0,tiMult: 0,kmMult: 0,}},
+  {
+    value: "Loader Only", 
+    label: "Loader Only", 
+    type: "multi", 
+    subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", 
+    record: {
+      tcMult: .25,
+      tiMult: .25,
+      kmMult: .25,
+      empPos: ['Driver', 'Helper'],
+      multicase: false,
+    },
+  },
+  {
+    value: "Unloader Only", 
+    label: "Unloader Only", 
+    type: "multi", 
+    subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", 
+    record: {
+      tcMult: .25,
+      tiMult: .25,
+      kmMult: .25,
+      empPos: ['Driver', 'Helper'],
+      multicase: false,
+    },
+  },
+  {
+    value: "Short Trip Loader", 
+    label: "Short Trip", 
+    type: "multi", 
+    subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", 
+    record: {
+      tcMult: .25,
+      tiMult: .25,
+      kmMult: .25,
+      empPos: ['Driver', 'Helper'],
+      multicase: true,
+    },
+  },
+  {
+    value: "Half Trip Loader", 
+    label: "Half Trip", 
+    type: "multi", 
+    subtext: "0.50 Trip Count | 0.50 Index | 0.50 KM", 
+    record: {
+      tcMult: .50,
+      tiMult: .50,
+      kmMult: .50,
+      empPos: ['Driver', 'Helper'],
+      multicase: true,
+    },
+  },
+  {
+    value: "Long Trip Loader", 
+    label: "Long Trip", 
+    type: "multi", 
+    subtext: "0.75 Trip Count | 0.75 Index | 0.75 KM", 
+    record: {
+      tcMult: .75,
+      tiMult: .75,
+      kmMult: .75,
+      empPos: ['Driver', 'Helper'],
+      multicase: true,
+    },
+  },
+  {
+    value: "No Loader", 
+    label: "No Loader", 
+    type: "multi", 
+    subtext: "0 Trip Count | 0 Index | 0 KM", 
+    record: {
+      tcMult: 0,
+      tiMult: 0,
+      kmMult: 0,
+      empPos: ['Driver', 'Helper'],
+      multicase: false,
+    },
+  },
+  {
+    value: "No Unloader", 
+    label: "No Unloader", 
+    type: "multi", 
+    subtext: "0 Trip Count | 0 Index | 0 KM", 
+    record: {
+      tcMult: 0,
+      tiMult: 0,
+      kmMult: 0,
+      empPos: ['Helper'],
+      multicase: false,
+    },
+  },
+  {
+    value: "Convoy", 
+    label: "Convoy", 
+    type: "multi", 
+    subtext: "0 Trip Count | 0 Index | 0 KM", 
+    record: {
+      tcMult: 0,
+      tiMult: 0,
+      kmMult: 0,
+      empPos: ['Helper'],
+      multicase: true,
+    },
+  },
+  {
+    value: "Convoy Loader & Unloader", 
+    label: "Convoy Loader & Unloader", 
+    type: "multi", 
+    subtext: "1 Trip Count | 1 Index | 0 KM", 
+    record: {
+      tcMult: 1,
+      tiMult: 1,
+      kmMult: 0,
+      empPos: ['Driver', 'Helper'],
+      multicase: true,
+    },
+  },
+  {
+    value: "Full Trip", 
+    label: "Full Trip", 
+    type: "multi", 
+    subtext: "1 Trip Count | 1 Index | 1 KM", 
+    record: {
+      tcMult: 1,
+      tiMult: 1,
+      kmMult: 1,
+      empPos: ['Driver','Helper'],
+      multicase: false,
+    },
+  }
 ]
 
 
@@ -1159,7 +1281,6 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
 
 
 //LOGS
-
 export const TRIP_CONTEXT_TYPES = [
     "Attendance",
     "Pairing - Pair",
