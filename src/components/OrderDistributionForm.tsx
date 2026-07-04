@@ -1310,10 +1310,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 attendanceStatus = 'ON TRIP';
                 tripStatus = 'ITS';
                 break;
-              case 'Dispatched To Source':
-                attendanceStatus = 'ON TRIP';
-                tripStatus = 'ITS';
-                break;
               case 'Dispatched To Destination':
                 attendanceStatus = 'IN TRANSIT';
                 tripStatus = 'ITD';

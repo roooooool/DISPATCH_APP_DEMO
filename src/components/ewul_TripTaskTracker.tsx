@@ -12,6 +12,41 @@ export interface TaskTrackerHandle {
   onRefresh: () => Promise<void>;
 }
 
+const isTripTaskExempted = (trip: any) => {
+  const parsedTripJSON = (() => {
+    if (!trip.TripJSON) return null;
+    if (typeof trip.TripJSON === 'object') return trip.TripJSON;
+    try {
+      return JSON.parse(trip.TripJSON);
+    } catch (e) {
+      console.error("Failed to parse TripJSON for OE:", trip.OE, e);
+      return null;
+    }
+  })();
+
+  const sourceName = parsedTripJSON?.SourceName || '';
+  const cementType = parsedTripJSON?.CementType || '';
+
+  const keywords = ['CLZ - POZZOLANIC - CALACA', 'GNPD', 'GNPOWER', 'GMEC', 'SEM-CALACA', 'SEM CAL', 'APEC', 'UPPC'];
+  const upperSourceName = sourceName.toUpperCase();
+  const matchesSource = keywords.some(keyword => upperSourceName.includes(keyword));
+  const matchesCement = cementType.toLowerCase() === 'limestone';
+
+  return matchesSource || matchesCement;
+};
+
+const isTripTaskPending = (trip: any, taskKey: string) => {
+  if (taskKey === 'HasFuelPO') {
+    return Boolean(trip.HasFuelRequest && !trip.HasFuelPO);
+  }
+
+  if ((taskKey === 'HasATW' || taskKey === 'HasSO') && isTripTaskExempted(trip)) {
+    return false;
+  }
+
+  return !trip[taskKey];
+};
+
 // Sub-component for each Trip Row
 const TripTaskRow = ({ 
   data, 
@@ -27,7 +62,6 @@ const TripTaskRow = ({
   getEditorInfo: (oe: string, taskName: string) => any
 }) => {
 
-  // Safe JSON Parsing for TripJSON data context
   const parsedTripJSON = (() => {
     if (!data.TripJSON) return null;
     if (typeof data.TripJSON === 'object') return data.TripJSON;
@@ -40,18 +74,7 @@ const TripTaskRow = ({
   })();
 
   const sourceName = parsedTripJSON?.SourceName || '';
-  const cementType = parsedTripJSON?.CementType || '';
-
-  // Evaluate exemption rule matching SQL: LIKE conditions & exact match logic
-  const isExemptedFromATW_SO = (() => {
-    const keywords = ['GNPD', 'GNPOWER', 'GMEC', 'SEM-CALACA', 'SEM CAL', 'APEC', 'UPPC'];
-    const upperSourceName = sourceName.toUpperCase();
-    
-    const matchesSource = keywords.some(keyword => upperSourceName.includes(keyword));
-    const matchesCement = cementType.toLowerCase() === 'limestone';
-
-    return matchesSource || matchesCement;
-  })();
+  const isExemptedFromATW_SO = isTripTaskExempted(data);
 
   // Define the bits to track based on your schema
   const allTasks = [
@@ -94,8 +117,13 @@ const TripTaskRow = ({
 
         <div className="header-left">
           {isExpandedAlready ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-          <span className="trip-oe-text">{data.OE}</span>
-          <span className="trip-progress-pill">{data.TripProgress}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <span className="trip-oe-text">{data.OE}</span>
+              <span className="trip-progress-pill">{data.TripProgress}</span>
+            </div>
+            <span className="trip-source-subtext">{sourceName}</span>
+          </div>
         </div>
         
         <div className="header-right">
@@ -218,6 +246,17 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
   const [pendingTasksFilter, setPendingTasksFilter] = useState<string[]>([]);
   // const [isTaskFilterOpen, setIsTaskFilterOpen] = useState(false);
 
+  const hasAnyPendingTasks = (trip: any) => {
+    return [
+      'AssignedUnit',
+      'AssignedDriver',
+      'HasATW',
+      'HasSO',
+      'HasFuelRequest',
+      'HasFuelPO',
+    ].some(taskKey => isTripTaskPending(trip, taskKey));
+  };
+
   const taskOptions = [
     { label: 'Unit', key: 'AssignedUnit' },
     { label: 'Driver', key: 'AssignedDriver' },
@@ -225,12 +264,21 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
     { label: 'SO', key: 'HasSO' },
     { label: 'Fuel Req', key: 'HasFuelRequest' },
     { label: 'Fuel PO', key: 'HasFuelPO' },
+    { label: 'Completed', key: 'Completed' },
   ];
 
   const toggleTaskFilter = (key: string) => {
-    setPendingTasksFilter(prev => 
-      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-    );
+    setPendingTasksFilter(prev => {
+      if (key === 'Completed') {
+        return prev.includes('Completed') ? [] : ['Completed'];
+      }
+
+      if (prev.includes('Completed')) {
+        return [key];
+      }
+
+      return prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key];
+    });
   };
 
   // NEW: Store expanded OEs in a Set
@@ -312,21 +360,40 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
   const filteredTasks = taskList.filter(trip => {
     const matchesTab = activeFilter === "All" || trip.TripProgress === activeFilter;
     const query = searchQuery.toLowerCase();
-    const matchesSearch = trip.OE.toLowerCase().includes(query);
+
+    // Safe JSON Parsing for TripJSON data context
+    const parsedTripJSON = (() => {
+      if (!trip.TripJSON) return null;
+      if (typeof trip.TripJSON === 'object') return trip.TripJSON;
+      try {
+        return JSON.parse(trip.TripJSON);
+      } catch (e) {
+        console.error("Failed to parse TripJSON for OE:", trip.OE, e);
+        return null;
+      }
+    })();
+
+    const sourceName = parsedTripJSON?.SourceName || '';
+    const matchesSearch = [trip.OE, sourceName]
+      .filter(Boolean)
+      .some(value => value.toString().toLowerCase().includes(query));
 
     // If no filters, all tasks match
     if (pendingTasksFilter.length === 0) {
       return matchesTab && matchesSearch;
     }
 
+    if (pendingTasksFilter.includes('Completed')) {
+      return matchesTab && matchesSearch && !hasAnyPendingTasks(trip);
+    }
+
     // Handle the special case for "Fuel PO (w/ Req)" when it's the only filter
     if (pendingTasksFilter.length === 1 && pendingTasksFilter[0] === 'HasFuelPO') {
-      const matchesPending = trip.HasFuelRequest && !trip.HasFuelPO;
-      return matchesTab && matchesSearch && matchesPending;
+      return matchesTab && matchesSearch && isTripTaskPending(trip, 'HasFuelPO');
     }
 
     // For multiple filters, check if the trip is missing ANY of the selected tasks
-    const matchesPendingTasks = pendingTasksFilter.some(taskKey => !trip[taskKey]);
+    const matchesPendingTasks = pendingTasksFilter.some(taskKey => isTripTaskPending(trip, taskKey));
 
     return matchesTab && matchesSearch && matchesPendingTasks;
   });
@@ -458,13 +525,11 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
                     displayLabel = isFuelReqActive ? 'Fuel PO' : 'Fuel PO (w/ Req)';
                   }
                   
-                  // Count of trips where this task is NOT done
                   let count = 0;
-                  if (opt.key === 'HasFuelPO') {
-                    // Special logic for Fuel PO: count only if Fuel Req exists but PO doesn't
-                    count = taskList.filter(t => t.HasFuelRequest && !t.HasFuelPO).length;
+                  if (opt.key === 'Completed') {
+                    count = taskList.filter(t => !hasAnyPendingTasks(t)).length;
                   } else {
-                    count = taskList.filter(t => !t[opt.key]).length;
+                    count = taskList.filter(t => isTripTaskPending(t, opt.key)).length;
                   }
 
                   return (
