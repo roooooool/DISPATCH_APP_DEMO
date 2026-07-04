@@ -26,13 +26,16 @@ const isTripTaskExempted = (trip: any) => {
 
   const sourceName = parsedTripJSON?.SourceName || '';
   const cementType = parsedTripJSON?.CementType || '';
+  const oeValue = String(trip.OE || '').toUpperCase();
 
   const keywords = ['CLZ - POZZOLANIC - CALACA', 'GNPD', 'GNPOWER', 'GMEC', 'SEM-CALACA', 'SEM CAL', 'APEC', 'UPPC'];
+  const oePrefixes = ['MOB'];
   const upperSourceName = sourceName.toUpperCase();
   const matchesSource = keywords.some(keyword => upperSourceName.includes(keyword));
   const matchesCement = cementType.toLowerCase() === 'limestone';
+  const matchesOEPrefix = oePrefixes.some(prefix => oeValue.startsWith(prefix));
 
-  return matchesSource || matchesCement;
+  return matchesSource || matchesCement || matchesOEPrefix;
 };
 
 const isTripTaskPending = (trip: any, taskKey: string) => {
