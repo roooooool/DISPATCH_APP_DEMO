@@ -1419,6 +1419,24 @@ export const dataSourcesInfo = {
             "type": "string"
           }
         ]
+      },
+      "usp_ChangeTripTaskTrackerOE": {
+        "path": "/dbo.usp_ChangeTripTaskTrackerOE",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "OldOE",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "NewOE",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          }
+        ]
       }
     }
   }

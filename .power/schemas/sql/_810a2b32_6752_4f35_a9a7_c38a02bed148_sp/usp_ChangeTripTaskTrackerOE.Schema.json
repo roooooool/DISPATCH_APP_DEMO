@@ -1,0 +1,37 @@
+{
+  "name": "[dbo].[usp_ChangeTripTaskTrackerOE]",
+  "title": "[dbo].[usp_ChangeTripTaskTrackerOE]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "OldOE": {
+          "title": "OldOE",
+          "type": "string"
+        },
+        "NewOE": {
+          "title": "NewOE",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

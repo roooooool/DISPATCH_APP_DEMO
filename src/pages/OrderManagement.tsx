@@ -38,8 +38,9 @@ import { type FctFinal } from '../generated/models/FctFinalModel';
 import { DMS_TripFuelRequestsListService} from '../generated/services/DMS_TripFuelRequestsListService';
 import { GetLastLiquidatedOdometerService } from '../generated/services/GetLastLiquidatedOdometerService';
 import FuelRequestManager from '../components/FuelRequestManager';
-import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
+// import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
 import { TripTicketsService } from '../generated/services/TripTicketsService';
+import { Usp_ChangeTripTaskTrackerOEService } from '../generated/services/Usp_ChangeTripTaskTrackerOEService';
 
 // Custom Components
 import TableView,  { type ColumnConfig, type scrollToConfig, encodeColumnName as enc } from '../components/ewul_TableFlex';
@@ -71,6 +72,7 @@ import {
 } from '../utils/Ewul_GSDC_Utils';
 import { useTaskWorker } from '../utils/TaskWorkerContext';
 import type { LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
+
 
 
 
@@ -1121,7 +1123,9 @@ const OrderManagement: React.FC = () => {
                 }); 
                 fetchFuelRequests(true, tripData.Vehicle, tripData.OE);
             }}
-            onRequestChangeTrip={(tripData, action) => {handleRequestChangeTrip(tripData, action); /*handle change trip*/}}
+            onRequestChangeTrip={(tripData, action) => {
+                handleRequestChangeTrip(tripData, action); /*handle change trip*/
+            }}
 
             truckOptions={truckOptions}
             trailerOptions={trailerOptions}
@@ -1657,7 +1661,18 @@ const OrderManagement: React.FC = () => {
                                                     OE: selectedChangeTripOE.OE,
                                                 }
                                             );
-                                            // console.log("result2: ", result2)
+                                            
+                                            //change OF of triptask too
+                                            console.log("changing oe of trip task from ", showChangeTripModal.record.OE || '', " to ", selectedChangeTripOE.OE || '');
+                                            Usp_ChangeTripTaskTrackerOEService.Usp_ChangeTripTaskTrackerOE({ 
+                                                OldOE: showChangeTripModal.record.OE || '',
+                                                NewOE: selectedChangeTripOE.OE || '',
+                                            } as any);
+
+                                            // const result3 = await TripTaskTrackerService.update(
+                                            //     showChangeTripModal.record?.OE,
+                                            //     { OE: selectedChangeTripOE.OE }
+                                            // );
 
 
                                 
@@ -1687,24 +1702,13 @@ const OrderManagement: React.FC = () => {
                                             }
                                         },
                                         checkSuccess: (result: { success: boolean }) => result.success,
-                                        onSuccess: (data) => {
+                                        onSuccess: (updatedData) => {
+                                            const data = updatedData.data
 
-                                            UpsertTripTaskTrackerService.UpsertTripTaskTracker({ //delete task of old OE
-                                                OE: selectedChangeTripOE.OE || '',
-                                                TripProgress: selectedChangeTripOE.TripProgress || '',
-                                                AssignedDriver: !!selectedChangeTripOE.Driver,
-                                                AssignedUnit: !!selectedChangeTripOE.Vehicle,
-                                                HasATW: !!selectedChangeTripOE.ATW_x002f_LO_x0023_,
-                                                HasSO: !!selectedChangeTripOE.SO_x0023_,
-                                                UpdateOnly: false, 
-                                                deleteIfComplete: true, //delete
-                                                deleteAnyways: true,
-                                                EditorName: user?.FullName || 'Unknown User',
-                                            }as any);
-
-
+                                            // console.log("Successfully saved trip change. Updating trips state... ",data);
+                                            handleTripsTableOnClick({});
                                             setTrips(prevTrips => {
-                                                const index = prevTrips.findIndex(t => t.OE === data.OE);
+                                                const index = prevTrips.findIndex(t => t.ID === data.ID);
                                                 if (index !== -1) {
                                                     // Update existing trip
                                                     const newTrips = [...prevTrips];

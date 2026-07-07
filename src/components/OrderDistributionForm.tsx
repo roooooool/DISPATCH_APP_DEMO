@@ -388,9 +388,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       const assignedValidation = validateAssigned(data);
       if (!assignedValidation.isValid) return assignedValidation;
 
-      // if ((data._tripGroup === 'Preload') && (TRIP_PROGRESS.find(p => p.Progress === data.TripProgress)?.idx ?? 0) >= 2) {
-      //   return { isValid: false, message: 'Preload must be divert to an actual trip before proceeding.' };
-      // }
+      if ((data._tripGroup === 'Preload') && (TRIP_PROGRESS.find(p => p.Progress === data.TripProgress)?.idx ?? 0) >= 2) {
+        return { isValid: false, message: 'Preload must be divert to an actual trip before proceeding.' };
+      }
 
       if (!data.Driver_x0020_Loader) {
         return { isValid: false, message: 'Driver Loader must be specified or N/A if none.' };
@@ -1657,6 +1657,19 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               onCancelTrip?.(formData.ID); // Optimistically update the UI
               try {
                   await DMS_CEMService.delete(formData.ID.toString());
+
+                  UpsertTripTaskTrackerService.UpsertTripTaskTracker({ //delete task of cancelled OE
+                      OE: formData.OE || '',
+                      TripProgress: formData.TripProgress || '',
+                      AssignedDriver: !!formData.Driver,
+                      AssignedUnit: !!formData.Vehicle,
+                      HasATW: !!formData.ATW_x002f_LO_x0023_,
+                      HasSO: !!formData.SO_x0023_,
+                      UpdateOnly: false, 
+                      deleteIfComplete: true, //delete
+                      deleteAnyways: true,
+                      EditorName: editingUser?.FullName || 'Unknown User',
+                  }as any);
 
                   logDmsUpdate({ //log trip update
                     userName: editingUser?.FullName || '', 
