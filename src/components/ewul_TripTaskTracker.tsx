@@ -28,23 +28,37 @@ const isTripTaskExempted = (trip: any) => {
   const cementType = parsedTripJSON?.CementType || '';
   const oeValue = String(trip.OE || '').toUpperCase();
 
-  const keywords = ['CLZ - POZZOLANIC - CALACA', 'GNPD', 'GNPOWER', 'GMEC', 'SEM-CALACA', 'SEM CAL', 'APEC', 'UPPC'];
+  const srcKeywords = ['CLZ - FORTEM - SAN SIM PAMPANGA', 'CLZ - POZZOLANIC - CALACA', 'GNPD', 'GNPOWER', 'GMEC', 'SEM-CALACA', 'SEM CAL', 'APEC', 'UPPC'];
   const oePrefixes = ['MOB'];
+  const cementTypes = ['limestone','Fly-Ash','Slag'];
   const upperSourceName = sourceName.toUpperCase();
-  const matchesSource = keywords.some(keyword => upperSourceName.includes(keyword));
-  const matchesCement = cementType.toLowerCase() === 'limestone';
+  const matchesSource = srcKeywords.some(keyword => upperSourceName.includes(keyword));
+  const matchesCement = cementTypes.some(type => cementType.toLowerCase() === type);
   const matchesOEPrefix = oePrefixes.some(prefix => oeValue.startsWith(prefix));
 
   return matchesSource || matchesCement || matchesOEPrefix;
 };
 
 const isTripTaskPending = (trip: any, taskKey: string) => {
+  // Exempt fuel-related checks for trips already completed
+  const isExemptedFromFuelPO = trip.TripProgress === 'Done';
+
+  // ATW/SO exemption handled by existing exemption function
+  if ((taskKey === 'HasATW' || taskKey === 'HasSO') && isTripTaskExempted(trip)) {
+    return false;
+  }
+
+  // Fuel PO should only be pending when there's a fuel request and no PO,
+  // and should be skipped entirely if trip is exempted (e.g., Done)
   if (taskKey === 'HasFuelPO') {
+    if (isExemptedFromFuelPO) return false;
     return Boolean(trip.HasFuelRequest && !trip.HasFuelPO);
   }
 
-  if ((taskKey === 'HasATW' || taskKey === 'HasSO') && isTripTaskExempted(trip)) {
-    return false;
+  // Fuel Request should be considered pending unless the trip is exempted
+  if (taskKey === 'HasFuelRequest') {
+    if (isExemptedFromFuelPO) return false;
+    return !trip.HasFuelRequest;
   }
 
   return !trip[taskKey];
@@ -77,21 +91,35 @@ const TripTaskRow = ({
   })();
 
   const sourceName = parsedTripJSON?.SourceName || '';
+  const cementType = parsedTripJSON?.CementType || '';
   const isExemptedFromATW_SO = isTripTaskExempted(data);
+  const isExemptedFromFuelPO = data.TripProgress === 'Done';
 
   // Define the bits to track based on your schema
   const allTasks = [
     { label: 'Assigned Unit', status: data.AssignedUnit, progress: 'Assigned', key: 'AssignedUnit' },
     { label: 'Assigned Driver', status: data.AssignedDriver, progress: 'Assigned', key: 'AssignedDriver' },
-    { label: 'ATW Document', status: data.HasATW, progress: 'Assigned', key: 'HasATW', isExemptible: true },
-    { label: 'Sales Order', status: data.HasSO, progress: 'Assigned', key: 'HasSO', isExemptible: true },
+    { label: 'ATW Document', status: data.HasATW, progress: 'Assigned', key: 'HasATW'},
+    { label: 'Sales Order', status: data.HasSO, progress: 'Assigned', key: 'HasSO'},
     { label: 'Fuel Request', status: data.HasFuelRequest, progress: 'Assigned', key: 'HasFuelRequest' },
     { label: 'Fuel PO', status: data.HasFuelPO, progress: 'Assigned', key: 'HasFuelPO', invalidStatus: data.HasFuelDisapproved, invalidMessage: 'Fuel has been Disapproved.' },
   ];
 
-  const tasks = isExemptedFromATW_SO 
-    ? allTasks.filter(task => !task.isExemptible) 
-    : allTasks;
+    const tasks = (() => {
+      let list = [...allTasks];
+
+      // If exempted from ATW/SO remove those tasks
+      if (isExemptedFromATW_SO) {
+        list = list.filter(task => task.key !== 'HasATW' && task.key !== 'HasSO');
+      }
+
+      // If exempted from Fuel PO (e.g. TripProgress === 'Done') remove fuel-related tasks
+      if (isExemptedFromFuelPO) {
+        list = list.filter(task => task.key !== 'HasFuelPO' && task.key !== 'HasFuelRequest');
+      }
+
+      return list;
+    })();
 
   const filteredTasks = tasks.filter(t => t.progress === data.TripProgress || !t.status)
   const taskTotalCount = filteredTasks.length;
@@ -125,7 +153,7 @@ const TripTaskRow = ({
               <span className="trip-oe-text">{data.OE}</span>
               <span className="trip-progress-pill">{data.TripProgress}</span>
             </div>
-            <span className="trip-source-subtext">{sourceName}</span>
+            <span className="trip-source-subtext">{sourceName} | {cementType}</span>
           </div>
         </div>
         
