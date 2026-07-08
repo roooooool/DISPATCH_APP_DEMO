@@ -30,7 +30,7 @@ const isTripTaskExempted = (trip: any) => {
 
   const srcKeywords = ['CLZ - FORTEM - SAN SIM PAMPANGA', 'CLZ - POZZOLANIC - CALACA', 'GNPD', 'GNPOWER', 'GMEC', 'SEM-CALACA', 'SEM CAL', 'APEC', 'UPPC'];
   const oePrefixes = ['MOB'];
-  const cementTypes = ['limestone','Fly-Ash','Slag'];
+  const cementTypes = ['limestone','fly-ash','slag'];
   const upperSourceName = sourceName.toUpperCase();
   const matchesSource = srcKeywords.some(keyword => upperSourceName.includes(keyword));
   const matchesCement = cementTypes.some(type => cementType.toLowerCase() === type);

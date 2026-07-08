@@ -19,7 +19,7 @@
    ROOT VARIABLES (THEME)
 ========================= */
 :root {
-  --color-primary: rgba(9, 33, 98, 1); /* Navy Blue */
+  --color-primary: rgba(9, 33, 98, 1); /* Navy Blue #000080 */ 
   --color-primary-hover: color-mix(in srgb, var(--color-primary) 80%, black 20%);
   --color-primary-2: #3a4efc;
   --color-primary-3: #2600ff; /* lighter blue for accents */
