@@ -1,11 +1,15 @@
 import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { ClipboardList, ChevronDown, ChevronRight, CheckCircle2, Circle, RotateCw, Search, X, XCircle, FilterX} from 'lucide-react';
+import { ClipboardList, ChevronDown, ChevronRight, CheckCircle2, Circle, RotateCw, Search, X, XCircle, FilterX, CheckCheck} from 'lucide-react';
 import './comp_css/ewul_TripTaskTracker.css';
 import { ewulFetchAll, ewul_canFetch as canFetch, formatDate } from '../utils/Ewul_GSDC_Utils';
 import Modal from './ewul_Modal';
 import { TripTaskTrackerService } from '../generated/services/TripTaskTrackerService';
 import {TripTaskEditorListService} from '../generated/services/TripTaskEditorListService';
 import { FETCH_LOADING_KEYS, GSDC_NAVIGATE_TO_TRIP_key } from '../truth.config';
+import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
+import type { UpsertTripTaskTrackerRequest } from '../generated/models/UpsertTripTaskTrackerModel';
+
+import { useUser } from '../utils/useUser';
 
 
 export interface TaskTrackerHandle {
@@ -71,14 +75,16 @@ const TripTaskRow = ({
   onToggle,
   onCloseModal,
   getEditorInfo,
+  onManualUpdateTask,
 }: { 
   data: any; 
   isExpandedAlready: boolean; 
-  onToggle: () => void 
-  onCloseModal: (open: boolean) => void,
-  getEditorInfo: (oe: string, taskName: string) => any
+  onToggle: () => void ;
+  onCloseModal: (open: boolean) => void;
+  getEditorInfo: (oe: string, taskName: string) => any;
+  onManualUpdateTask: (data: any) => void;
 }) => {
-
+  const { user } = useUser();
   const parsedTripJSON = (() => {
     if (!data.TripJSON) return null;
     if (typeof data.TripJSON === 'object') return data.TripJSON;
@@ -131,6 +137,39 @@ const TripTaskRow = ({
     .filter(info => info) // Filter out any nulls
     .sort((a, b) => b.rawTime - a.rawTime) // Sort by timestamp descending
     [0]; // Get the most recent one
+
+  const handleTaskMarkAsDone = (data: any, task: any) => {
+    let newData = {
+      OE: data.OE || '',
+      TripProgress: data.TripProgress,
+
+      AssignedDriver: data.AssignedDriver,
+      AssignedUnit: data.AssignedUnit,
+      HasATW: data.HasATW,
+      HasSO: data.HasSO,
+      HasFuelRequest: data.HasFuelRequest,
+      HasFuelPO: data.HasFuelPO,
+      HasFuelDisapproved: data.HasFuelDisapproved,
+
+      UpdateOnly: false, 
+
+      deleteIfComplete: true,
+      deleteAnyways: true,
+
+      EditorName: user?.FullName || 'Unknown User',
+
+      TripJSON: data.TripJSON || '',
+    } as UpsertTripTaskTrackerRequest;
+
+    newData = {...newData, [task.key]: true} // Dynamically set the task key to true
+
+
+    console.log(`Marking task "${task.key}" as done for OE: ${data.OE}`, newData);
+    UpsertTripTaskTrackerService.UpsertTripTaskTracker(newData as any)
+
+    if (onManualUpdateTask) {onManualUpdateTask(newData)}
+
+  };
 
   return (
     <div className="trip-cascade-item">
@@ -248,6 +287,23 @@ const TripTaskRow = ({
                     })()}
                   </span>
                 ) : null}
+
+
+                {user?.Position === 'Developer' && (
+                  <button
+                    className='btn-cancel'
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      gap: '0.5rem',
+                      marginLeft: 'auto'
+                    }}
+                    onClick={() => handleTaskMarkAsDone(data, task)}
+                  >
+                    <CheckCheck /> Mark as Done
+                  </button>
+                )}
+              
               </div>
             );
           })}
@@ -471,6 +527,12 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
     setIsRefreshing(false);
   };
 
+  const handleManualTaskUpdate = (data: any) => {
+    setTaskList(prevList => prevList.map(trip => (
+      trip.OE === data.OE ? { ...trip, ...data } : trip
+    )));
+  };
+
   return (
 
 
@@ -665,6 +727,7 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
                           onToggle={() => toggleRow(trip.OE)}
                           onCloseModal={setIsOpen}
                           getEditorInfo={getTaskEditorInfo}
+                          onManualUpdateTask={handleManualTaskUpdate}
                         />
                       ))
                     ) : (
