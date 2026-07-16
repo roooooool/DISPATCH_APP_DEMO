@@ -821,6 +821,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "cifmetripsview_cem_unfiltered": {
+    "tableId": "CIFMETripsView_CEM_unfiltered",
+    "version": "v2",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "dms_attendancelogs": {
     "tableId": "DMS_AttendanceLogs",
     "version": "v2",

@@ -94,4 +94,6 @@ export interface LiveDMSView_CEM {
   DriverUnloaderType?: string;
   HelperLoaderType?: string;
   HelperUnloaderType?: string;
+  CIFME_OE?: string;
+  CIFME_DESTINATION?: string;
 }

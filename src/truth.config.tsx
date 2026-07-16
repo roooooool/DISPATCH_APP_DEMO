@@ -276,6 +276,7 @@ export const BUSINESS_UNITS = [
 // TRIP PROGRESS
 export const TRIP_PROGRESS = [
   {idx: 0, Progress: "New Trip", label: "", color: 'var(--progress-newtrip)', selected: true, exclude: false},
+  // {idx: 1, Progress: "Plotted", label: "", color: 'var(--progress-newtrip)', selected: true},
   {idx: 1, Progress: "Assigned", label: "Assigned", color: 'var(--progress-assigned)', selected: true},
   {idx: 2, Progress: "Dispatched To Source", label: "To Source", color: 'var(--progress-source)', selected: true},
   {idx: 3, Progress: "Dispatched To Destination", label: "To Destination", color: 'var(--progress-destination)', selected: true},
@@ -441,6 +442,7 @@ export const FETCH_LOADING_KEYS = {
   fuelRequests: 'fetchFuelRequests',
   fetchTripTaskLists: 'fetchTripTaskLists',
   fetchAttendanceServedCounts: 'fetchAttendanceServedCounts',
+  cifmeOrders: 'fetchCIFMEOrders',
 }
 
 export const GSDC_NAVIGATE_TO_TRIP_key = '4557554c504f4749';
@@ -798,6 +800,7 @@ export const NEW_TRIPS_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
   searchable_cols: ["OE", "SourceName", "DestiName"] as const
 
 }
+
 
 const pairing_type_options = [
   { value: "DMS", label: "Paired" },
@@ -1304,6 +1307,51 @@ export const TRIP_CONTEXT_TYPES = [
     "Trip - Cancelled",
     "Remarks - Add"
 ];
+
+
+
+export const CIFME_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
+
+  table_config: [
+  
+    /*{ col: "OrderedDate", alias: "Order Date", calculate: (row: any) => formatDate(row["OrderedDate"]) },*/
+    { col: "OE Date", alias: "OE Date", portion:1, calculate: (row: any) => formatDate(row[enc("OE Date")]) },
+    { col: "NeededDate", alias: "Need Date", portion:1, calculate: (row: any) => formatDate(row["NeededDate"]) },
+    { col: "OE", alias: "OE #", portion:1},
+    { col: "SourceName", alias: "Source", portion:1.5},
+    { col: "DestiName", alias: "Destination", portion:1.5},
+    { col: "_tripGroup", alias: "Group", portion:1, filter: {type: "dropdown-multiple", options: tripgroupOptions}},
+    { col: "CementTypeName", alias: "Type", portion:1, filter: {type: "dropdown-multiple", options: cementTypeOptions}},
+    { col: "SAPStatus", alias: "Status", portion:1, 
+      filter: {type: "dropdown-multiple", options: orderStatuses, default: ["Approved"]},
+      cellStyle: (row: any) => {
+        let style: React.CSSProperties = { color: '#666'};
+        if (row["SAPStatus"] === "Approved") style = { color: '#2ea107' };
+        if (row["SAPStatus"] === "Disapproved") style = { color: '#680000' };
+        if (row["SAPStatus"] === "Tagged") style = { color: '#2c02ff' };
+        if (row["SAPStatus"] === "Manual") style = { color: '#ff00d9' };
+        if (row["SAPStatus"] === "Incomplete") style = { color: '#eaa709' };
+        if (row["SAPStatus"] === "Completed") style = { color: '#08d7bc' };
+        
+        style.fontWeight = 'bold';
+        style.textTransform = 'uppercase'; 
+        style.letterSpacing = '0.5px';
+
+        return style;
+      }
+    },
+
+    
+    
+  ],
+
+  rowStyle: (row: any) => ({
+    backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)' : 'var(--color-bg-blue)'
+  }), 
+
+  searchable_cols: ["OE", "SourceName", "DestiName"] as const
+
+}
 
 
 

@@ -94,6 +94,8 @@ interface OrderDistributionProps {
   onShowFuelRequest?: (tripData: LiveDMSView_CEM) => void;
   onRequestChangeTrip?: (tripData: LiveDMSView_CEM, action: 'Divert' | 'Change') => void;
 
+  onCIFMESelect?: (soNumber: string) => void;
+
   maxHeight?: string | number;
 
   driverOptions?: DropdownOption[];
@@ -161,6 +163,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     onRequestChangeTrip, 
     onUpdateDriverHelperAttendance, 
     onUpdateTruckTrailers,
+    onCIFMESelect,
     style, 
     maxHeight, 
     driverOptions, 
@@ -287,14 +290,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       setHasUnsavedChanges(formDataChanged || hasPendingFiles);
 
 
-      const currentProgressIndex = TRIP_PROGRESS.findIndex(p => p.Progress === formData.TripProgress);
-
+      const currentProgressIndex = TRIP_PROGRESS.find(p => p.Progress === formData.TripProgress)?.idx ?? 0;
+      console.log("curr prog: ", currentProgressIndex, "validation prog: ", getProgIdxByProgress("New Trip"));
       setValidationStatus({
-        new_trip: currentProgressIndex >= 0 ? validateLoadingSequence(formData).isValid : undefined,
-        assigned: currentProgressIndex >= 0 ? validateAssigned(formData).isValid : undefined,
-        dispatchedToSource: currentProgressIndex >= 2 ? validateDispatchedToSource(formData).isValid : undefined,
-        dispatchedToDestination: currentProgressIndex >= 3 ? validateDispatchedToDestination(formData).isValid : undefined,
-        done: currentProgressIndex >= 4 ? validateDone(formData).isValid : undefined,
+        new_trip: currentProgressIndex >= getProgIdxByProgress("New Trip") ? validateLoadingSequence(formData).isValid : undefined,
+        assigned: currentProgressIndex >= getProgIdxByProgress("Assigned") ? validateAssigned(formData).isValid : undefined,
+        dispatchedToSource: currentProgressIndex >= getProgIdxByProgress("Dispatched To Source") ? validateDispatchedToSource(formData).isValid : undefined,
+        dispatchedToDestination: currentProgressIndex >= getProgIdxByProgress("Dispatched To Destination") ? validateDispatchedToDestination(formData).isValid : undefined,
+        done: currentProgressIndex >= getProgIdxByProgress("Done") ? validateDone(formData).isValid : undefined,
       });
 
     }, [formData, originalFormData, tempPlantDrAttachments, tempWsAttachments]);
@@ -339,6 +342,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         ).map(trip => trip.OE).join(', ');
         return { isValid: false, message: `Duplicate sequence ${seq} detected! Used by [${duplicateTrips}]` };
       }
+
+      if ((data._tripGroup === 'Preload') && !data.Source) {
+        return { isValid: false, message: 'Please select a source.' };
+      }
+
+      if ((data._tripGroup === 'Preload') && !data.cementType) {
+        return { isValid: false, message: 'Please select a cement type.' };
+      }
   
       return { isValid: true, message: 'Loading sequence is valid.' };
     };
@@ -352,13 +363,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       const loadingSeqValidation = validateLoadingSequence(data);
       if (!loadingSeqValidation.isValid) return loadingSeqValidation;
 
-      if ((data._tripGroup === 'Preload') && !data.Source) {
-        return { isValid: false, message: 'Please select a source.' };
-      }
-
-      if ((data._tripGroup === 'Preload') && !data.cementType) {
-        return { isValid: false, message: 'Please select a cement type.' };
-      }
 
       if (!data.Driver) {
         return { isValid: false, message: 'Driver must be assigned.' };
@@ -387,6 +391,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
   
       const assignedValidation = validateAssigned(data);
       if (!assignedValidation.isValid) return assignedValidation;
+
+      // For CIFME
+      // if (!data.CIFME_OE && editingUser?.Position === 'Developer') {return { isValid: false, message: 'Please select a CIFME order before proceeding with this trip.' };}
+
 
       if ((data._tripGroup === 'Preload') && (TRIP_PROGRESS.find(p => p.Progress === data.TripProgress)?.idx ?? 0) >= 2) {
         return { isValid: false, message: 'Preload must be divert to an actual trip before proceeding.' };
@@ -570,11 +578,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       return { isValid: true, message: 'Documentation details are valid.' };
     };
 
-    const validate_list = [validateAssigned, validateAssigned, validateDispatchedToSource, validateDispatchedToDestination, validateDone];
+    const validate_list = [validateLoadingSequence, validateAssigned, validateDispatchedToSource, validateDispatchedToDestination, validateDone];
 
     const runValidation = (data: LiveDMSView_CEM) => {
       const progress_idx = TRIP_PROGRESS.find(item => item.Progress === data.TripProgress);
-      let validate_next = progress_idx ? validate_list[progress_idx.idx < 1 ? 1 : progress_idx.idx /* start with progress 1 (Assigned) validaiton */] : null;
+      let validate_next = progress_idx ? validate_list[progress_idx.idx < 1 ? 0 : progress_idx.idx /* start with progress 1 (Assigned) validaiton */] : null;
 
       return validate_next ? validate_next(data) : { isValid: true, message: '' };
     };
@@ -854,15 +862,33 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-    const inputGroup = {
-      oeRef: false,
-      oeDetails: true,
-
-      assignmentDetails: false,
-      sourceDetails: false,
-      destinationDetails: false,
-      doneVerification: false,
+    type InputGroupState = {
+      oeRef: boolean;
+      oeDetails: boolean;
+      assignmentDetails: boolean;
+      sourceDetails: boolean;
+      destinationDetails: boolean;
+      doneVerification: boolean;
     };
+
+    const createCollapsedState = (expandedGroups: Array<keyof InputGroupState> = []) => {
+      const baseState: InputGroupState = {
+        oeRef: false,
+        oeDetails: true,
+        assignmentDetails: true,
+        sourceDetails: true,
+        destinationDetails: true,
+        doneVerification: true,
+      };
+
+      expandedGroups.forEach(group => {
+        baseState[group] = false;
+      });
+
+      return baseState;
+    };
+
+    const inputGroup = createCollapsedState();
 
     const [collapsed, setCollapsed] = useState(inputGroup);
 
@@ -871,18 +897,57 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
     const expandAll = () => {
-      setCollapsed(inputGroup);
-    };
-
-    const collapseAll = () => {
-      // Iterate all input groups and set to collapsed
-      const allCollapsed = Object.keys(inputGroup).reduce((acc, key) => {
-        acc[key as keyof typeof inputGroup] = true;
+      const allExpanded = Object.keys(inputGroup).reduce((acc, key) => {
+        acc[key as keyof typeof inputGroup] = false;
         return acc;
       }, {} as typeof inputGroup);
 
-      setCollapsed(allCollapsed);
+      setCollapsed(allExpanded);
     };
+
+    const collapseAll = () => {
+      setCollapsed(createCollapsedState());
+    };
+
+    const getProgressGroupKey = (progress?: string): keyof typeof collapsed | null => {
+      switch (progress) {
+        case 'New Trip':
+        case 'Plotted':
+          return 'oeDetails';
+        case 'Assigned':
+          return 'assignmentDetails';
+        case 'Dispatched To Source':
+          return 'sourceDetails';
+        case 'Dispatched To Destination':
+          return 'destinationDetails';
+        case 'Done':
+          return 'doneVerification';
+        default:
+          return null;
+      }
+    };
+
+    const getValidationGroupKeys = (): Array<keyof typeof collapsed> => {
+      const groups: Array<keyof typeof collapsed> = [];
+
+      if (validationStatus.new_trip === false) groups.push('oeDetails');
+      if (validationStatus.assigned === false) groups.push('assignmentDetails');
+      if (validationStatus.dispatchedToSource === false) groups.push('sourceDetails');
+      if (validationStatus.dispatchedToDestination === false) groups.push('destinationDetails');
+      if (validationStatus.done === false) groups.push('doneVerification');
+
+      return groups;
+    };
+
+    useEffect(() => {
+      const progressGroup = getProgressGroupKey(formData.TripProgress);
+      const validationGroups = getValidationGroupKeys();
+      const groupsToExpand = [progressGroup, ...validationGroups].filter(
+        (group): group is keyof typeof collapsed => group !== null
+      );
+
+      setCollapsed(createCollapsedState(groupsToExpand));
+    }, [formData.TripProgress, validationStatus.new_trip, validationStatus.assigned, validationStatus.dispatchedToSource, validationStatus.dispatchedToDestination, validationStatus.done]);
 
     useEffect(() => {
       if (showCancelConfirmModal) {
@@ -1233,6 +1298,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           })
 
         };
+
+        console.log('trip task update: ', payload);
       
         UpsertTripTaskTrackerService.UpsertTripTaskTracker(payload as any);
 
@@ -2565,13 +2632,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
 
+    const getProgIdxByProgress = (progress: string) => {
+      return TRIP_PROGRESS.find(p => p.Progress === progress)?.idx ?? 0;
+    };
 
-    const disabledDstGrp = prog_verified || prog_idx < 3 || !validateOE(formData).isValid;
-    const disabledSrcGrp = prog_verified || prog_idx < 2 || !validateOE(formData).isValid;
-    const disabledAssGrp = prog_verified || !validateOE(formData).isValid;
+
+    const disabledDstGrp = prog_verified || prog_idx < getProgIdxByProgress("Dispatched To Destination") || !validateOE(formData).isValid;
+    const disabledSrcGrp = prog_verified || prog_idx < getProgIdxByProgress("Dispatched To Source") || !validateOE(formData).isValid;
+    const disabledAssGrp = prog_verified || prog_idx < getProgIdxByProgress("Assigned") || !validateOE(formData).isValid;
     const disabledOEDetGrp = prog_verified || !validateOE(formData).isValid;
     const disabledOEEntGrp = prog_verified;
-    const disabledDoneGrp = prog_verified || prog_idx < 4 || !validateOE(formData).isValid;
+    const disabledDoneGrp = prog_verified || prog_idx < getProgIdxByProgress("Done") || !validateOE(formData).isValid;
 
     const discrepancy = formData.QTYDelivered == null || formData.QTYWithdrawn == null ? 0 : formData.QTYDelivered - formData.QTYWithdrawn;
     const actualDiscrepancy = formData.QTYDelivered_Actual == null || formData.QTYWithdrawn_Actual == null ? 0 :  formData.QTYDelivered_Actual - formData.QTYWithdrawn_Actual;
@@ -2653,6 +2724,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         Create IR
                         {((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT)  && (formData.TripProgress === 'Done') && <span className="unsaved-indicator">!</span>}
                     </a>
+
                   </div>
                 )}
               </div>
@@ -2772,6 +2844,25 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
                 </div>
               </div>
+              
+              {/* CIFME INPUT */}
+
+              { editingUser?.Position === 'Developer' && (<div className="form-row">
+                  <div className="input-group">
+                    <label>CIFME</label>
+                    <div className="gradient-input-wrapper">
+                      <input type="text" value={formData.CIFME_OE || ''} /*disabled*/ placeholder="Select CIF trip" onClick={() => {if (onCIFMESelect)  {onCIFMESelect(formData.SO_x0023_?.toString() || '')}}} />
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <label>DESTINATION</label>
+                    <div className="gradient-input-wrapper">
+                      <input type="text" value={formData.CIFME_DESTINATION || ''} disabled />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="form-row">
                 <div className="input-group">
                   <label>CLIENT</label>
@@ -3153,7 +3244,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   <div className="input-group">
                     <label>Verified By</label>
                     <div className="gradient-input-wrapper">
-                      <input disabled type="text" value={prog_verified ? formData.Verified_x0020_By : (prog_idx === 4 ? (editingUser?.FullName || '') : '') } onChange={e => handleFieldChange('Verified_x0020_By', e.target.value)} />
+                      <input disabled type="text" value={prog_verified ? formData.Verified_x0020_By : (prog_idx === getProgIdxByProgress("Done") ? (editingUser?.FullName || '') : '') } onChange={e => handleFieldChange('Verified_x0020_By', e.target.value)} />
                     </div>
                   </div>
 

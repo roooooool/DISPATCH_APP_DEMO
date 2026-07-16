@@ -69,4 +69,6 @@ export interface DMS_CEM {
   HelperLoaderType?: string;
   HelperUnloaderType?: string;
   ServedDate?: string;
+  CIFME_OE?: string;
+  CIFME_DESTINATION?: string;
 }

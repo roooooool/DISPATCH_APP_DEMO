@@ -8,4 +8,6 @@ export interface TripTaskEditorList {
   Task: string;
   Name: string;
   Timestamp?: string;
+  TimestampAsInt?: number;
+  Value?: boolean;
 }

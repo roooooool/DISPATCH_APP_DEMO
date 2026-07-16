@@ -843,3 +843,33 @@
     bottom: 0;
     z-index: 99;
 }
+
+.triptask-btn-done {
+  display: flex;
+  direction: row;
+  gap: 0.5rem;
+  margin-left: auto;
+  color: var(--color-border-success)
+}
+
+.triptask-btn-done:hover, .triptask-btn-x:hover {
+  border: transparent;
+  color: white;
+}
+
+.triptask-btn-done:hover{
+
+  background-color: var(--color-border-success);
+}
+
+.triptask-btn-x:hover{
+  background-color: var(--color-border-danger);
+}
+
+.triptask-btn-x {
+  display: flex;
+  direction: row;
+  gap: 0.5rem;
+  margin-left: auto;
+  color: var(--color-border-danger)
+}

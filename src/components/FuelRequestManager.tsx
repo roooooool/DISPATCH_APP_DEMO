@@ -362,7 +362,7 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
             Frstatus: formData.Frstatus || 'Request',
             Fromdispapp: "Yes V2",
             Driversname: formData.Driversname || '',
-            Ts1: formData.Ts1?.toString() || formatToLocalISO(new Date().toISOString()),
+            Ts1: /*formData.Ts1?.toString() ||*/ formatToLocalISO(new Date().toISOString()),
             Created: formData.Created?.toString() ||  formatToLocalISO(new Date().toISOString()),
             Sukattank: formData.Sukattank || '',
             Sukatcompressor: formData.Sukatcompressor || '',

@@ -41,6 +41,9 @@ import FuelRequestManager from '../components/FuelRequestManager';
 // import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
 import { TripTicketsService } from '../generated/services/TripTicketsService';
 import { Usp_ChangeTripTaskTrackerOEService } from '../generated/services/Usp_ChangeTripTaskTrackerOEService';
+import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFMETripsView_CEM_unfilteredService';
+
+
 
 // Custom Components
 import TableView,  { type ColumnConfig, type scrollToConfig, encodeColumnName as enc } from '../components/ewul_TableFlex';
@@ -256,6 +259,56 @@ const OrderManagement: React.FC = () => {
 
     }, [selectedRangeNewOrders]);
     fetchNewOrders(); // Call it once on component mount to load initial data
+
+
+
+    // 1. Data Fetching Logic
+    const [CIFMEOrders,setCIFMEOrders] = useState<any[]>([]);
+    const fetchCIFMEOrders = useCallback(async () => {
+        if (!selectedRangeNewOrders) return;
+        if (!canFetch(FETCH_LOADING_KEYS.cifmeOrders)) return;
+
+        console.log("Fetching new orders with date range:", selectedRangeNewOrders);
+        
+        // Convert "2026-03-26" to 20260326 for your SQL OEDateAsInt column
+        const fromInt = ISOtoInt(selectedRangeNewOrders.from);
+        const toInt = ISOtoInt(selectedRangeNewOrders.to);
+        
+        const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt}`;
+
+        const options = {
+                filter: dateFilter, // Pass the filter here!
+                orderBy: ["OEDateAsInt desc"]
+        }
+
+        setLoadingFor(FETCH_LOADING_KEYS.cifmeOrders, true);
+        try { 
+            const result = await ewulFetchAll<any>(
+                CIFMETripsView_CEM_unfilteredService, 
+                options, 
+                2000
+            );
+
+            // console.log("Fetched new orders:", result);
+
+
+            // 'result' is the actual Array now!
+            if (result && result.length > 0) {
+                setCIFMEOrders(result);
+            } else {
+                setCIFMEOrders([]);
+            }
+            
+        } catch (err) {
+            console.error("Fetch Error during batching:", err);
+            setCIFMEOrders([]);
+        } finally {
+            setLoadingFor(FETCH_LOADING_KEYS.cifmeOrders, false);
+            console.log("Fetch new orders completed with count:", CIFMEOrders.length);
+        }
+
+    }, [selectedRangeNewOrders]);
+    fetchCIFMEOrders(); // Call it once on component mount to load initial data
 
 
 
@@ -848,6 +901,10 @@ const OrderManagement: React.FC = () => {
         generateAdditionalOE('Mobilization');
     };
 
+    const handleSelectCIFMEOrder = (order: any) => {
+        setSelectedOrder({...selectedOrder, CIFME_OE: order.OE, CIFME_DESTINATION: order.DestiName});
+    };
+
     // useEffect(() => {
     //     generateTripTicketID();
     //     generateAdditionalOE('Preload');
@@ -924,8 +981,37 @@ const OrderManagement: React.FC = () => {
         // Logic for CSV/Excel export would go here
     };
 
+    const [showCIFMETable, setShowCIFMETable] = useState<string | null>(null);
+    const renderCIFMETable = (onRowClickLogic: (row: any) => void, soNumber: string, changeConfig: ColumnConfig[] = NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config) => {
+        console.log(soNumber);
+
+        return (
+            <TableView 
+                data={CIFMEOrders.filter(order => order.OE === 'CIF26-07-0162')}
+                config={changeConfig}
+                searchCol={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.searchable_cols as string[]}
+                storageKey={`order_page_sap_new_orders${user?.id}`}
+                isLoading={loadingList[FETCH_LOADING_KEYS.cifmeOrders] || false}
+                showRowCount={500}
+                onRefresh={(signal) => signal && fetchNewOrders()}
+                overflowY={true}
+                maxHeight={600}
+                colMinWidth={120}
+                onRowClick={onRowClickLogic}
+                theme="var(--color-primary)"
+                allowMultipleSelection={false}
+                rowStyle={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.rowStyle}
+                loadingNoPreventAction={true}
+                showNumbering={true}
+                highlightSelected={true}
+                scrollTo={scrollToNewTrips}
+            />
+        );
+    };
+
     const actions = (
-        <>
+        <>  
+
             <button
                 className="header-btn primary"
                 onClick={() => setShowNewTripModal(true)}
@@ -1126,6 +1212,7 @@ const OrderManagement: React.FC = () => {
             onRequestChangeTrip={(tripData, action) => {
                 handleRequestChangeTrip(tripData, action); /*handle change trip*/
             }}
+            onCIFMESelect={(son) => setShowCIFMETable(son)}
 
             truckOptions={truckOptions}
             trailerOptions={trailerOptions}
@@ -1814,6 +1901,41 @@ const OrderManagement: React.FC = () => {
                                         setScrollTo({ search_col: 'OE', key: record.OE, highlight: 'warning' });
                                     };
                                     return renderNewTripsTable(onRowClick);
+                                })()
+                            }
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* CIFME Trip Modal */}
+            {showCIFMETable && (
+                <Modal onClose={() => setShowCIFMETable(null)}>
+                    <div className="new-order-modal-header">
+                        <div>
+                            <h2>Select a CIFME order for {currentOrderData.OE}</h2>
+                        </div>
+                        
+                        <DateRangePicker 
+                            allowedTypes={['Monthly', 'Yearly', 'Custom']} 
+                            onFilterChange={(range) => {
+                                handleDateChangeNewOrders(range);
+                            }} 
+                            opacity={1}
+                            bgColor='var(--color-primary)'
+                            hoverColor='var(--color-primary)'
+                        />
+                    </div>
+                    <div className="modal-body">
+                        <div style={{ marginTop: 24 }}>
+                            {
+                                (() => {
+                                    const onRowClick = (raw_record: any) => {
+                                        handleSelectCIFMEOrder(raw_record);
+                                        console.log("CIFME row clicked:", raw_record);
+                                        setShowCIFMETable(null);
+                                    };
+                                    return renderCIFMETable(onRowClick,showCIFMETable);
                                 })()
                             }
                         </div>

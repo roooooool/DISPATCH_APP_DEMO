@@ -7,6 +7,7 @@
 export * as Action_Logs_HistoryModel from './models/Action_Logs_HistoryModel';
 export * as ChatMessagesModel from './models/ChatMessagesModel';
 export * as CheckIfOEExistsModel from './models/CheckIfOEExistsModel';
+export * as CIFMETripsView_CEM_unfilteredModel from './models/CIFMETripsView_CEM_unfilteredModel';
 export * as CommonModels from './models/CommonModels';
 export * as DMS_AttachmentsModel from './models/DMS_AttachmentsModel';
 export * as DMS_AttendanceLogsModel from './models/DMS_AttendanceLogsModel';
@@ -55,6 +56,7 @@ export * as Vw_SOURCE_LIST_CEMModel from './models/Vw_SOURCE_LIST_CEMModel';
 export * from './services/Action_Logs_HistoryService';
 export * from './services/ChatMessagesService';
 export * from './services/CheckIfOEExistsService';
+export * from './services/CIFMETripsView_CEM_unfilteredService';
 export * from './services/DMS_AttachmentsService';
 export * from './services/DMS_AttendanceLogsService';
 export * from './services/DMS_CEMService';

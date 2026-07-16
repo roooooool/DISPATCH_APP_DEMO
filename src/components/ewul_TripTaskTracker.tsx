@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { ClipboardList, ChevronDown, ChevronRight, CheckCircle2, Circle, RotateCw, Search, X, XCircle, FilterX, CheckCheck} from 'lucide-react';
+import { ClipboardList, ChevronDown, ChevronRight, CheckCircle2, Circle, RotateCw, Search, X, XCircle, FilterX, CheckCheck, Check} from 'lucide-react';
 import './comp_css/ewul_TripTaskTracker.css';
 import { ewulFetchAll, ewul_canFetch as canFetch, formatDate } from '../utils/Ewul_GSDC_Utils';
 import Modal from './ewul_Modal';
@@ -81,7 +81,7 @@ const TripTaskRow = ({
   isExpandedAlready: boolean; 
   onToggle: () => void ;
   onCloseModal: (open: boolean) => void;
-  getEditorInfo: (oe: string, taskName: string) => any;
+  getEditorInfo: (oe: string, taskName: string, completedDate: string) => any;
   onManualUpdateTask: (data: any) => void;
 }) => {
   const { user } = useUser();
@@ -127,18 +127,18 @@ const TripTaskRow = ({
       return list;
     })();
 
-  const filteredTasks = tasks.filter(t => t.progress === data.TripProgress || !t.status)
+  const filteredTasks = tasks/*.filter(t => t.progress === data.TripProgress  || !t.status true)*/
   const taskTotalCount = filteredTasks.length;
   const completedCount = filteredTasks.filter(t => t.status).length;
 
   const latestEditor = tasks
     .filter(task => task.status) // Only look at completed tasks
-    .map(task => getEditorInfo(data.OE, task.key)) // Get editor info for each
+    .map(task => getEditorInfo(data.OE, task.key, data.LastUpdated)) // Get editor info for each
     .filter(info => info) // Filter out any nulls
     .sort((a, b) => b.rawTime - a.rawTime) // Sort by timestamp descending
     [0]; // Get the most recent one
 
-  const handleTaskMarkAsDone = (data: any, task: any) => {
+  const handleTaskMarkAsDone = (data: any, task: any, value: boolean) => {
     let newData = {
       OE: data.OE || '',
       TripProgress: data.TripProgress,
@@ -154,14 +154,14 @@ const TripTaskRow = ({
       UpdateOnly: false, 
 
       deleteIfComplete: true,
-      deleteAnyways: true,
+      deleteAnyways: false,
 
       EditorName: user?.FullName || 'Unknown User',
 
       TripJSON: data.TripJSON || '',
     } as UpsertTripTaskTrackerRequest;
 
-    newData = {...newData, [task.key]: true} // Dynamically set the task key to true
+    newData = {...newData, [task.key]: value} // Dynamically set the task key to true
 
 
     console.log(`Marking task "${task.key}" as done for OE: ${data.OE}`, newData);
@@ -214,11 +214,13 @@ const TripTaskRow = ({
                 }
               })}
           </span>)}
+
           <span className="completion-duration">{(() => {
               const duration = formatDate(data.TaggedDate?.replace('Z',''), {mode: 'duration', compareTo: completedCount === taskTotalCount ? data.LastUpdated?.replace('Z','') : new Date() })
               return completedCount === taskTotalCount ? duration.replace(' ago','') : duration;
             })()}
           </span>
+          
           <span className="completion-stats">({completedCount} / {taskTotalCount})</span>
           <button 
             className="go-to-trip-btn"
@@ -241,7 +243,7 @@ const TripTaskRow = ({
         <div className="trip-cascade-content">
           {filteredTasks.map((task, idx) => {
             const isInvalid = task.invalidStatus === true || task.invalidStatus === 1;
-            const isMissed = task.progress !== data.TripProgress;
+            const isMissed = /*task.progress !== data.TripProgress*/ false;
             const isDone = task.status === true || task.status === 1;
 
             return (
@@ -280,7 +282,8 @@ const TripTaskRow = ({
                 )  : isDone ? (
                   <span className="task-done-message">
                     {(() => {
-                      const info = getEditorInfo(data.OE, task.key); // Use the key we'll add below
+                      const info = getEditorInfo(data.OE, task.key, completedCount === taskTotalCount ? data.LastUpdated : undefined); // Use the key we'll add below
+                      // const duration = formatDate(info.rawTime?.replace('Z',''), {mode: 'duration', compareTo: completedCount === taskTotalCount ? data.LastUpdated?.replace('Z','') : new Date() })
                       return info 
                         ? `Completed by ${info.name} at ${info.time}` 
                         : 'Completed';
@@ -289,19 +292,32 @@ const TripTaskRow = ({
                 ) : null}
 
 
-                {user?.Position === 'Developer' && (
-                  <button
-                    className='btn-cancel'
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      gap: '0.5rem',
-                      marginLeft: 'auto'
-                    }}
-                    onClick={() => handleTaskMarkAsDone(data, task)}
-                  >
-                    <CheckCheck /> Mark as Done
-                  </button>
+                {user?.Position === 'Developer' &&  (
+
+                  <>
+                    { isDone ?
+                      ( 
+                        <button
+                          className='triptask-btn-x'
+                          onClick={() => handleTaskMarkAsDone(data, task, false)}
+                          title='mark as Not Done'
+                        >
+                          <X size={16} />
+                        </button>
+                      ) :
+                      (
+                        <button
+                          className='triptask-btn-done'
+                          onClick={() => handleTaskMarkAsDone(data, task, true)}
+                          title='mark as Done'
+                        >
+                          <Check size={16} />
+                        </button>
+                      )
+                    
+                    }
+                  </>
+
                 )}
               
               </div>
@@ -485,7 +501,7 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
     return matchesTab && matchesSearch && matchesPendingTasks;
   });
 
-  const getTaskEditorInfo = useCallback((oe: string, taskName: string) => {
+  const getTaskEditorInfo = useCallback((oe: string, taskName: string, completedDate?: string) => {
     const key = `${oe}_${taskName}`;
     // console.log(`Looking up editor info for key: ${key}`);
     const editor = editorMap.get(key); // Instant lookup
@@ -495,10 +511,7 @@ const TaskTracker = forwardRef<TaskTrackerHandle, {}>((_, ref) => {
 
     return {
       name: editor.Name,
-      time: new Date(editor.Timestamp).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      }),
+      time: formatDate(editor.Timestamp?.replace('Z',''), {mode: 'duration', compareTo: completedDate ? new Date(completedDate) : new Date() }),
       rawTime: new Date(editor.Timestamp).getTime() // Add raw timestamp for sorting
     };
   }, [editorMap]);

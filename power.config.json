@@ -35,7 +35,8 @@
         "triptaskeditorlist",
         "gsdc_gitpat",
         "triptickets",
-        "op_incidentreports"
+        "op_incidentreports",
+        "cifmetripsview_cem_unfiltered"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -105,6 +106,9 @@
             },
             "op_incidentreports": {
               "tableName": "[dbo].[OP_IncidentReports]"
+            },
+            "cifmetripsview_cem_unfiltered": {
+              "tableName": "[dbo].[CIFMETripsView_CEM_unfiltered]"
             }
           }
         }
