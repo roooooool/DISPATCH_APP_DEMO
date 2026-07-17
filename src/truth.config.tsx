@@ -652,6 +652,7 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     { col: "Trip Status", alias: "Status", filter: {type: "dropdown-multiple", options: statusOptions}, cellStyle: () => {return { fontWeight: 'bold' }}},
     { col: "Loading Sequence", alias: "LS", defaultSort: 'desc' },
     { col: "OE Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("OE Date")])  },
+    { col: "Buisness Unit", alias: "BU", filter: {type: "dropdown-multiple"}  },
     { col: "Driver", cellStyle: () => {return { textAlign: 'left' }} },
     { col: "Helper", cellStyle: () => {return { textAlign: 'left' }} },
     { col: "Vehicle", alias: "Truck" },

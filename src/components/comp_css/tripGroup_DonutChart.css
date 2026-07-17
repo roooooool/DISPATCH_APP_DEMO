@@ -13,20 +13,24 @@
 
 .matrix-grid {
   display: grid;
-  /* Reduced from 300px to 180px to allow more columns in tight spaces */
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
   width: 100%;
-  height: 100%;
   box-sizing: border-box;
+  align-items: start;
+  scrollbar-width: none;
+}
+
+.matrix-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .matrix-grid.grid-horizontal {
   display: grid;
-  /* Adjust 250px to the minimum width you want your cards to be */
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 16px; 
   width: 100%;
+  align-items: start;
 }
 
 .matrix-grid.grid-vertical {
@@ -44,10 +48,8 @@
 .analytic-card {
   position: relative;
   display: flex;
-  min-height: 110px;
   min-width: 0;
   width: 100%;
-  /* This padding acts as the "Border Thickness" */
   padding: 2px; 
   
   /* ALWAYS VISIBLE GRADIENT: Navy Blue to Red */
@@ -60,6 +62,77 @@
   overflow: hidden;
   cursor: pointer;
   z-index: 1;
+
+  /* Add explicit smooth transitions for height, width, and padding shifts */
+  transition: 
+    transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    box-shadow 0.4s ease,
+    max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  will-change: max-width, min-width, transform;
+
+  /* CHANGE THESE LINES */
+  min-height: 0;   /* Removes the 110px floor entirely */
+  height: auto;    /* Tells the card to only be as tall as its children */
+}
+
+.analytic-card.highlighted {
+  transform: translateY(-8px) scale(1.03); /* Distinctly lifts and expands the card above the rest */
+  /* Elegant, vivid brand glow blending your red and navy theme */
+  box-shadow: 0 12px 28px rgba(229, 57, 53, 0.25), 0 0 20px rgba(9, 33, 98, 0.3); 
+  opacity: 1 !important;
+  z-index: 10; /* Forces the highlighted card to render on top of neighbors */
+}
+
+/* Thicken the gradient border and shift the background color slightly on selection */
+.analytic-card.highlighted::before {
+  inset: 4px; /* Thickens the border from 2px to 4px by pulling the inner card body back */
+  background: #f8fafc; /* Gentle soft slate-white background tint */
+}
+
+/* Subtle color change to the category title in the highlighted card */
+.analytic-card.highlighted h3 {
+  color: #e53935 !important; /* Highlights title with your red accent */
+}
+
+/* --- 2. DEEPER DIMMING FOR CONTRAST --- */
+.analytic-card.dimmed {
+  opacity: 0.35; /* Dropped from 0.5 to make the highlighted card pop significantly more */
+  filter: grayscale(0.4) blur(0.2px); /* Softly recedes unselected cards into the background */
+}
+
+/* --- 3. Z-INDEX HOVER FIX --- */
+.analytic-card:hover {
+  /* ... keep your hover code, just make sure to add z-index below ... */
+  z-index: 11; /* Ensures hovered items stay above everything */
+}
+.fade-in-content {
+  opacity: 0;
+  animation: contentFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  width: 100%;
+  display: flex;
+}
+
+.fade-in-content.card-content-wrapper {
+  display: flex;
+  flex: 1.1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Keyframes for the content fade and slight lift */
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* The White Inner Body of the Card */
@@ -158,13 +231,234 @@
   padding-left: 10px;
 }
 
+
+.chart-settings-dropdown-portal {
+  position: fixed;            /* Bypasses all relative parent overflows completely */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: white;
+  
+  /* Applying gentle design language */
+  border: 1px solid var(--color-primary, #092162);
+  border-radius: 12px; 
+  box-shadow: 0 10px 25px -5px rgba(9, 33, 98, 0.2);
+  
+  min-width: 180px;
+  z-index: 99999;            /* Elevates above all cards, modulators, and loaders */
+  box-sizing: border-box;
+  animation: localPopIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-section-title {
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+/* --- Keep the original absolute floating wrapper --- */
+.chart-settings-wrapper {
+  position: absolute;
+  top: -12px;               /* Pulls it slightly above the grid space */
+  right: 4px;               /* Aligns it perfectly to the top right edge */
+  z-index: 50;              /* CRITICAL: Raises it completely above the cards and overlays */
+}
+
+/* --- Make the button small and unobtrusive --- */
+.chart-settings-button {
+  border: none;
+  background: white;        /* Solid white background so it stands out above grid gaps */
+  color: #94a3b8 !important; /* Soft slate gray color instead of dark navy */
+  border-radius: 50%;       /* Circular profile for a cleaner floating look */
+  width: 2.5rem;              /* Shrunken footprints */
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(9, 33, 98, 0.3); /* Tiny, gentle float shadow */
+  cursor: pointer;
+  opacity: 0.7;             /* Softly faded back until interaction */
+  transition: all 0.2s ease;
+
+  padding: 0 !important;   /* Clear out internal padding that squishes the child */
+  box-sizing: border-box;  /* Lock down measurements accurately */
+}
+
+.chart-settings-button svg {
+  flex-shrink: 0;          /* Prevents the browser from crushing the icon smaller */
+  display: block;
+}
+
+/* Brighten on hover */
+.chart-settings-button:hover {
+  transform: scale(1.05);
+  opacity: 1;
+  color: #092162 !important; /* Shifts back to primary theme Navy */
+  box-shadow: 0 4px 10px rgba(9, 33, 98, 0.15);
+}
+
+/* Ensure the popup dropdown accounts for the float position */
+.chart-settings-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  background: var(--color-text-2);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(9, 33, 98, 0.12);
+  min-width: 100px;
+  z-index: 60; /* Higher than the button layer */
+}
+
+.chart-settings-option {
+  border: 1px solid #e2e8f0;
+  background: transparent;
+  text-align: left;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #334155;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.chart-settings-option.active {
+  background: var(--color-primary);
+  color: var(--color-text-2);
+  border-color: var(--color-primary);
+  font-weight: 700;
+}
+
+.settings-divider {
+  border-top: 1px solid #e2e8f0;
+  margin: 4px 0;
+}
+
+.chart-filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.85rem;
+}
+
+@keyframes localPopIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+
+.simple-card-content {
+  display: flex;
+  flex-direction: row; /* Force side-by-side layout */
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px !important; /* Reduces top/bottom padding */
+}
+
+.simple-card-content .simple-card-title h3 {
+  margin: 0; /* Clear out default browser or h3 top margins */
+}
+
+/* --- Force Single Line Layout in Simple View --- */
+.matrix-grid.grid-simple-row {
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 12px;
+  width: 100%;
+  padding-bottom: 8px;
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar for a clean design */
+.matrix-grid.grid-simple-row::-webkit-scrollbar {
+  height: 6px;
+}
+.matrix-grid.grid-simple-row::-webkit-scrollbar-track {
+  background: transparent;
+}
+.matrix-grid.grid-simple-row::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* Soft gray */
+  border-radius: 10px;
+}
+
+/* --- Shrink the Card Widths in Simple View --- */
+.analytic-card-simple {
+  flex: 1;
+  min-width: 140px;          /* Prevents squishing on small screens */
+  max-width: 220px;          /* Prevents stretching too wide */
+  min-height: 0 !important;  /* CRITICAL: Overrides default 110px floor */
+  height: auto !important;   /* Force card to wrap children vertically */
+}
+
+.analytic-card.analytic-card-simple {
+  min-height: 0;           /* Allow it to shrink smaller than the detailed 110px min-height */
+  height: auto;            /* Shrink-wrap to contents vertically */
+}
+
+.analytic-card-simple .card-content.simple-card-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px !important; /* CRITICAL: Crops top/bottom empty space close */
+  box-sizing: border-box;
+  height: auto;
+}
+
+.analytic-card-simple .card-content {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px !important;
+}
+
+.simple-card-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.simple-card-title h3 {
+  margin: 0 !important;    /* Strip out any default block margins */
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.analytic-card-simple .donut-container {
+  width: 72px;            /* Set exact target width bounds */
+  max-width: 72px;        /* Strict cap override */
+  margin: 0;
+  flex-shrink: 0;         /* Prevent flex box from warping shape */
+}
+
 .donut-container {
   position: relative;
   width: 100%;
   /* Reduced max-width so it doesn't crowd the card sidebar */
   max-width: 90px; 
   aspect-ratio: 1 / 1;
-  margin: 0 auto;
+  /* margin: 0 auto; */
+
+  
 }
 
 .donut-svg {

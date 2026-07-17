@@ -12,8 +12,10 @@ import {
     cementTypeOptions,
     frStatuses,
     GSDC_NAVIGATE_TO_TRIP_key,
+    // BUSINESS_UNITS,
+    TRIP_GROUPS,
 } from '../truth.config';
-import { RefreshCcw, Download, Maximize2, X, Menu } from 'lucide-react';
+import { RefreshCcw, Download, Maximize2, X, Menu, Eye, EyeOff } from 'lucide-react';
 
 import { getContext } from "@microsoft/power-apps/app";
 
@@ -122,10 +124,12 @@ const OrderManagement: React.FC = () => {
     const [activeView, setActiveView] = useState<'dashboard' | 'form'>('dashboard');
 
     const [sidebarVisible, setSidebarVisible] = useState(false);
+    const [showCharts, setShowCharts] = useState<boolean>(true);
     const [showNewTripModal, setShowNewTripModal] = useState(false);
     const [showFuelRequestModal, setShowFuelRequestModal] = useState<FuelRequestModalState | null>(null);
     const [lastOdometer, setLastOdometer] = useState<string | null>(null);
     const [lastFuelReqOE, setLastFuelReqOE] = useState<string | null>(null);
+    // const [selectedBU, setSelectedBU] = useState<string>(user?.BusinessUnit || '');
 
     const formRef = useRef<OrderDistributionFormRef>(null);
 
@@ -970,11 +974,85 @@ const OrderManagement: React.FC = () => {
     }, [fetchFCTRoutes]);
 
 
-    const handleDonutInteraction = (event: any) => {
-        console.log("Filtering table by status:", event);
-        // This is where you could trigger a search or filter in your TableView
-        // For now, let's just log it to ensure the interaction works.
+    const [tableFilters, setTableFilters] = useState<Record<string, any>>({});
+    const encodeColumnName = (name: string): string => {
+        return name.replace(/[^a-zA-Z0-9_]|_(?=[xX])/g, (char) => {
+            const hex = char.charCodeAt(0).toString(16).padStart(4, '0');
+            return `_x${hex}_`;
+        });
     };
+
+    const capitalizeOnlyFirstLetter = (str: string): string => {
+        if (!str) return str;
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    };
+
+    const handleDonutInteraction = (chartClickData: { 
+    tripgroup: string; 
+    tripgroup_total: number; 
+    tripprogress: string | null; 
+    tripprogress_count: number | null; 
+    }) => {
+    if (!chartClickData) return;
+
+    const encodedTripGroupKey = encodeColumnName("_tripGroup");
+    const encodedProgressKey = encodeColumnName("TripProgress");
+
+    // Lookup the group configuration via ID or Label match
+    const matchedGroup = TRIP_GROUPS.find(
+        group => group.id === chartClickData.tripgroup || group.label === chartClickData.tripgroup
+    );
+
+    // Extract the label string if a match is found; fallback to raw data if not
+    const rawLabelValue = matchedGroup ? matchedGroup.label : chartClickData.tripgroup;
+
+    // Format the label: Only the first letter is capitalized, rest is lowercase
+    const formattedLabelValue = capitalizeOnlyFirstLetter(rawLabelValue);
+
+    setTableFilters(prevFilters => {
+        const nextFilters = { ...prevFilters };
+
+        // Inject the formatted label string value into the filter array
+        if (formattedLabelValue) {
+        nextFilters[encodedTripGroupKey] = [formattedLabelValue];
+        } else {
+        delete nextFilters[encodedTripGroupKey];
+        }
+
+        // Handle progress status mapping
+        if (chartClickData.tripprogress) {
+        nextFilters[encodedProgressKey] = [chartClickData.tripprogress];
+        } else {
+        delete nextFilters[encodedProgressKey];
+        }
+
+        return nextFilters;
+    });
+    };
+
+    const liveTripsTableConfig = useMemo(() => {
+        if (!LIVE_DMS_TABLE_CONFIG?.table_config) return [];
+
+        return LIVE_DMS_TABLE_CONFIG.table_config.map((column: ColumnConfig) => {
+            const encodedKey = encodeColumnName(column.col);
+            
+            if (tableFilters[encodedKey]) {
+            return {
+                ...column,
+                filter: {
+                ...column.filter,
+                type: column.filter?.type || "dropdown-multiple",
+                // Force inject the dynamic selections as default rules
+                default: tableFilters[encodedKey]
+                }
+            };
+            }
+            
+            // Return a clean structural copy to ensure the component recognizes the reference change
+            return { ...column };
+        });
+    }, [tableFilters]); // Listens intently to chart selections
+
 
     const handleExport = () => {
         console.log("Exporting order data...");
@@ -1011,7 +1089,29 @@ const OrderManagement: React.FC = () => {
 
     const actions = (
         <>  
-
+            {/* <span className="bu-label">Business Unit:</span>
+            <select 
+                className="bu-dropdown-title"
+                value={selectedBU}
+                onChange={(e) => {
+                    setSelectedBU(e.target.value);
+                }}
+            >
+                <option value="">Select BU</option>
+                {BUSINESS_UNITS.map((unit) => (
+                    <option key={unit.Title} value={unit.Title}>
+                        {unit.Title}
+                    </option>
+                ))}
+            </select> */}
+            <button 
+                className="header-btn secondary" 
+                onClick={() => setShowCharts(prev => !prev)}
+                style={{ minWidth: 110 }}
+            >   
+                {showCharts ? <EyeOff size={16} /> : <Eye size={16} />}
+                <span>{showCharts ? 'Hide Trip Groups' : 'Show Trip Groups'}</span>
+            </button>
             <button
                 className="header-btn primary"
                 onClick={() => setShowNewTripModal(true)}
@@ -1458,6 +1558,32 @@ const OrderManagement: React.FC = () => {
                 <Menu size={24} />
             </div>
 
+            
+
+            <div className='chart-stretch-wrapper' hidden={!showCharts}>
+                <div className="mini-dashboard-stack" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    <div className="chart-container-card" style={{ flex: 1, minWidth: 280 }}>
+                        {/* <h4 className="chart-title">Trip Distribution</h4> */}
+                        <TripGroup_DonutChart 
+                            key={selectedRange?.from || 'initial'}
+                            BU={null}
+                            fromStr={selectedRange?.from || ""} 
+                            toStr={selectedRange?.to || ""} 
+                            onChartClick={handleDonutInteraction}
+                            defaultView='simple'
+                            orientation='horizontal'
+                            highlight={null}
+                            showScrollX={false}
+                            showScrollY={true}
+                            defaultFilterOptions={{
+                                done: false // Starts unchecked
+                            }}
+                        />
+                    </div>
+                </div>
+            </div>
+
+
             <div
                 className="main-content-split"
                 id="main-content-split"
@@ -1479,7 +1605,6 @@ const OrderManagement: React.FC = () => {
                     }}
                     aria-hidden={!sidebarVisible}
                 >
-                    {/* NEW HEADER ROW */}
                     <div className="sidebar-header-row" style={{ 
                         display: 'flex', 
                         justifyContent: 'space-between', 
@@ -1488,17 +1613,12 @@ const OrderManagement: React.FC = () => {
                         height: '50px',
                         borderBottom: '1px solid rgba(0,0,0,0.05)'
                     }}>
-                        {/* LEFT SIDE: Tabs */}
-                        <div className="utility-tabs" style={{ marginBottom: 0, width: 'auto' }}>
-                            <div className={`tabs-pill-bg ${activeView}`}></div>
-                            <button className={`tab-btn ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => handleChangeActiveView('dashboard')}>Dashboard</button>
-                            <button className={`tab-btn ${activeView === 'form' ? 'active' : ''}`} onClick={() => handleChangeActiveView('form')}>Form</button>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-primary)' }}>
+                            Trip Form
                         </div>
 
-                        {/* RIGHT SIDE: Action Group */}
                         <div className="utility-actions">
-                            {/* Render Maximize first if you want it to the left of Close */}
-                            <div className={`utility-maximize ${activeView === 'form' ? 'show-icon' : ''}`}>
+                            <div className="utility-maximize show-icon">
                                 <button className="maximize-btn" onClick={() => setIsFormMaximized(true)}>
                                     <Maximize2 size={18} />
                                 </button>
@@ -1513,42 +1633,17 @@ const OrderManagement: React.FC = () => {
                     </div>
 
                     <div className="utility-content animate-fade-in">
-                        {activeView === 'dashboard' ? (
-                            <div className="mini-dashboard-stack">
-                                <div className="chart-container-card">
-                                    <h4 className="chart-title">Trip Distribution</h4>
-                                    <TripGroup_DonutChart 
-                                        key={selectedRange?.from || 'initial'}
-                                        BU={null}
-                                        fromStr={selectedRange?.from || ""} 
-                                        toStr={selectedRange?.to || ""} 
-                                        onChartClick={handleDonutInteraction}
-                                        orientation='vertical'
-                                    />
-                                </div>
-
-                                <div className="sidebar-stats-grid">
-                                    <div className="mini-stat">
-                                        <span className="stat-label">Total Loaded</span>
-                                        <span className="stat-value">{orders.length}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="order-form-compact">
-                                {/* Passed false here because this is the sidebar, not the modal */}
-                                {renderOrderForm(false)} 
-                            </div>
-                        )}
+                        <div className="order-form-compact">
+                            {renderOrderForm(false)} 
+                        </div>
                     </div>
                 </div>
-
 
             {/* RIGHT SIDE: Trips Table */}
             <div className={`table-main-area animate-table${sidebarVisible ? ' table-in' : ' table-out'}`}> 
                 <TableView
                     data={displayData}
-                    config={LIVE_DMS_TABLE_CONFIG.table_config as ColumnConfig[]}
+                    config={liveTripsTableConfig as ColumnConfig[]}
                     storageKey={`order_page_live_trips${user?.id}`}
                     searchCol={LIVE_DMS_TABLE_CONFIG.searchable_cols as string[]}
                     isLoading={loadingList[FETCH_LOADING_KEYS.trips] || false}

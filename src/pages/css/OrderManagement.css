@@ -51,17 +51,19 @@
   flex-direction: column;
   background: var(--color-bg);
   border-radius: 12px;
-  border: 1px solid var(--color-border);
   box-sizing: border-box;
   padding: 10px;
   min-height: 400px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   position: static;
-  max-height: none;
-  height: 100%;
-
+  
+  /* --- CHANGE THESE LINES --- */
+  height: fit-content;        /* Let it wrap naturally around the contents */
+  max-height: calc(100vh - 20px); /* Keeps it from expanding past the screen limits */
+  
   border: 1px solid var(--color-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 
@@ -196,6 +198,51 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* --- BU SELECTOR --- */
+.bu-label {
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.bu-dropdown-title {
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  padding: 4px 24px 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%233a4efc' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 5px center;
+  background-size: 14px;
+  vertical-align: baseline;
+  margin-left: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bu-dropdown-title:hover,
+.bu-dropdown-title:focus {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.bu-dropdown-title option {
+  background-color: var(--color-bg);
+  color: var(--color-darkslategray);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 8px;
 }
 
 /* --- STATUS PILLS --- */
@@ -449,7 +496,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  flex: 1 1 0%;
+  flex: 0 1 auto;
   position: relative;
 
   /* border: 1px solid red; /* debug */
@@ -457,13 +504,27 @@
 
 
 .order-form-compact {
-  height: 100%;
+  height: fit-content; /* Ensure the form view is snug when active too */
   position: relative; 
 }
 
 
 .mini-dashboard-stack {
-  overflow-y: auto;
+  overflow: hidden;
+  max-height: none;
+}
+
+.chart-stretch-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+  height: fit-content;
+  min-height: 0;
+  
+  /* --- The layout fixes for edge-to-edge width --- */
+  align-self: stretch; 
+  width: 100%;
 }
 
 
@@ -475,6 +536,15 @@
 
 .maximize-btn:active {
     transform: scale(0.95);
+}
+
+.chart-container-card {
+  flex: 1;
+  min-width: 280px;
+  width: fit-content;
+  height: fit-content !important;
+  min-height: 0 !important;
+  align-self: flex-start;
 }
 
 /* --- New Order Modal --- */

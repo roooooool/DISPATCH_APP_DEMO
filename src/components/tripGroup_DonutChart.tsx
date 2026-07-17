@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { Loader2, MoreVertical } from 'lucide-react';
 import LoadingOverlay from './LoadingOverlay_navblue'; 
 import './comp_css/tripGroup_DonutChart.css';
 
@@ -52,17 +53,71 @@ interface GridProps {
   fromStr: string;
   toStr: string;
   orientation?: 'horizontal' | 'vertical';
+  showScrollX?: boolean;
+  showScrollY?: boolean;
+  defaultView?: 'simple' | 'detailed';
+  highlight?: string | null;
   onChartClick?: (data: { 
     tripgroup: string; 
     tripgroup_total: number; 
     tripprogress: string | null; 
     tripprogress_count: number | null 
   }) => void;
+  defaultFilterOptions?: {
+    assigned?: boolean;
+    source?: boolean;
+    destination?: boolean;
+    done?: boolean;
+  };
 }
 
-const TripGroup_DonutChart: React.FC<GridProps> = ({ BU, fromStr, toStr, onChartClick, orientation = 'horizontal' }) => {
+const TripGroup_DonutChart: React.FC<GridProps> = ({
+  BU,
+  fromStr,
+  toStr,
+  onChartClick,
+  defaultView = 'detailed',
+  orientation = 'horizontal',
+  highlight = null,
+  showScrollX = true,
+  showScrollY = true,
+  defaultFilterOptions,
+}) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'simple' | 'detailed'>(defaultView);
+  const [showSettings, setShowSettings] = useState(false);
+  const [visibleStatuses, setVisibleStatuses] = useState({
+    assigned: true,
+    source: true,
+    destination: true,
+    done: true,
+    ...defaultFilterOptions
+  });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
+
+  const toggleSettingsMenu = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      // Position menu directly under the gear button, right aligned to it
+      setCoords({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.right + window.scrollX - 180 // 180 is menu min-width
+      });
+    }
+    setShowSettings((prev) => !prev);
+  };
+
+  // Close the popup dropdown if the user resizes the layout window
+  useEffect(() => {
+    const handleResize = () => setShowSettings(false);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -91,6 +146,45 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({ BU, fromStr, toStr, onChart
     }
   }, [BU, fromStr, toStr]);
 
+  useEffect(() => {
+    if (!showSettings) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      
+      // Check if the click happened outside both the trigger button and the portal menu layout
+      if (
+        buttonRef.current && !buttonRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
+        setShowSettings(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [showSettings]);
+
+  useEffect(() => {
+    if (!highlight) {
+      setActiveHighlight(null);
+      return;
+    }
+
+    // Find if the passed highlight is an ID or a Label from TRIP_GROUPS
+    const matchedGroup = TRIP_GROUPS.find(
+      (g) => g.id.toLowerCase() === highlight.toLowerCase() || g.label.toLowerCase() === highlight.toLowerCase()
+    );
+
+    if (matchedGroup) {
+      setActiveHighlight(matchedGroup.id);
+    } else {
+      setActiveHighlight(null);
+    }
+  }, [highlight]);
+
   /* --- AGGREGATION LOGIC --- */
   // Instead of taking data[0], we reduce the entire array into a single "totals" object
   const aggregatedTotals = data.reduce((acc, currentRow) => {
@@ -109,27 +203,106 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({ BU, fromStr, toStr, onChart
 
   const tripGroups = TRIP_GROUPS;
 
+  const containerStyle: React.CSSProperties = {
+    overflowX: showScrollX ? 'auto' : 'hidden',
+    overflowY: showScrollY ? 'auto' : 'hidden',
+  };
+
+  const gridStyle: React.CSSProperties = {
+    overflowX: showScrollX ? 'auto' : 'hidden',
+    overflowY: showScrollY ? 'auto' : 'hidden',
+  };
+
   return (
-    <div className={`grid-container-relative`}>
+    <div className={`grid-container-relative`} style={containerStyle}>
+
+        <div className="chart-settings-wrapper">
+          <button
+            ref={buttonRef}
+            className="chart-settings-button"
+            onClick={toggleSettingsMenu} 
+            aria-label="Chart view settings"
+          >
+            <MoreVertical size={16} strokeWidth={2} color='var(--color-primary)' />
+          </button>
+
+          {showSettings && createPortal(
+          <div 
+            ref={menuRef}
+            className="chart-settings-dropdown-portal" 
+            style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="settings-section-title">View Mode</div>
+            <button
+              className={`chart-settings-option ${viewMode === 'detailed' ? 'active' : ''}`}
+              onClick={() => { setViewMode('detailed');  }}
+            >
+              Detailed
+            </button>
+            <button
+              className={`chart-settings-option ${viewMode === 'simple' ? 'active' : ''}`}
+              onClick={() => { setViewMode('simple');  }}
+            >
+              Simple
+            </button>
+
+            <div className="settings-divider"></div>
+            <div className="settings-section-title" style={{ color: 'var(--color-primary)' }}>Filter Status</div>
+            
+            {(['assigned', 'source', 'destination', 'done'] as const).map((status) => {
+              const labelMap = { assigned: 'Assigned', source: 'To Source', destination: 'To Dest', done: 'Done' };
+              return (
+                <label key={status} className="chart-filter-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={visibleStatuses[status]}
+                    onChange={(e) => setVisibleStatuses(prev => ({ ...prev, [status]: e.target.checked }))}
+                  />
+                  <span>{labelMap[status]}</span>
+                </label>
+              );
+            })}
+          </div>,
+          document.body // Appends the menu cleanly outside your relative grid containers
+        )}
+      </div>
+   
+
       {loading && (
         <div className="grid-loader-wrapper">
            <LoadingOverlay message="Generating Chart Data..." bgColor="rgba(255, 255, 255, 0.2)" blur={2} size="md" />
         </div>
       )}
 
-      <div className={`matrix-grid ${loading ? 'grid-blur' : ''} grid-${orientation}`}>
+      <div 
+        className={`matrix-grid ${loading ? 'grid-blur' : ''} grid-${orientation} ${
+          viewMode === 'simple' ? 'grid-simple-row' : ''
+        }`}
+        style={gridStyle}
+      >
         {tripGroups.map((group) => {
-          // Use aggregatedTotals instead of row
+          // 1. Get real values or default to 0
+          const realAssigned = Number(aggregatedTotals[`Assigned_${group.id}`] || 0);
+          const realSrc = Number(aggregatedTotals[`DispSrc_${group.id}`] || 0);
+          const realDst = Number(aggregatedTotals[`DispDst_${group.id}`] || 0);
+          const realDone = Number(aggregatedTotals[`Done_${group.id}`] || 0);
+
+          // 2. Filter values depending on what checkboxes are checked
           const stats = {
-            assigned: Number(aggregatedTotals[`Assigned_${group.id}`] || 0),
-            src: Number(aggregatedTotals[`DispSrc_${group.id}`] || 0),
-            dst: Number(aggregatedTotals[`DispDst_${group.id}`] || 0),
-            done: Number(aggregatedTotals[`Done_${group.id}`] || 0),
+            assigned: visibleStatuses.assigned ? realAssigned : 0,
+            source: visibleStatuses.source ? realSrc : 0,
+            destination: visibleStatuses.destination ? realDst : 0,
+            done: visibleStatuses.done ? realDone : 0,
           };
           
-          const total = stats.assigned + stats.src + stats.dst + stats.done;
+          // Calculate total dynamically using only active status items
+          const total = stats.assigned + stats.source + stats.destination + stats.done;
 
           const handleClick = (progress: string | null, count: number | null) => {
+            // When clicked, highlight this group specifically
+            setActiveHighlight(group.id);
+
             if (onChartClick) {
               onChartClick({
                 tripgroup: group.id,
@@ -140,39 +313,81 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({ BU, fromStr, toStr, onChart
             }
           };
 
+          // Check highlight states
+          const isHighlighted = activeHighlight === group.id;
+          const hasAnyHighlight = activeHighlight !== null;
+
           return (
-            <div key={group.id} className="analytic-card">
-              <div className="card-sidebar">
-                <div className="card-stat card-stat clickable" onClick={() => handleClick("Assigned", stats.assigned)}>
-                  <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.assigned }}></span>Assigned</span> 
-                  <b>{stats.assigned}</b>
+            <div 
+              key={group.id} 
+              className={`analytic-card ${
+                viewMode === 'simple' ? 'analytic-card-simple' : 'analytic-card-detailed'
+              } ${isHighlighted ? 'highlighted' : ''} ${
+                hasAnyHighlight && !isHighlighted ? 'dimmed' : ''
+              }`}
+            >
+              {viewMode === 'detailed' ? (
+                <>
+                  <div className="card-sidebar">
+                    {/* 3. Conditionally render standard label lists if checked */}
+                    {visibleStatuses.assigned && (
+                      <div className="card-stat clickable" onClick={() => handleClick("Assigned", stats.assigned)}>
+                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.assigned }}></span>Assigned</span> 
+                        <b>{stats.assigned}</b>
+                      </div>
+                    )}
+                    {visibleStatuses.source && (
+                      <div className="card-stat clickable" onClick={() => handleClick("Dispatched To Source", stats.source)}>
+                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.source }}></span>To Source</span> 
+                        <b>{stats.source}</b>
+                      </div>
+                    )}
+                    {visibleStatuses.destination && (
+                      <div className="card-stat clickable" onClick={() => handleClick("Dispatched To Destination", stats.destination)}>
+                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.destination }}></span>To Dest</span> 
+                        <b>{stats.destination}</b>
+                      </div>
+                    )}
+                    {visibleStatuses.done && (
+                      <div className="card-stat clickable" onClick={() => handleClick("Done", stats.done)}>
+                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.done }}></span>Done</span> 
+                        <b>{stats.done}</b>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="card-content clickable" onClick={() => handleClick(null, null)}>
+                    <DonutChart 
+                      isLoading={loading} 
+                      total={total} 
+                      segments={[
+                        { value: stats.assigned, color: STATUS_COLORS.assigned },
+                        { value: stats.source, color: STATUS_COLORS.source },
+                        { value: stats.destination, color: STATUS_COLORS.destination },
+                        { value: stats.done, color: STATUS_COLORS.done }
+                      ]} 
+                    />
+                    <h3>{group.label}</h3>
+                  </div>
+                </>
+              ) : (
+                /* Simple View Block mapping */
+                <div className="card-content simple-card-content clickable" onClick={() => handleClick(null, null)}>
+                  <div className="simple-card-title">
+                    <h3>{group.label}</h3>
+                  </div>
+                  <DonutChart 
+                    isLoading={loading} 
+                    total={total} 
+                    segments={[
+                      { value: stats.assigned, color: STATUS_COLORS.assigned },
+                      { value: stats.source, color: STATUS_COLORS.source },
+                      { value: stats.destination, color: STATUS_COLORS.destination },
+                      { value: stats.done, color: STATUS_COLORS.done }
+                    ]} 
+                  />
                 </div>
-                <div className="card-stat card-stat clickable" onClick={() => handleClick("Dispatched To Source", stats.src)}>
-                  <span><span className="dot"  style={{ backgroundColor: STATUS_COLORS.source }}></span>To Source</span> 
-                  <b>{stats.src}</b>
-                </div>
-                <div className="card-stat card-stat clickable" onClick={() => handleClick("Dispatched To Destination", stats.dst)}>
-                  <span><span className="dot"  style={{ backgroundColor: STATUS_COLORS.destination }}></span>To Dest</span> 
-                  <b>{stats.dst}</b>
-                </div>
-                <div className="card-stat card-stat clickable" onClick={() => handleClick("Done", stats.done)}>
-                  <span><span className="dot"  style={{ backgroundColor: STATUS_COLORS.done }}></span>Done</span> 
-                  <b>{stats.done}</b>
-                </div>
-              </div>
-              <div className="card-content clickable" onClick={() => handleClick(null, null)}>
-                <DonutChart 
-                  isLoading={loading} 
-                  total={total} 
-                  segments={[
-                    { value: stats.assigned, color: STATUS_COLORS.assigned },
-                    { value: stats.src, color: STATUS_COLORS.source },
-                    { value: stats.dst, color: STATUS_COLORS.destination },
-                    { value: stats.done, color: STATUS_COLORS.done }
-                  ]} 
-                />
-                <h3>{group.label}</h3>
-              </div>
+              )}
             </div>
           );
         })}

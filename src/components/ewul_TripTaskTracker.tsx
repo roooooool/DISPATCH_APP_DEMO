@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { ClipboardList, ChevronDown, ChevronRight, CheckCircle2, Circle, RotateCw, Search, X, XCircle, FilterX, CheckCheck, Check} from 'lucide-react';
+import { ClipboardList, ChevronDown, ChevronRight, CheckCircle2, Circle, RotateCw, Search, X, XCircle, FilterX, Check} from 'lucide-react';
 import './comp_css/ewul_TripTaskTracker.css';
 import { ewulFetchAll, ewul_canFetch as canFetch, formatDate } from '../utils/Ewul_GSDC_Utils';
 import Modal from './ewul_Modal';
