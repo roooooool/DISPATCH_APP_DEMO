@@ -1,14 +1,15 @@
 /* --- Container & Grid Logic --- */
-.grid-container-relative {
+.donut-grid-container-relative {
   position: relative;
   width: 100%;
-  height: 100%;
-  /* Removed the 400px floor to allow the dashboard panel to dictate height */
-  min-height: 150px; 
-  flex: 1;
+  height: fit-content !important;
+  min-height: 0px; 
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
+  margin-bottom: 0;
 
+  /* background-color: red; */
 }
 
 .matrix-grid {
@@ -18,11 +19,12 @@
   width: 100%;
   box-sizing: border-box;
   align-items: start;
-  scrollbar-width: none;
+  align-content: start;
 }
 
 .matrix-grid::-webkit-scrollbar {
-  display: none;
+  height: 6px;
+  width: 6px;
 }
 
 .matrix-grid.grid-horizontal {
@@ -77,6 +79,8 @@
   min-height: 0;   /* Removes the 110px floor entirely */
   height: auto;    /* Tells the card to only be as tall as its children */
 }
+
+
 
 .analytic-card.highlighted {
   transform: translateY(-8px) scale(1.03); /* Distinctly lifts and expands the card above the rest */

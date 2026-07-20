@@ -50,7 +50,7 @@ import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFM
 // Custom Components
 import TableView,  { type ColumnConfig, type scrollToConfig, encodeColumnName as enc } from '../components/ewul_TableFlex';
 import DateRangePicker from '../components/ewul_DateRangePicker';
-import TripGroup_DonutChart from '../components/tripGroup_DonutChart'; 
+import TripGroup_DonutChart, { type TripGroupDonutChartRef } from '../components/tripGroup_DonutChart'; 
 import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
 import Modal from '../components/ewul_Modal';
 import AutoDismissBanner from '../components/ewul_Banner';
@@ -132,6 +132,7 @@ const OrderManagement: React.FC = () => {
     // const [selectedBU, setSelectedBU] = useState<string>(user?.BusinessUnit || '');
 
     const formRef = useRef<OrderDistributionFormRef>(null);
+    const donutChartRef = useRef<TripGroupDonutChartRef>(null);
 
 
     const [searchParams, _setSearchParams] = useSearchParams();
@@ -313,6 +314,14 @@ const OrderManagement: React.FC = () => {
 
     }, [selectedRangeNewOrders]);
     fetchCIFMEOrders(); // Call it once on component mount to load initial data
+
+
+    const handleGlobalRefresh = async () => {
+        if (donutChartRef.current) {
+        // Execute the child's internal data fetch call smoothly
+        await donutChartRef.current.refresh();
+        }
+    };
 
 
 
@@ -909,37 +918,82 @@ const OrderManagement: React.FC = () => {
         setSelectedOrder({...selectedOrder, CIFME_OE: order.OE, CIFME_DESTINATION: order.DestiName});
     };
 
-    // useEffect(() => {
-    //     generateTripTicketID();
-    //     generateAdditionalOE('Preload');
-    //     generateAdditionalOE('Mobilization');
-    // }, []); // Call once on mount to have it ready for when the user clicks Preload or Mobilization
+    const [cooldown, setCooldown] = useState<number>(0);
+    const clickStreakRef = useRef<number>(0);
+    const streakTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        if (cooldown <= 0) return;
+
+        const timer = setInterval(() => {
+            setCooldown((prev) => Math.max(0, prev - 1));
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [cooldown]);
 
     // MAIN REFRESH
     const handleRefresh = useCallback( () => {
 
         fetchTruckList();
-
         fetchDriverHelperList();
-
         generateTripTicketID();
-
         generateAdditionalOE('Preload');
-
         generateAdditionalOE('Mobilization');
-
         fetchTrips();
-
         // fetchLSThisMonth();
-
         //fetchSourceList();
-
         fetchFCTRoutes();
-
+        handleGlobalRefresh();
 
     },[]); 
 
+    const TIME_PENALTY = 5;
+    const MAX_PENALTY = 30;
+    const handleRefreshWithCooldown = async () => {
+        // 1. Guard against clicking during active cooldown
+        if (cooldown > 0 || isAnythingLoading()) {
+            // If their streak is greater than 1, they are suffering from a spam penalty
+            if (clickStreakRef.current > 1) {
+                setBannerMessage(`You are clicking too fast! Please wait ${cooldown} sec/s for cooling down.`);
+            } else {
+                setBannerMessage(`Please wait ${cooldown} sec/s while we fetch data for you.`);
+            }
 
+            setTimeout(() => {
+                setBannerMessage(null);
+            }, 4000);
+            return;
+        }
+
+        // 2. Clear any existing timeout that resets the spam streak
+        if (streakTimeoutRef.current) clearTimeout(streakTimeoutRef.current);
+
+        // 3. Increment the click streak tracking spam
+        clickStreakRef.current += 1;
+
+        // 4. Calculate dynamic cooldown: Base 3s + 5s extra per streak level beyond the first click
+        const baseCooldown = 3;
+        const penalty = (clickStreakRef.current - 1) * TIME_PENALTY; // <-- CHANGED TO +5 SECONDS
+        const totalCooldown = baseCooldown + penalty;
+
+        // 5. Trigger your actual refresh logic
+        await handleRefresh();
+
+        // 6. Lock the button
+        setCooldown(totalCooldown);
+
+        /* --- THE DYNAMIC TRAP WINDOW --- */
+        // Base trap window is 8s, adding 5s per extra streak level, capping it at 15s max (15000ms)
+        const baseTrapWindowMs = 8000;
+        const trapPenaltyMs = (clickStreakRef.current - 1) * (TIME_PENALTY*1000); // Scales up cleanly with your penalty
+        const dynamicTrapWindow = Math.min(baseTrapWindowMs + trapPenaltyMs, (MAX_PENALTY*1000));
+
+        // 7. Reset the streak if they manage to stay cool for the duration of the dynamic window
+        streakTimeoutRef.current = setTimeout(() => {
+            clickStreakRef.current = 0;
+        }, dynamicTrapWindow);
+    };
 
     useEffect(() => {
         handleRefresh();
@@ -984,12 +1038,31 @@ const OrderManagement: React.FC = () => {
 
     const capitalizeOnlyFirstLetter = (str: string): string => {
         if (!str) return str;
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+        // 1. Lowercase the entire string first
+        const lowercased = str.toLowerCase();
+        
+        // 2. Capitalize just the absolute first character of the string
+        const processedStr = lowercased.charAt(0).toUpperCase() + lowercased.slice(1);
+        console.log(processedStr)
+        // 3. Split by words to find and replace any variant of "fb" with "FB"
+        return processedStr
+            .split(/\s+/)
+            .map((word) => {
+            // If the word matches "fb" (since we lowercased everything), force it to "FB"
+            // We check strip punctuation if FB might be attached to a comma/dash, 
+            // but if it's standalone, a simple check works:
+            if (word === 'fb') {
+                return 'FB';
+            }
+            return word;
+            })
+            .join(' ');
     };
 
     const handleDonutInteraction = (chartClickData: { 
-    tripgroup: string; 
-    tripgroup_total: number; 
+    tripgroup: string | null; 
+    tripgroup_total: number | null; 
     tripprogress: string | null; 
     tripprogress_count: number | null; 
     }) => {
@@ -998,28 +1071,30 @@ const OrderManagement: React.FC = () => {
     const encodedTripGroupKey = encodeColumnName("_tripGroup");
     const encodedProgressKey = encodeColumnName("TripProgress");
 
-    // Lookup the group configuration via ID or Label match
-    const matchedGroup = TRIP_GROUPS.find(
-        group => group.id === chartClickData.tripgroup || group.label === chartClickData.tripgroup
-    );
-
-    // Extract the label string if a match is found; fallback to raw data if not
-    const rawLabelValue = matchedGroup ? matchedGroup.label : chartClickData.tripgroup;
-
-    // Format the label: Only the first letter is capitalized, rest is lowercase
-    const formattedLabelValue = capitalizeOnlyFirstLetter(rawLabelValue);
-
     setTableFilters(prevFilters => {
         const nextFilters = { ...prevFilters };
 
-        // Inject the formatted label string value into the filter array
+        // If tripgroup is null, completely purge both filters to reset back to default
+        if (chartClickData.tripgroup === null) {
+        delete nextFilters[encodedTripGroupKey];
+        delete nextFilters[encodedProgressKey];
+        return nextFilters;
+        }
+
+        // Otherwise, carry out normal resolution & filter adjustments
+        const matchedGroup = TRIP_GROUPS.find(
+        group => group.id === chartClickData.tripgroup || group.label === chartClickData.tripgroup
+        );
+
+        const rawLabelValue = matchedGroup ? matchedGroup.label : chartClickData.tripgroup;
+        const formattedLabelValue = capitalizeOnlyFirstLetter(rawLabelValue);
+
         if (formattedLabelValue) {
         nextFilters[encodedTripGroupKey] = [formattedLabelValue];
         } else {
         delete nextFilters[encodedTripGroupKey];
         }
 
-        // Handle progress status mapping
         if (chartClickData.tripprogress) {
         nextFilters[encodedProgressKey] = [chartClickData.tripprogress];
         } else {
@@ -1138,12 +1213,14 @@ const OrderManagement: React.FC = () => {
                 <span>Export CSV</span>
             </button>
             <button 
-                className={`header-btn primary ${isAnythingLoading() ? 'spinning' : ''}`} 
-                onClick={handleRefresh}
-                disabled={isAnythingLoading()}
+                className={`header-btn primary ${cooldown > 0 ? 'spinning' : ''}`} 
+                onClick={handleRefreshWithCooldown}
+                // disabled={cooldown > 0}
             >
                 <RefreshCcw size={16} />
-                <span>Refresh</span>
+                <span>
+                    {cooldown > 0  ? `Wait ${cooldown}s...` : 'Refresh'}
+                </span>
             </button>
         </>
     );
@@ -1549,6 +1626,7 @@ const OrderManagement: React.FC = () => {
             actions={actions} 
             overflowY={true}
         >
+            <div className="order-management-page">
             {/* Sidebar Toggle Tab */}
             <div 
                 title='Open DMS Form/Dashboard'
@@ -1561,10 +1639,11 @@ const OrderManagement: React.FC = () => {
             
 
             <div className='chart-stretch-wrapper' hidden={!showCharts}>
-                <div className="mini-dashboard-stack" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                <div className="mini-dashboard-stack" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
                     <div className="chart-container-card" style={{ flex: 1, minWidth: 280 }}>
                         {/* <h4 className="chart-title">Trip Distribution</h4> */}
                         <TripGroup_DonutChart 
+                            ref={donutChartRef}
                             key={selectedRange?.from || 'initial'}
                             BU={null}
                             fromStr={selectedRange?.from || ""} 
@@ -1600,38 +1679,26 @@ const OrderManagement: React.FC = () => {
                         opacity: sidebarVisible ? 1 : 0,
                         transition: 'all 0.35s cubic-bezier(.4,2,.6,1), opacity 0.25s',
                         zIndex: 2,
-                        display: !sidebarVisible && isMobile ? 'none' : 'flex',
-                        flexDirection: 'column'
+                        display: !sidebarVisible && isMobile ? 'none' : 'flex'
                     }}
                     aria-hidden={!sidebarVisible}
                 >
-                    <div className="sidebar-header-row" style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        padding: '0 8px',
-                        height: '50px',
-                        borderBottom: '1px solid rgba(0,0,0,0.05)'
-                    }}>
-                        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-primary)' }}>
-                            Trip Form
+                    {/* FLOATING ACTION UTILITIES */}
+                    <div className="utility-floating-actions">
+                        <div className="utility-maximize show-icon">
+                            <button className="maximize-btn" onClick={() => setIsFormMaximized(true)}>
+                                <Maximize2 size={16} />
+                            </button>
                         </div>
 
-                        <div className="utility-actions">
-                            <div className="utility-maximize show-icon">
-                                <button className="maximize-btn" onClick={() => setIsFormMaximized(true)}>
-                                    <Maximize2 size={18} />
-                                </button>
-                            </div>
-
-                            <div className="utility-close">
-                                <button className="close-btn" onClick={() => setSidebarVisible(false)}>
-                                    <X size={20} />
-                                </button>
-                            </div>
+                        <div className="utility-close">
+                            <button className="close-btn" onClick={() => setSidebarVisible(false)}>
+                                <X size={18} />
+                            </button>
                         </div>
                     </div>
 
+                    {/* CONTENT AREA */}
                     <div className="utility-content animate-fade-in">
                         <div className="order-form-compact">
                             {renderOrderForm(false)} 
@@ -2058,6 +2125,7 @@ const OrderManagement: React.FC = () => {
             />
             )}
         
+        </div>
         </div>
     </PageTemplate>
     );

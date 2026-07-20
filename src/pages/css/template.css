@@ -125,7 +125,7 @@
 
   /* From theme.css: Visual styling */
   background: color-mix(in srgb, var(--color-bg) 80%, transparent 40%);
-  padding: 1.5rem;
+  padding: 0.5rem;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 128, 0.05);

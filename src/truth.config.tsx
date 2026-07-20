@@ -168,6 +168,12 @@ export const NAV_DESTINATIONS = [
     hidden: false
   },
   { 
+    label: "Order Distribution", 
+    path: "/order-dist", 
+    whiteList: ["OD", 'DCC', 'LCC'],
+    hidden: false
+  },
+  { 
     label: "Trip Dispatch", 
     path: "/order", 
     whiteList: ["OD","Coor", 'DCC', 'LCC'],
@@ -400,6 +406,7 @@ export const TRIP_STATUSES = [
 // Attendance Statuses
 export const ATTENDANCE_STATUSES = [
 
+  //ANY
   { seq: 0.0, Status: 'ABSENT', Alias: 'ABSENT', onduty: false, sort: 1.0  }, // ABSENT
   { seq: 1.1, Status: "PRESENT", Alias: "PRESENT", onduty: true, sort: 0.0 },
 
@@ -1353,6 +1360,30 @@ export const CIFME_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
   searchable_cols: ["OE", "SourceName", "DestiName"] as const
 
 }
+
+
+const formatDateStr = (date: Date): string => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+export const ALLOWED_DATE_CLICK = {
+  get startDate(): string {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return formatDateStr(date);
+  },
+  
+  get endDate(): string {
+    return formatDateStr(new Date());
+  }
+};
+
+export const NOT_ALLOWED_STAT_EDIT = [
+  "SERVED"
+];
 
 
 

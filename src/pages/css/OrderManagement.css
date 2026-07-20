@@ -31,16 +31,33 @@
   75% { transform: translateX(-2px); }
   100% { transform: translateX(0); }
 }
+
 .main-content-split {
   display: flex;
   gap: 5px;
-  align-items: flex-start; /* This is the "snug fit" secret */
+  align-items: stretch;
   width: 100%;
-  margin-top: 10px;
-  height: 100vh;
-  min-height: 0;
-  /*overflow-y: auto;*/
-  /*border: 1px solid #010c1b; /* debug */
+  margin-top: 2px;
+  
+  /* --- KEY CHANGE --- */
+  /* This guarantees it always occupies the full remaining viewport, */
+  /* even if parent containers try to squeeze it. */
+  height: calc(100vh - 180px); 
+  min-height: calc(100vh - 180px); 
+}
+
+.order-management-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  background-color: var(--color-bg); /* White bg */
+  
+  /* --- KEY CHANGE --- */
+  min-height: 100vh; /* Cover at least the screen */
+  height: auto;      /* Let the page stretch naturally */
+  overflow-y: auto;  /* Enable scrollbars only when content exceeds the viewport */
 }
 
 
@@ -49,20 +66,20 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg);
-  border-radius: 12px;
+  background: var(--color-bg); /* white bg */
+  border-radius: 12px; /* Gentle design rounded corners */
   box-sizing: border-box;
   padding: 10px;
   min-height: 400px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow: hidden; /* Hide outer bounds */
   position: static;
   
-  /* --- CHANGE THESE LINES --- */
-  height: fit-content;        /* Let it wrap naturally around the contents */
-  max-height: calc(100vh - 20px); /* Keeps it from expanding past the screen limits */
+  /* --- CHANGED LINES --- */
+  height: 100%; /* Force fill container boundaries */
+  max-height: 100%;
   
-  border: 1px solid var(--color-primary);
+  border: 1px solid var(--color-primary); /* Navy blue border */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -90,8 +107,8 @@
   height: 100%;
   min-height: 0;
   background: var(--color-bg);
-  border-radius: 12px;
-  overflow: auto;
+  border-radius: 12px; /* Gentle design rounded corners */
+  overflow: hidden; /* Let ewul_TableFlex manage its own scrolling interior */
 }
 
 /* Table area show/hide animation - reduced duration, no scale */
@@ -490,28 +507,129 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.management-sidebar {
+  position: relative; /* Crucial anchor for our absolute floating buttons */
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.utility-floating-actions {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.utility-floating-actions button {
+  background: #ffffff;
+  border: 1px solid rgba(9, 33, 98, 0.08); /* Soft baseline border */
+  border-radius: 8px; /* Smooth, gentle layout corners */
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(9, 33, 98, 0.12);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+/* Highlight behaviors tailored to primary vs secondary utility */
+.utility-floating-actions .maximize-btn {
+  color: var(--color-primary, #092162);
+}
+
+.utility-floating-actions .close-btn {
+  color: #64748b;
+}
+
+/* Hover scales and lifting interactions */
+.utility-floating-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(9, 33, 98, 0.18);
+  background: #fdfdfe;
+}
+
+.utility-floating-actions .close-btn:hover {
+  color: #e53935; /* Changes close marker to brand accent color on hover */
+  border-color: rgba(229, 57, 53, 0.2);
+}
+
+.utility-floating-actions .maximize-btn:hover {
+  border-color: rgba(9, 33, 98, 0.2);
+}
+
+.utility-floating-actions button:active {
+  transform: scale(0.96);
+}
+
+
+
+.order-form-compact {
+  height: 100%;
+  width: 100%;
+}
+
 
 .utility-content {
-  overflow: hidden;
+  overflow-y: auto; /* Enable safe scrolling for long forms */
   height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   position: relative;
-
-  /* border: 1px solid red; /* debug */
 }
 
 
 .order-form-compact {
-  height: fit-content; /* Ensure the form view is snug when active too */
+  height: auto;
   position: relative; 
 }
 
-
 .mini-dashboard-stack {
-  overflow: hidden;
+  overflow: auto;
   max-height: none;
+
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+
+  scroll-snap-type: y mandatory;
+}
+
+/* On hover, swap the thumb back to your gentle design theme color */
+.mini-dashboard-stack:hover {
+  scrollbar-color: #cbd5e1 transparent; /* Slate gray thumb, transparent track */
+}
+
+/* --- 2. WEBKIT BROWSERS (Chrome, Safari, Edge) --- */
+.mini-dashboard-stack::-webkit-scrollbar {
+  width: 6px;  /* Vertical scrollbar footprint */
+  height: 6px; /* Horizontal scrollbar footprint */
+}
+
+.mini-dashboard-stack::-webkit-scrollbar-track {
+  background: transparent; /* Track stays invisible */
+}
+
+.mini-dashboard-stack::-webkit-scrollbar-thumb {
+  background: transparent; /* Shuts off visibility by default */
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+/* Reveal the thumb when the parent layout stack is hovered */
+.mini-dashboard-stack:hover::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* Smoothly lights up on hover */
+}
+
+/* Optional: Darken slightly when user is actively dragging it */
+.mini-dashboard-stack::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; 
 }
 
 .chart-stretch-wrapper {
@@ -539,7 +657,7 @@
 }
 
 .chart-container-card {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 280px;
   width: fit-content;
   height: fit-content !important;

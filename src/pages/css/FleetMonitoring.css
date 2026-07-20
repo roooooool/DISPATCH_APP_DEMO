@@ -252,3 +252,24 @@
   overflow: hidden;
 }
 
+/* Navy Blue primary backdrop, White text, Red border accent line */
+.fleet-action-btn.active-highlight {
+  background-color: #00082d; /* Primary Navy Blue */
+  color: #ffffff;
+  border: 1px solid #3a4efc; /* Primary 2nd Blue */
+  position: relative;
+  font-weight: 600;
+}
+
+/* Optional design accent: Red bottom border tag to signify active module */
+.fleet-action-btn.active-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background: var(--color-red, #ff0000); /* Accent sub color */
+  border-radius: 2px 2px 0 0;
+}
+

@@ -1,8 +1,14 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Sp_fetchAttendanceCalendar2Service } from '../generated/services/Sp_fetchAttendanceCalendar2Service';
+import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
 import LoadingOverlay from '../components/LoadingOverlay_navblue';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon } from 'lucide-react';
 import '../components/comp_css/ewul_AttendanceSheet.css';
+import {
+  ATTENDANCE_STATUSES,
+  ALLOWED_DATE_CLICK,
+  NOT_ALLOWED_STAT_EDIT,
+} from '../truth.config';
 
 interface AttendanceRecord {
   EmployeeName: string;
@@ -13,6 +19,98 @@ interface AttendanceRecord {
   Position: string;
   ModifiedAt: string | null;
 }
+
+const AttendanceCell = React.memo(({ 
+  dateStr, 
+  dayOfWeek, 
+  isWeekend, 
+  isToday, 
+  displayEntries, 
+  searchTerm, 
+  empName,     
+  oeValue,    
+  empMetaId,   
+  onCellClick,
+  isActiveMenuCell
+}: {
+  dateStr: string;
+  dayOfWeek: number;
+  isWeekend: boolean;
+  isToday: boolean;
+  displayEntries: any[];
+  searchTerm: string;
+  empName: string;
+  oeValue: string;
+  empMetaId: string;
+  onCellClick: (e: React.MouseEvent, empName: string, empId: string, currentOE: string, dateStr: string, currentStatus: string, oeValue: string) => void;
+  isActiveMenuCell?: boolean;
+}) => {
+
+  const lastEntry = displayEntries.length > 0 ? displayEntries[displayEntries.length - 1] : null;
+  const currentStatus = lastEntry?.AttendanceStatus || 'ABSENT';
+
+  const isDateAllowed = 
+    dateStr >= ALLOWED_DATE_CLICK.startDate && 
+    dateStr <= ALLOWED_DATE_CLICK.endDate;
+
+  // 🟢 2. Check Attendance Status Validity
+  const isStatusAllowed = !NOT_ALLOWED_STAT_EDIT.includes(currentStatus.toUpperCase());
+
+  // Combined rule flag
+  const isEditable = isDateAllowed && isStatusAllowed;
+
+
+  return (
+    <td 
+      className={`status-cell 
+        ${isToday ? 'today-cell' : ''} 
+        ${isWeekend ? 'weekend-cell' : ''}
+        ${dayOfWeek === 0 ? 'sunday-cell' : ''}
+        ${isActiveMenuCell ? 'menu-active-cell' : ''}
+        ${!isEditable ? 'cell-disabled' : ''}
+      `}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!isEditable) return; // only allow editable cells
+        const lastEntry = displayEntries.length > 0 ? displayEntries[displayEntries.length - 1] : null;
+        const empId = lastEntry?.EmployeeID || empMetaId || '0';
+        const currentOE = lastEntry?.OE || lastEntry?.DMS_OE || oeValue || '';
+        const currentStatus = lastEntry?.AttendanceStatus || 'ABSENT';
+
+        onCellClick(e, empName, String(empId), currentOE, dateStr, currentStatus, oeValue);
+      }}
+    >
+      <div className={`status-stack ${displayEntries.length > 1 ? 'expanded' : 'collapsed'}`}>
+        {displayEntries.length > 0 ? (
+          displayEntries.map((entry, idx) => {
+            const statusClass = (entry.status || '').replace(/\s+/g, '-').toLowerCase();
+            return (
+                <div 
+                  key={idx} 
+                  className={`status-inner ${statusClass} ${
+                    searchTerm && entry.OE?.toLowerCase().includes(searchTerm.toLowerCase()) ? 'force-reveal' : ''
+                  }`}
+                  // LAZY EVALUATION: parse date when user interacts or requests a native tooltip fallback safely
+                  onMouseEnter={(e) => {
+                    if (entry.ModifiedAt && !e.currentTarget.getAttribute('title')) {
+                      e.currentTarget.setAttribute('title', `Modified: ${new Date(entry.ModifiedAt).toLocaleString()}`);
+                    }
+                  }}
+                >
+                  <span className="status-main-value">
+                    {entry.AttendanceStatus || '---'}
+                  </span>
+                  <span className="oe-hover-label">{entry.OE || ''}</span>
+                </div>
+            );
+          })
+        ) : (
+          <div className="status-inner n/a">---</div>
+        )}
+      </div>
+    </td>
+  );
+});
 
 interface AttendanceSheetProps {
   liveTrips: any[]; // The table passed in
@@ -27,6 +125,19 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   const [showAllStatuses, setShowAllStatuses] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const [activeMenu, setActiveMenu] = useState<{
+    empName: string;
+    empId: string;
+    date: Date;
+    dateStr: string;
+    oeValue: string;
+    liveOE: string;
+    x: number;
+    y: number;
+    renderUpwards: boolean;
+    currentStatus: string;
+  } | null>(null);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, _setPageSize] = useState(15);
 
@@ -38,6 +149,8 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Control State for Date
   const [currentDate, setCurrentDate] = useState(() => {
@@ -95,9 +208,11 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
     setIsDragging(true);
+
     // Get initial click position and current scroll offset
     setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
     setScrollLeft(scrollContainerRef.current.scrollLeft);
+
   };
 
   const handleMouseLeaveOrUp = () => {
@@ -114,6 +229,43 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
+  const handleUpdateAttendanceStatus = async (newAttendance: string, empId: string, empName: string, OE: string, attendanceDate?: Date) => {
+    
+    console.log('test attendance:  ', {newAttendance,empId,empName,OE,attendanceDate});
+    if (attendanceDate) return;
+    
+    try {
+      UpsertAttendanceLogService.UpsertAttendanceLog({ 
+        EmployeeName: empName,
+        EmployeeID: empId,
+        AttendanceDate: (attendanceDate ? attendanceDate : new Date()).toISOString().split('T')[0],
+        AttendanceStatus: newAttendance || 'PRESENT',
+        OE: OE || '',
+      } as any);
+      return { success: true};
+    } catch (error) {
+      console.error("Fetch error:", error);
+      return { success: false, error };
+    }
+  };
+
+  const getFilteredStatuses = (oe: string) => {
+    const hasOE = oe && oe !== '---' && oe.trim() !== '';
+    
+    return ATTENDANCE_STATUSES.filter(opt => {
+      // Basic types are always available (seq 0.x and 1.x)
+      if (opt.seq < 2.0) return true;
+      
+      // If they have an OE, show trip statuses (seq 2.x)
+      if (hasOE) return opt.seq >= 2.0 && opt.seq < 3.0;
+      
+      // If they DON'T have an OE, show off-trip statuses (seq 3.x)
+      return opt.seq >= 3.0;
+    }).sort((a, b) => a.sort - b.sort);
+  };
+
+
+
   useEffect(() => {
     const fetchAttendance = async () => {
       console.log(`Fetching attendance for Year: ${year}, Month: ${month}, BU: ${BU}`);
@@ -124,7 +276,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           Month: month,
           BU: BU
         } as any);
-        setData(res.data?.ResultSets?.Table1 || [] as any);
+        setData((res.data?.ResultSets?.Table1 || []) as any);
         // Only scroll to today if viewing the current month and year
         const now = new Date();
         if (year === now.getFullYear() && month === now.getMonth() + 1) {
@@ -166,75 +318,79 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     });
   }, [data, searchTerm, filterPosition]);
 
-  // 2. Pivot Data: Group records by EmployeeName
-  // Optimized Pivot Logic (Alternative)
-  const groupedData = useMemo(() => {
-    const map: Record<string, { positions: string, dates: Record<string, any[]> }> = {};
 
-    filteredData.forEach(item => {
-        if (!map[item.EmployeeName]) {
-            map[item.EmployeeName] = { positions: item.Position, dates: {} };
-        }
-
-        const dateKey = item.AttendanceDate.split('T')[0];
-
-        if (!map[item.EmployeeName].dates[dateKey]) {
-            map[item.EmployeeName].dates[dateKey] = [];
-        }
-
-        map[item.EmployeeName].dates[dateKey].push({
-            ...item,
-            status: item.AttendanceStatus,
-            modifiedAt: new Date(item.ModifiedAt || 0).getTime()
-        });
-    });
-
-    Object.values(map).forEach(emp => {
-        Object.keys(emp.dates).forEach(dateKey => {
-            let entries = emp.dates[dateKey];
-
-            // 1. Basic cleaning: Remove null/empty statuses
-            const hasValidStatus = entries.some(e => e.AttendanceStatus !== null && e.AttendanceStatus !== "");
-            if (hasValidStatus) {
-                entries = entries.filter(e => e.AttendanceStatus !== null && e.AttendanceStatus !== "");
-            }
-
-            // 2. Sort by time (Oldest to Newest)
-            entries.sort((a, b) => a.modifiedAt - b.modifiedAt);
-
-            // 3. SPECIAL CONDITION: Remove "PRESENT" if it is not the latest status
-            if (entries.length > 1) {
-                //const latestStatus = entries[entries.length - 1].AttendanceStatus;
-                
-                // Filter out "PRESENT" only if it's not the one we just identified as latest
-                entries = entries.filter((entry, index) => {
-                    const isLatest = index === entries.length - 1;
-                    const isPresent = entry.AttendanceStatus?.toUpperCase() === 'PRESENT';
-                    
-                    // Keep it if: It's the latest OR it's not a "PRESENT" status
-                    return isLatest || !isPresent;
-                });
-            }
-
-            emp.dates[dateKey] = entries;
-        });
-    });
-
-    return map;
+  const uniqueEmployeeNames = useMemo(() => {
+    const namesSet = new Set<string>();
+    filteredData.forEach(item => namesSet.add(item.EmployeeName));
+    return Array.from(namesSet).sort();
   }, [filteredData]);
 
-  const employeeNames = Object.keys(groupedData).sort();
-  // Pagination Logic
-  const totalPages = Math.ceil(employeeNames.length / pageSize);
+  const totalPages = Math.ceil(uniqueEmployeeNames.length / pageSize);
+
   const paginatedEmployeeNames = useMemo(() => {
-      const start = (currentPage - 1) * pageSize;
-      return employeeNames.slice(start, start + pageSize);
-  }, [employeeNames, currentPage, pageSize]);
+    const start = (currentPage - 1) * pageSize;
+    return uniqueEmployeeNames.slice(start, start + pageSize);
+  }, [uniqueEmployeeNames, currentPage, pageSize]);
 
   // Reset to page 1 when searching or filtering
   useEffect(() => {
       setCurrentPage(1);
   }, [searchTerm, filterPosition]);
+
+  const pageGroupedData = useMemo(() => {
+    const map: Record<string, { positions: string, dates: Record<string, any[]> }> = {};
+    
+    // Create a quick lookup Set for just the 15 visible names
+    const visibleNamesSet = new Set(paginatedEmployeeNames);
+
+    // Stream through filtered data, but skip anything not on the active viewport page
+    filteredData.forEach(item => {
+      if (!visibleNamesSet.has(item.EmployeeName)) return;
+
+      if (!map[item.EmployeeName]) {
+        map[item.EmployeeName] = { positions: item.Position, dates: {} };
+      }
+
+      const dateKey = item.AttendanceDate.split('T')[0];
+
+      if (!map[item.EmployeeName].dates[dateKey]) {
+        map[item.EmployeeName].dates[dateKey] = [];
+      }
+
+      map[item.EmployeeName].dates[dateKey].push({
+        ...item,
+        status: item.AttendanceStatus,
+        modifiedAt: new Date(item.ModifiedAt || 0).getTime()
+      });
+    });
+
+    // Run your exact sorting rules, but only on the 15 visible targets
+    Object.values(map).forEach(emp => {
+      Object.keys(emp.dates).forEach(dateKey => {
+        let entries = emp.dates[dateKey];
+
+        const hasValidStatus = entries.some(e => e.AttendanceStatus !== null && e.AttendanceStatus !== "");
+        if (hasValidStatus) {
+          entries = entries.filter(e => e.AttendanceStatus !== null && e.AttendanceStatus !== "");
+        }
+
+        entries.sort((a, b) => a.modifiedAt - b.modifiedAt);
+
+        if (entries.length > 1) {
+          entries = entries.filter((entry, index) => {
+            const isLatest = index === entries.length - 1;
+            const isPresent = entry.AttendanceStatus?.toUpperCase() === 'PRESENT';
+            return isLatest || !isPresent;
+          });
+        }
+
+        emp.dates[dateKey] = entries;
+      });
+    });
+
+    return map;
+  }, [filteredData, paginatedEmployeeNames]);
+
 
   const AttendanceSkeleton = ({ days }: { days: any[] }) => (
     <>
@@ -273,6 +429,95 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   };
 
   //if (loading && data.length > 0) return <div className="attendance-loader">Loading GSDC Attendance...</div>;
+
+
+  const liveTripsMap = useMemo(() => {
+    const map: Record<string, any> = {};
+    if (!liveTrips) return map;
+    
+    liveTrips.forEach(t => {
+      if (Array.isArray(colName)) {
+        colName.forEach(col => { if (t[col]) map[t[col]] = t; });
+      } else if (t[colName]) {
+        map[t[colName]] = t;
+      }
+    });
+
+    if (map['Pama, Elebert Palma']) {
+      console.log('Target Driver Trip Data Found:', map['Pama, Elebert Palma']);
+    } else {
+      console.log('Target Driver NOT found in liveTripsMap keys:', Object.keys(map));
+    }
+
+
+    return map;
+  }, [liveTrips, colName]);
+
+
+  const employeeMetaMap = useMemo(() => {
+    const map: Record<string, { id: number; position: string }> = {};
+    filteredData.forEach(item => {
+      if (!map[item.EmployeeName]) {
+        map[item.EmployeeName] = { id: item.EmployeeID, position: item.Position };
+      }
+    });
+    return map;
+  }, [filteredData]);
+
+  const handleCellContextOpen = useCallback((
+    e: React.MouseEvent, 
+    empName: string, 
+    empId: string, 
+    currentOE: string, 
+    dateStr: string,
+    currentStatus: string,
+    liveOE: string,
+  ) => {
+    // Convert target dateStr back into standard date configuration safely[cite: 4]
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const targetDateObject = new Date(y, m - 1, d);
+
+    const clickY = e.clientY;
+    const windowHeight = window.innerHeight;
+    
+    // Estimate your context menu height (e.g., ~220px to 300px depending on status counts)
+    const estimatedMenuHeight = 250; 
+    
+    // Check if opening downwards would push the menu past the bottom edge
+    const shouldFlipUp = (clickY + estimatedMenuHeight) > windowHeight;
+
+    setActiveMenu({
+      empName,
+      empId,
+      date: targetDateObject,
+      dateStr,
+      oeValue: currentOE === '---' ? '' : currentOE,
+      x: e.clientX,
+      y: clickY,
+      renderUpwards: shouldFlipUp,
+      currentStatus: currentStatus || 'ABSENT',
+      liveOE: liveOE === '---' ? '' : liveOE,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!activeMenu) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      // If the click is outside the context menu container, close it quietly
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setActiveMenu(null);
+      }
+    };
+
+    // Listen globally in the capture phase to react instantly
+    window.addEventListener('mousedown', handleOutsideClick, true);
+    return () => {
+      window.removeEventListener('mousedown', handleOutsideClick, true);
+    };
+  }, [activeMenu]);
+
+
 
   return (
     <div className="attendance-container">
@@ -435,21 +680,20 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
             ) : (
               paginatedEmployeeNames.map(name => {
                 // Find trip info for the current employee from liveTrips table
-                const tripInfo = liveTrips?.find(t => 
-                  Array.isArray(colName) 
-                    ? colName.some(col => t[col] === name) // Check every column in the array
-                    : t[colName] === name                  // Fallback for a single string
-                );
+                const tripInfo = liveTripsMap[name];
                 const oeValue = tripInfo ? tripInfo[colOE] : '---';
                 const tripStatus = tripInfo ? tripInfo[colStatus] : null;
+                const meta = employeeMetaMap[name];
+
+                const employeeData = pageGroupedData[name] || { positions: '', dates: {} };
 
                 return (
                   <tr key={name}>
-                    <td className="sticky-col emp-name" title={`${name} - ${groupedData[name].positions || ''}`}>
+                    <td className="sticky-col emp-name" title={`${name} - ${employeeData.positions || ''}`}>
                       <div className="name-cell-content">
                         {/* 1. Position Indicator */}
                         <div className="position-indicator">
-                          {groupedData[name].positions === 'Driver' ? (
+                          {employeeData.positions === 'Driver' ? (
                             <span className="indicator-d">D</span>
                           ) : (
                             <span className="indicator-h">H</span>
@@ -484,56 +728,37 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
                       const m = String(date.getMonth() + 1).padStart(2, '0');
                       const d = String(date.getDate()).padStart(2, '0');
                       const dateStr = `${y}-${m}-${d}`;
-                      const allEntries = groupedData[name].dates[dateStr] || []; // Fallback to empty array
+                      const allEntries = employeeData.dates[dateStr] || []; 
                       const lastEntry = allEntries.length > 0 ? allEntries[allEntries.length - 1] : null;
                       const displayEntries = showAllStatuses ? allEntries : (lastEntry ? [lastEntry] : []);
 
                       const dayOfWeek = date.getDay();
                       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                      const isToday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` === todayStr;
+                      const isToday = dateStr === todayStr;
+
+                      const isContextMenuOpenHere = 
+                          activeMenu !== null && 
+                          activeMenu.dateStr === dateStr && 
+                          String(activeMenu.empId) === String(meta?.id || '0');
 
                       return (
-                        <td 
-                          key={date.toISOString()} 
-                          className={`status-cell 
-                            ${isToday ? 'today-cell' : ''} 
-                            ${isWeekend ? 'weekend-cell' : ''}
-                            ${dayOfWeek === 0 ? 'sunday-cell' : ''}
-                          `}
-                        >
-                          <div className={`status-stack ${showAllStatuses ? 'expanded' : 'collapsed'}`}>
-                            {displayEntries.length > 0 ? (
-                              displayEntries.map((entry, idx) => {
-                                const statusClass = (entry.status || '').replace(/\s+/g, '-').toLowerCase();
-                                return (
-                                  <div 
-                                      key={idx} 
-                                      className={`status-inner ${statusClass} ${
-                                        searchTerm && entry.OE?.toLowerCase().includes(searchTerm.toLowerCase()) 
-                                        ? 'force-reveal' 
-                                        : ''
-                                      }`}
-                                      title={`Modified: ${new Date(entry.ModifiedAt).toLocaleString()}`}
-                                  >
-                                      {/* The Main Status Value */}
-                                      <span className="status-main-value">
-                                          {entry.AttendanceStatus ? entry.AttendanceStatus : '---'}
-                                      </span>
-                                      {/* The OE Label - Invisible by default */}
-                                      <span className="oe-hover-label">
-                                        <HighlightText text={entry.OE || ''} highlight={searchTerm} />
-                                      </span>
-                                  </div>
-                                );
-                              })
-                            ) : (
-                              <div className="status-inner n/a">---</div>
-                            )}
-                          </div>
-                        </td>
+                        <AttendanceCell
+                          key={dateStr}
+                          dateStr={dateStr}
+                          dayOfWeek={dayOfWeek}
+                          isWeekend={isWeekend}
+                          isToday={isToday}
+                          displayEntries={displayEntries}
+                          searchTerm={searchTerm}
+                          empName={name}
+                          oeValue={oeValue}
+                          empMetaId={String(meta?.id || '0')}
+                          onCellClick={handleCellContextOpen} 
+                          isActiveMenuCell={isContextMenuOpenHere}
+                        />
                       );
-
                     })}
+
                   </tr>
                 );
               })
@@ -541,6 +766,70 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           </tbody>
         </table>
       </div>
+
+
+      {activeMenu && (
+        <div 
+          ref={menuRef} 
+          className="gsdc-attendance-context-menu"
+          style={{ 
+            top: activeMenu.y, 
+            left: activeMenu.x,
+            transform: activeMenu.renderUpwards ? 'translateY(-105%)' : 'translateY(10px)',
+          }}
+        >
+          <div className="context-menu-header">
+            <strong>{activeMenu.empName}</strong>
+            <span>{activeMenu.dateStr} {activeMenu.oeValue ? `(${activeMenu.oeValue || 'NO TRIP'})` : ''}</span>
+            <button 
+              className="context-timeline-btn" 
+              title="Feature Coming Soon"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Future feature hook goes here
+                console.log("Opening timeline history for:", activeMenu.empName);
+              }}
+            >
+              View Timelogs
+            </button>
+          </div>
+          <hr />
+          <div className="context-options-list">
+            {getFilteredStatuses(activeMenu.oeValue).map((statusObj) => 
+            {
+            const isCurrentlySelected = activeMenu.currentStatus?.toUpperCase() === statusObj.Status?.toUpperCase();
+            return  (
+              <button
+                key={statusObj.Status}
+                className={`context-option-btn ${statusObj.onduty ? 'on-duty' : 'off-duty'} ${isCurrentlySelected ? 'active-status-highlight' : ''}`}
+                onClick={async () => {
+                  const selectedStatus = statusObj.Status;
+                  setActiveMenu(null); 
+                  setLoading(true);
+
+                  const result = await handleUpdateAttendanceStatus(
+                    selectedStatus,
+                    activeMenu.empId,
+                    activeMenu.empName,
+                    activeMenu.oeValue,
+                    activeMenu.date
+                  );
+
+                  if (result?.success) {
+                    setCurrentDate(new Date(currentDate)); 
+                  } else {
+                    alert("Failed to tag attendance.");
+                    setLoading(false);
+                  }
+                }}
+              >
+                {statusObj.Alias}
+              </button>
+            )}
+            )}
+          </div>
+        </div>
+      )}
 
 
     </div>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Modal from '../components/ewul_Modal';
+// import Modal from '../components/ewul_Modal';
 import AttendanceSheet from '../components/ewul_AttendanceSheet';
 import PageTemplate from './template';
 import GSDCMap, { type GSDCMapHandle, type HighlightConfig } from '../components/ewul_Maps';
-import { Calendar, Fuel, Settings, FileDown, ChevronLeft, ChevronRight, LayoutGrid, TableProperties, RefreshCw, MapPin, Lock, Unlock, TruckIcon} from 'lucide-react';
+import { Calendar, Fuel, Settings, FileDown, ChevronLeft, ChevronRight, MapIcon, LayoutGrid, TableProperties, RefreshCw, MapPin, Lock, Unlock, TruckIcon} from 'lucide-react';
 import './css/FleetMonitoring.css';
 import { GlobalFleetModal } from '../truth_react_helper';
 import {MapTruckEmptyIcon,MapTruckDoneIcon,MapTruckLoadedIcon,MapTruckLoadingIcon,MapTruckRepairIcon,MapTruckUnloadingIcon,MapTruckWaitingIcon,MapTruckNoTripIcon} from '../components/ewul_Icons';
@@ -108,7 +108,7 @@ const FleetMonitoring: React.FC = () => {
 
             // 2. Access data directly. No .then() needed
             const rawData = result || []; 
-            console.log("Raw pairing data fetched:", rawData);
+            // console.log("Raw pairing data fetched:", rawData);
 
             const getWeight = (row: any) => {
                 let weight = 0;
@@ -338,16 +338,19 @@ const FleetMonitoring: React.FC = () => {
                                     <option key={bu.Title} value={bu.Title}>{bu.Title}</option>
                                 ))}
                             </select>
-                            <button className="fleet-action-btn primary-solid" onClick={() => setModalOpen('attendance')}>
+                            <button className={`fleet-action-btn ${modalOpen === null ? 'active-highlight' : 'primary-solid'}`} onClick={() => setModalOpen(null)}>
+                                <MapIcon size={18} /> <span>Fleet Monitoring</span>
+                            </button>
+                            <button className={`fleet-action-btn ${modalOpen === 'attendance' ? 'active-highlight' : 'primary-solid'}`} onClick={() => setModalOpen('attendance')}>
                                 <Calendar size={18} /> <span>Attendance</span>
                             </button>
-                            <button className="fleet-action-btn primary-solid" onClick={() => { setModalOpen('fuel'); fetchFuelRequests(); }}>
+                            <button className={`fleet-action-btn ${modalOpen === 'fuel' ? 'active-highlight' : 'primary-solid'}`} onClick={() => { setModalOpen('fuel'); fetchFuelRequests(); }}>
                                 <Fuel size={18} /> <span>Fuel Request</span>
                             </button>
-                            <button className="fleet-action-btn primary-solid" onClick={() => setModalOpen('fleet')}>
+                            <button className={`fleet-action-btn ${modalOpen === 'fleet' ? 'active-highlight' : 'primary-solid'}`} onClick={() => setModalOpen('fleet')}>
                                 <Settings size={18} /> <span>Fleet Manage</span>
                             </button>
-                            <button className="fleet-action-btn primary-solid" title="Refresh Data" onClick={fetchPairingData} disabled={ewul_isAnythingLoading()}>
+                            <button className={`fleet-action-btn primary-solid`} title="Refresh Data" onClick={fetchPairingData} disabled={ewul_isAnythingLoading()}>
                                 <RefreshCw size={18} className={ewul_isAnythingLoading() ? 'spin-refresh' : ''} /> <span>Refresh</span>
                             </button>
                             <button className="fleet-action-btn secondary-outline">
@@ -359,157 +362,167 @@ const FleetMonitoring: React.FC = () => {
                     className="flush-map-page"
                     hideFooter={true}
                 >
-        <div className="fleet-monitoring-bg">
-            <GSDCMap 
-                ref={mapRef} 
-                data={pairingData} 
-                latCol="Latitude" 
-                lngCol="Longitude" 
-                labelCol={enc("Truck")} 
-                highlight={highlightedUnit} 
-                isolateHighlighted={isolateHighlighted}
-                renderMarker={(record: any, isHighlighted: boolean) => {
-                    //const highlightColor = 'var(--color-yellow)';
-                    const color_fill = GPS_STATUS_COLOR[record[enc("GPS Status")] as keyof typeof GPS_STATUS_COLOR]; // Default to bright green if status is unknown
-                    let key = record[enc("Trip Progress")];
-                    const trip_status = record[enc("Trip Status")];
-                    const trip_progress = record[enc("Trip Progress")];
+        { modalOpen ? 
+        (
+            renderModalContent()
+        )
+        : (
+            <div className="fleet-monitoring-bg">
+                {true && (<GSDCMap 
+                    ref={mapRef} 
+                    data={pairingData} 
+                    latCol="Latitude" 
+                    lngCol="Longitude" 
+                    labelCol={enc("Truck")} 
+                    highlight={highlightedUnit} 
+                    isolateHighlighted={isolateHighlighted}
+                    renderMarker={(record: any, isHighlighted: boolean) => {
+                        //const highlightColor = 'var(--color-yellow)';
+                        const color_fill = GPS_STATUS_COLOR[record[enc("GPS Status")] as keyof typeof GPS_STATUS_COLOR]; // Default to bright green if status is unknown
+                        let key = record[enc("Trip Progress")];
+                        const trip_status = record[enc("Trip Status")];
+                        const trip_progress = record[enc("Trip Progress")];
 
-                    if (!record.OE) key = 'No Trip';
-                    if (record["JR_Truck"] || record["JR_Trailer"]) key = 'UR';
-                    if (trip_progress === 'Dispatched To Source' && record[enc("Source in")]) key = 'Loading';
-                    if (["LDG"].some(status => status === trip_status)) key = 'Dispatched To Destination';
-                    if (trip_progress === 'Dispatched To Destination' && record[enc("Destination in")]) key = 'Unloading';
-                    
-
-
-                    return fetchMapIcon(key, color_fill, isHighlighted);
-                    
-                }}
-            />
-    
-            <div className="fleet-table-gradient-wrapper">
-                <div className={`fleet-floating-table ${tableExpanded ? 'expanded' : 'minimized'}`}>
-                    <div className="fleet-table-header">
-                        <h3>Live Fleet Status</h3>
+                        if (!record.OE) key = 'No Trip';
+                        if (record["JR_Truck"] || record["JR_Trailer"]) key = 'UR';
+                        if (trip_progress === 'Dispatched To Source' && record[enc("Source in")]) key = 'Loading';
+                        if (["LDG"].some(status => status === trip_status)) key = 'Dispatched To Destination';
+                        if (trip_progress === 'Dispatched To Destination' && record[enc("Destination in")]) key = 'Unloading';
                         
-                        <div className="header-controls">
-                            {/* Toggle for isolateHighlighted */}
-                            <span style={{color: 'var(--color-text-2)'}}>Show Pin: </span>
-                            <button
-                                className={`map-action-btn ${isolateHighlighted ? 'primary-solid' : 'secondary-outline'}`}
-                                style={{ marginLeft: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                onClick={() => setIsolateHighlighted(v => !v)}
-                                title={isolateHighlighted ? 'Show All Units on Map' : 'Show Only Highlighted on Map'}
-                            >
-                                <MapPin size={18} style={{ color: 'var(--color-text-2)' }} />
-                                {isolateHighlighted ? " Selected" : " All"}
-                            </button>
-                            {/* Toggle for map scroll lock */}
-                            <button
-                                className={`map-action-btn ${mapScrollLocked ? 'primary-solid-lock' : 'secondary-outline'}`}
-                                style={{ marginLeft: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                onClick={() => setMapScrollLocked(v => !v)}
-                                title={mapScrollLocked ? 'Unlock Map Auto Scroll' : 'Lock Map Auto Scroll'}
-                            >
-                                {mapScrollLocked ? <Lock size={20} style={{ color: 'var(--color-yellow)' }} /> : <Unlock size={20} style={{ color: 'var(--color-text-2)' }} />}
-                            </button>
-                            {/* View Switcher Icon - Decoupled from tableExpanded */}
-                            <button 
-                                className="view-mode-toggle"
-                                onClick={() => setViewMode(prev => prev === 'table' ? 'gallery' : 'table')}
-                                title={viewMode === 'table' ? "Switch to Gallery View" : "Switch to Table View"}
-                            >
-                                {viewMode === 'table' ? <LayoutGrid size={18} /> : <TableProperties size={18} />}
-                            </button>
 
-                            {/* Existing Expansion Toggle */}
-                            <button
-                                className="fleet-table-toggle-inner"
-                                onClick={() => setTableExpanded((v) => !v)}
-                                aria-label={tableExpanded ? 'Collapse' : 'Expand'}
-                            >
-                                {tableExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
-                            </button>
+
+                        return fetchMapIcon(key, color_fill, isHighlighted);
+                        
+                    }}
+                />)}
+        
+                <div className="fleet-table-gradient-wrapper">
+                    <div className={`fleet-floating-table ${tableExpanded ? 'expanded' : 'minimized'}`}>
+                        <div className="fleet-table-header">
+                            <h3>Live Fleet Status</h3>
+                            
+                            <div className="header-controls">
+                                {/* Toggle for isolateHighlighted */}
+                                <span style={{color: 'var(--color-text-2)'}}>Show Pin: </span>
+                                <button
+                                    className={`map-action-btn ${isolateHighlighted ? 'primary-solid' : 'secondary-outline'}`}
+                                    style={{ marginLeft: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    onClick={() => setIsolateHighlighted(v => !v)}
+                                    title={isolateHighlighted ? 'Show All Units on Map' : 'Show Only Highlighted on Map'}
+                                >
+                                    <MapPin size={18} style={{ color: 'var(--color-text-2)' }} />
+                                    {isolateHighlighted ? " Selected" : " All"}
+                                </button>
+                                {/* Toggle for map scroll lock */}
+                                <button
+                                    className={`map-action-btn ${mapScrollLocked ? 'primary-solid-lock' : 'secondary-outline'}`}
+                                    style={{ marginLeft: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    onClick={() => setMapScrollLocked(v => !v)}
+                                    title={mapScrollLocked ? 'Unlock Map Auto Scroll' : 'Lock Map Auto Scroll'}
+                                >
+                                    {mapScrollLocked ? <Lock size={20} style={{ color: 'var(--color-yellow)' }} /> : <Unlock size={20} style={{ color: 'var(--color-text-2)' }} />}
+                                </button>
+                                {/* View Switcher Icon - Decoupled from tableExpanded */}
+                                <button 
+                                    className="view-mode-toggle"
+                                    onClick={() => setViewMode(prev => prev === 'table' ? 'gallery' : 'table')}
+                                    title={viewMode === 'table' ? "Switch to Gallery View" : "Switch to Table View"}
+                                >
+                                    {viewMode === 'table' ? <LayoutGrid size={18} /> : <TableProperties size={18} />}
+                                </button>
+
+                                {/* Existing Expansion Toggle */}
+                                <button
+                                    className="fleet-table-toggle-inner"
+                                    onClick={() => setTableExpanded((v) => !v)}
+                                    aria-label={tableExpanded ? 'Collapse' : 'Expand'}
+                                >
+                                    {tableExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="fleet-table-content">
-                        {/* Logic is now based on viewMode state */}
-                        {viewMode === 'table' ? (
-                            <div className="view-transition-in view-wrapper" key="table-view">
-                                <TableView
-                                    data={pairingData}
-                                    config={PAIRING_LIST_TABLE_CONFIG.table_config}
-                                    storageKey={`fleetmon${user?.id}`}
-                                    isLoading={ewul_loadingList[FETCH_LOADING_KEYS.fleetPairing] || false}
-                                    searchCol={PAIRING_LIST_TABLE_CONFIG.searchable_cols}
-                                    rowStyle={PAIRING_LIST_TABLE_CONFIG.rowStyle}
-                                    showRowCount={100}
-                                    overflowX={true}
-                                    overflowY={true}
-                                    colMinWidth={20}
+                        <div className="fleet-table-content">
+                            {/* Logic is now based on viewMode state */}
+                            {viewMode === 'table' ? (
+                                <div className="view-transition-in view-wrapper" key="table-view">
+                                    <TableView
+                                        data={pairingData}
+                                        config={PAIRING_LIST_TABLE_CONFIG.table_config}
+                                        storageKey={`fleetmon${user?.id}`}
+                                        isLoading={ewul_loadingList[FETCH_LOADING_KEYS.fleetPairing] || false}
+                                        searchCol={PAIRING_LIST_TABLE_CONFIG.searchable_cols}
+                                        rowStyle={PAIRING_LIST_TABLE_CONFIG.rowStyle}
+                                        showRowCount={100}
+                                        overflowX={true}
+                                        overflowY={true}
+                                        colMinWidth={20}
 
-                                    loadingNoPreventAction={true}
+                                        loadingNoPreventAction={true}
 
-                                    scrollTo={scrollTo}
-                                    highlightSelected={true}
-
-
-                                    onRowClick={(record: any) => {
-                                        const pid = generatePairingId(record);
-                                        setScrollTo({
-                                            search_col: '_id',
-                                            key: pid,
-                                            highlight: 'info',
-                                        });
-
-                                        !mapScrollLocked ? handleFocusOnTruck(parseFloat(record.Latitude), parseFloat(record.Longitude)) : null;
-                                        
-                                        const hl =  {
-                                            col_key: 'Truck',
-                                            key: record.Truck,
-                                            type: 'info'
-                                        } as HighlightConfig;
-                                        const isdeselecting = highlightedUnit && highlightedUnit.col_key === hl.col_key && highlightedUnit.key === hl.key;
-                                        setHighlightedUnit(isdeselecting ? null : hl);
-                           
-                                    }}
+                                        scrollTo={scrollTo}
+                                        highlightSelected={true}
 
 
+                                        onRowClick={(record: any) => {
+                                            const pid = generatePairingId(record);
+                                            setScrollTo({
+                                                search_col: '_id',
+                                                key: pid,
+                                                highlight: 'info',
+                                            });
 
-                                    addTask={addTask}
+                                            !mapScrollLocked ? handleFocusOnTruck(parseFloat(record.Latitude), parseFloat(record.Longitude)) : null;
+                                            
+                                            const hl =  {
+                                                col_key: 'Truck',
+                                                key: record.Truck,
+                                                type: 'info'
+                                            } as HighlightConfig;
+                                            const isdeselecting = highlightedUnit && highlightedUnit.col_key === hl.col_key && highlightedUnit.key === hl.key;
+                                            setHighlightedUnit(isdeselecting ? null : hl);
+                            
+                                        }}
 
-                                />
-                            </div>
-                        ) : (
-                            <div className="view-transition-in view-wrapper" key="gallery-view">
-                                <InfoCardGallery 
-                                    title="Active Fleet"
-                                    data={pairingData}
-                                    fields={cardFields}
-                                    searchFields={['Truck', 'Driver', 'Helper', 'Trailer', 'OE']}
-                                    columns={tableExpanded ? 2 : 1}
-                                    overflowY='scroll'
-                                    defaultImage='defaultUser'
-                                    sortColumn='_sort'
-                                    loading={ewul_loadingList[FETCH_LOADING_KEYS.fleetPairing] || false}
-                                    cardHeight='200px'
-                                />
-                            </div>
-                        )}
+
+
+                                        addTask={addTask}
+
+                                    />
+                                </div>
+                            ) : (
+                                <div className="view-transition-in view-wrapper" key="gallery-view">
+                                    <InfoCardGallery 
+                                        title="Active Fleet"
+                                        data={pairingData}
+                                        fields={cardFields}
+                                        searchFields={['Truck', 'Driver', 'Helper', 'Trailer', 'OE']}
+                                        columns={tableExpanded ? 2 : 1}
+                                        overflowY='scroll'
+                                        defaultImage='defaultUser'
+                                        sortColumn='_sort'
+                                        loading={ewul_loadingList[FETCH_LOADING_KEYS.fleetPairing] || false}
+                                        cardHeight='200px'
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-            </PageTemplate>
+    )}
+
+
+
+
+    </PageTemplate>
             {/* Modal container for header actions */}
             {/* Simplified Modal Container */}
-            {modalOpen && (
+            {/*modalOpen && (
                 <Modal onClose={() => setModalOpen(null)}>
                     {renderModalContent()}
                 </Modal>
-            )}
+            )*/}
 
 
             <GlobalFleetModal />

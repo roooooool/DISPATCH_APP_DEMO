@@ -1026,3 +1026,159 @@ td.today-column-cell {
     border-radius: 2px;
     /*font-weight: 800; */
 }
+
+.gsdc-dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+}
+
+.gsdc-attendance-context-menu {
+  position: fixed;
+  z-index: 1000;
+  background: #ffffff;
+  border: 1px solid rgba(0, 43, 91, 0.2); /* Soft Navy boundary */
+  border-radius: 8px; /* Gentle design rounded corner */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 6px;
+  min-width: 160px;
+  max-width: 220px;
+  font-family: inherit;
+}
+
+.context-menu-header {
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.context-menu-header strong {
+  font-size: 13px;
+  color: #002b5b; /* Navy Blue */
+}
+
+.context-menu-header span {
+  font-size: 11px;
+  color: #666;
+}
+
+.gsdc-attendance-context-menu hr {
+  margin: 4px 0;
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+.context-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.context-option-btn {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #333;
+  width: 100%;
+  transition: all 0.1s ease;
+}
+
+/* Accent your theme states on item hovers */
+.context-option-btn:hover {
+  background: linear-gradient(135deg, #002b5b, #3a4efc); /* Navy Blue + 2nd Blue Gradient */
+  color: #ffffff;
+}
+
+.context-option-btn.on-duty {
+  border-left: 3px solid #3a4efc; /* Primary Blue Indicator */
+}
+
+.context-option-btn.off-duty {
+  border-left: 3px solid #ff4d4d; /* Red Accent Sub Indicator */
+}
+
+/* Custom class for the active cell */
+.status-cell.menu-active-cell {
+  position: relative;
+  z-index: 2; /* Keeps outline above neighboring borders */
+  background-color: #f0f4ff; /* Slightly tinted backdrop */
+  
+  /* Soft gradient outline style */
+  box-shadow: 0 0 0 3px #fcc23a, 0 0 32px rgba(252, 226, 58, 0.4);
+  border-radius: 8px; /* Gentle design rounded corner preference */
+  transition: box-shadow 0.15s ease-in-out;
+}
+
+/* Highlighted active choice inside the popover layout context menu */
+.context-option-btn.active-status-highlight {
+  background-color: #3a4efc !important; /* Primary 2nd Blue */
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--color-red, #ff0000); /* Red indicator flag line on left edge */
+}
+
+.context-option-btn .active-dot {
+  margin-left: auto;
+  color: var(--color-red, #ff0000);
+  font-size: 10px;
+}
+
+/* Context Menu Header Grid Alignment */
+.gsdc-attendance-context-menu .context-menu-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 10px 12px;
+}
+
+.gsdc-attendance-context-menu .header-meta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Timeline Action Button Styles */
+.gsdc-attendance-context-menu .context-timeline-btn {
+  background: rgba(58, 78, 252, 0.08); /* 8% #3a4efc Second Blue Tint */
+  color: #3a4efc;
+  border: 1px solid rgba(58, 78, 252, 0.2);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px; /* Gentle design profile rounded corner */
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Interactive States */
+.gsdc-attendance-context-menu .context-timeline-btn:hover {
+  background: #3a4efc; /* Primary 2nd Blue */
+  color: #ffffff;
+  border-color: #3a4efc;
+  box-shadow: 0 2px 6px rgba(58, 78, 252, 0.3);
+}
+
+.gsdc-attendance-context-menu .context-timeline-btn:active {
+  transform: scale(0.96);
+}
+
+/* Disabled layout state context indicators */
+.status-cell.cell-disabled {
+  cursor: not-allowed !important;
+  opacity: 0.65;
+  background-color: rgba(240, 240, 240, 0.4) !important;
+}
+
+/* Optional: Strip scale transformations on hover for non-interactable status inner tags */
+.status-cell.cell-disabled .status-inner {
+  pointer-events: none;
+}

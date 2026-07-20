@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Loader2, MoreVertical } from 'lucide-react';
 import LoadingOverlay from './LoadingOverlay_navblue'; 
@@ -48,6 +48,10 @@ const DonutChart = ({ total, segments, isLoading }: { total: number; segments: {
   );
 };
 
+export interface TripGroupDonutChartRef {
+  refresh: () => Promise<void>;
+}
+
 interface GridProps {
   BU: string | null | undefined;
   fromStr: string;
@@ -58,8 +62,8 @@ interface GridProps {
   defaultView?: 'simple' | 'detailed';
   highlight?: string | null;
   onChartClick?: (data: { 
-    tripgroup: string; 
-    tripgroup_total: number; 
+    tripgroup: string | null; 
+    tripgroup_total: number | null; 
     tripprogress: string | null; 
     tripprogress_count: number | null 
   }) => void;
@@ -71,7 +75,7 @@ interface GridProps {
   };
 }
 
-const TripGroup_DonutChart: React.FC<GridProps> = ({
+const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
   BU,
   fromStr,
   toStr,
@@ -82,7 +86,7 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({
   showScrollX = true,
   showScrollY = true,
   defaultFilterOptions,
-}) => {
+}, ref) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'simple' | 'detailed'>(defaultView);
@@ -120,6 +124,7 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({
   }, []);
 
   const fetchStats = async () => {
+    console.log("fetching donut chart data")
     setLoading(true);
     try {
       const res = await Sp_get_AggregatedAssigned_CountsByBUService.Sp_get_AggregatedAssigned_CountsByBU({ 
@@ -139,6 +144,12 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({
       setLoading(false);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    refresh: async () => {
+      await fetchStats();
+    }
+  }));
 
   useEffect(() => {
     if (fromStr && toStr) {
@@ -206,15 +217,19 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({
   const containerStyle: React.CSSProperties = {
     overflowX: showScrollX ? 'auto' : 'hidden',
     overflowY: showScrollY ? 'auto' : 'hidden',
+    scrollbarWidth: (showScrollX || showScrollY) ? 'auto' : 'none', // Standard adherence
   };
 
   const gridStyle: React.CSSProperties = {
     overflowX: showScrollX ? 'auto' : 'hidden',
     overflowY: showScrollY ? 'auto' : 'hidden',
+    // Force nowrap behavior if horizontal scrolling is requested explicitly on a grid layout
+    flexWrap: showScrollX ? 'nowrap' : 'wrap', 
+    height: 'max-content',
   };
 
   return (
-    <div className={`grid-container-relative`} style={containerStyle}>
+    <div className={`donut-grid-container-relative`} style={containerStyle}>
 
         <div className="chart-settings-wrapper">
           <button
@@ -266,7 +281,8 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({
           </div>,
           document.body // Appends the menu cleanly outside your relative grid containers
         )}
-      </div>
+    </div>
+      
    
 
       {loading && (
@@ -300,16 +316,30 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({
           const total = stats.assigned + stats.source + stats.destination + stats.done;
 
           const handleClick = (progress: string | null, count: number | null) => {
-            // When clicked, highlight this group specifically
-            setActiveHighlight(group.id);
+            const isCurrentlySelected = activeHighlight === group.id;
 
-            if (onChartClick) {
-              onChartClick({
-                tripgroup: group.id,
-                tripgroup_total: total,
-                tripprogress: progress,
-                tripprogress_count: count
-              });
+            if (isCurrentlySelected) {
+              // Toggle Off: Reset selection
+              setActiveHighlight(null);
+              if (onChartClick) {
+                onChartClick({
+                  tripgroup: null,
+                  tripgroup_total: null,
+                  tripprogress: null,
+                  tripprogress_count: null
+                });
+              }
+            } else {
+              // Toggle On: Select card
+              setActiveHighlight(group.id);
+              if (onChartClick) {
+                onChartClick({
+                  tripgroup: group.id,
+                  tripgroup_total: total,
+                  tripprogress: progress,
+                  tripprogress_count: count
+                });
+              }
             }
           };
 
@@ -394,6 +424,7 @@ const TripGroup_DonutChart: React.FC<GridProps> = ({
       </div>
     </div>
   );
-};
+});
 
+TripGroup_DonutChart.displayName = 'TripGroup_DonutChart';
 export default TripGroup_DonutChart;
