@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import AttendanceSheet from '../components/ewul_AttendanceSheet';
 import PageTemplate from './template';
 import GSDCMap, { type GSDCMapHandle, type HighlightConfig } from '../components/ewul_Maps';
-import { Calendar, Fuel, Settings, FileDown, ChevronLeft, ChevronRight, MapIcon, LayoutGrid, TableProperties, RefreshCw, MapPin, Lock, Unlock, TruckIcon} from 'lucide-react';
+import { Calendar, Fuel, Settings, FileDown, MapIcon, RefreshCw, MapPin, Lock, Unlock, TruckIcon, Map, Fullscreen} from 'lucide-react';
 import './css/FleetMonitoring.css';
 import { GlobalFleetModal } from '../truth_react_helper';
 import {MapTruckEmptyIcon,MapTruckDoneIcon,MapTruckLoadedIcon,MapTruckLoadingIcon,MapTruckRepairIcon,MapTruckUnloadingIcon,MapTruckWaitingIcon,MapTruckNoTripIcon} from '../components/ewul_Icons';
@@ -37,14 +37,17 @@ import {
 
 const FleetMonitoring: React.FC = () => {
 
-    const { user } = useUser();
+    
+    const { user, updateUser } = useUser();
     const { addTask } = useTaskWorker();
 
-    const [tableExpanded, setTableExpanded] = useState(true);
+    const [tableExpanded, _setTableExpanded] = useState(true);
     const [pairingData, setPairingData] = useState<any[]>([]);
     const [fuelRequests, setFuelRequests] = useState<any[]>([]);
     //const [loading, setLoading] = useState(false);
-    const [modalOpen, setModalOpen] = useState<null | 'attendance' | 'fuel' | 'fleet' | 'export'>(null);
+    const [modalOpen, setModalOpen] = useState<null | 'attendance' | 'fuel' | 'fleet' | 'export'>(() => {
+        return (user?.lastActiveModule as any) || null;
+    });
     /*const [selectedBU, setSelectedBU] = useState(() => {
         const user = localStorage.getItem("gsdc_user");
         if (user) {
@@ -54,7 +57,7 @@ const FleetMonitoring: React.FC = () => {
         return BUSINESS_UNITS[0].Title;
     });*/
     const [selectedBU, setSelectedBU] = useState(BUSINESS_UNITS[0].Title);
-    const [viewMode, setViewMode] = useState<'table' | 'gallery'>('table');
+    const [viewMode, _setViewMode] = useState<'table' | 'gallery'>('table');
 
     const mapRef = useRef<GSDCMapHandle>(null);
 
@@ -153,6 +156,137 @@ const FleetMonitoring: React.FC = () => {
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+
+    // Add these layout states at the top of your component
+    const [isWindowed, setIsWindowed] = useState(false);
+    const [windowStyle, setWindowStyle] = useState({
+        width: '50vw',
+        height: '70vh',
+        top: '15vh',
+        left: '20px'
+    });
+
+    // Dragging and Resizing Ref References
+    const windowRef = useRef<HTMLDivElement>(null);
+    const resizeStart = useRef({ x: 0, y: 0, width: 0, height: 0 });
+
+    // Handle Dragging
+    const handleMouseDown = (e: React.MouseEvent) => {
+        // Stop behavior if full-screen or if interacting with action buttons
+        if (!isWindowed || (e.target as HTMLElement).closest('.header-controls') || (e.target as HTMLElement).closest('button')) return;
+        
+        e.preventDefault();
+
+        const element = windowRef.current;
+        const parent = element?.parentElement;
+        if (!element || !parent) return;
+
+        const rect = element.getBoundingClientRect();
+        const parentRect = parent.getBoundingClientRect();
+
+        // Measure exactly where the mouse cursor is relative to the box borders
+        const offsetX = e.clientX - rect.left;
+        const offsetY = e.clientY - rect.top;
+
+        const handleMouseMove = (moveEvent: MouseEvent) => {
+            // Position relative to the parent container bounds
+            let nextLeft = moveEvent.clientX - parentRect.left - offsetX;
+            let nextTop = moveEvent.clientY - parentRect.top - offsetY;
+
+            // 🟢 Boundary Constraints: Prevent going out of bounds (Left & Top)
+            if (nextLeft < 0) nextLeft = 0;
+            if (nextTop < 0) nextTop = 0;
+
+            // 🟢 Boundary Constraints: Prevent going out of bounds (Right & Bottom)
+            const maxLeft = parentRect.width - rect.width;
+            const maxTop = parentRect.height - rect.height;
+
+            if (nextLeft > maxLeft) nextLeft = maxLeft;
+            if (nextTop > maxTop) nextTop = maxTop;
+
+            setWindowStyle(prev => ({
+                ...prev,
+                left: `${nextLeft}px`,
+                top: `${nextTop}px`
+            }));
+        };
+
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    // Handle Manual Border Pull-tab Resizing
+    const handleResizeMouseDown = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        const rect = windowRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        resizeStart.current = {
+            x: e.clientX,
+            y: e.clientY,
+            width: rect.width,
+            height: rect.height
+        };
+
+        const handleMouseMove = (moveEvent: MouseEvent) => {
+            const deltaX = moveEvent.clientX - resizeStart.current.x;
+            const deltaY = moveEvent.clientY - resizeStart.current.y;
+            
+            setWindowStyle(prev => ({
+                ...prev,
+                width: `${Math.max(400, resizeStart.current.width + deltaX)}px`,
+                height: `${Math.max(300, resizeStart.current.height + deltaY)}px`
+            }));
+        };
+
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    // Toggle window mode and auto-set width/placement values
+    const toggleWindowMode = () => {
+        setIsWindowed(prev => {
+            const nextState = !prev;
+            if (nextState) {
+                // 🟢 Calculate half screen width and stable height in strict pixels 
+                const pixelWidth = Math.floor(window.innerWidth * 0.5);
+                const pixelHeight = Math.floor(window.innerHeight * 0.7);
+                
+                setWindowStyle({
+                    width: `${pixelWidth}px`,
+                    height: `${pixelHeight}px`,
+                    top: '100px',
+                    left: '20px'
+                });
+            }
+            return nextState;
+        });
+    };
+
+
+
+    const changeModule = (targetModule: null | 'attendance' | 'fuel' | 'fleet' | 'export') => {
+        setModalOpen(targetModule);
+        updateUser({ lastActiveModule: targetModule as string });
+        
+        // Handle background async fetch triggers normally 
+        if (targetModule === 'fuel') {
+            fetchFuelRequests();
+        }
+    };
 
 
     const renderModalContent = () => {
@@ -338,16 +472,16 @@ const FleetMonitoring: React.FC = () => {
                                     <option key={bu.Title} value={bu.Title}>{bu.Title}</option>
                                 ))}
                             </select>
-                            <button className={`fleet-action-btn ${modalOpen === null ? 'active-highlight' : 'primary-solid'}`} onClick={() => setModalOpen(null)}>
+                            <button className={`fleet-action-btn ${modalOpen === null ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule(null)}>
                                 <MapIcon size={18} /> <span>Fleet Monitoring</span>
                             </button>
-                            <button className={`fleet-action-btn ${modalOpen === 'attendance' ? 'active-highlight' : 'primary-solid'}`} onClick={() => setModalOpen('attendance')}>
+                            <button className={`fleet-action-btn ${modalOpen === 'attendance' ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule('attendance')}>
                                 <Calendar size={18} /> <span>Attendance</span>
                             </button>
-                            <button className={`fleet-action-btn ${modalOpen === 'fuel' ? 'active-highlight' : 'primary-solid'}`} onClick={() => { setModalOpen('fuel'); fetchFuelRequests(); }}>
+                            <button className={`fleet-action-btn ${modalOpen === 'fuel' ? 'active-highlight' : 'primary-solid'}`} onClick={() => { changeModule('fuel'); fetchFuelRequests(); }}>
                                 <Fuel size={18} /> <span>Fuel Request</span>
                             </button>
-                            <button className={`fleet-action-btn ${modalOpen === 'fleet' ? 'active-highlight' : 'primary-solid'}`} onClick={() => setModalOpen('fleet')}>
+                            <button className={`fleet-action-btn ${modalOpen === 'fleet' ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule('fleet')}>
                                 <Settings size={18} /> <span>Fleet Manage</span>
                             </button>
                             <button className={`fleet-action-btn primary-solid`} title="Refresh Data" onClick={fetchPairingData} disabled={ewul_isAnythingLoading()}>
@@ -396,13 +530,25 @@ const FleetMonitoring: React.FC = () => {
                     }}
                 />)}
         
-                <div className="fleet-table-gradient-wrapper">
-                    <div className={`fleet-floating-table ${tableExpanded ? 'expanded' : 'minimized'}`}>
-                        <div className="fleet-table-header">
+                <div 
+                    ref={windowRef}
+                    className={`fleet-table-gradient-wrapper ${isWindowed ? 'windowed-mode' : 'fullscreen-mode'}`}
+                    style={isWindowed ? { 
+                        position: 'absolute', 
+                        zIndex: 1000, 
+                        width: windowStyle.width, 
+                        height: windowStyle.height, 
+                        top: windowStyle.top, 
+                        left: windowStyle.left,
+                    } : undefined}
+                >
+                    <div className="fleet-floating-table">
+                        
+                        {/* Header acts as the dragging handle when windowed */}
+                        <div className="fleet-table-header" onMouseDown={handleMouseDown} style={{ cursor: isWindowed ? 'move' : 'default' }}>
                             <h3>Live Fleet Status</h3>
                             
                             <div className="header-controls">
-                                {/* Toggle for isolateHighlighted */}
                                 <span style={{color: 'var(--color-text-2)'}}>Show Pin: </span>
                                 <button
                                     className={`map-action-btn ${isolateHighlighted ? 'primary-solid' : 'secondary-outline'}`}
@@ -413,7 +559,7 @@ const FleetMonitoring: React.FC = () => {
                                     <MapPin size={18} style={{ color: 'var(--color-text-2)' }} />
                                     {isolateHighlighted ? " Selected" : " All"}
                                 </button>
-                                {/* Toggle for map scroll lock */}
+                                
                                 <button
                                     className={`map-action-btn ${mapScrollLocked ? 'primary-solid-lock' : 'secondary-outline'}`}
                                     style={{ marginLeft: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -422,30 +568,30 @@ const FleetMonitoring: React.FC = () => {
                                 >
                                     {mapScrollLocked ? <Lock size={20} style={{ color: 'var(--color-yellow)' }} /> : <Unlock size={20} style={{ color: 'var(--color-text-2)' }} />}
                                 </button>
-                                {/* View Switcher Icon - Decoupled from tableExpanded */}
-                                <button 
+
+                                {/* <button 
                                     className="view-mode-toggle"
                                     onClick={() => setViewMode(prev => prev === 'table' ? 'gallery' : 'table')}
                                     title={viewMode === 'table' ? "Switch to Gallery View" : "Switch to Table View"}
                                 >
                                     {viewMode === 'table' ? <LayoutGrid size={18} /> : <TableProperties size={18} />}
-                                </button>
+                                </button> */}
 
-                                {/* Existing Expansion Toggle */}
-                                <button
-                                    className="fleet-table-toggle-inner"
-                                    onClick={() => setTableExpanded((v) => !v)}
-                                    aria-label={tableExpanded ? 'Collapse' : 'Expand'}
+                                {/* Windowed / Fullscreen Mode Toggle replacing old chevron */}
+                                <button 
+                                    className={`view-mode-toggle ${isWindowed ? 'active-highlight' : ''}`}
+                                    onClick={toggleWindowMode}
+                                    title={isWindowed ? "Switch to Fullscreen" : "View Live Map"}
                                 >
-                                    {tableExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                                    {isWindowed ? <Fullscreen size={18} style={{ transform: 'rotate(90deg)' }} /> : <Map size={18} style={{ opacity: 1 }} />}
                                 </button>
                             </div>
                         </div>
 
-                        <div className="fleet-table-content">
-                            {/* Logic is now based on viewMode state */}
+                        {/* Dynamic Inner Layout Body */}
+                        <div className="fleet-table-content" style={{ flex: 1, minHeight: 0, height: 'calc(100% - 50px)' }}>
                             {viewMode === 'table' ? (
-                                <div className="view-transition-in view-wrapper" key="table-view">
+                                <div className="view-transition-in view-wrapper" style={{ height: '100%' }} key="table-view">
                                     <TableView
                                         data={pairingData}
                                         config={PAIRING_LIST_TABLE_CONFIG.table_config}
@@ -457,13 +603,9 @@ const FleetMonitoring: React.FC = () => {
                                         overflowX={true}
                                         overflowY={true}
                                         colMinWidth={20}
-
                                         loadingNoPreventAction={true}
-
                                         scrollTo={scrollTo}
                                         highlightSelected={true}
-
-
                                         onRowClick={(record: any) => {
                                             const pid = generatePairingId(record);
                                             setScrollTo({
@@ -471,9 +613,7 @@ const FleetMonitoring: React.FC = () => {
                                                 key: pid,
                                                 highlight: 'info',
                                             });
-
                                             !mapScrollLocked ? handleFocusOnTruck(parseFloat(record.Latitude), parseFloat(record.Longitude)) : null;
-                                            
                                             const hl =  {
                                                 col_key: 'Truck',
                                                 key: record.Truck,
@@ -481,23 +621,18 @@ const FleetMonitoring: React.FC = () => {
                                             } as HighlightConfig;
                                             const isdeselecting = highlightedUnit && highlightedUnit.col_key === hl.col_key && highlightedUnit.key === hl.key;
                                             setHighlightedUnit(isdeselecting ? null : hl);
-                            
                                         }}
-
-
-
                                         addTask={addTask}
-
                                     />
                                 </div>
                             ) : (
-                                <div className="view-transition-in view-wrapper" key="gallery-view">
+                                <div className="view-transition-in view-wrapper" style={{ height: '100%' }} key="gallery-view">
                                     <InfoCardGallery 
                                         title="Active Fleet"
                                         data={pairingData}
                                         fields={cardFields}
                                         searchFields={['Truck', 'Driver', 'Helper', 'Trailer', 'OE']}
-                                        columns={tableExpanded ? 2 : 1}
+                                        columns={isWindowed ? 1 : 2} /* Dynamically change layout grid based directly on screen state */
                                         overflowY='scroll'
                                         defaultImage='defaultUser'
                                         sortColumn='_sort'
@@ -507,9 +642,28 @@ const FleetMonitoring: React.FC = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Drag Resizer corner tab */}
+                        {isWindowed && (
+                            <div 
+                                className="window-resize-handle"
+                                onMouseDown={handleResizeMouseDown}
+                                style={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    bottom: 0,
+                                    width: '15px',
+                                    height: '15px',
+                                    cursor: 'se-resize',
+                                    background: 'linear-gradient(135deg, transparent 50%, var(--color-primary, #00082d) 50%)',
+                                    borderBottomRightRadius: '8px',
+                                    zIndex: 1001
+                                }}
+                            />
+                        )}
                     </div>
                 </div>
-            </div>
+        </div>
     )}
 
 

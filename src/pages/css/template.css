@@ -51,8 +51,8 @@
 
 .page-header-ribbon {
   flex: 0 0 auto;
-  background: var(--color-bg-blue) !important;
-  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-muted-dark) !important;
+  border-bottom: 2px solid var(--color-border);
   position: relative;
   display: flex;
   align-items: center;
@@ -70,7 +70,7 @@
 .page-header-ribbon.collapsed {
   min-height: 32px; /* Professional slim bar height */
   height: 32px;
-  background: var(--color-bg-blue);
+  background: var(--color-bg);
   padding: 0;
 }
 

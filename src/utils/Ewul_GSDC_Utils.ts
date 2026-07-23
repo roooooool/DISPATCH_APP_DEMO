@@ -491,3 +491,130 @@ export const formatToLocalISO = (utcString: string): string => {
   return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
 };
 
+
+
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+
+interface UseAntiSpamOptions {
+  baseCooldown?: number;      // Base lock time in seconds
+  timePenalty?: number;       // Seconds added per spam click streak
+  maxPenaltySeconds?: number; // Cap for the dynamic penalty calculation
+  baseTrapWindowMs?: number;  // Initial duration to wait before resetting streak
+  bannerDurationMs?: number;  // How long the warning banner stays visible
+}
+
+
+/**
+ * @file useAntiSpam.ts
+ * @description A reusable React hook utility designed to protect expensive or critical functions 
+ * from rapid click spamming and server request floods.
+ * 
+ * @mechanism
+ * 1. Cooldown Block: Prevents function execution while an action is actively loading or when 
+ *    the countdown timer (`cooldown`) is greater than 0.
+ * 2. Escalating Penalty: Each consecutive click within the active "Trap Window" increments 
+ *    a tracking streak (`clickStreakRef`). The layout cooldown duration scales dynamically:
+ *    Formula: Base Cooldown + ((Streak - 1) * Time Penalty)
+ * 3. Dynamic Trap Window: The duration the system remembers the spam streak also stretches 
+ *    with aggressive clicking, up to a configured maximum threshold (`maxPenaltySeconds`).
+ * 
+ * @usage
+ * const { cooldown, bannerMessage, executeProtectedAction } = useAntiSpam(
+ *   fetchDataFunction,
+ *   () => isLoading,
+ *   { bannerDurationMs: 2000 }
+ * );
+ */
+
+export const useAntiSpam = (
+  actionFn: () => Promise<void> | void,
+  isAnythingLoading: () => boolean,
+  options: UseAntiSpamOptions = {}
+) => {
+  // Destructure options with defaults matching your original configuration
+  const {
+    baseCooldown = 3,
+    timePenalty = 5,
+    maxPenaltySeconds = 30,
+    baseTrapWindowMs = 8000,
+    bannerDurationMs = 4000,
+  } = options;
+
+  const [cooldown, setCooldown] = useState<number>(0);
+  const [bannerMessage, setBannerMessage] = useState<string | null>(null);
+
+  const clickStreakRef = useRef<number>(0);
+  const streakTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bannerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Handle the countdown timer ticking down every second
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (streakTimeoutRef.current) clearTimeout(streakTimeoutRef.current);
+      if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
+    };
+  }, []);
+
+  const executeProtectedAction = useCallback(async () => {
+    // 1. Guard against clicking during active cooldown or active loading state
+    if (cooldown > 0 || isAnythingLoading()) {
+      if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
+
+      if (clickStreakRef.current > 1) {
+        setBannerMessage(`You are clicking too fast! Please wait ${cooldown} sec/s for cooling down.`);
+      } else {
+        setBannerMessage(`Please wait ${cooldown} sec/s while we fetch data for you.`);
+      }
+
+      bannerTimeoutRef.current = setTimeout(() => {
+        setBannerMessage(null);
+      }, bannerDurationMs);
+      return;
+    }
+
+    // 2. Clear any existing timeout that resets the spam streak
+    if (streakTimeoutRef.current) clearTimeout(streakTimeoutRef.current);
+
+    // 3. Increment the click streak tracking spam
+    clickStreakRef.current += 1;
+
+    // 4. Calculate dynamic cooldown
+    const penalty = (clickStreakRef.current - 1) * timePenalty;
+    const totalCooldown = baseCooldown + penalty;
+
+    // 5. Trigger your actual protected function execution
+    await actionFn();
+
+    // 6. Lock the execution trigger
+    setCooldown(totalCooldown);
+
+    /* --- THE DYNAMIC TRAP WINDOW --- */
+    const trapPenaltyMs = (clickStreakRef.current - 1) * (timePenalty * 1000);
+    const dynamicTrapWindow = Math.min(
+      baseTrapWindowMs + trapPenaltyMs,
+      maxPenaltySeconds * 1000
+    );
+
+    // 7. Reset the streak if they manage to stay cool for the duration of the dynamic window
+    streakTimeoutRef.current = setTimeout(() => {
+      clickStreakRef.current = 0;
+    }, dynamicTrapWindow);
+  }, [cooldown, isAnythingLoading, actionFn, baseCooldown, timePenalty, maxPenaltySeconds, baseTrapWindowMs, bannerDurationMs]);
+
+  return {
+    cooldown,
+    bannerMessage,
+    executeProtectedAction,
+  };
+};
+

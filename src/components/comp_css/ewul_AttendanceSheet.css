@@ -66,6 +66,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    z-index: 1 !important; 
 }
 
 .attendance-table tr:hover .emp-name {
@@ -194,8 +195,7 @@ tr {
 }
 
 /* Fallback for N/A or empty slots */
-.status-inner.n-a,
-.status-inner.n\/a {
+.status-inner.n-a {
     background: transparent;
     color: #cbd5e1;
     border: 1px dashed #e2e8f0;
@@ -258,12 +258,6 @@ tr {
 .status-inner.absent { background: #ef4444; color: white; }
 
 /* Handle the N/A state */
-.status-inner.n\/a, 
-.status-inner.n-a { 
-    background: transparent; 
-    color: #cbd5e1; 
-    border: 1px dashed #e2e8f0;
-}
 
 
 .attendance-control-header {
@@ -686,6 +680,7 @@ tr {
     overflow: hidden;
 
     position: relative;
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Subtle Gradient overlay on hover */
@@ -812,6 +807,24 @@ tr {
   transform: translateY(-1px);
 }
 
+/* today format */
+.attendance-table th.today-column {
+  background: var(--color-primary) !important;
+  border-bottom: 3px solid var(--color-yellow, #ff0000) !important; /* Red accent baseline flag */
+}
+
+.attendance-table th.today-column .day-name,
+.attendance-table th.today-column .day-num {
+  color: white !important;
+  font-weight: 700;
+}
+.attendance-table th.today-column .header-date-box{
+  color: white !important;
+  font-weight: 700;
+  /* background-color: var(--color-yellow); */
+}
+
+
 /* The Highlighted Column */
 th.today-column .header-date-box {
   background: var(--color-primary); /* Navy Blue */
@@ -843,6 +856,23 @@ td.today-column-cell {
   border-right: 1px dashed rgba(58, 78, 252, 0.2);
 }
 
+.attendance-table td.today-cell {
+  background-color: rgba(58, 78, 252, 0.05) !important;
+  
+  /* Dashed side borders frame the current day clearly without being overly heavy */
+  border-left: 1px dashed rgba(58, 78, 252, 0.25) !important;
+  border-right: 1px dashed rgba(58, 78, 252, 0.25) !important;
+}
+
+.attendance-table td.today-cell .status-na:not(.entry-locked) {
+  border-color: rgba(58, 78, 252, 0.4) !important;
+  color: #3a4efc !important;
+}
+
+.today-label-flag {
+    color: var(--color-yellow);
+}
+
 /* --- WEEKEND STYLING --- */
 .weekend-column {
   background-color: var(--color-primary) !important;
@@ -850,6 +880,7 @@ td.today-column-cell {
 
 .weekend-column .day-name {
   color: color-mix(in srgb, var(--color-accent), white 50%); /* Red accent for SAT/SUN labels */
+  font-weight: 700;
 }
 
 .weekend-cell {
@@ -1171,14 +1202,283 @@ td.today-column-cell {
   transform: scale(0.96);
 }
 
-/* Disabled layout state context indicators */
-.status-cell.cell-disabled {
-  cursor: not-allowed !important;
-  opacity: 0.65;
-  background-color: rgba(240, 240, 240, 0.4) !important;
+
+/* Lock Range Separator Line */
+.attendance-table th.lock-boundary-edge,
+.attendance-table td.lock-boundary-edge {
+  /* Draws a prominent red division wall right on the left edge of the allowed zone */
+  border-left: 3px solid #ff4d4d !important;
+  position: relative;
 }
 
-/* Optional: Strip scale transformations on hover for non-interactable status inner tags */
-.status-cell.cell-disabled .status-inner {
-  pointer-events: none;
+/* Subtle label hint for the table header to explicitly call out the division */
+.attendance-table th.lock-boundary-edge::before {
+  /* content: '🔒'; */
+  position: absolute;
+  left: -14px;
+  top: 4px;
+  font-size: 10px;
+  opacity: 0.75;
+  z-index: 3;
+}
+
+/* Editable Range Closing Wall (Right Side Border) */
+.attendance-table th.lock-end-boundary,
+.attendance-table td.lock-end-boundary {
+  /* Green division wall separating the editable window from the future/locked window */
+  border-right: 3px solid #2ecc71 !important;
+}
+
+/* 🟢 Apply the disabled visual treatment directly to the status badge */
+/* Mute down the original background color using CSS filters */
+
+
+.status-inner.entry-locked {
+  cursor: not-allowed !important;
+  border-color: rgba(11, 4, 71, 0.276);
+  /* 🟢 Desaturates by 50% and dims the background brightness */
+  filter: saturate(0.8) brightness(0.85);
+  opacity: 1;
+}
+
+.status-inner.entry-locked-na {
+    cursor: not-allowed !important;
+    border-color: rgba(11, 4, 71, 0.276);
+    background-color: rgba(11, 4, 71, 0.276);
+    opacity: 1;
+}
+
+
+
+.today-star-icon {
+    flex-shrink: 0;
+    /* Optional: fill the star with color or keep it as an elegant outline */
+    fill: currentColor; 
+}
+
+
+/* 🟢 Cutoff Group Super Header Styles */
+.attendance-table th.cutoff-super-header {
+  background-color: var(--color-primary, #002060) !important; /* Navy Blue base */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  padding: 6px 4px !important;
+  font-size: 0.7rem;
+  z-index: 99 !important; /* Higher stacking context over regular sub-headers */
+}
+
+/* Fix sticky positioning offsets for the multi-tiered header layout */
+.attendance-table thead tr:nth-child(1) th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+.attendance-table thead tr:nth-child(2) th {
+  top: 2rem; /* Set this height value based on your actual top row padding */
+  z-index: 3;
+}
+
+.attendance-table th.sticky-col.cutoff-super-header {
+  position: sticky !important;
+  left: 0 !important;   /* Locks to the left side during horizontal scroll */
+  top: 0 !important;    /* Locks to the top side during vertical scroll */
+  z-index: 6 !important; /* Ultimate priority stacking index to avoid column clipping */
+  background-color: #0c1a30 !important; /* Keep a solid background color so data lines don't bleed through */
+}
+
+.attendance-table th.sticky-col.sticky-header.employee-name-header {
+  position: sticky !important;
+  left: 0 !important;    /* Absolute left lock for horizontal tracking */
+  top: 2rem !important;  /* ⚠️ MUST match the exact height of the row above it */
+  z-index: 5 !important;  /* Keeps it above passing table cell data */
+  background-color: var(--color-primary, #0c1a30) !important; /* Prevents text bleeding transparency */
+}
+
+/* Also ensure your standard employee name column (Row 2, Column 1) stays anchored below it */
+.attendance-table thead tr:nth-child(2) th.sticky-col {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 5 !important;
+}
+
+/* Title box inside the upper corner edge cell */
+.super-header-title {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.65rem;
+  text-align: left;
+  padding-left: 8px;
+}
+
+/* Group text container formatting */
+.cutoff-pill-badge {
+  display: inline-block;
+  color: #ffffff;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 10px;
+  border-radius: 4px; /* Gentle corner */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
+}
+
+/* Visual separation line between groups */
+.group-span-cell {
+  border-right: 2px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Clean, subtle presentation for the text label */
+.cutoff-text-header {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Accent separation line down the side of each cutoff zone */
+.group-span-cell {
+  border-right: 2px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Base default cutoff fallback (Navy Blue baseline) */
+.attendance-table th.cutoff-super-header {
+  background-color: #0c1a30 !important; 
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 6px 4px !important;
+  font-size: 0.7rem;
+  z-index: 4 !important;
+}
+
+/* 🔵 Odd Cutoffs: Pure Navy Blue Tint */
+.attendance-table th.cutoff-super-header.odd-cutoff {
+  background-color: var(--color-primary) !important; 
+}
+
+/* 🔴 Even Cutoffs: Muted Dark Wine Gradient variant to blend with your Red accent */
+.attendance-table th.cutoff-super-header.even-cutoff {
+  background-color: color-mix(in srgb, var(--color-primary), #24121b 30%)  !important; /* Subtle wine-dark tone */
+}
+
+/* ⚪ Last Month Tail Block: Muted Charcoal Neutral */
+.attendance-table th.cutoff-super-header.last-month-bg {
+  background-color: #17151f !important;
+  opacity: 0.85;
+}
+
+/* Clear vertical divider border alignment */
+.group-span-cell {
+  border-right: 2px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.cutoff-text-header {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* --- Dynamic Matching Header Alternation Rules --- */
+
+/* 🔵 Odd Cutoffs: Pure Navy Blue Tint Context */
+.attendance-table th.even-cutoff {
+  background-color: var(--color-primary) !important; 
+}
+
+/* 🔴 Even Cutoffs: Muted Dark Wine Tone Context */
+.attendance-table th.odd-cutoff {
+  background-color: color-mix(in srgb, var(--color-primary), #24121b 35%) !important;
+}
+
+/* ⚪ Last Month Tail Block Context: Muted Slate Charcoal */
+.attendance-table th.last-month-bg {
+  background-color: #17151f !important;
+}
+
+/* 🟢 Style Tweaks specifically for the Date Sub-Headers to distinguish them from the top labels */
+.attendance-table th.date-sub-header {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.attendance-table th.date-sub-header .day-name {
+  opacity: 0.7;
+}
+
+/* --- Keep visual exceptions distinct --- */
+/* If a weekend date happens to sit in an even or odd block, let it subtly shade over it */
+.attendance-table th.date-sub-header.weekend-column .day-name {
+  color: color-mix(in srgb, var(--color-accent), white 60%); 
+}
+
+/* Keep the absolute highlight visibility on Today unaffected */
+.attendance-table th.today-column {
+  background: var(--color-primary) !important;
+  box-shadow: inset 0 -4px 0 0 #ff0000 !important; /* Prominent red bottom bar */
+}
+
+
+
+
+/* Optional: Adds a gentle dot indicator beneath the day number for immediate recognition */
+.attendance-table th.date-sub-header.cutoff-start-column .header-date-box::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  background-color: var(--color-green);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--color-green);
+}
+
+/* Ensure that if it's the very first column of the entire scroll matrix, it doesn't break header borders */
+.attendance-table th.date-sub-header.cutoff-start-column:first-of-type {
+  border-left: none !important;
+}
+
+
+
+
+/* 1. Make the status stack the relative boundary anchor */
+.status-stack {
+  position: relative; /* Hooks the absolute loader exactly inside this boundary container */
+}
+
+/* 2. Position the loader cleanly as a tiny floating element inside the stack */
+.cell-mini-loader-overlay {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+  background: transparent; /* No blocking background mask */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  pointer-events: none; /* Mouse clicks pass right through to the status text */
+}
+
+/* 3. Small, crisp interactive theme spinner */
+.mini-spinner {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid #b0b3b8; /* Navy Blue Theme Primary */
+  border-top-color: #355ee5;   /* Accent Red Theme Sub */
+  border-radius: 50%;
+  animation: cellSpin 0.6s linear infinite;
+}
+
+@keyframes cellSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }

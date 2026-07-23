@@ -580,7 +580,8 @@ const OrderManagement: React.FC = () => {
             .map(trip => ({
                 [encodedLSKey]: trip[encodedLSKey],
                 ID: trip.ID,
-                OE: trip.OE
+                OE: trip.OE,
+                Source: trip.Source
             }));
     }, [trips]);
 
@@ -1158,6 +1159,7 @@ const OrderManagement: React.FC = () => {
                 showNumbering={true}
                 highlightSelected={true}
                 scrollTo={scrollToNewTrips}
+                accordion={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.accordion}
             />
         );
     };
@@ -1187,13 +1189,13 @@ const OrderManagement: React.FC = () => {
                 {showCharts ? <EyeOff size={16} /> : <Eye size={16} />}
                 <span>{showCharts ? 'Hide Trip Groups' : 'Show Trip Groups'}</span>
             </button>
-            <button
+            {/* <button
                 className="header-btn primary"
                 onClick={() => setShowNewTripModal(true)}
                 style={{ minWidth: 90 }}
             >
                 + New Trip
-            </button>
+            </button> */}
             <button className="header-btn secondary preload" onClick={() => { handleAdditionalOEGeneration("Preload"); setActiveView('form'); setSidebarVisible(true);}} style={{ minWidth: 90 }}>Preload</button>
             <button className="header-btn secondary mobilization" onClick={() => { handleAdditionalOEGeneration("Mobilization"); setActiveView('form'); setSidebarVisible(true); }} style={{ minWidth: 120 }}>Mobilization</button>
             {/*<button className="header-btn secondary" onClick={() => {setShowFuelRequestModal(true); fetchFuelRequests(true);}}>
@@ -1730,6 +1732,7 @@ const OrderManagement: React.FC = () => {
                     onRowClick={async (record) => {
                         handleTripsTableOnClick(record);
                     }}
+                    accordion={LIVE_DMS_TABLE_CONFIG.accordion}
                 />
             </div>
 

@@ -60,7 +60,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 5px;
-  background: var(--color-bg-blue) !important;
+  background: var(--color-bg) !important;
 }
 
 .ribbon-left-content {
@@ -520,7 +520,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: var(--color-bg-blue);
+    background: transparent;
     padding: 2px 12px;
     border-radius: 8px;
     /*border: 1px solid #ff0000;*/
@@ -1622,3 +1622,174 @@ td.cell.cell-blur {
   animation: tableflex-text-background-glow 1s infinite ease-in-out;
   line-height: 1;
 }
+
+
+
+
+
+
+/* accordion */
+/* --- ACCORDION GROUPING STYLES --- */
+.table-group-header-row {
+  cursor: pointer;
+}
+
+.table-group-header-row td {
+  padding: 10px 16px !important;
+  background-color: var(--color-bg-blue-2) !important; /* Soft backdrop color */
+  text-align: left !important;
+  border-bottom: 1px solid var(--color-border);
+
+  width: 50px;
+  
+  /* Stickiness is now declared safely with dynamic runtime positions */
+  position: sticky; 
+}
+
+.table-group-header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  width: max-content;
+  position: sticky;
+}
+
+
+.group-chevron-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--table-theme); /* Navy main color */
+  transition: transform 0.42s cubic-bezier(0.33, 0, 0.1, 1);
+}
+
+.group-chevron-icon.collapsed {
+  transform: rotate(0deg);
+}
+
+.group-chevron-icon:not(.collapsed) {
+  transform: rotate(95deg); /* Slightly past 90 degrees for a lively kinetic bounce */
+}
+
+.table-group-header-title {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: var(--font-size-base);
+}
+
+.table-group-header-count {
+  font-weight: 600;
+  color: var(--color-accent); /* Accent Red context counter */
+  font-size: var(--font-size-sm);
+}
+
+/* Subtle Left Border Accent on grouped items when hovered */
+.table-group-header-row:hover td {
+  background-color: color-mix(in srgb, var(--table-theme) 8%, var(--color-bg-blue)) !important;
+}
+
+
+.table-group-header-content {
+    position: relative;
+    will-change: transform;
+}
+
+
+/* --- ACCORDION ROW TRANSITIONS --- */
+
+/* Base setup for rows belonging to an accordion group */
+.transitioning-group-row {
+  transition: 
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease,
+    visibility 0.3s ease;
+  transform-origin: top center;
+}
+
+/* Expanded State */
+.transitioning-group-row.group-row-expanded {
+  visibility: visible;
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/* Collapsed State */
+.transitioning-group-row.group-row-collapsed {
+  visibility: collapse; /* Tells the table layout engine to safely hide the row frame */
+  opacity: 0;
+  transform: scaleY(0);
+}
+
+/* Smooth padding collapse on inner cells to prevent layout snaps */
+.transitioning-group-row.group-row-collapsed td {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  height: 0 !important;
+  border-bottom: none !important;
+  transition: padding 0.3s ease, height 0.3s ease;
+}
+
+.transitioning-group-row.group-row-expanded td {
+  transition: padding 0.3s ease, height 0.3s ease;
+}
+
+.ribbon-accordion-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(58, 78, 252, 0.25); /* Primary 2nd blue border soft tint */
+  color: #3a4efc; /* Primary 2nd blue */
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px; /* Gentle design rounded corner */
+  cursor: pointer;
+  height: 36px; /* Matches normal ribbon input/button row alignment */
+  transition: all 0.2s ease-in-out;
+}
+
+.ribbon-accordion-btn:hover {
+  background: rgba(58, 78, 252, 0.08);
+  border-color: #3a4efc;
+}
+
+.ribbon-accordion-btn.expanded {
+  background: rgba(58, 78, 252, 0.05);
+}
+
+.ribbon-accordion-icon {
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ribbon-accordion-text {
+  user-select: none;
+}
+
+
+
+/* Arrangement Active state button highlighting */
+.mode-toggle-btn.active-arrangement {
+  background: linear-gradient(135deg, var(--table-theme, #0a192f) 0%, #3a4efc 50%, var(--color-secondary, #ef4444) 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 8px rgba(58, 78, 252, 0.4);
+}
+
+/* Row Grab Handles layout formatting elements */
+.arrangement-grip-cell {
+  width: 40px;
+  text-align: center;
+  vertical-align: middle;
+  cursor: grab !important;
+  color: var(--table-theme);
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.arrangement-grip-cell:active {
+  cursor: grabbing !important;
+}
+

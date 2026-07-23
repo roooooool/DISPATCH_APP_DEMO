@@ -1,0 +1,107 @@
+/* ============================================================================
+   GSDC BRANDING & COMPONENT LAYOUT ARCHITECTURE
+   Location: src/components/comp_css/NewFeatureDashboard.css
+   ============================================================================ */
+
+/* Root Core Module Layout */
+.orders-module-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Datepicker Filtration Control Panel */
+.dashboard-filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.datepicker-group-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* GSDC Gentle Design Input Box with Gradient Outline imitation */
+.datepicker-input-wrapper label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-navy);
+  margin-bottom: 4px;
+}
+
+.datepicker-input-wrapper .gradient-input-box {
+  border-radius: 6px;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--color-navy), var(--color-red));
+}
+
+.datepicker-input-wrapper .gradient-input-box > div {
+  background: #ffffff;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.datepicker-input-wrapper input[type="date"] {
+  border: none;
+  outline: none;
+  padding: 6px 0;
+  font-size: 13px;
+  color: #334155;
+}
+
+/* Action Controls & Primary Action Override */
+.dashboard-filter-row .dashboard-action-btn.primary-solid {
+  height: 34px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Primary Flex Data Grid Frame Wrapper */
+.dashboard-table-frame {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Main Layout Workspace & Floating Panels */
+.dashboard-floating-container {
+  padding: 20px;
+}
+
+.dashboard-panel-header {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-panel-header h3 {
+  margin: 0;
+  color: var(--color-navy);
+}
+
+.dashboard-panel-header span {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Micro-animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}

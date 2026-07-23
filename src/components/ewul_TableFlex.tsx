@@ -7,7 +7,7 @@ import {
   ArrowUp, ArrowDown, ArrowUpDown, GripVertical, 
   Search, X, ChevronLeft, ChevronRight, 
   ChevronsLeft, ChevronsRight , Save, RotateCcw, Filter,
-  Settings
+  Settings, ChevronsUpDown, ChevronsDownUp, Move
 } from 'lucide-react';
 import {
   DndContext,
@@ -23,12 +23,14 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   horizontalListSortingStrategy,
+  verticalListSortingStrategy,
   useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import './comp_css/ewul_TableFlex.css';
 import { config } from 'maplibre-gl';
 import AutoDismissBanner from './ewul_Banner';
+
 
 //theme
 import '../theme.css';
@@ -37,10 +39,32 @@ import '../theme.css';
 import { increaseContrast, getHexFromCssVar } from '../utils/colorUtils';
 import type { Task } from '../utils/TaskWorkerContext';
 
+export interface DragDropSignalData {
+  record: any;
+  newIndex: number; // relative to list or group
+  group: string | null;
+  newOrder: any[];
+}
+
+
+export interface TableViewRef {
+  expandAll: () => void;
+  collapseAll: () => void;
+  isAnyCollapsed: () => boolean;
+  setArrangementMode: (enabled: boolean) => void;
+  toggleArrangementMode: () => void;
+}
+
 export interface TableModuleConfig {
   table_config: ColumnConfig[];
   searchable_cols: string[];
   rowStyle?: (row: any) => React.CSSProperties;
+  accordion?: accordionConfig | null
+};
+
+export interface accordionConfig {
+  enabled: boolean;
+  groupByCol: string;
 };
 
 export interface FilterOption {
@@ -60,6 +84,8 @@ export interface ColumnConfig {
   alias?: string | null;
   sort?: 'asc' | 'desc' | null;
   defaultSort?: 'asc' | 'desc';
+  orderSort?: number;
+  preventNoSort?: boolean;
   filter?: FilterConfig | null;
   portion?: number;
   sticky?: boolean;
@@ -102,11 +128,17 @@ interface TableViewProps {
   rowStyle?: (row: any) => React.CSSProperties;
   showNumbering?: boolean;
   scrollTo?: scrollToConfig | null;
-  highlightSelected?: boolean; // NEW PROP: highlight clicked row as success
+  highlightSelected?: boolean;
   storageKey?: string;
-  baseUnit?: number; // NEW PROP: base pixel unit for portion calculations
-  numberingWidth?: number; // NEW PROP: width of the numbering column when showNumbering is true
+  baseUnit?: number;
+  numberingWidth?: number;
   addTask?: (task: Omit<Task, 'id'>) => void;
+  accordion?: accordionConfig | null;
+  onAccordionChange?: (isAnyCollapsed: boolean) => void;
+  // Drag n Drop additions
+  onDragDrop?: (signal: DragDropSignalData) => void;
+  isArrangementMode?: boolean;
+  onArrangementModeChange?: (enabled: boolean) => void;
 }
 
 export const encodeColumnName = (name: string): string => {
@@ -250,13 +282,14 @@ const ColumnFilter = ({
 const SortableHeader = React.forwardRef<HTMLTableCellElement, { 
   column: ColumnConfig, 
   onSort: (key: string) => void, 
+  onTogglePreventNoSort: (key: string) => void,
   activeSorts: SortRule[],
   width: number,
   onResize: (id: string, newWidth: number) => void,
   styleOverride: React.CSSProperties,
   minWidth: number,
 }>(({ 
-  column, onSort, activeSorts, onResize, styleOverride, minWidth 
+  column, onSort, onTogglePreventNoSort, activeSorts, onResize, styleOverride, minWidth 
 }, ref) => {
   const {
     attributes, listeners, setNodeRef,
@@ -311,6 +344,9 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
   const currentSort = activeSorts.find(s => s.col === column.col);
   const sortIndex = activeSorts.findIndex(s => s.col === column.col);
 
+  const isPreventNoSort = column.preventNoSort === true;
+  const indicatorStyle = isPreventNoSort ? { color: 'var(--color-yellow)' } : {};
+
   return (
     <th 
       ref={setCombinedRef} 
@@ -324,9 +360,16 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
         </div>
 
         {/* CLICKABLE AREA: Updated with Multi-Sort UI */}
-        <div className="clickable-header-area" onClick={() => onSort(column.col)}>
+        <div 
+          className="clickable-header-area" 
+          onClick={() => onSort(column.col)}
+          onContextMenu={(e) => {
+            e.preventDefault(); // Stop default browser right-click menu
+            onTogglePreventNoSort(column.col);
+          }}
+        >
           <span>{column.alias || column.col}</span>
-          <span className="sort-icon-container">
+          <span className="sort-icon-container" style={indicatorStyle}>
             {currentSort ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                 {currentSort.dir === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>}
@@ -361,8 +404,50 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
   );
 });
 
+// --- SUB-COMPONENT: SORTABLE ROW COMPONENT ---
+const SortableRow = ({ 
+  id, 
+  row, 
+  renderRowContent, 
+  isArrangementMode,
+  className // 1. Accept className here
+}: { 
+  id: string; 
+  row: any; 
+  renderRowContent: (row: any) => React.ReactNode; 
+  isArrangementMode: boolean;
+  className?: string; // 2. Add type definition
+}) => {
+  const {
+    attributes, listeners, setNodeRef,
+    transform, transition, isDragging
+  } = useSortable({ id, disabled: !isArrangementMode });
+
+  const style: React.CSSProperties = {
+    // Only apply the transition if the item is NOT being dragged
+    transition: isDragging ? undefined : transition, 
+    transform: transform ? CSS.Transform.toString(transform) : undefined,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 120 : 'auto',
+    position: isDragging ? 'relative' : 'initial',
+    boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.15)' : 'none',
+  };
+
+  return (
+    <tr 
+      ref={setNodeRef} 
+      style={style} 
+      className={className} // 3. Pass it down to the native tr element
+      {...(isArrangementMode ? { ...attributes, ...listeners } : {})}
+    >
+      {renderRowContent(row)}
+    </tr>
+  );
+};
+
 // Set display name for easier debugging in dev tools
 SortableHeader.displayName = 'SortableHeader';
+SortableRow.displayName = 'SortableRow';
 
 // --- HELPER UTILITIES (Move these here) ---
 const getSavedLayout = (key: string) => {
@@ -416,7 +501,7 @@ interface SortRule {
 
 // --- MAIN COMPONENT ---
 
-const TableView: React.FC<TableViewProps> = ({ 
+const TableView = React.forwardRef<TableViewRef, TableViewProps>(({ 
   data: rawData, 
   config: initialConfig, 
   isLoading, 
@@ -434,7 +519,7 @@ const TableView: React.FC<TableViewProps> = ({
   onRefresh,
   colMinWidth = 150,
   onRowClick,
-  theme = 'var(--color-primary)', // Default Navy
+  theme = 'var(--color-primary)', 
   themeGradient = 'var(--loadbar-gradient)',
   allowMultipleSelection = false,
   onSelectionChange,
@@ -446,10 +531,71 @@ const TableView: React.FC<TableViewProps> = ({
   baseUnit: BUn = 100,
   numberingWidth = 45,
   addTask,
-}) => {
+  accordion,
+  onAccordionChange,
+  // DND additions
+  onDragDrop,
+  isArrangementMode: controlledArrangementMode,
+  onArrangementModeChange,
+}, ref) => {
+
+  // Arrangement state fallbacks if parent does not pass controller values
+  const [internalArrangementMode, setInternalArrangementMode] = useState(false);
+  const isArrangement = controlledArrangementMode !== undefined ? controlledArrangementMode : internalArrangementMode;
+
+  const toggleArrangement = () => {
+    const nextMode = !isArrangement;
+    if (onArrangementModeChange) {
+      onArrangementModeChange(nextMode);
+    } else {
+      setInternalArrangementMode(nextMode);
+    }
+  };
+
+  React.useImperativeHandle(ref, () => ({
+    expandAll: () => {
+      setCollapsedGroups({});
+      onAccordionChange?.(false);
+    },
+    collapseAll: () => {
+      if (!accordion?.groupByCol || !paginatedData.length) return;
+      const groupKey = encodeColumnName(accordion.groupByCol);
+      const allGroups: Record<string, boolean> = {};
+      paginatedData.forEach((row) => {
+        const colConfig = columns.find(c => c.col === groupKey);
+        const value = colConfig?.calculate ? colConfig.calculate(row) : (row[groupKey] ?? row[accordion.groupByCol]);
+        const groupName = value !== null && value !== undefined && value !== '' ? String(value) : 'Unassigned';
+        allGroups[groupName] = true;
+      });
+      setCollapsedGroups(allGroups);
+      onAccordionChange?.(true);
+    },
+    isAnyCollapsed: () => Object.keys(collapsedGroups).length > 0,
+    setArrangementMode: (enabled: boolean) => {
+      if (onArrangementModeChange) onArrangementModeChange(enabled);
+      else setInternalArrangementMode(enabled);
+    },
+    toggleArrangementMode: () => {
+      toggleArrangement();
+    }
+  }));
+
+  // Sensors Setup for distinct Column Headers Dnd vs Row Reordering Dnd
+  const headerSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const rowSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+
   const [isScrolledX, setIsScrolledX] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const topScrollRef = useRef<HTMLDivElement>(null);
+  const accordionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   // Track if user is actively dragging the fake scrollbar
   const mouseStartPos = useRef({ x: 0, y: 0 });
   const [isFakeScrollActive, setIsFakeScrollActive] = useState(false);
@@ -486,15 +632,23 @@ const TableView: React.FC<TableViewProps> = ({
     };
 
     const handleTableScroll = () => {
+
       // 1. Mark that the table is actively moving
       if (!isScrollingRef.current) isScrollingRef.current = true;
 
       // 2. Clear the previous "stop" detection timer
       if (scrollEndTimerRef.current) clearTimeout(scrollEndTimerRef.current);
       
-        if (!isDraggingRef.current && topScrollRef.current) {
-          topScrollRef.current.scrollLeft = tableScroll.scrollLeft;
-        }
+      if (!isDraggingRef.current && topScrollRef.current) {
+        topScrollRef.current.scrollLeft = tableScroll.scrollLeft;
+      }
+
+      const scrollLeft = tableScroll.scrollLeft;
+      Object.values(accordionRefs.current).forEach(el => {
+          if (el) {
+              el.style.transform = `translateX(${scrollLeft}px)`;
+          }
+      });
     };
 
     const handleFakeMouseDown = () => {
@@ -683,6 +837,30 @@ const TableView: React.FC<TableViewProps> = ({
   const [pageSize, setPageSize] = useState(showRowCount);
 
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const isAllGroupsCollapsed = Object.keys(collapsedGroups).length > 0;
+
+  useEffect(() => {
+    setCollapsedGroups({});
+  }, [searchTerm, activeFilters]);
+
+  const toggleGroup = (groupName: string) => {
+    setCollapsedGroups(prev => {
+      const next = {
+        ...prev,
+        [groupName]: !prev[groupName]
+      };
+      
+      // Calculate if anything is collapsed in the next state frame
+      const isAnyCollapsedNow = Object.values(next).some(val => val === true);
+      onAccordionChange?.(isAnyCollapsedNow);
+      
+      return next;
+    });
+  };
+
+
   const containerStyle: React.CSSProperties = {
     overflowX: overflowX ? 'auto' : 'hidden',
     overflowY: overflowY ? 'auto' : 'hidden',
@@ -858,16 +1036,17 @@ const TableView: React.FC<TableViewProps> = ({
     } 
     // Priority B: Fallback to initialConfig defaults
     else {
-      // Find all columns with defaultSort or sort specified
-      initialConfig.forEach(col => {
-        const dir = col.defaultSort || col.sort;
-        if (dir) {
-          initialSorts.push({
-            col: encodeColumnName(col.col),
-            dir: dir as 'asc' | 'desc'
-          });
-        }
-      });
+      initialSorts = initialConfig
+          .filter(col => col.defaultSort)
+          .sort((a, b) => {
+              const orderA = a.orderSort ?? Number.MAX_SAFE_INTEGER;
+              const orderB = b.orderSort ?? Number.MAX_SAFE_INTEGER;
+              return orderA - orderB;
+          })
+          .map(col => ({
+              col: encodeColumnName(col.col),
+              dir: col.defaultSort!
+          }));
     }
 
     setMultiSort(initialSorts);
@@ -904,13 +1083,24 @@ const TableView: React.FC<TableViewProps> = ({
     setMultiSort(prev => {
       const existingIndex = prev.findIndex(s => s.col === columnKey);
       const newSort = [...prev];
+      
+      // Find the original column configuration to check for preventNoSort
+      const targetColConfig = columns.find(c => c.col === columnKey);
+      const preventNoSort = targetColConfig?.preventNoSort ?? false;
 
       if (existingIndex > -1) {
-        // Toggle direction: asc -> desc -> remove
         if (newSort[existingIndex].dir === 'asc') {
+          // Toggle direction: asc -> desc
           newSort[existingIndex] = { ...newSort[existingIndex], dir: 'desc' };
         } else {
-          newSort.splice(existingIndex, 1);
+          // Current status is 'desc'
+          if (preventNoSort) {
+            // Cycle back to 'asc' instead of dropping the rule
+            newSort[existingIndex] = { ...newSort[existingIndex], dir: 'asc' };
+          } else {
+            // Default behavior: drop sort rule from multiSort array
+            newSort.splice(existingIndex, 1);
+          }
         }
         return newSort;
       } else {
@@ -1060,16 +1250,18 @@ const TableView: React.FC<TableViewProps> = ({
     setSortBlanks(false);
     
     // Set multiSort to defaults from initialConfig
-    let initialSorts: SortRule[] = [];
-    initialConfig.forEach(col => {
-      const dir = col.defaultSort || col.sort;
-      if (dir) {
-        initialSorts.push({
+    const initialSorts = initialConfig
+      .filter(col => col.defaultSort)
+      .sort((a, b) => {
+          const orderA = a.orderSort ?? Number.MAX_SAFE_INTEGER;
+          const orderB = b.orderSort ?? Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+      })
+      .map(col => ({
           col: encodeColumnName(col.col),
-          dir: dir as 'asc' | 'desc'
-        });
-      }
-    });
+          dir: col.defaultSort!
+      }));
+
     setMultiSort(initialSorts);
     
     setColumnWidths({});
@@ -1092,7 +1284,8 @@ const TableView: React.FC<TableViewProps> = ({
       columns: columns.map(c => ({
         col: c.col,
         rawCol: (c as any).rawCol,
-        alias: c.alias
+        alias: c.alias,
+        preventNoSort: c.preventNoSort
       })),
       widths: columnWidths,
       fontSizePercent,
@@ -1123,6 +1316,223 @@ const TableView: React.FC<TableViewProps> = ({
     }
   }, [columns, columnWidths, paginatedData, isLoading]);
 
+  
+  
+  const handleRowDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    // Dynamic extraction logic matching your Accordion structures
+    let targetGroup: string | null = null;
+    let oldIndexWithinGroup = -1;
+    let newIndexWithinGroup = -1;
+
+    if (accordion?.enabled && accordion?.groupByCol) {
+      const groupKey = encodeColumnName(accordion.groupByCol);
+      
+      // Calculate active record's group context
+      const activeRecord = paginatedData.find(r => r._rowId === activeId);
+      if (activeRecord) {
+        const colConfig = columns.find(c => c.col === groupKey);
+        const val = colConfig?.calculate ? colConfig.calculate(activeRecord) : (activeRecord[groupKey] ?? activeRecord[accordion.groupByCol]);
+        targetGroup = val !== null && val !== undefined && val !== '' ? String(val) : 'Unassigned';
+      }
+
+      // Filter contextual elements belonging strictly within this targeted boundary
+      const boundaryRows = paginatedData.filter(row => {
+        const colConfig = columns.find(c => c.col === groupKey);
+        const val = colConfig?.calculate ? colConfig.calculate(row) : (row[groupKey] ?? row[accordion.groupByCol]);
+        const currentGroup = val !== null && val !== undefined && val !== '' ? String(val) : 'Unassigned';
+        return currentGroup === targetGroup;
+      });
+
+      oldIndexWithinGroup = boundaryRows.findIndex(r => r._rowId === activeId);
+      newIndexWithinGroup = boundaryRows.findIndex(r => r._rowId === overId);
+
+      if (onDragDrop && oldIndexWithinGroup !== -1 && newIndexWithinGroup !== -1) {
+        const sortedBoundary = arrayMove(boundaryRows, oldIndexWithinGroup, newIndexWithinGroup);
+        onDragDrop({
+          record: activeRecord,
+          newIndex: newIndexWithinGroup + 1, // Output human-readable order index 1-based
+          group: targetGroup,
+          newOrder: sortedBoundary
+        });
+      }
+    } else {
+      // Standard structural mapping flat arrays
+      const oldIndex = paginatedData.findIndex(r => r._rowId === activeId);
+      const newIndex = paginatedData.findIndex(r => r._rowId === overId);
+      
+      if (onDragDrop && oldIndex !== -1 && newIndex !== -1) {
+        const reorderedSlice = arrayMove(paginatedData, oldIndex, newIndex);
+        onDragDrop({
+          record: paginatedData[oldIndex],
+          newIndex: newIndex + 1,
+          group: null,
+          newOrder: reorderedSlice
+        });
+      }
+    }
+  };
+
+  // Altered contents wrapper matching renderRow structure
+  const renderRowContentElements = (row: any, rowIndex: number) => {
+    const isSelected = selectedRows.some(r => r._rowId === row._rowId);
+    const absoluteIndex = (currentPage - 1) * pageSize + (rowIndex + 1);
+    
+    return (
+      <>
+        {isArrangement && (
+          <td className="arrangement-grip-cell stop-propagation" style={{ width: '40px', minWidth: '40px' }}>
+            <GripVertical size={16} className="grip-move-icon" />
+          </td>
+        )}
+
+        {isSelectionMode && !isArrangement && (
+          <td className="selection-cell" onClick={(e) => e.stopPropagation()}>
+            <input 
+              type="checkbox" 
+              className="gsdc-checkbox"
+              checked={isSelected}
+              onChange={() => toggleRowSelection(row)}
+            />
+          </td>
+        )}
+
+        {showNumbering && (
+          <td className={`numbering-cell${isScrolledX ? ' numbering-blur' : ''}`} title={`${absoluteIndex}`}>
+            {absoluteIndex}
+          </td>
+        )}
+
+        {columns.map((column, colIndex) => {
+          const cellValue = column.calculate ? column.calculate(row) : (row[column.col] ?? row[(column as any).rawCol]);
+          const isSearchable = searchCol.length > 0 ? searchCol.includes((column as any).rawCol || column.col) : true;
+          const conditionalStyle = column.cellStyle ? column.cellStyle(row) : {};
+          const isSticky = columnStyles[column.col]?.position === 'sticky';
+
+          return (
+            <td key={colIndex} style={{...columnStyles[column.col], ...conditionalStyle }} className={`cell ${(isSticky && isScrolledX) ? 'cell-blur' : ''}`}>
+              {column.render
+                ? column.render(cellValue, row, searchTerm, addTask, (fontSizePercent/100))
+                : neonCell?.rowId === row._rowId && neonCell?.colKey === column.col ? (
+                    <span className="text-glow-wrapper">
+                      <HighlightText text={cellValue} highlight={searchTerm} isSearchable={isSearchable} />
+                    </span>
+                  ) : (
+                    <HighlightText text={cellValue} highlight={searchTerm} isSearchable={isSearchable} />
+                  )}
+            </td>
+          );
+        })}
+      </>
+    );
+  };
+
+  // Replaces previous standalone dynamic tr tags setup inside mapping trees
+  const renderRow = (row: any, rowIndex: number) => {
+    const isSelected = selectedRows.some(r => r._rowId === row._rowId);
+    const dynamicRowStyle = typeof rowStyle === 'function' ? rowStyle({ ...row, _idx: rowIndex }) : {};
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+      if (isArrangement) return; // Allow dnd-kit sensors to drive actions completely
+      mouseStartPos.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleMouseUp = (e: React.MouseEvent) => {
+      if (isArrangement || (e.target as HTMLElement).closest('.stop-propagation')) return;
+      const deltaX = Math.abs(e.clientX - mouseStartPos.current.x);
+      const deltaY = Math.abs(e.clientY - mouseStartPos.current.y);
+      if (deltaX > 5 || deltaY > 5) return;
+
+      if (isSelectionMode) {
+        toggleRowSelection(row);
+      } else if (highlightSelected) {
+        if (highlightedRowId === row._rowId) {
+          setHighlightedRowId(null);
+          setHighlightType(null);
+        } else {
+          setHighlightedRowId(row._rowId);
+          setHighlightType('success');
+        }
+      }
+      if (onRowClick) onRowClick(row);
+    };
+
+    return (
+      <SortableRow
+        key={row._rowId}
+        id={row._rowId}
+        row={row}
+        isArrangementMode={isArrangement}
+        renderRowContent={(r) => renderRowContentElements(r, rowIndex)}
+      />
+    );
+  };
+
+
+  const toggleExpanCollapseAllGroup = () => {
+    const isAnyCollapsedBefore = Object.keys(collapsedGroups).length > 0;
+    
+    const willBeAllCollapsed = !isAnyCollapsedBefore; 
+
+    if (isAnyCollapsedBefore) {
+      setCollapsedGroups({});
+    } else {
+      if (!accordion?.groupByCol || !paginatedData.length) return;
+      const groupKey = encodeColumnName(accordion.groupByCol);
+      const allGroups: Record<string, boolean> = {};
+      
+      paginatedData.forEach((row) => {
+        const colConfig = columns.find(c => c.col === groupKey);
+        const value = colConfig?.calculate ? colConfig.calculate(row) : (row[groupKey] ?? row[accordion.groupByCol]);
+        const groupName = value !== null && value !== undefined && value !== '' ? String(value) : 'Unassigned';
+        allGroups[groupName] = true;
+      });
+      
+      setCollapsedGroups(allGroups);
+    }
+
+    // Send the signal out to the parent component with the new status
+    onAccordionChange?.(willBeAllCollapsed);
+  };
+
+
+  const handleTogglePreventNoSort = (columnKey: string) => {
+    // 1. Find the target column to check its current state before updating
+    const targetColumn = columns.find(col => col.col === columnKey);
+    if (!targetColumn) return;
+
+    const willBePreventNoSort = !targetColumn.preventNoSort;
+    const currentSort = multiSort.find(s => s.col === columnKey);
+
+    // 2. Update the columns configuration state
+    setColumns(prevColumns => 
+      prevColumns.map(col => 
+        col.col === columnKey 
+          ? { ...col, preventNoSort: willBePreventNoSort } 
+          : col
+      )
+    );
+
+    // 3. Handle sort side-effects based on the state transition
+    if (willBePreventNoSort) {
+      // Transition: false -> true
+      // If it is NOT currently sorted as 'asc' or 'desc', trigger standard sort behavior (default to 'asc')
+      if (!currentSort || (currentSort.dir !== 'asc' && currentSort.dir !== 'desc')) {
+        handleSort(columnKey); 
+      }
+    } else {
+      // Transition: true -> false
+      // Forcefully remove this column's sorting rule completely (set to "no sort")
+      setMultiSort(prevRules => prevRules.filter(s => s.col !== columnKey));
+    }
+  };
+
+
 
 
 
@@ -1139,8 +1549,18 @@ const TableView: React.FC<TableViewProps> = ({
             </div>
           </div>
 
+          {/* ARRANGEMENT MODE TOGGLE BUTTON */}
+          <button 
+            onClick={toggleArrangement}
+            className={`action-btn mode-toggle-btn ${isArrangement ? 'active-arrangement' : ''}`}
+            title={isArrangement ? "Switch to View Mode" : "Switch to Arrangement Mode"}
+          >
+            <Move size={16} style={{ color: isArrangement ? '#fff' : 'var(--table-theme)' }} />
+            <span>{isArrangement ? 'Arranging...' : 'Arrange Rows'}</span>
+          </button>
+
           {/* MULTI-SELECT CONTROL */}
-          {allowMultipleSelection && (
+          {!isArrangement && allowMultipleSelection && (
             <div className="selection-controls">
 
               {!isSelectionMode && (
@@ -1241,6 +1661,24 @@ const TableView: React.FC<TableViewProps> = ({
         </div>
 
         <div className="ribbon-right-controls">
+
+          
+          {accordion?.enabled && (
+            <button 
+              onClick={toggleExpanCollapseAllGroup}
+              className={`ribbon-accordion-btn ${!isAllGroupsCollapsed ? 'expanded' : ''}`}
+              title={!isAllGroupsCollapsed ? "Collapse All Groups" : "Expand All Groups"}
+            >
+              <span className="ribbon-accordion-icon">
+                {!isAllGroupsCollapsed ? (
+                  <ChevronsDownUp size={16} className="stop-propagation" />
+                ) : (
+                  <ChevronsUpDown size={16} className="stop-propagation" />
+                )}
+              </span>
+            </button>
+          )}
+
 
           {/* REFRESH BUTTON */}
           <button 
@@ -1418,220 +1856,142 @@ const TableView: React.FC<TableViewProps> = ({
           </div>
         )}
         
-        <table 
-          className="gsdc-reusable-table"
-          style={{ 
-            width: '100%', 
-            borderCollapse: 'collapse',
-            display: 'table', // Ensure it stays as a table
-            minWidth: 'max-content' // This tells the table to expand to fit its children's minWidths
-          }}
-        >
-          <thead>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <tr>
-
-                {/* SELECTION HEADER */}
-                {isSelectionMode && (
-                  <th className="selection-col-header" style={{ width: '40px', minWidth: '40px' }}>
-                    <div className="header-content justify-center">
-                      <input 
-                        type="checkbox" 
-                        className="gsdc-checkbox"
-                        checked={paginatedData.length > 0 && paginatedData.every(row => selectedRows.some(r => r._rowId === row._rowId))}
-                        onChange={handleSelectAll}
-                      />
-                    </div>
-                  </th>
-                )}
-
-                {/* # HEADER */}
-                {showNumbering && (
-                  <th className="numbering-header" 
-                    style={{ 
-                      width: `${numberingWidth}px`, 
-                      minWidth: `${numberingWidth}px`, 
-                      flex: `0 0 ${numberingWidth}px` // 0 0 means "don't grow, don't shrink"
-                    }}
-                  >
-                    <div className="header-content justify-center">
-                      <span>#</span>
-                    </div>
-                  </th>
-                )}
-
-                {/* DATA HEADER */}
-                <SortableContext key={columns.map(c => c.col).join(',')} items={columns.map(c => c.col)} strategy={horizontalListSortingStrategy}>
+        <DndContext sensors={rowSensors} collisionDetection={closestCenter} onDragEnd={handleRowDragEnd}>
+          <table 
+            className="gsdc-reusable-table"
+            style={{ 
+              width: '100%', 
+              borderCollapse: 'collapse',
+              display: 'table', // Ensure it stays as a table
+              minWidth: 'max-content' // This tells the table to expand to fit its children's minWidths
+            }}
+          >
+            <thead>
+              <DndContext sensors={headerSensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <tr>
                   
-                    {columns.map((column) => (
-                    <SortableHeader 
-                        key={column.col} 
-                        column={column} 
-                        onSort={handleSort} 
-                        activeSorts={multiSort}
-                        width={columnWidths[column.col] || 60} 
-                        onResize={handleColumnResize} 
-                        styleOverride={columnStyles[column.col]}
-                        minWidth={colMinWidth}
-                        ref={(el: HTMLTableCellElement | null) => { 
-                            headerRefs.current[column.col] = el; 
-                        }}
-                      />
-                    ))}
-
-                </SortableContext>
-              </tr>
-            </DndContext>
-          </thead>
-          <tbody>
-            {isLoading && data.length === 0 ? (
-              /* 1. SKELETON LOADING STATE */
-              [...Array(20)].map((_, i) => (
-                <tr key={i} className="skeleton-row">
-                  {/* Add extra skeleton cell if selection is enabled */}
+                  {/* SELECTION HEADER */}
                   {isSelectionMode && (
-                    <td className="selection-cell">
-                      <div className="skeleton-cell mini"></div>
-                    </td>
-                  )}
-                  {columns.map((_, j) => (
-                    <td key={j}><div className="skeleton-cell"></div></td>
-                  ))}
-                </tr>
-              ))
-            ) : paginatedData.length === 0 ? (
-              /* 2. EMPTY STATE */
-              <tr>
-                <td 
-                  colSpan={isSelectionMode ? columns.length + 1 : columns.length} 
-                  className="no-results"
-                >
-                  No records found.
-                </td>
-              </tr>
-            ) : (
-
-              /* 3. DATA RENDER */
-              paginatedData.map((row, rowIndex) => {
-                const isSelected = selectedRows.some(r => r._rowId === row._rowId);
-                const absoluteIndex = (currentPage - 1) * pageSize + (rowIndex + 1);
-                const dynamicRowStyle = typeof rowStyle === 'function' 
-                  ? rowStyle({ ...row, _idx: rowIndex }) 
-                  : {};
-                
-
-                // CUSTOME CLICK HANDLER TO PREVENT CLICK ON DRAG/SELECTION
-                const handleMouseDown = (e: React.MouseEvent) => {
-                  mouseStartPos.current = { x: e.clientX, y: e.clientY };
-                };
-
-                const handleMouseUp = (e: React.MouseEvent) => {
-                  if ((e.target as HTMLElement).closest('.stop-propagation')) {
-                    return;
-                  }
-
-                  const deltaX = Math.abs(e.clientX - mouseStartPos.current.x);
-                  const deltaY = Math.abs(e.clientY - mouseStartPos.current.y);
-
-                  // If moved more than 5px, it's a drag/selection; do nothing.
-                  if (deltaX > 5 || deltaY > 5) return;
-
-                  // ONCLICK LOGIC
-                  if (isSelectionMode) {
-                    toggleRowSelection(row);
-                  } else if (highlightSelected) {
-                    if (highlightedRowId === row._rowId) {
-                      setHighlightedRowId(null);
-                      setHighlightType(null);
-                    } else {
-                      setHighlightedRowId(row._rowId);
-                      setHighlightType('success');
-                    }
-                  } else {
-                    setHighlightedRowId(null);
-                    setHighlightType(null);
-                  }
-                  
-                  if (onRowClick) {
-                    onRowClick(row);
-                  }
-                };
-
-                // Attach ref for scroll/highlight
-                return (
-                  <tr
-                    key={row.ID || rowIndex}
-                    ref={el => { rowRefs.current[row._rowId] = el; }}
-                    className={`table-row-interactive${isSelected ? ' row-selected' : ''}${highlightedRowId === row._rowId ? ` highlight-row highlight-${highlightType}` : ''}`}
-                    style={dynamicRowStyle}
-                    onMouseDown={handleMouseDown}
-                    onMouseUp={handleMouseUp}
-                  >
-                    {/* SELECTION COLUMN CELL */}
-                    {isSelectionMode && (
-                      <td className="selection-cell" onClick={(e) => e.stopPropagation()}>
+                    <th className="selection-col-header" style={{ width: '40px', minWidth: '40px' }}>
+                      <div className="header-content justify-center">
                         <input 
                           type="checkbox" 
                           className="gsdc-checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleRowSelection(row)}
+                          checked={paginatedData.length > 0 && paginatedData.every(row => selectedRows.some(r => r._rowId === row._rowId))}
+                          onChange={handleSelectAll}
                         />
-                      </td>
-                    )}
+                      </div>
+                    </th>
+                  )}
 
-                    {/* NUMBERING COLUMN */}
-                    {showNumbering && (
-                      <td 
-                        className={`numbering-cell${isScrolledX ? ' numbering-blur' : ''}`}
-                        title={`${absoluteIndex}`}
-                      >
-                        {absoluteIndex}
-                      </td>
-                    )}
+                  {/* # HEADER */}
+                  {showNumbering && (
+                    <th className="numbering-header" 
+                      style={{ 
+                        width: `${numberingWidth}px`, 
+                        minWidth: `${numberingWidth}px`, 
+                        flex: `0 0 ${numberingWidth}px` // 0 0 means "don't grow, don't shrink"
+                      }}
+                    >
+                      <div className="header-content justify-center">
+                        <span>#</span>
+                      </div>
+                    </th>
+                  )}
 
-                    {/* DATA COLUMN CELLS */}
-                    {columns.map((column, colIndex) => {
-                      const cellValue = column.calculate 
-                        ? column.calculate(row) 
-                        : (row[column.col] ?? row[(column as any).rawCol]);
+                  {/* DATA HEADER */}
+                  <SortableContext key={columns.map(c => c.col).join(',')} items={columns.map(c => c.col)} strategy={horizontalListSortingStrategy}>
+                    
+                      {columns.map((column) => (
+                      <SortableHeader 
+                          key={column.col} 
+                          column={column} 
+                          onSort={handleSort} 
+                          onTogglePreventNoSort={handleTogglePreventNoSort}
+                          activeSorts={multiSort}
+                          width={columnWidths[column.col] || 60} 
+                          onResize={handleColumnResize} 
+                          styleOverride={columnStyles[column.col]}
+                          minWidth={colMinWidth}
+                          ref={(el: HTMLTableCellElement | null) => { 
+                              headerRefs.current[column.col] = el; 
+                          }}
+                        />
+                      ))}
 
-                      const isSearchable = searchCol.length > 0 
-                        ? searchCol.includes((column as any).rawCol || column.col) 
-                        : true;
+                  </SortableContext>
+                </tr>
+              </DndContext>
+            </thead>
+              <tbody>
+                <SortableContext items={paginatedData.map(r => r._rowId)} strategy={verticalListSortingStrategy}>
+                  {(() => {
+                    if (paginatedData.length === 0) return null;
+
+                    if (!accordion?.enabled || !accordion?.groupByCol) {
+                      return paginatedData.map((row, rowIndex) => renderRow(row, rowIndex));
+                    }
+
+                    const groupKey = encodeColumnName(accordion.groupByCol);
+                    const groupedRows: Record<string, typeof paginatedData> = {};
+                    
+                    paginatedData.forEach((row) => {
+                      const colConfig = columns.find(c => c.col === groupKey);
+                      const value = colConfig?.calculate ? colConfig.calculate(row) : (row[groupKey] ?? row[accordion.groupByCol]);
+                      const groupName = value !== null && value !== undefined && value !== '' ? String(value) : 'Unassigned';
                       
-                      const conditionalStyle = column.cellStyle ? column.cellStyle(row) : {}; //CALCULATE CONDITIONAL FORMATTING
-                      const isSticky = columnStyles[column.col]?.position === 'sticky';
+                      if (!groupedRows[groupName]) {
+                        groupedRows[groupName] = [];
+                      }
+                      groupedRows[groupName].push(row);
+                    });
 
+                    const totalCols = columns.length + (isSelectionMode ? 1 : 0) + (showNumbering ? 1 : 0);
+
+                    return Object.entries(groupedRows).map(([groupName, rows]) => {
+                      const isCollapsed = !!collapsedGroups[groupName];
+                      
                       return (
-                        <td key={colIndex} style={{...columnStyles[column.col], ...conditionalStyle }} className={`cell ${(isSticky && isScrolledX) ? 'cell-blur' : ''}`}>
-                          {column.render
-                            ? column.render(cellValue, row, searchTerm, addTask, (fontSizePercent/100))
-                            : (
-                              neonCell?.rowId === row._rowId && neonCell?.colKey === column.col ? (
-                                <span className={`text-glow-wrapper`}>
-                                  <HighlightText 
-                                    text={cellValue} 
-                                    highlight={searchTerm} 
-                                    isSearchable={isSearchable} 
-                                  />
+                        <React.Fragment key={`group-${groupName}`}>
+                          {/* Accordion Separator Row */}
+                          <tr className="table-group-header-row stop-propagation">
+                            <td 
+                              colSpan={totalCols} 
+                              onClick={() => toggleGroup(groupName)}
+                              className='accordion-cell'
+                            >
+                              <div 
+                                ref={el => {
+                                    accordionRefs.current[groupName] = el;
+                                }}
+                                className="table-group-header-content"
+                              >
+                                <span className={`group-chevron-icon ${isCollapsed ? 'collapsed' : ''}`}>
+                                  <ChevronRight size={16} />
                                 </span>
-                              ) : (
-                                <HighlightText 
-                                  text={cellValue} 
-                                  highlight={searchTerm} 
-                                  isSearchable={isSearchable} 
-                                />
-                              )
-                            )}
-                        </td>
+                                <span className="table-group-header-title">{groupName}</span>
+                                <span className="table-group-header-count">({rows.length})</span>
+                              </div>
+                            </td>
+                          </tr>
+                          
+                          {/* Render child records with transition wrappers instead of short-circuiting */}
+                          {rows.map((row, _idx) => {
+                            const renderedRow = renderRow(row, row._rowIdx);
+                            
+                            // Inject the animation tracking class dynamically into the <tr>
+                            return React.cloneElement(renderedRow, {
+                              className: `${renderedRow.props.className || ''} transitioning-group-row ${isCollapsed ? 'group-row-collapsed' : 'group-row-expanded'}`
+                            });
+                          })}
+                        </React.Fragment>
                       );
-                    })}
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                    });
+                  })()}
+                </SortableContext>
+            </tbody>
+          </table>
+        </DndContext>
       </div>
 
 
@@ -1646,6 +2006,6 @@ const TableView: React.FC<TableViewProps> = ({
       
     </div>
   );
-};
+});
 
 export default TableView;

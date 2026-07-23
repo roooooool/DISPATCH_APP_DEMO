@@ -1,7 +1,7 @@
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom"; // Changed to HashRouter
 import { useEffect, useState, useCallback } from 'react';
-//wew
 
+//PAGES
 import Login from "./pages/login";
 import TEMPLATE_PAGE from "./pages/template";
 import DASHPage from "./pages/FleetDashboard";
@@ -14,6 +14,8 @@ import DeveloperPage from './pages/DeveloperPage';
 import ErrorPage from "./pages/ErrorPage";
 import UpdateRequired from "./pages/UpdateRequiredPage";
 import IncidentManagement from "./pages/IncidentManagement";
+import NewFeatureDashboard from "./pages/NewFeatureDashboard";
+import OrderDistribution from "./pages/OrderDistribution";
 
 //CUSTOM
 import ProtectedRoute from "./components/ewul_ProtectedRoute"; // Route guard 
@@ -26,10 +28,14 @@ import MaintenanceChecker from './components/maintenanceChecker';
 import {ErrorChecker} from './components/errorChecker'; // Import the error checker to wrap the app
 import { useVersionCheck } from './components/versionChecker'; // Import the version checker hook
 
+
+
 const VersionGuard = ({ children }: { children: React.ReactNode }) => {
   useVersionCheck(); // This runs the Major/Minor comparison logic
   return <>{children}</>;
 };
+
+
 
 // Move the logic into a child component
 function MainContent() {
@@ -92,11 +98,13 @@ function MainContent() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/dash" element={<ProtectedRoute><DASHPage/></ProtectedRoute>} />
                     <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT/></ProtectedRoute>} />
+                    <Route path="/order-dist" element={<ProtectedRoute><OrderDistribution/></ProtectedRoute>} />
                     <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring/></ProtectedRoute>} />
                     <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
                     <Route path="/maintenance" element={<MaintenancePage details={{}} />} />
                     <Route path="/developer" element={<ProtectedRoute><DeveloperPage /></ProtectedRoute>} />
                     <Route path="/loading" element={<LoadingPage />} />
+                    <Route path="/test" element={<NewFeatureDashboard />} />
                     <Route path="/error" element={<ErrorPage />} />
                     <Route path="/update-required" element={<UpdateRequired />} />
                     <Route path="/incidents" element={<ProtectedRoute><IncidentManagement /></ProtectedRoute>} />

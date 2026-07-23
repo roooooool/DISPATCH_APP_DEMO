@@ -318,6 +318,7 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
     };
 
     const [hasSubmitted, setHasSubmitted] = useState(false);
+
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         setHasSubmitted(true);
         e.preventDefault();
@@ -327,11 +328,14 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
             setValidationMessage(validation.message);
             return;
         }
-
+        
+        //UPLOAD ATTACHMENT TO SP
         const responseData = await uploadAttachments(tempFiles, formData.Id ? String(formData.Id) : undefined);
+
         const attachmentID = (responseData as any)?.data?.createdID;
         const tripID = tripData?.ID ? tripData.ID.toString() : undefined;
 
+        // ACTUAL RECORD FR
         const cleanedFormData: FctFinal = {
 
             Category: formData.Category || '',
@@ -1016,8 +1020,9 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                                                     <GradientRadioGroup
                                                         name="compressor"
                                                         options={yesnoOptions}
-                                                        value={formData.Compressor || 'No'}
+                                                        value={formData.Subengine === "No" ? "No" : formData.Compressor || 'No'}
                                                         onChange={(value: any) => handleInputChange('Compressor', value)}
+                                                        disabled={formData.Subengine === "No"}
                                                     />
 
                                                 </div>

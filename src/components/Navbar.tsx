@@ -6,7 +6,7 @@ import "./comp_css/ChatBadge.css";
 import SettingsModal from "./SettingsModal";
 import { Menu, X, MessageSquare } from 'lucide-react'; // Import icons for hamburger menu
 import NotificationBell  from './NotificationBell'; // Import the new component
-// import _ChatBox, { type ChatBoxHandle } from './ChatBox'; // Import the new ChatBox component and its handle
+import ChatBox, { type ChatBoxHandle } from './ChatBox'; // Import the new ChatBox component and its handle
 import TaskTracker from './ewul_TripTaskTracker';
 
 import { useUser  } from "../utils/useUser";
@@ -30,9 +30,9 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  // const [isChatBoxOpen, setIsChatBoxOpen] = useState(false);
-  // const [unreadChatMessages, setUnreadChatMessages] = useState(0);
-  // const chatBoxRef = useRef<ChatBoxHandle>(null);
+  const [isChatBoxOpen, setIsChatBoxOpen] = useState(false);
+  const [unreadChatMessages, setUnreadChatMessages] = useState(0);
+  const chatBoxRef = useRef<ChatBoxHandle>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [hiddenNav, setHiddenNav] = useState(true); // State to track hidden navigation toggle
 
@@ -60,24 +60,24 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
     };
   }, [showDropdown]);
 
-  // useEffect(() => {
-  //   const fetchCount = async () => {
-  //       if (chatBoxRef.current) {
-  //           try {
-  //               const total = await chatBoxRef.current.fetchTotalUnread();
-  //               setUnreadChatMessages(total);
-  //           } catch (error) {
-  //               console.error("Failed to fetch total unread chat messages:", error);
-  //           }
-  //       }
-  //   };
+  useEffect(() => {
+    const fetchCount = async () => {
+        if (chatBoxRef.current) {
+            try {
+                const total = await chatBoxRef.current.fetchTotalUnread();
+                setUnreadChatMessages(total);
+            } catch (error) {
+                console.error("Failed to fetch total unread chat messages:", error);
+            }
+        }
+    };
 
-  //   // Fetch count immediately and then poll
-  //   fetchCount();
-  //   const interval = setInterval(fetchCount, 5000); // Poll every 5 seconds
+    // Fetch count immediately and then poll
+    fetchCount();
+    const interval = setInterval(fetchCount, 5000); // Poll every 5 seconds
 
-  //   return () => clearInterval(interval);
-  // }, []); // Empty dependency array ensures this runs once on mount and cleans up on unmount
+    return () => clearInterval(interval);
+  }, []); // Empty dependency array ensures this runs once on mount and cleans up on unmount
 
 
   const [theme, setTheme] = useState(localStorage.getItem("gsdc_theme") || "light");
@@ -235,13 +235,13 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
 
 
         {/* Chat/Message Icon */}
-        <button className="nav-icon-button" onClick={() => {/*setIsChatBoxOpen(true);*/null}}>
+        <button className="nav-icon-button" onClick={() => {setIsChatBoxOpen(true);}}>
           <MessageSquare size={24} />
-          {/* {unreadChatMessages > 0 && (
+          {unreadChatMessages > 0 && (
             <span className="notification-badge">
               {unreadChatMessages > 99 ? '99+' : unreadChatMessages}
             </span>
-          )} */}
+          )} 
         </button>
         
 
@@ -284,13 +284,13 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
         updateUser={updateUser}
       />
 
-      {/* <ChatBox 
+      <ChatBox 
         ref={chatBoxRef}
         isOpen={isChatBoxOpen}
         onOpen={() => setIsChatBoxOpen(true)}
         onClose={() => setIsChatBoxOpen(false)}
         user={user}
-      /> */}
+      />
     </nav>
   );
 });

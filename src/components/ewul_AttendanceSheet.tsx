@@ -2,8 +2,12 @@ import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { Sp_fetchAttendanceCalendar2Service } from '../generated/services/Sp_fetchAttendanceCalendar2Service';
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
 import LoadingOverlay from '../components/LoadingOverlay_navblue';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon, Star } from 'lucide-react';
 import '../components/comp_css/ewul_AttendanceSheet.css';
+import AutoDismissBanner from '../components/ewul_Banner';
+
+import { useTaskWorker } from '../utils/TaskWorkerContext';
+
 import {
   ATTENDANCE_STATUSES,
   ALLOWED_DATE_CLICK,
@@ -31,7 +35,11 @@ const AttendanceCell = React.memo(({
   oeValue,    
   empMetaId,   
   onCellClick,
-  isActiveMenuCell
+  isActiveMenuCell,
+  isBoundaryCell,
+  isEndBoundaryCell,
+  onBannerMsg,
+  isCellLoading,
 }: {
   dateStr: string;
   dayOfWeek: number;
@@ -44,6 +52,10 @@ const AttendanceCell = React.memo(({
   empMetaId: string;
   onCellClick: (e: React.MouseEvent, empName: string, empId: string, currentOE: string, dateStr: string, currentStatus: string, oeValue: string) => void;
   isActiveMenuCell?: boolean;
+  isBoundaryCell?: boolean;
+  isEndBoundaryCell?: boolean;
+  onBannerMsg?: (msg: string) => void;
+  isCellLoading?: boolean;
 }) => {
 
   const lastEntry = displayEntries.length > 0 ? displayEntries[displayEntries.length - 1] : null;
@@ -53,12 +65,17 @@ const AttendanceCell = React.memo(({
     dateStr >= ALLOWED_DATE_CLICK.startDate && 
     dateStr <= ALLOWED_DATE_CLICK.endDate;
 
-  // 🟢 2. Check Attendance Status Validity
   const isStatusAllowed = !NOT_ALLOWED_STAT_EDIT.includes(currentStatus.toUpperCase());
-
-  // Combined rule flag
   const isEditable = isDateAllowed && isStatusAllowed;
 
+  const buildBannerMsg = (status_allow: boolean, date_allow: boolean) => {
+    let msg = "test";
+    
+    if (!date_allow) msg = "Cannot edit attendance outside of cutoff."
+    else if (!status_allow) msg = "The attendance status for this date is finalized and cannot be changed."
+
+    if (onBannerMsg) onBannerMsg(msg);
+  };
 
   return (
     <td 
@@ -67,46 +84,87 @@ const AttendanceCell = React.memo(({
         ${isWeekend ? 'weekend-cell' : ''}
         ${dayOfWeek === 0 ? 'sunday-cell' : ''}
         ${isActiveMenuCell ? 'menu-active-cell' : ''}
-        ${!isEditable ? 'cell-disabled' : ''}
+        ${isBoundaryCell ? 'lock-boundary-edge' : ''}
+        ${isEndBoundaryCell ? 'lock-end-boundary' : ''}
+        ${isCellLoading ? 'cell-is-updating' : ''}
       `}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (!isEditable) return; // only allow editable cells
-        const lastEntry = displayEntries.length > 0 ? displayEntries[displayEntries.length - 1] : null;
-        const empId = lastEntry?.EmployeeID || empMetaId || '0';
-        const currentOE = lastEntry?.OE || lastEntry?.DMS_OE || oeValue || '';
-        const currentStatus = lastEntry?.AttendanceStatus || 'ABSENT';
-
-        onCellClick(e, empName, String(empId), currentOE, dateStr, currentStatus, oeValue);
-      }}
     >
       <div className={`status-stack ${displayEntries.length > 1 ? 'expanded' : 'collapsed'}`}>
-        {displayEntries.length > 0 ? (
-          displayEntries.map((entry, idx) => {
-            const statusClass = (entry.status || '').replace(/\s+/g, '-').toLowerCase();
-            return (
-                <div 
-                  key={idx} 
-                  className={`status-inner ${statusClass} ${
-                    searchTerm && entry.OE?.toLowerCase().includes(searchTerm.toLowerCase()) ? 'force-reveal' : ''
-                  }`}
-                  // LAZY EVALUATION: parse date when user interacts or requests a native tooltip fallback safely
-                  onMouseEnter={(e) => {
-                    if (entry.ModifiedAt && !e.currentTarget.getAttribute('title')) {
-                      e.currentTarget.setAttribute('title', `Modified: ${new Date(entry.ModifiedAt).toLocaleString()}`);
-                    }
-                  }}
-                >
-                  <span className="status-main-value">
-                    {entry.AttendanceStatus || '---'}
-                  </span>
-                  <span className="oe-hover-label">{entry.OE || ''}</span>
-                </div>
-            );
-          })
-        ) : (
-          <div className="status-inner n/a">---</div>
+        {isCellLoading && (
+          <div className="cell-mini-loader-overlay">
+            <div className="mini-spinner"></div>
+          </div>
         )}
+        <div className={`status-stack ${displayEntries.length > 1 ? 'expanded' : 'collapsed'}`}>
+          {displayEntries.length > 0 ? (
+            displayEntries.map((entry, idx) => {
+              const statusClass = (entry.status || '').replace(/\s+/g, '-').toLowerCase();
+              const isIndividualStatusAllowed = !NOT_ALLOWED_STAT_EDIT.includes((entry.AttendanceStatus || '').toUpperCase());
+              const isEntryEditable = isDateAllowed && isIndividualStatusAllowed;
+              return (
+                  <div 
+                    key={idx} 
+                    className={`
+                      status-inner ${statusClass} 
+                      ${searchTerm && entry.OE?.toLowerCase().includes(searchTerm.toLowerCase()) ? 'force-reveal' : ''}
+                      ${!isEntryEditable ? (statusClass ? 'entry-locked' : 'entry-locked-na') : ''}
+                    `}
+
+                    onClick={(e) => {
+                      e.stopPropagation(); // Stop from hitting table parent listeners
+                      if (!isEntryEditable) {
+                        buildBannerMsg(isIndividualStatusAllowed,isDateAllowed)
+                        return; // Enforce restriction logic
+                      }
+
+                      const empId = entry.EmployeeID || empMetaId || '0';
+                      const currentOE = entry.OE || entry.DMS_OE || '';
+                      const currentStatus = entry.AttendanceStatus || 'ABSENT';
+
+                      // Fires with the exact OE + Status linked to this specific text block!
+                      onCellClick(e, empName, String(empId), currentOE, dateStr, currentStatus, oeValue);
+                    }}
+
+                    // LAZY EVALUATION: parse date when user interacts or requests a native tooltip fallback safely
+                    onMouseEnter={(e) => {
+                      if (entry.ModifiedAt && !e.currentTarget.getAttribute('title')) {
+                        e.currentTarget.setAttribute('title', `Modified: ${new Date(entry.ModifiedAt).toLocaleString()}`);
+                      }
+                    }}
+                  >
+                    <span className="status-main-value">
+                      {entry.AttendanceStatus || '---'}
+                    </span>
+                    <span className="oe-hover-label">{entry.OE || ''}</span>
+                  </div>
+              );
+            })
+          ) : (
+            <div 
+              className={`
+                status-inner status-na
+                ${!isEditable ? 'entry-locked' : ''}
+              `}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isEditable) {
+                  buildBannerMsg(isStatusAllowed,isDateAllowed)
+                  return;
+                }
+
+
+                // Fallback default variables when no record row block exists yet
+                const empId = empMetaId || '0';
+                const currentOE = oeValue === '---' ? '' : oeValue;
+                const currentStatus = 'ABSENT';
+
+                onCellClick(e, empName, String(empId), currentOE, dateStr, currentStatus, oeValue);
+              }}
+            >
+              ---
+            </div>
+          )}
+        </div>
       </div>
     </td>
   );
@@ -124,6 +182,8 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   const [data, setData] = useState<AttendanceRecord[]>([]);
   const [showAllStatuses, setShowAllStatuses] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [bannerMessage, setBannerMessage] = useState<string | null>(null);
+  const [cellLoadingStates, setCellLoadingStates] = useState<Record<string, boolean>>({});
 
   const [activeMenu, setActiveMenu] = useState<{
     empName: string;
@@ -138,8 +198,10 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     currentStatus: string;
   } | null>(null);
 
+  const { addTask } = useTaskWorker();
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, _setPageSize] = useState(15);
+  const [pageSize, _setPageSize] = useState(11);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPosition, setFilterPosition] = useState('All');
@@ -207,6 +269,8 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
+    e.preventDefault();
+
     setIsDragging(true);
 
     // Get initial click position and current scroll offset
@@ -230,23 +294,122 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   };
 
   const handleUpdateAttendanceStatus = async (newAttendance: string, empId: string, empName: string, OE: string, attendanceDate?: Date) => {
+    if (!attendanceDate) return;
     
-    console.log('test attendance:  ', {newAttendance,empId,empName,OE,attendanceDate});
-    if (attendanceDate) return;
-    
-    try {
-      UpsertAttendanceLogService.UpsertAttendanceLog({ 
-        EmployeeName: empName,
-        EmployeeID: empId,
-        AttendanceDate: (attendanceDate ? attendanceDate : new Date()).toISOString().split('T')[0],
-        AttendanceStatus: newAttendance || 'PRESENT',
-        OE: OE || '',
-      } as any);
-      return { success: true};
-    } catch (error) {
-      console.error("Fetch error:", error);
-      return { success: false, error };
+    const year = attendanceDate.getFullYear();
+    const month = String(attendanceDate.getMonth() + 1).padStart(2, '0');
+    const day = String(attendanceDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    const cellKey = `${empId}-${dateStr}`;
+
+    setCellLoadingStates(prev => ({ ...prev, [cellKey]: true }));
+
+    // 1. Capture snapshots of the current state before modifying it for a clean rollback fallback
+    let previousRecord: AttendanceRecord | null = null;
+    let hadExistingRecord = false;
+
+    setData(prevData => {
+      // Look for an existing match using standard entity rules
+      const targetIdx = prevData.findIndex(
+        item => String(item.EmployeeID) === String(empId) && item.AttendanceDate.split('T')[0] === dateStr
+      );
+
+      const updated = [...prevData];
+
+      if (targetIdx !== -1) {
+        previousRecord = { ...updated[targetIdx] };
+        hadExistingRecord = true;
+        // Optimistically update the match
+        updated[targetIdx] = {
+          ...updated[targetIdx],
+          AttendanceStatus: newAttendance,
+          ModifiedAt: new Date().toISOString()
+        };
+      } else {
+        // Create a fallback mock record block locally if one doesn't exist yet
+        hadExistingRecord = false;
+        const targetMeta = employeeMetaMap[empName];
+        
+        updated.push({
+          EmployeeName: empName,
+          EmployeeID: Number(empId),
+          AttendanceDate: dateStr,
+          AttendanceStatus: newAttendance,
+          OE: OE || null,
+          Position: targetMeta?.position || 'Driver',
+          ModifiedAt: new Date().toISOString()
+        });
+      }
+      return updated;
+    });
+
+    // 2. Queue the task worker using your architecture patterns
+    addTask({
+      id: `attendance-update-${empId}-${dateStr}-${Date.now()}`,
+      name: `Employee Attendance Update`,
+      execute: async () => {
+        try {
+          // Await the actual database promise call securely
+          await UpsertAttendanceLogService.UpsertAttendanceLog({ 
+            EmployeeName: empName,
+            EmployeeID: empId,
+            AttendanceDate: dateStr,
+            AttendanceStatus: newAttendance || 'PRESENT',
+            OE: OE || '',
+          } as any);
+          return { success: true };
+        } catch (error) {
+          console.error("Fetch error:", error);
+          return { success: false, error };
+        }
+      },
+      checkSuccess: (result: { success: boolean }) => result.success,
+      onSuccess: () => {
+        // The structural data layer already holds the correct optimistic value!
+        setCellLoadingStates(prev => ({ ...prev, [cellKey]: false }));
+      },
+      onFailure: () => {
+        setCellLoadingStates(prev => ({ ...prev, [cellKey]: false }));
+        // 3. Roll back changes natively on failure interceptors
+        setData(prevData => {
+          const updated = [...prevData];
+          const targetIdx = updated.findIndex(
+            item => String(item.EmployeeID) === String(empId) && item.AttendanceDate.split('T')[0] === dateStr
+          );
+
+          if (targetIdx !== -1) {
+            if (hadExistingRecord && previousRecord) {
+              // Revert back to the snapshot copy
+              updated[targetIdx] = previousRecord;
+            } else {
+              // If it never existed, strip out our optimistic placeholder row block entirely
+              updated.splice(targetIdx, 1);
+            }
+          }
+          return updated;
+        });
+      },
+      message: `Setting attendance for ${empName}...`,
+      message_success: `${empName} tagged '${newAttendance || 'PRESENT'}' successfully!`,
+      message_failure: `${empName} failed to be tagged '${newAttendance || 'PRESENT'}'.`
+    });
+  };
+
+  const bannerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleBannerMessage = (msg: string) => {
+    // 1. Clear any pending timeout to prevent premature erasure if a new message arrives
+    if (bannerTimeoutRef.current) {
+      clearTimeout(bannerTimeoutRef.current);
     }
+
+    // 2. Commit the new text payload to state instantly
+    setBannerMessage(msg);
+
+    // 3. Queue a clean exit layout reset exactly 2 seconds later
+    bannerTimeoutRef.current = setTimeout(() => {
+      setBannerMessage(null);
+      bannerTimeoutRef.current = null;
+    }, 1000); // 2000ms = 2 seconds
   };
 
   const getFilteredStatuses = (oe: string) => {
@@ -391,6 +554,39 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     return map;
   }, [filteredData, paginatedEmployeeNames]);
 
+  
+  const boundaryDateStr = useMemo(() => {
+    const allowedStart = ALLOWED_DATE_CLICK.startDate;
+    // Find the exact date in our array that marks the start of the editable zone
+    const match = daysInMonth.find(date => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}` >= allowedStart;
+    });
+    
+    if (!match) return null;
+    const y = match.getFullYear();
+    const m = String(match.getMonth() + 1).padStart(2, '0');
+    const d = String(match.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }, [daysInMonth]);
+
+  const endBoundaryDateStr = useMemo(() => {
+    const allowedEnd = ALLOWED_DATE_CLICK.endDate;
+    const match = daysInMonth.find(date => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}` === allowedEnd;
+    });
+    
+    if (!match) return null;
+    const y = match.getFullYear();
+    const m = String(match.getMonth() + 1).padStart(2, '0');
+    const d = String(match.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }, [daysInMonth]);
 
   const AttendanceSkeleton = ({ days }: { days: any[] }) => (
     <>
@@ -464,6 +660,13 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     return map;
   }, [filteredData]);
 
+  const formatDateStr = (date: Date): string => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   const handleCellContextOpen = useCallback((
     e: React.MouseEvent, 
     empName: string, 
@@ -473,6 +676,13 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     currentStatus: string,
     liveOE: string,
   ) => {
+
+    if (dateStr > formatDateStr(new Date()) ) {
+      setBannerMessage("Cannot set attendance for future dates.");
+      return;
+    }
+
+
     // Convert target dateStr back into standard date configuration safely[cite: 4]
     const [y, m, d] = dateStr.split('-').map(Number);
     const targetDateObject = new Date(y, m - 1, d);
@@ -613,67 +823,200 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
       >
         <table className="attendance-table">
           <thead>
-              <tr>
-                <th className="sticky-col sticky-header">
-                  <div className="header-top-row">
-                    Employee Name
-                  </div>
+            <tr>
+              <th className="sticky-col sticky-header cutoff-super-header">
+                <div className="super-header-title">Cutoff Groups</div>
+              </th>
+              {(() => {
+                /**
+                 * Finds the first occurrence of startDayOfWeek within the given month/year
+                 */
+                const getFirstCutoffAnchor = (startDay: number, current: Date): Date => {
+                  const year = current.getFullYear();
+                  const month = current.getMonth();
+                  const target = new Date(year, month, 1);
                   
-                  <div className="header-pagination-container">
-                    <div className="pagination-centered-group">
-                      <button 
-                        className="pager-btn"
-                        disabled={currentPage === 1} 
-                        onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev - 1); }}
-                      >
-                        <ChevronLeft size={14} />
-                      </button>
+                  while (target.getDay() !== startDay) {
+                    target.setDate(target.getDate() + 1);
+                  }
+                  return target;
+                };
 
-                      <div className="pager-info">
-                        <span className="current">{currentPage}</span>
-                        <span className="separator">/</span>
-                        <span className="total">{totalPages || 1}</span>
-                      </div>
+                const groupings: { label: string; count: number; isLastMonth: boolean }[] = [];
+                const firstTrueAnchor = getFirstCutoffAnchor(ALLOWED_DATE_CLICK.startDayOfWeek, currentDate);
 
-                      <button 
-                        className="pager-btn"
-                        disabled={currentPage === totalPages || totalPages === 0} 
-                        onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev + 1); }}
-                      >
-                        <ChevronRight size={14} />
-                      </button>
+                daysInMonth.forEach((date) => {
+                  let label = '';
+                  let isLastMonth = false;
+
+                  if (date < firstTrueAnchor) {
+                    label = "LAST MONTH CUT OFF";
+                    isLastMonth = true;
+                  } else {
+                    const diffTime = date.getTime() - firstTrueAnchor.getTime();
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    const cutoffIndex = Math.floor(diffDays / 7) + 1;
+
+                    let ordinal = 'th';
+                    if (cutoffIndex === 1) ordinal = 'st';
+                    else if (cutoffIndex === 2) ordinal = 'nd';
+                    else if (cutoffIndex === 3) ordinal = 'rd';
+
+                    label = `${cutoffIndex}${ordinal} CUT OFF`;
+                  }
+
+                  if (groupings.length > 0 && groupings[groupings.length - 1].label === label) {
+                    groupings[groupings.length - 1].count++;
+                  } else {
+                    groupings.push({ label, count: 1, isLastMonth });
+                  }
+                });
+
+                // Track regular cutoff blocks separately to cleanly alternate colors even if a "Last Month" block exists
+                let regularCutoffCounter = 0;
+
+                return groupings.map((group, idx) => {
+                  let alternatingClass = 'last-month-bg';
+
+                  if (!group.isLastMonth) {
+                    alternatingClass = regularCutoffCounter % 2 === 0 ? 'odd-cutoff' : 'even-cutoff';
+                    regularCutoffCounter++;
+                  }
+
+                  return (
+                    <th 
+                      key={idx} 
+                      colSpan={group.count} 
+                      className={`sticky-header cutoff-super-header group-span-cell ${alternatingClass}`}
+                    >
+                      <span className="cutoff-text-header">
+                        {group.label}
+                      </span>
+                    </th>
+                  );
+                });
+              })()}
+            </tr>
+
+            {/* 🟢 BOTTOM ROW: Dynamic Date Headers Matching Parent Colors */}
+            <tr>
+              <th className="sticky-col sticky-header employee-name-header">
+                <div className="header-top-row">
+                  Employee Name
+                </div>
+                
+                <div className="header-pagination-container">
+                  <div className="pagination-centered-group">
+                    <button 
+                      className="pager-btn"
+                      disabled={currentPage === 1} 
+                      onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev - 1); }}
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+
+                    <div className="pager-info">
+                      <span className="current">{currentPage}</span>
+                      <span className="separator">/</span>
+                      <span className="total">{totalPages || 1}</span>
                     </div>
-                  </div>
-                </th>
-                {daysInMonth.map(date => {
-                    const y = date.getFullYear();
-                    const m = String(date.getMonth() + 1).padStart(2, '0');
-                    const d = String(date.getDate()).padStart(2, '0');
-                    const dateStr = `${y}-${m}-${d}`;
-                    
-                    const dayOfWeek = date.getDay(); // 0 = Sun, 6 = Sat
-                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                    const isToday = dateStr === todayStr;
 
-                    return (
-                      <th 
-                        key={dateStr} 
-                        ref={isToday ? todayRef : null}
-                        className={`sticky-header 
-                          ${isToday ? 'today-column' : ''} 
-                          ${isWeekend ? 'weekend-column' : ''}
-                          ${dayOfWeek === 0 ? 'sunday' : ''}
-                        `}
-                      >
-                        <div className="header-date-box">
-                          <span className="day-name">{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                          <span className="day-num">{date.getDate()}</span>
-                        </div>
-                      </th>
-                    );
-                  })}
-              </tr>
-            </thead>
+                    <button 
+                      className="pager-btn"
+                      disabled={currentPage === totalPages || totalPages === 0} 
+                      onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev + 1); }}
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              </th>
+
+              {(() => {
+                const getFirstCutoffAnchor = (startDay: number, current: Date): Date => {
+                  const year = current.getFullYear();
+                  const month = current.getMonth();
+                  const target = new Date(year, month, 1);
+                  while (target.getDay() !== startDay) {
+                    target.setDate(target.getDate() + 1);
+                  }
+                  return target;
+                };
+
+                const firstTrueAnchor = getFirstCutoffAnchor(ALLOWED_DATE_CLICK.startDayOfWeek, currentDate);
+                let regularCutoffCounter = 0;
+                let lastLoggedLabel = '';
+
+                return daysInMonth.map((date, index) => {
+                  const y = date.getFullYear();
+                  const m = String(date.getMonth() + 1).padStart(2, '0');
+                  const d = String(date.getDate()).padStart(2, '0');
+                  const dateStr = `${y}-${m}-${d}`;
+                  
+                  const dayOfWeek = date.getDay(); 
+                  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                  const isToday = dateStr === todayStr;
+
+                  const isBoundary = dateStr === boundaryDateStr;
+                  const isEndBoundary = dateStr === endBoundaryDateStr;
+
+
+                  // Compute cutoff group context
+                  let currentLabel = '';
+                  let isLastMonth = false;
+
+                  if (date < firstTrueAnchor) {
+                    currentLabel = "LAST MONTH CUT OFF";
+                    isLastMonth = true;
+                  } else {
+                    const diffTime = date.getTime() - firstTrueAnchor.getTime();
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    const cutoffIndex = Math.floor(diffDays / 7) + 1;
+                    currentLabel = `${cutoffIndex} CUT OFF`;
+                  }
+
+                  // 🔴 DETECT FIRST DAY OF CUTOFF: Brand new label string OR index 0
+                  const isFirstDayOfCutoff = index === 0 || (lastLoggedLabel !== '' && lastLoggedLabel !== currentLabel);
+
+                  if (lastLoggedLabel !== '' && lastLoggedLabel !== currentLabel && !isLastMonth) {
+                    regularCutoffCounter++;
+                  }
+                  lastLoggedLabel = currentLabel;
+
+                  let matchingColorClass = 'last-month-bg';
+                  if (!isLastMonth) {
+                    matchingColorClass = regularCutoffCounter % 2 === 0 ? 'odd-cutoff' : 'even-cutoff';
+                  }
+
+                  return (
+                    <th 
+                      key={dateStr} 
+                      ref={isToday ? todayRef : null}
+                      className={`sticky-header date-sub-header ${matchingColorClass}
+                        ${isToday ? 'today-column' : ''} 
+                        ${isWeekend ? 'weekend-column' : ''}
+                        ${dayOfWeek === 0 ? 'sunday' : ''}
+                        ${isBoundary ? 'lock-boundary-edge' : ''}
+                        ${isEndBoundary ? 'lock-end-boundary' : ''}
+                        ${isFirstDayOfCutoff ? 'cutoff-start-column' : ''} 
+                      `}
+                    >
+                      {isToday && 
+                        <span className="today-label-flag">
+                          <Star size={10} strokeWidth={3} className="today-star-icon" />
+                          TODAY
+                        </span>
+                      }
+                      <div className="header-date-box">
+                        <span className="day-name">{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                        <span className="day-num">{date.getDate()}</span>
+                      </div>
+                    </th>
+                  );
+                });
+              })()}
+            </tr>
+          </thead>
           <tbody>
             {showSkeleton ? (
               <AttendanceSkeleton days={daysInMonth} />
@@ -741,6 +1084,12 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
                           activeMenu.dateStr === dateStr && 
                           String(activeMenu.empId) === String(meta?.id || '0');
 
+                      const isBoundary = dateStr === boundaryDateStr;
+                      const isEndBoundary = dateStr === endBoundaryDateStr;
+
+                      const cellKey = `${meta?.id || '0'}-${dateStr}`;
+                      const isCellLoading = !!cellLoadingStates[cellKey];
+
                       return (
                         <AttendanceCell
                           key={dateStr}
@@ -755,6 +1104,10 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
                           empMetaId={String(meta?.id || '0')}
                           onCellClick={handleCellContextOpen} 
                           isActiveMenuCell={isContextMenuOpenHere}
+                          isBoundaryCell={isBoundary}
+                          isEndBoundaryCell={isEndBoundary}
+                          onBannerMsg={handleBannerMessage}
+                          isCellLoading={isCellLoading}
                         />
                       );
                     })}
@@ -795,42 +1148,40 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           </div>
           <hr />
           <div className="context-options-list">
-            {getFilteredStatuses(activeMenu.oeValue).map((statusObj) => 
-            {
-            const isCurrentlySelected = activeMenu.currentStatus?.toUpperCase() === statusObj.Status?.toUpperCase();
-            return  (
-              <button
-                key={statusObj.Status}
-                className={`context-option-btn ${statusObj.onduty ? 'on-duty' : 'off-duty'} ${isCurrentlySelected ? 'active-status-highlight' : ''}`}
-                onClick={async () => {
-                  const selectedStatus = statusObj.Status;
-                  setActiveMenu(null); 
-                  setLoading(true);
-
-                  const result = await handleUpdateAttendanceStatus(
-                    selectedStatus,
-                    activeMenu.empId,
-                    activeMenu.empName,
-                    activeMenu.oeValue,
-                    activeMenu.date
-                  );
-
-                  if (result?.success) {
-                    setCurrentDate(new Date(currentDate)); 
-                  } else {
-                    alert("Failed to tag attendance.");
-                    setLoading(false);
-                  }
-                }}
-              >
-                {statusObj.Alias}
-              </button>
-            )}
-            )}
+            {getFilteredStatuses(activeMenu.oeValue).map((statusObj) => {
+              const isCurrentlySelected = activeMenu.currentStatus?.toUpperCase() === statusObj.Status?.toUpperCase();
+              return (
+                <button
+                  key={statusObj.Status}
+                  className={`context-option-btn ${statusObj.onduty ? 'on-duty' : 'off-duty'} ${isCurrentlySelected ? 'active-status-highlight' : ''}`}
+                  onClick={() => {
+                    const selectedStatus = statusObj.Status;
+                    setActiveMenu(null); 
+                    
+                    // Fire asynchronously—the component will handle local state and workers under the hood
+                    handleUpdateAttendanceStatus(
+                      selectedStatus,
+                      activeMenu.empId,
+                      activeMenu.empName,
+                      activeMenu.oeValue,
+                      activeMenu.date
+                    );
+                  }}
+                >
+                  {statusObj.Alias}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
+    {bannerMessage && (
+      <AutoDismissBanner 
+          message={bannerMessage} 
+          onClose={() => setBannerMessage(null)} 
+      />
+    )}
 
     </div>
   );

@@ -37,6 +37,7 @@ import {
   SHORT_BAGS_LIMIT,
   SPECIAL_POSITIONS,
   GSDC_ANNOUNCEMENT_ENDPOINT,
+  BUSINESS_UNITS,
 } from '../truth.config';
 
 
@@ -226,6 +227,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const [shareOE, setShareOE] = useState<string>("");
     const [shareComment, setShareComment] = useState("");
 
+
+    const mappedBusinessUnits: DropdownOption[] = BUSINESS_UNITS.map((unit) => ({
+      value: unit.Title, // Unique identifier used when selected
+      label: unit.Title, // Main text displayed in the option row and input box
+      type: 'single',     // Turns on multi-line text mode for advanced layout display
+      // subtext: unit.Assignment 
+      //   ? `Assignment: ${unit.Assignment} | Type: ${unit.Business_Type}`
+      //   : "No Assignment", // Gracefully fall back for entries like THIRD PARTY
+      record: unit       // Attaches the full raw record for future extraction if needed
+    }));
+
     // State for the assignment confirmation modal
     const [showAssignmentConfirmModal, setShowAssignmentConfirmModal] = useState(false);
     const [assignmentChanges, setAssignmentChanges] = useState<{
@@ -316,8 +328,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       return { isValid: true, message: 'Order Reference is valid.' };
     }
+
     const validateLoadingSequence = (data: LiveDMSView_CEM) => {
       const seq = data.Loading_x0020_Sequence;
+      const currentSource = data.Source;
 
       const oeValidation = validateOE(data);
       if (!oeValidation.isValid) return oeValidation;
@@ -332,6 +346,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
   
       const isDuplicate = (lsList || []).some(trip =>
         trip.OE !== data.OE && // Exclude the current order from the check
+        trip.Source === currentSource && // Only check within the same source
         Number(trip.Loading_x0020_Sequence) === Number(seq)
       );
   
@@ -2799,6 +2814,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               </div>
 
               <div className="form-row">
+                <SearchableDropdown label="Business Unit" options={mappedBusinessUnits} value={formData.Buisness_x0020_Unit || ''} onChange={val => handleFieldChange('Buisness_x0020_Unit', String(val))} disabled={disabledOEEntGrp} />
+              </div>
+
+              <div className="form-row">
                 <SearchableDropdown label="Status" options={tripStatusOptions} value={formData.Trip_x0020_Status || ''} onChange={val => handleFieldChange('Trip_x0020_Status', String(val))} disabled={formData.TripProgress == 'New Trip' || formData.TripProgress == 'Assigned' || disabledOEEntGrp} />
               </div>
 
@@ -2810,7 +2829,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         {/* 2. OE Details Group */}
         <div className="input-group-group">
           <div className="group-header" onClick={() => toggleGroup('oeDetails')}>
-            <span>Order Details</span>
+
+            <div className="group-header-title">
+              <span>Order Details</span>
+            </div>
+            
             <span className={`toggle-icon ${collapsed.oeDetails ? 'is-collapsed' : ''}`}></span>
           </div>
           <div className={`group-content-wrapper ${!collapsed.oeDetails ? 'is-open' : ''}`}>

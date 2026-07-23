@@ -32,6 +32,7 @@ export type UserInfo = {
   showCustomCursor?: boolean; // track custom cursor preference
   lastTripFilter?: string; // track last trip filter for persistence
   FullName?: string;
+  lastActiveModule?: string;
 };
 
 export const TRIP_GROUPS = [
@@ -193,20 +194,20 @@ export const NAV_DESTINATIONS = [
     noSpecialAccess: false,
     hidden: false 
   },
-  { 
-    label: "Command Center", 
-    path: "/comcenter", 
-    whiteList: ["Developer"],
-    noSpecialAccess: false,
-    hidden: false 
-  },
-  { 
-    label: "Tickets", 
-    path: "/tickets", 
-    whiteList: ["Developer"],
-    noSpecialAccess: true,
-    hidden: false 
-  },
+  // { 
+  //   label: "Command Center", 
+  //   path: "/comcenter", 
+  //   whiteList: ["Developer"],
+  //   noSpecialAccess: false,
+  //   hidden: false 
+  // },
+  // { 
+  //   label: "Tickets", 
+  //   path: "/tickets", 
+  //   whiteList: ["Developer"],
+  //   noSpecialAccess: true,
+  //   hidden: false 
+  // },
 
 
   { 
@@ -657,7 +658,7 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
   table_config: [
     { col: "OE", alias: "OE #", sticky: true, cellStyle: () => {return { fontWeight: 'bold' }} },
     { col: "Trip Status", alias: "Status", filter: {type: "dropdown-multiple", options: statusOptions}, cellStyle: () => {return { fontWeight: 'bold' }}},
-    { col: "Loading Sequence", alias: "LS", defaultSort: 'desc' },
+    { col: "Loading Sequence", defaultSort: 'asc', orderSort: 1, alias: "LS" },
     { col: "OE Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("OE Date")])  },
     { col: "Buisness Unit", alias: "BU", filter: {type: "dropdown-multiple"}  },
     { col: "Driver", cellStyle: () => {return { textAlign: 'left' }} },
@@ -690,7 +691,7 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
       },
     },
     { col: "Customer", cellStyle: () => {return { textAlign: 'left' }} },
-    { col: "Source", cellStyle: () => {return { textAlign: 'left' }} },
+    { col: "Source", defaultSort: 'asc', orderSort: 1, preventNoSort: true, cellStyle: () => {return { textAlign: 'left' }} },
     { col: "Destination", cellStyle: () => {return { textAlign: 'left' }}},
     { col: "_tripGroup", alias: "Group", filter: {type: "dropdown-multiple", options: tripgroupOptions}},
     { col: "cementType", alias: "Type" },
@@ -739,12 +740,128 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
   ],
 
   rowStyle: (row: any) => ({
-    backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)' : 'var(--color-bg-blue)'
+    backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-bg-blue) 70%, var(--color-bg) 100%)' : 'var(--color-bg)'
   }), 
 
-  searchable_cols: ["OE", "Driver", "Helper", "Vehicle", "BO", "Source", "Destination", "ATW/LO#", "Plant DR", "SO#", "GSDC DR"] as const
+  searchable_cols: ["OE", "Driver", "Helper", "Vehicle", "BO", "Source", "Destination", "ATW/LO#", "Plant DR", "SO#", "GSDC DR"] as const,
+
+  accordion: {
+    enabled: true,
+    groupByCol: "Source"
+  }
+};
+
+
+
+const taggedDurationFormatting = {
+  ok: 60,
+  notok:60*24
+}
+
+export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
+
+  table_config: [
+    { col: "OE", alias: "OE #", sticky: true, cellStyle: () => {return { fontWeight: 'bold' }} },
+    // { col: "Trip Status", alias: "Status", filter: {type: "dropdown-multiple", options: statusOptions}, cellStyle: () => {return { fontWeight: 'bold' }}},
+    { col: "Loading Sequence", alias: "LS", defaultSort: 'asc', orderSort: 2 },
+
+      { col: "Driver", cellStyle: () => {return { textAlign: 'left' }} },
+    { col: "Helper", cellStyle: () => {return { textAlign: 'left' }} },
+    { col: "Vehicle", alias: "Truck" },
+    { col: "BO", alias: "Trailer" },  
+
+    
+    { col: "Customer", cellStyle: () => {return { textAlign: 'left' }} },
+    { col: "Source", defaultSort: 'asc', orderSort: 1, preventNoSort: true, cellStyle: () => {return { textAlign: 'left' }} },
+    { col: "Destination", cellStyle: () => {return { textAlign: 'left' }}},
+    { col: "_tripGroup", alias: "Group", filter: {type: "dropdown-multiple", options: tripgroupOptions}},
+    { col: "cementType", alias: "Type" },
+
+    { col: 'HasFuelRequest', alias: 'FR', 
+      render(_val, row, _searchTerm, _addTask, fontSize) {
+        return(renderFuelRequestIcon(row.HasFuelRequest,row.HasFuelPO,row.HasFuelDisapproved, fontSize));
+      },
+    },
+
+    { col: "Planning", alias: "ODM Remarks" },
+
+    { col: "Tagged Date", alias: "Plotted Date", calculate: (row: any) => formatDate(row[enc("Tagged Date")], { mode: 'datetime', alreadyLocal: true }), cellStyle: (_row: any) => {return {fontWeight: 'bold'}}  },
+    { col: "", alias: "Age", 
+      calculate: (row: any) => formatDate(row[enc("Tagged Date")], { mode: "duration", alreadyLocal: true  }).replace("from now","ago"),
+      cellStyle: (row: any) => {
+        let backgroundColor = 'transparent';
+        let textColor = 'var(--color-primary-2)';
+        
+        let modifiedVal = row[enc("Tagged Date")];
+        if (modifiedVal) {
+          // 1. Normalize trailing 'Z' if treating string as local execution space
+          if (typeof modifiedVal === 'string' && modifiedVal.endsWith('Z')) {
+            modifiedVal = modifiedVal.slice(0, -1);
+          }
+          
+          const now = Date.now();
+          let modifiedTime = new Date(modifiedVal).getTime();
+          
+          // 2. Append 'Z' fallback if it's an un-offsetted database ISO sequence to force standard parsing alignment
+          if (
+            typeof row[enc("Tagged Date")] === 'string' && 
+            !row[enc("Tagged Date")].includes('Z') && 
+            !row[enc("Tagged Date")].includes('+')
+          ) {
+            modifiedTime = new Date(`${modifiedVal}Z`).getTime();
+          }
+
+          // 3. Complete calculation in minutes
+          const diffMins = (now - modifiedTime) / 60000;
+          
+          // 4. Evaluate aging brackets safely matching your visual tints
+          if (diffMins >= 0 && diffMins < taggedDurationFormatting.ok) {
+            backgroundColor = 'rgba(76, 175, 80, 0.15)'; // Subtle Green Tint
+            textColor = '#4caf50';
+          } else if (diffMins >= taggedDurationFormatting.ok && diffMins < taggedDurationFormatting.notok) {
+            backgroundColor = 'rgba(251, 191, 36, 0.15)'; // Subtle Yellow Tint
+            textColor = '#fbbf24';
+          } else if (diffMins >= taggedDurationFormatting.notok) {
+            backgroundColor = 'rgba(229, 57, 53, 0.15)'; // Subtle Red Tint
+            textColor = '#e53935'; // Red System Accent
+          }
+        }
+        
+        return { 
+          backgroundColor, 
+          color: textColor, 
+          fontWeight: 'bold',
+          borderRadius: '4px', /* Gentle design layout preference */
+          padding: '4px 8px'
+        };
+      }
+    },
+
+    
+    { col: "Modified", alias: "Modified", calculate: (row: any) => formatDate(row[enc("Modified")],{mode: "datetime", alreadyLocal: true})  },
+    { col: "LastModifiedBy", alias: "Modified By" },
+
+    { col: "Buisness Unit", alias: "BU", filter: {type: "dropdown-multiple"}  },
+
+
+
+  ],
+
+  rowStyle: (row: any) => ({
+    backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-bg-blue) 70%, var(--color-bg) 100%)' : 'var(--color-bg)'
+  }), 
+
+  searchable_cols: ["OE", "Driver", "Helper", "Vehicle", "BO", "Source", "Destination"] as const,
+
+  accordion: {
+    enabled: true,
+    groupByCol: "Source"
+  }
 
 };
+
+
+
 
 export const orderStatuses = [
   { value: "Approved" },
@@ -805,7 +922,12 @@ export const NEW_TRIPS_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
     backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)' : 'var(--color-bg-blue)'
   }), 
 
-  searchable_cols: ["OE", "SourceName", "DestiName"] as const
+  searchable_cols: ["OE", "SourceName", "DestiName"] as const,
+
+    accordion: {
+    enabled: true,
+    groupByCol: "SourceName"
+  }
 
 }
 
@@ -1369,16 +1491,104 @@ const formatDateStr = (date: Date): string => {
   return `${y}-${m}-${d}`;
 };
 
+/**
+ * Change these to control the entire application window structure dynamically.
+ */
+const CONFIG = {
+  cutoffDays: 7,          // 7 = Weekly, 14 = Bi-weekly, 15 = Semi-monthly
+  startDayOfWeek: 4,      // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc. (Currently: Monday)
+  includePrevCutoffs: 1,  // 0 = Just current cutoff, 1 = Current + 1 previous cutoff cycle
+};
+
+// export const ALLOWED_DATE_CLICK = {
+//   /**
+//    * Calculates the exact date boundary where editing becomes allowed
+//    */
+//   get startDate(): string {
+//     const today = new Date();
+//     const currentDay = today.getDay();
+    
+//     // 1. Calculate how many days back the CURRENT cutoff started
+//     // (Translates your designated start day relative to today's day of week)
+//     let daysSinceCutoffStart = currentDay - CONFIG.startDayOfWeek;
+//     if (daysSinceCutoffStart < 0) {
+//       daysSinceCutoffStart += 7; // Wrap-around handling for week boundaries
+//     }
+    
+//     // 2. Derive the calendar date where the current cutoff period began
+//     const currentCutoffStartDate = new Date(today);
+//     currentCutoffStartDate.setDate(today.getDate() - daysSinceCutoffStart);
+    
+//     // 3. Roll backward further based on how many historical cutoffs you choose to include
+//     // Formula: current_start - (history_multiplier * size_of_cutoff)
+//     const historyOffsetDays = CONFIG.includePrevCutoffs * CONFIG.cutoffDays;
+    
+//     const allowedStartDate = new Date(currentCutoffStartDate);
+//     allowedStartDate.setDate(currentCutoffStartDate.getDate() - historyOffsetDays);
+    
+//     return formatDateStr(allowedStartDate);
+//   },
+  
+//   /**
+//    * Closes the active window right at the end of the current active cutoff
+//    */
+//   get endDate(): string {
+//     const today = new Date();
+//     const currentDay = today.getDay();
+    
+//     // Find the current cutoff start point first
+//     let daysSinceCutoffStart = currentDay - CONFIG.startDayOfWeek;
+//     if (daysSinceCutoffStart < 0) {
+//       daysSinceCutoffStart += 7;
+//     }
+    
+//     const currentCutoffStartDate = new Date(today);
+//     currentCutoffStartDate.setDate(today.getDate() - daysSinceCutoffStart);
+    
+//     // The current cutoff closes exactly (cutoffDays - 1) days after its start point
+//     const allowedEndDate = new Date(currentCutoffStartDate);
+//     allowedEndDate.setDate(currentCutoffStartDate.getDate() + (CONFIG.cutoffDays - 1));
+    
+//     return formatDateStr(allowedEndDate);
+//   },
+
+//   startDayOfWeek: CONFIG.startDayOfWeek,
+// };
+
 export const ALLOWED_DATE_CLICK = {
+  /**
+   * Calculates the trailing edge of the allowed edit window
+   */
   get startDate(): string {
-    const date = new Date();
-    date.setDate(date.getDate() - 7);
-    return formatDateStr(date);
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, etc.
+    const allowedStartDate = new Date(today);
+
+    // 🔴 SPECIAL CONDITION: Monday (1)
+    if (currentDay === 1) {
+      allowedStartDate.setDate(today.getDate() - 4);
+    } 
+    // 🔴 SPECIAL CONDITION: Tuesday (2)
+    else if (currentDay === 2) {
+      allowedStartDate.setDate(today.getDate() - 5);
+    } 
+    // 🟢 DEFAULT: All other days (Wed, Thu, Fri, Sat, Sun)
+    else {
+      allowedStartDate.setDate(today.getDate() - 6);
+    }
+
+    return formatDateStr(allowedStartDate);
   },
   
+  /**
+   * Cells are only editable if they are <= today
+   */
   get endDate(): string {
-    return formatDateStr(new Date());
-  }
+    const today = new Date();
+    return formatDateStr(today);
+  },
+
+  startDayOfWeek: CONFIG.startDayOfWeek,
 };
 
 export const NOT_ALLOWED_STAT_EDIT = [

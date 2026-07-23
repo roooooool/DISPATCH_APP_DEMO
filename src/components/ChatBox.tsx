@@ -558,6 +558,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
         }
     };
 
+    //DEV BOT CHAT
     const handleDevBotChat = async (userMessage: string) => {
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
         const secretKey = user?.Position === 'Developer' ? import.meta.env.VITE_DEV_BOT_SECRETDEV : import.meta.env.VITE_DEV_BOT_SECRET;

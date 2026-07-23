@@ -29,7 +29,9 @@
   --color-accent-light: #ff0400;         /* Red */
   --color-bg: #ffffff;   
   --color-bg-dark: #1c1c22;                /* Dark background */
-  --color-bg-blue: #f8fafc;
+  --color-bg-blue: #f7f9fb;
+  --color-bg-blue-2: #d9e8f5;
+  --color-bg-muted-dark: #eaf1f7;
   --color-text: #1a1a1a;
   --color-text-2: #ffffff;
   --color-muted: #666;
@@ -1048,6 +1050,27 @@ textarea:focus {
 /* Optional: Subtle hover effect */
 .gradient-radio-container:hover .radio-inner-circle {
   background: var(--color-bg-hover);
+}
+
+
+/* ==========================================
+   GRADIENT RADIO BUTTON: DISABLED STATES
+   ========================================== */
+
+.gradient-radio-container.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none; /* Prevents all hover/click logic cascades */
+}
+
+/* Fallback override to drop gradient backgrounds when the option is locked down */
+.gradient-radio-container.disabled .radio-gradient-outline {
+  background: #787a7e !important; /* Muted gray border canvas fallback */
+  box-shadow: none !important;
+}
+
+.gradient-radio-container.disabled span {
+  color: #494c52; /* Grayed out text label */
 }
 
 
