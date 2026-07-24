@@ -27,7 +27,7 @@
 .ordr-dist-dashboard-floating-container {
   background-color: var(--color-bg);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 10px 20px;
   width: 100%;
   height: 100%;          /* Forces the container to fill its wrapper */
   display: flex;         /* Sets up a layout context for header and content */

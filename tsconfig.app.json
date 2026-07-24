@@ -28,7 +28,12 @@
       "@truth/*": ["./src/truth.config.tsx"],
       "@components/*": ["./src/components/*"],
       "@components/css/*": ["./src/components/comp_css*"],
-      "@css/*": ["./src/css/*"]
+      "@css/*": ["./src/css/*"],
+      "@ui/*": ["./src/components/ui/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@power/*": ["./src/generated/services/*","./src/generated/models/*"]
     }
     
   },

@@ -139,6 +139,7 @@ interface TableViewProps {
   onDragDrop?: (signal: DragDropSignalData) => void;
   isArrangementMode?: boolean;
   onArrangementModeChange?: (enabled: boolean) => void;
+  showArrangeToggle?: boolean;
 }
 
 export const encodeColumnName = (name: string): string => {
@@ -410,13 +411,21 @@ const SortableRow = ({
   row, 
   renderRowContent, 
   isArrangementMode,
-  className // 1. Accept className here
+  className, // 1. Accept className here
+  styleOverride,
+  onMouseDown,
+  onMouseUp,
+  rowRef,
 }: { 
   id: string; 
   row: any; 
   renderRowContent: (row: any) => React.ReactNode; 
   isArrangementMode: boolean;
   className?: string; // 2. Add type definition
+  styleOverride?: React.CSSProperties; // <-- Add this
+  onMouseDown?: (e: React.MouseEvent) => void; // <-- Add this
+  onMouseUp?: (e: React.MouseEvent) => void;   // <-- Add this
+  rowRef?: (node: HTMLTableRowElement | null) => void;
 }) => {
   const {
     attributes, listeners, setNodeRef,
@@ -425,19 +434,28 @@ const SortableRow = ({
 
   const style: React.CSSProperties = {
     // Only apply the transition if the item is NOT being dragged
-    transition: isDragging ? undefined : transition, 
-    transform: transform ? CSS.Transform.toString(transform) : undefined,
+    transition: isDragging ? 'none' : transition, 
+    transform: transform ? CSS.Translate.toString(transform) : undefined,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 120 : 'auto',
     position: isDragging ? 'relative' : 'initial',
     boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.15)' : 'none',
+    ...styleOverride
+  };
+
+  const setCombinedRef = (node: HTMLTableRowElement | null) => {
+    setNodeRef(node);
+    if (rowRef) rowRef(node);
   };
 
   return (
     <tr 
-      ref={setNodeRef} 
+      id={id}
+      ref={setCombinedRef}
       style={style} 
       className={className} // 3. Pass it down to the native tr element
+      onMouseDown={onMouseDown} // <-- Attach it here
+      onMouseUp={onMouseUp}     // <-- Attach it here
       {...(isArrangementMode ? { ...attributes, ...listeners } : {})}
     >
       {renderRowContent(row)}
@@ -537,6 +555,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   onDragDrop,
   isArrangementMode: controlledArrangementMode,
   onArrangementModeChange,
+  showArrangeToggle,
 }, ref) => {
 
   // Arrangement state fallbacks if parent does not pass controller values
@@ -1219,11 +1238,101 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     });
   }, [processedData, multiSort, sortBlanks, columns]); // Included columns dependency
 
-  const totalPages = Math.ceil(sortedData.length / pageSize) || 1;
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return sortedData.slice(start, start + pageSize);
-  }, [sortedData, currentPage, pageSize]);
+  const groupedData = useMemo(() => {
+
+    if (!accordion?.enabled || !accordion.groupByCol) {
+        return [{
+            group: null,
+            rows: sortedData
+        }];
+    }
+
+    const groupKey = encodeColumnName(accordion.groupByCol);
+
+    const groups: {
+        group: string;
+        rows: any[];
+    }[] = [];
+
+    const lookup = new Map<string, any>();
+
+    sortedData.forEach(row => {
+
+        const colConfig = columns.find(c => c.col === groupKey);
+
+        const value =
+            colConfig?.calculate
+                ? colConfig.calculate(row)
+                : (row[groupKey] ?? row[accordion.groupByCol]);
+
+        const groupName =
+            value !== null &&
+            value !== undefined &&
+            value !== ''
+                ? String(value)
+                : 'Unassigned';
+
+        if (!lookup.has(groupName)) {
+
+            const obj = {
+                group: groupName,
+                rows: []
+            };
+
+            lookup.set(groupName, obj);
+
+            groups.push(obj);
+        }
+
+        lookup.get(groupName).rows.push(row);
+
+    });
+
+    return groups;
+
+}, [sortedData, accordion, columns]); 
+
+const paginatedGroups = useMemo(() => {
+
+    const pages = [];
+
+    let currentRows = 0;
+
+    let currentPageGroups: any[] = [];
+
+    groupedData.forEach(group => {
+
+        if (
+            currentRows > 0 &&
+            currentRows + group.rows.length > pageSize
+        ) {
+
+            pages.push(currentPageGroups);
+
+            currentPageGroups = [];
+            currentRows = 0;
+        }
+
+        currentPageGroups.push(group);
+
+        currentRows += group.rows.length;
+
+    });
+
+    if (currentPageGroups.length)
+        pages.push(currentPageGroups);
+
+    return pages;
+
+}, [groupedData, pageSize]);
+
+const totalPages = Math.max(1, paginatedGroups.length);
+const currentGroups = paginatedGroups[currentPage-1] ?? [];
+const paginatedData = useMemo(() => {
+
+    return currentGroups.flatMap(g => g.rows);
+
+}, [currentGroups]);
 
   // --- PAGE SAFETY SYNC ---
   useEffect(() => {
@@ -1314,7 +1423,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     if (table) {
       setTableWidth(table.scrollWidth);
     }
-  }, [columns, columnWidths, paginatedData, isLoading]);
+  }, [columns, columnWidths, paginatedData, isLoading, isArrangement, isSelectionMode, showNumbering]);
 
   
   
@@ -1379,9 +1488,13 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   };
 
   // Altered contents wrapper matching renderRow structure
-  const renderRowContentElements = (row: any, rowIndex: number) => {
-    const isSelected = selectedRows.some(r => r._rowId === row._rowId);
-    const absoluteIndex = (currentPage - 1) * pageSize + (rowIndex + 1);
+  const renderRowContentElements = (row: any, rowIndex: number, groupIndex?: number, isSelected?: boolean) => {
+    
+    // 1. If inside an accordion group, use the isolated 1-based group index.
+    // Otherwise, default to the page-absolute baseline index.
+    const displayIndex = (groupIndex !== undefined) 
+      ? groupIndex + 1 
+      : (currentPage - 1) * pageSize + (rowIndex + 1);
     
     return (
       <>
@@ -1403,8 +1516,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
         )}
 
         {showNumbering && (
-          <td className={`numbering-cell${isScrolledX ? ' numbering-blur' : ''}`} title={`${absoluteIndex}`}>
-            {absoluteIndex}
+          <td className={`numbering-cell${isScrolledX ? ' numbering-blur' : ''}`} title={`${displayIndex}`}>
+            {displayIndex}
           </td>
         )}
 
@@ -1433,9 +1546,15 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   };
 
   // Replaces previous standalone dynamic tr tags setup inside mapping trees
-  const renderRow = (row: any, rowIndex: number) => {
+  const renderRow = (row: any, rowIndex: number, groupIndex?: number) => {
     const isSelected = selectedRows.some(r => r._rowId === row._rowId);
+    const isHighlighted = highlightedRowId === row._rowId;
+
     const dynamicRowStyle = typeof rowStyle === 'function' ? rowStyle({ ...row, _idx: rowIndex }) : {};
+
+    const highlightClass = isHighlighted 
+      ? `highlight-row highlight-${highlightType || 'success'}` 
+      : '';
 
     const handleMouseDown = (e: React.MouseEvent) => {
       if (isArrangement) return; // Allow dnd-kit sensors to drive actions completely
@@ -1463,13 +1582,18 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     };
 
     return (
-      <SortableRow
-        key={row._rowId}
-        id={row._rowId}
-        row={row}
-        isArrangementMode={isArrangement}
-        renderRowContent={(r) => renderRowContentElements(r, rowIndex)}
-      />
+    <SortableRow
+      key={row._rowId}
+      id={row._rowId}
+      row={row}
+      isArrangementMode={isArrangement}
+      className={highlightClass}
+      styleOverride={dynamicRowStyle} 
+      onMouseDown={handleMouseDown} 
+      onMouseUp={handleMouseUp} 
+      rowRef={(el) => { rowRefs.current[row._rowId] = el; }}
+      renderRowContent={(r) => renderRowContentElements(r, rowIndex, groupIndex, isSelected)}
+    />
     );
   };
 
@@ -1537,7 +1661,11 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
 
 
   return (
-    <div className={`table-view-master-container ${showBlockingLoading ? 'data-refreshing' : ''}`} ref={tableRef} style={dynamicThemeVars}>
+    <div 
+      className={`table-view-master-container ${showBlockingLoading ? 'data-refreshing' : ''} ${isArrangement ? 'arrangement-active' : ''}`}
+      ref={tableRef} 
+      style={dynamicThemeVars}
+    >
       <div className="table-control-ribbon">
         <div className="ribbon-left-content">
 
@@ -1550,14 +1678,21 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
           </div>
 
           {/* ARRANGEMENT MODE TOGGLE BUTTON */}
-          <button 
-            onClick={toggleArrangement}
-            className={`action-btn mode-toggle-btn ${isArrangement ? 'active-arrangement' : ''}`}
-            title={isArrangement ? "Switch to View Mode" : "Switch to Arrangement Mode"}
-          >
-            <Move size={16} style={{ color: isArrangement ? '#fff' : 'var(--table-theme)' }} />
-            <span>{isArrangement ? 'Arranging...' : 'Arrange Rows'}</span>
-          </button>
+          {(isArrangement || showArrangeToggle) && (
+            <button 
+              onClick={toggleArrangement}
+              className={`action-btn mode-toggle-btn ${isArrangement ? 'active-arrangement' : ''}`}
+              title={isArrangement ? "Switch to View Mode" : "Switch to Arrangement Mode"}
+              disabled={!showArrangeToggle}
+            >
+              <Move 
+                size={16} 
+                className={`btn-icon-move ${isArrangement ? 'spinning-icon' : ''}`}
+                style={{ color: isArrangement ? '#fff' : 'var(--table-theme)' }} 
+              />
+              <span>{isArrangement ? 'Arranging...' : 'Arrange Rows'}</span>
+            </button>
+          )}
 
           {/* MULTI-SELECT CONTROL */}
           {!isArrangement && allowMultipleSelection && (
@@ -1869,6 +2004,16 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
             <thead>
               <DndContext sensors={headerSensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <tr>
+
+                  {isArrangement && (
+                    <th 
+                      style={{ 
+                        width: '50px', 
+                        minWidth: '50px', 
+                      }} 
+                      className="stop-propagation arrangement-header-blank"
+                    />
+                  )}
                   
                   {/* SELECTION HEADER */}
                   {isSelectionMode && (
@@ -1928,27 +2073,17 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                   {(() => {
                     if (paginatedData.length === 0) return null;
 
+                    // 1. FLAT MODE: Render rows standard style if accordion is off
                     if (!accordion?.enabled || !accordion?.groupByCol) {
                       return paginatedData.map((row, rowIndex) => renderRow(row, rowIndex));
                     }
 
-                    const groupKey = encodeColumnName(accordion.groupByCol);
-                    const groupedRows: Record<string, typeof paginatedData> = {};
-                    
-                    paginatedData.forEach((row) => {
-                      const colConfig = columns.find(c => c.col === groupKey);
-                      const value = colConfig?.calculate ? colConfig.calculate(row) : (row[groupKey] ?? row[accordion.groupByCol]);
-                      const groupName = value !== null && value !== undefined && value !== '' ? String(value) : 'Unassigned';
-                      
-                      if (!groupedRows[groupName]) {
-                        groupedRows[groupName] = [];
-                      }
-                      groupedRows[groupName].push(row);
-                    });
+                    // Calculate absolute column width for the span
+                    const totalCols = columns.length + (isSelectionMode ? 1 : 0) + (showNumbering ? 1 : 0) + (isArrangement ? 1 : 0);
 
-                    const totalCols = columns.length + (isSelectionMode ? 1 : 0) + (showNumbering ? 1 : 0);
-
-                    return Object.entries(groupedRows).map(([groupName, rows]) => {
+                    // 2. ACCORDION MODE: Direct render from your pre-calculated pagination chunks
+                    return currentGroups.map((groupBlock: any) => {
+                      const groupName = groupBlock.group ?? 'Unassigned';
                       const isCollapsed = !!collapsedGroups[groupName];
                       
                       return (
@@ -1970,16 +2105,15 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                                   <ChevronRight size={16} />
                                 </span>
                                 <span className="table-group-header-title">{groupName}</span>
-                                <span className="table-group-header-count">({rows.length})</span>
+                                <span className="table-group-header-count">({groupBlock.rows.length})</span>
                               </div>
                             </td>
                           </tr>
                           
-                          {/* Render child records with transition wrappers instead of short-circuiting */}
-                          {rows.map((row, _idx) => {
-                            const renderedRow = renderRow(row, row._rowIdx);
+                          {/* Render child records directly from the mapped group block */}
+                          {groupBlock.rows.map((row: any, idx: number) => {
+                            const renderedRow = renderRow(row, row._rowIdx, idx);
                             
-                            // Inject the animation tracking class dynamically into the <tr>
                             return React.cloneElement(renderedRow, {
                               className: `${renderedRow.props.className || ''} transitioning-group-row ${isCollapsed ? 'group-row-collapsed' : 'group-row-expanded'}`
                             });
@@ -1989,7 +2123,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                     });
                   })()}
                 </SortableContext>
-            </tbody>
+              </tbody>
           </table>
         </DndContext>
       </div>

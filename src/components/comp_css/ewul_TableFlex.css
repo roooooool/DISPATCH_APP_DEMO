@@ -1793,3 +1793,138 @@ td.cell.cell-blur {
   cursor: grabbing !important;
 }
 
+
+
+
+
+/* --- Arrangement Mode Styles --- */
+
+/* 1. Master Container State Indicator */
+.table-view-master-container.arrangement-active {
+  border: 2px solid var(--color-accent, #ff0000); /* Red Accent Border when editing layout */
+  border-radius: 12px;
+  padding: 2px;
+  background: linear-gradient(135deg, rgba(58, 78, 252, 0.03) 0%, rgba(255, 0, 0, 0.02) 100%);
+  
+  /* Red accent glow effect */
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.25), 
+              inset 0 0 8px rgba(255, 0, 0, 0.1);
+  
+  /* Smooth transition when entering/exiting arrangement mode */
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* 2. Style the button when editing */
+.action-btn.mode-toggle-btn.active-arrangement {
+  background: var(--color-accent, #ff0000) !important;
+  color: #ffffff !important;
+  border-color: var(--color-accent, #ff0000) !important;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+}
+
+/* 3. Shift the Rows to signal Draggability */
+.arrangement-active tbody tr {
+  cursor: grab;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.arrangement-active tbody tr:hover {
+  background-color: color-mix(in srgb, var(--color-primary-2, #3a4efc) 8%, var(--color-bg, #ffffff)) !important;
+}
+
+/* 4. Accentuate the Grip Column Cell */
+.arrangement-grip-cell {
+  background-color: color-mix(in srgb, var(--table-theme) 5%, transparent);
+  border-right: 1px dashed var(--color-border);
+  text-align: center;
+}
+
+.grip-move-icon {
+  color: var(--color-accent, #ff0000); /* Make the grip icon pop with Red */
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.arrangement-active tr:hover .grip-move-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* 5. Header cell indicator above the grip columns */
+.arrangement-header-blank {
+  background-color: color-mix(in srgb, var(--table-theme) 90%, black 10%) !important;
+  border-bottom: 2px solid var(--color-accent) !important;
+}
+
+
+/* Base Button Styling Rules */
+.action-btn.mode-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px; /* Gentle design rounded corners */
+  border: 1px solid var(--color-border, #ccc);
+  background-color: var(--color-bg, #ffffff);
+  cursor: pointer;
+  
+  /* Smooth transitions for entering active mode */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover state when inactive */
+.action-btn.mode-toggle-btn:not(.active-arrangement):hover {
+  background-color: rgba(58, 78, 252, 0.05); /* Soft secondary blue tint */
+  border-color: var(--color-primary-2, #3a4efc);
+  transform: translateY(-1px);
+}
+
+/* --- ACTIVE ARRANGEMENT MODE STATE --- */
+.action-btn.mode-toggle-btn.active-arrangement {
+  background: var(--color-yellow, #ff0000) !important;
+  color: #ffffff !important;
+  border-color: var(--color-yellow, #ff0000) !important;
+  
+  /* Start the pulse loop animation */
+  animation: pulse-red-glow 2s infinite ease-in-out;
+}
+
+/* Micro-interaction on click */
+.action-btn.mode-toggle-btn:active {
+  transform: scale(0.96);
+}
+
+/* Icon rotation while arranging */
+.btn-icon-move {
+  transition: transform 0.3s ease;
+}
+.btn-icon-move.spinning-icon {
+  animation: gentle-float 2s infinite ease-in-out;
+}
+
+/* --- ANIMATION KEYFRAMES --- */
+
+/* 1. Breathing Glow Effect for the Button */
+@keyframes pulse-red-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 162, 0, 0.7), 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 0, 0, 0), 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0), 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* 2. Gentle Nudge/Float for the Move Icon to show active utility */
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.1);
+  }
+}
