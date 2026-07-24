@@ -18,12 +18,15 @@
   transition: opacity 0.5s;
   display: block;
 }
+
 .table-banner-message.show {
   opacity: 1;
 }
+
 .table-banner-message.hidden {
   display: none;
 }
+
 @media (max-width: 1024px) {
   .filters-collapse-toggle {
     display: block !important;
@@ -32,26 +35,30 @@
     padding: 8px 12px;
     border-radius: 8px;
     margin-bottom: 8px;
-    text-align: center; 
+    text-align: center;
     cursor: pointer;
     font-weight: 600;
-     font-size: var(--font-size-title);
+    font-size: var(--font-size-title);
     user-select: none;
     transition: background 0.2s;
   }
+
   .filters-collapse-toggle:active {
     background: var(--color-bg-hover);
   }
+
   .ribbon-filters-area {
     transition: max-height 0.3s, opacity 0.3s;
     overflow: hidden;
   }
 }
+
 @media (max-width: 1024px) {
   .filters-collapse-toggle {
     display: none !important;
   }
 }
+
 .table-control-ribbon {
   display: flex;
   flex-direction: row;
@@ -88,19 +95,22 @@
     flex-direction: column;
     gap: 12px;
   }
+
   .ribbon-left-content,
   .ribbon-right-controls {
     align-items: stretch;
     width: 100%;
     gap: 12px;
   }
+
   .ribbon-left-content {
     flex-direction: column;
   }
 
-  .ribbon-left-content > * {
+  .ribbon-left-content>* {
     width: 100%;
   }
+
   .ribbon-filters-area,
   .active-filters-ribbon,
   .selection-controls,
@@ -111,14 +121,17 @@
     align-items: center;
     justify-content: center;
   }
+
   .active-filters-ribbon {
     overflow-x: auto;
     white-space: nowrap;
   }
 }
+
 .table-container-responsive.is-scrollable-x {
   overflow-x: scroll;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 /* Hide the bottom scrollbar visually, but keep it for sync */
@@ -137,17 +150,21 @@
   top: 0;
   z-index: 3;
 }
+
 .table-top-scrollbar::-webkit-scrollbar {
   height: 10px;
   background: #e0e0e0;
 }
+
 .table-top-scrollbar::-webkit-scrollbar-thumb {
   background: var(--table-theme);
   border-radius: 6px;
 }
+
 .table-container-responsive {
   width: 100%;
-  border-radius: 12px; /* Rounded corners */
+  border-radius: 12px;
+  /* Rounded corners */
   border: 1px solid #e2e8f0;
   background-color: var(--color-bg);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
@@ -161,12 +178,15 @@
 
 .gsdc-reusable-table thead th {
   position: sticky;
-  top: 0; /* Sticks to the top of .table-container-responsive */
-  z-index: 250; /* Higher than tbody cells */
-  background-color: var(--table-theme); /* Navy Blue */
+  top: 0;
+  /* Sticks to the top of .table-container-responsive */
+  z-index: 250;
+  /* Higher than tbody cells */
+  background-color: var(--table-theme);
+  /* Navy Blue */
   color: var(--color-text-2);
   /* Prevent background bleed-through on scroll */
-  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.1); 
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .gsdc-reusable-table td {
@@ -183,7 +203,8 @@
 
 
 
-.table-loader, .table-empty {
+.table-loader,
+.table-empty {
   padding: 40px;
   text-align: center;
   color: var(--color-primary);
@@ -201,8 +222,13 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .skeleton-row td {
@@ -215,8 +241,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Status Pill - Refined with Navy/Red theme hints */
@@ -226,7 +259,8 @@
   border-radius: 20px;
   background: var(--color-bg-blue);
   border: 1px solid var(--color-border);
-  color: var(--color-primary); /* Navy Blue Text */
+  color: var(--color-primary);
+  /* Navy Blue Text */
   font-weight: 600;
   font-size: var(--font-size-sm);
 }
@@ -243,9 +277,10 @@
 /* Header Specifics */
 .gsdc-reusable-table th {
   /* 1. Theme & Colors */
-  background-color: var(--table-theme) !important; /* Navy Blue Primary */
+  background-color: var(--table-theme) !important;
+  /* Navy Blue Primary */
   color: var(--color-text-2) !important;
-  
+
   /* 2. Typography & Spacing */
   padding: 12px 16px;
   font-size: var(--table-font-size, var(--font-size-base));
@@ -253,16 +288,16 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-align: center;
-  
+
   /* 3. Sticky Logic (Crucial for scrolling) */
   position: sticky;
   top: 0;
   z-index: 105;
-  
+
   /* 4. Gentle Design Borders */
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1); 
-  
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
   /* 5. Interaction & Animation */
   cursor: pointer;
   user-select: none;
@@ -274,20 +309,25 @@
   cursor: pointer;
   user-select: none;
   transition: background-color 0.2s ease;
-  white-space: nowrap; /* Prevents header from wrapping weirdly */
+  white-space: nowrap;
+  /* Prevents header from wrapping weirdly */
 }
 
 .sortable-header:hover {
-  background-color: color-mix(in srgb, var(--table-theme-neon) 90%, black 99%) !important; /* Darker Navy on hover */
+  background-color: color-mix(in srgb, var(--table-theme-neon) 90%, black 99%) !important;
+  /* Darker Navy on hover */
 }
 
 /* The Flexbox Magic */
 .header-content {
-  position: relative !important; /* CRITICAL: This is the anchor for the resizer */
-  display: flex !important;      /* Changed from inline-flex to flex */
+  position: relative !important;
+  /* CRITICAL: This is the anchor for the resizer */
+  display: flex !important;
+  /* Changed from inline-flex to flex */
   align-items: center;
   justify-content: center;
-  width: 100%;        /* Ensure it fills the entire TH */
+  width: 100%;
+  /* Ensure it fills the entire TH */
   height: 100%;
   gap: 6px;
 }
@@ -307,11 +347,12 @@
 
 /* Active Sorting State */
 .active-sort {
-  background-color: var(--table-theme ) !important;
+  background-color: var(--table-theme) !important;
 }
 
 .active-sort .sort-icon {
-  color: var(--color-accent-light); /* Red Accent for the active arrow */
+  color: var(--color-accent-light);
+  /* Red Accent for the active arrow */
 }
 
 /* Optional: Red underline for the specific column being sorted */
@@ -336,7 +377,9 @@
   height: 100%;
   z-index: 1;
 
-  background-color: /*var(--color-bg)*/ transparent !important;
+  background-color:
+    /*var(--color-bg)*/
+    transparent !important;
 
 }
 
@@ -384,233 +427,238 @@
 .header-content {
   display: flex;
   align-items: center;
-  gap: 4px; /* Space between handle and text */
+  gap: 4px;
+  /* Space between handle and text */
 }
 
 /* Ensure the dragged header looks prominent */
 .sortable-header[style*="transform"] {
   background-color: var(--table-theme) !important;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 
 .ribbon-left-content {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
 }
 
 /* Gradient outline imitation */
 .search-wrapper-gradient {
-    position: relative;
-    padding: 2px; /* The "border" thickness */
-    background: var(--table-gradient);
-    border-radius: 8px;
-    width: 100%;
-    max-width: 300px;
+  position: relative;
+  padding: 2px;
+  /* The "border" thickness */
+  background: var(--table-gradient);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 300px;
 }
 
 .search-inner-box {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: white;
-    padding: 6px 12px;
-    border-radius: 7px; /* Slightly smaller to fit inside */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 7px;
+  /* Slightly smaller to fit inside */
 }
 
 .table-search-input {
-    border: none;
-    outline: none;
-    font-size: var(--font-size-base);
-    color: black;
-    width: 100%;
-    font-weight: 500;
+  border: none;
+  outline: none;
+  font-size: var(--font-size-base);
+  color: black;
+  width: 100%;
+  font-weight: 500;
 }
 
 .table-search-input::placeholder {
-    color: #94a3b8;
+  color: #94a3b8;
 }
 
 .clear-search-btn {
-    cursor: pointer;
-    color: #94a3b8;
-    transition: color 0.2s;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: color 0.2s;
 }
 
 .clear-search-btn:hover {
-    color: var(--color-accent); /* Red accent on hover */
+  color: var(--color-accent);
+  /* Red accent on hover */
 }
 
 .no-results-cell {
-    text-align: center;
-    padding: 40px !important;
-    color: var(--color-muted);
-    font-style: italic;
+  text-align: center;
+  padding: 40px !important;
+  color: var(--color-muted);
+  font-style: italic;
 }
 
 .table-pagination-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    background: var(--color-bg-blue);
-    border-top: 1px solid var(--color-border);
-    font-size: var(--font-size-base);
-    color: var(--color-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--color-bg-blue);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-base);
+  color: var(--color-muted);
 }
 
 .pagination-buttons {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .pagination-buttons button {
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    padding: 4px;
-    border-radius: 6px;
-    cursor: pointer;
-    color: var(--color-primary);
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-primary);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
 }
 
 .pagination-buttons button:hover:not(:disabled) {
-    background: var(--color-primary);
-    color: var(--color-text-2);
+  background: var(--color-primary);
+  color: var(--color-text-2);
 }
 
 .pagination-buttons button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .page-indicator input {
-    width: 40px;
-    text-align: center;
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
-    margin: 0 4px;
-    font-weight: bold;
-    color: var(--color-primary);
+  width: 40px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  margin: 0 4px;
+  font-weight: bold;
+  color: var(--color-primary);
 }
 
 .page-size-selector {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--color-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-muted);
 }
 
 .page-size-selector select {
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    padding: 2px 4px;
-    outline: none;
-    color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 4px;
+  outline: none;
+  color: var(--color-primary);
 }
 
 .ribbon-right-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: transparent;
-    padding: 2px 12px;
-    border-radius: 8px;
-    /*border: 1px solid #ff0000;*/
-    min-width: 2px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  padding: 2px 12px;
+  border-radius: 8px;
+  /*border: 1px solid #ff0000;*/
+  min-width: 2px;
 }
 
 .pagination-compact {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .pagination-compact button {
-    background: transparent;
-    border: none;
-    padding: 4px;
-    color: var(--color-primary);
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background 0.2s;
+  background: transparent;
+  border: none;
+  padding: 4px;
+  color: var(--color-primary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
 }
 
 .pagination-compact button:hover:not(:disabled) {
-    background: var(--color-bg-blue);
+  background: var(--color-bg-blue);
 }
 
 .pagination-compact button:disabled {
-    color: var(--color-muted);
-    cursor: not-allowed;
+  color: var(--color-muted);
+  cursor: not-allowed;
 }
 
 .page-status {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: var(--font-size-sm);
-    font-weight: 700;
-    color: var(--color-muted);
-    margin: 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-muted);
+  margin: 0 4px;
 }
 
 .page-status input {
-    width: 32px;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    text-align: center;
-    color: var(--color-primary);
-    font-size: var(--font-size-sm);
-    padding: 2px 0;
+  width: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  text-align: center;
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  padding: 2px 0;
 }
 
 .vertical-divider {
-    width: 1px;
-    height: 16px;
-    background: var(--color-border);
+  width: 1px;
+  height: 16px;
+  background: var(--color-border);
 }
 
 .page-size-selector {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .page-size-selector select {
-    border: none;
-    background: transparent;
-    font-weight: 700;
-    color: var(--color-primary);
-    cursor: pointer;
-    outline: none;
-    font-size: 12px;
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  color: var(--color-primary);
+  cursor: pointer;
+  outline: none;
+  font-size: 12px;
 }
 
 .rows-label {
-    font-size: var(--font-size-caption);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: color-mix(in srgb, var(--table-theme) 60%, var(--color-border));
+  font-size: var(--font-size-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: color-mix(in srgb, var(--table-theme) 60%, var(--color-border));
 }
 
 .table-mini-info {
-    padding: 8px 16px;
-    font-size: var(--font-size-span);
-    color: var(--color-muted);
-    text-align: right;
+  padding: 8px 16px;
+  font-size: var(--font-size-span);
+  color: var(--color-muted);
+  text-align: right;
 }
 
 .sortable-header {
   position: relative;
-  overflow: hidden; /* Keeps the content inside the resized box */
+  overflow: hidden;
+  /* Keeps the content inside the resized box */
   min-width: 50px;
   white-space: nowrap;
 }
@@ -633,8 +681,10 @@
   z-index: 10;
 }
 
-.col-resizer:hover, .col-resizer:active {
-  background: var(--table-theme-neon); /* Primary 2nd Blue */
+.col-resizer:hover,
+.col-resizer:active {
+  background: var(--table-theme-neon);
+  /* Primary 2nd Blue */
   width: 5px;
 }
 
@@ -651,185 +701,195 @@
 }
 
 .table-actions-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
 }
 
 .action-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: var(--font-size-base);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    color: var(--table-theme); /* Navy */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--table-theme);
+  /* Navy */
 }
 
 .action-btn:hover {
-    background: var(--color-bg-hover);
-    border-color: color-mix(in srgb, var(--table-theme), var(--color-bg) 15%);
+  background: var(--color-bg-hover);
+  border-color: color-mix(in srgb, var(--table-theme), var(--color-bg) 15%);
 }
 
 .action-btn.save {
-    background: var(--table-theme);
-    color: var(--color-bg);
-    border: none;
+  background: var(--table-theme);
+  color: var(--color-bg);
+  border: none;
 }
 
 .action-btn.save:hover {
-    background: color-mix(in srgb, var(--table-theme), var(--color-bg) 15%);
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--table-theme), transparent 15%);
+  background: color-mix(in srgb, var(--table-theme), var(--color-bg) 15%);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--table-theme), transparent 15%);
 }
 
 .action-btn.reset {
-    color: var(--color-accent); /* Red Accent */
+  color: var(--color-accent);
+  /* Red Accent */
 }
 
 .action-btn.reset:hover {
-    background: #fff1f1;
-    border-color: var(--color-accent);
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-accent), transparent 15%);
+  background: #fff1f1;
+  border-color: var(--color-accent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-accent), transparent 15%);
 }
 
 .active-filters-ribbon {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: 12px;
-    flex-wrap: wrap;
-    overflow: visible !important;
-    position: relative;
-    z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+  flex-wrap: wrap;
+  overflow: visible !important;
+  position: relative;
+  z-index: 20;
 }
 
 .filter-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: 12px;
-    flex-wrap: wrap;
-    position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+  flex-wrap: wrap;
+  position: relative;
 }
 
 .active-filters-ribbon::-webkit-scrollbar {
-    display: none; /* Keep it clean */
+  display: none;
+  /* Keep it clean */
 }
 
 
 
 .chip-label {
-    font-weight: 600;
-    color: var(--color-muted);
+  font-weight: 600;
+  color: var(--color-muted);
 }
 
 .chip-value {
-    color: var(--color-primary-2); /* Your 2nd Blue */
+  color: var(--color-primary-2);
+  /* Your 2nd Blue */
 }
 
 .chip-remove {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    display: flex;
-    color: var(--color-muted);
-    transition: color 0.2s;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  color: var(--color-muted);
+  transition: color 0.2s;
 }
 
 .chip-remove:hover {
-    color: var(--color-accent); /* Red Accent */
+  color: var(--color-accent);
+  /* Red Accent */
 }
 
 .filter-chip {
-    position: relative; /* Anchors the tooltip */
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--color-bg);
-    border: 1px solid var(--table-theme);
-    padding: 4px 10px;
-    border-radius: 20px;
-    cursor: help;
-    overflow: visible !important;
-    /* No high z-index needed here, the Ribbon parent handles it */
+  position: relative;
+  /* Anchors the tooltip */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-bg);
+  border: 1px solid var(--table-theme);
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: help;
+  overflow: visible !important;
+  /* No high z-index needed here, the Ribbon parent handles it */
 }
 
 /* Hide custom tooltip by default */
 .chip-tooltip {
-    /* Visibility Logic */
-    visibility: hidden;
-    opacity: 0;
-    
-    /* Positioning */
-    position: absolute;
-    bottom: 130%; /* Clearly below the chip */
-    left: 50%;
-    transform: translateX(-50%) translateY(-5px);
-    
-    /* Design */
-    background-color: var(--table-theme); /* Navy Blue */
-    color: var(--color-bg);
-    padding: 6px 12px;
-    border-radius: 6px;
-    white-space: nowrap;
-    font-size: var(--font-size-base);
-    font-weight: 600;
-    
-    /* The Fix: Since the Ribbon is 200, this 9999 is now effective */
-    z-index: 9999; 
-    
-    /* Effects */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease-out;
-    pointer-events: none;
+  /* Visibility Logic */
+  visibility: hidden;
+  opacity: 0;
+
+  /* Positioning */
+  position: absolute;
+  bottom: 130%;
+  /* Clearly below the chip */
+  left: 50%;
+  transform: translateX(-50%) translateY(-5px);
+
+  /* Design */
+  background-color: var(--table-theme);
+  /* Navy Blue */
+  color: var(--color-bg);
+  padding: 6px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+
+  /* The Fix: Since the Ribbon is 200, this 9999 is now effective */
+  z-index: 9999;
+
+  /* Effects */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-out;
+  pointer-events: none;
 }
 
 .chip-tooltip-wew {
 
-    /* Visibility Logic */
+  /* Visibility Logic */
 
-    visibility: hidden;
-    opacity: 0;
+  visibility: hidden;
+  opacity: 0;
 
-    /* Positioning */
+  /* Positioning */
 
-    position: absolute;
-    top: 130%; /* Clearly below the chip */
-    left: 50%;
-    transform: translateX(-50%) translateY(-5px);
+  position: absolute;
+  top: 130%;
+  /* Clearly below the chip */
+  left: 50%;
+  transform: translateX(-50%) translateY(-5px);
 
-    /* Design */
+  /* Design */
 
-    background-color: var(--table-theme); /* Navy Blue */
-    color: var(--color-bg);
-    padding: 6px 12px;
-    border-radius: 6px;
-    white-space: nowrap;
-    font-size: var(--font-size-base);
-    font-weight: 600;
+  background-color: var(--table-theme);
+  /* Navy Blue */
+  color: var(--color-bg);
+  padding: 6px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-size: var(--font-size-base);
+  font-weight: 600;
 
-   
 
-    /* The Fix: Since the Ribbon is 200, this 9999 is now effective */
 
-    z-index: 9999;
+  /* The Fix: Since the Ribbon is 200, this 9999 is now effective */
 
-   
+  z-index: 9999;
 
-    /* Effects */
 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease-out;
-    pointer-events: none;
 
-    overflow: visible !important;
+  /* Effects */
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-out;
+  pointer-events: none;
+
+  overflow: visible !important;
 
 }
 
@@ -864,20 +924,22 @@
 
 /* Show on hover */
 .filter-chip:hover .chip-tooltip-wew {
-    visibility: visible;
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Show on hover */
 .filter-chip:hover .chip-tooltip {
-    visibility: visible;
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
+
 /* Hover effect on chip itself */
 .filter-chip:hover {
-  filter: brightness(1.1); /* Your favorite neon boost */
+  filter: brightness(1.1);
+  /* Your favorite neon boost */
   box-shadow: 0 0 5px var(--color-accent);
   margin-bottom: 30px;
 }
@@ -887,82 +949,86 @@
 }
 
 .clear-all-filters {
-    background: none;
-    border: none;
-    color: var(--color-muted);
-    font-size:  var(--font-size-base);
-    text-decoration: underline;
-    cursor: pointer;
-    font-weight: 500;
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-size: var(--font-size-base);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
 }
 
 .clear-all-filters:hover {
-    color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .ribbon-filters-area {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-left: 20px;
-    padding-left: 15px;
-    border-left: 1px solid var(--color-border); /* Subtle divider from search */
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 20px;
+  padding-left: 15px;
+  border-left: 1px solid var(--color-border);
+  /* Subtle divider from search */
 }
 
 .ribbon-table-filter-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary);
 }
 
 .ribbon-filter-label {
-    font-size: var(--font-size-base);
-    font-weight: 600;
-    color: color-mix(in srgb, var(--table-theme) 60%, var(--color-border) 40%);
-    white-space: nowrap;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: color-mix(in srgb, var(--table-theme) 60%, var(--color-border) 40%);
+  white-space: nowrap;
 }
 
 /* Adjust your existing filter-wrapper for ribbon use */
 .filter-wrapper {
-    position: relative;
+  position: relative;
 }
 
 .filter-trigger {
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    color: var(--table-theme); /* Navy */
-    border-radius: 6px;
-    padding: 4px;
-    cursor: pointer;
-    display: flex;
-    transition: all 0.2s;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--table-theme);
+  /* Navy */
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  transition: all 0.2s;
 }
 
 .filter-trigger.active {
-    background: var(--table-theme); /* Your 2nd Blue */
-    color: var(--color-bg);
-    border-color: color-mix(in srgb, var(--table-theme) 100%, var(--color-bg) 50%);
+  background: var(--table-theme);
+  /* Your 2nd Blue */
+  color: var(--color-bg);
+  border-color: color-mix(in srgb, var(--table-theme) 100%, var(--color-bg) 50%);
 }
 
 .filter-trigger:hover {
-    border-color: var(--table-hover); /* Red Accent */
+  border-color: var(--table-hover);
+  /* Red Accent */
 }
 
 /* Ensure dropdowns pop over the table */
 .filter-dropdown-content {
-    position: absolute;
-    top: 110%;
-    left: 0;
-    z-index: 1000;
-    background: var(--color-bg);
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    min-width: 180px;
-    max-height: 350px;
-    min-height: 30px;
-    border: 1px solid var(--color-border);
-    overflow: hidden;
+  position: absolute;
+  top: 110%;
+  left: 0;
+  z-index: 1000;
+  background: var(--color-bg);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  min-width: 180px;
+  max-height: 350px;
+  min-height: 30px;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
 }
 
 /* --- THE STICKY HEADER --- */
@@ -977,13 +1043,14 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  
+
   border-bottom: 1px solid #742121;
 }
 
 .filter-header {
   font-weight: 800;
-  color: var(--table-theme); /* Navy Blue */
+  color: var(--table-theme);
+  /* Navy Blue */
   font-size: 0.8rem;
   text-transform: uppercase;
 }
@@ -992,7 +1059,8 @@
 .clear-filter-link {
   background: transparent;
   border: none;
-  color: var(--color-accent); /* Red Accent */
+  color: var(--color-accent);
+  /* Red Accent */
   font-size: 0.60rem;
   font-weight: 700;
   cursor: pointer;
@@ -1012,6 +1080,7 @@
 .filter-options-list::-webkit-scrollbar {
   width: 6px;
 }
+
 .filter-options-list::-webkit-scrollbar-thumb {
   background: var(--color-border);
   border-radius: 10px;
@@ -1019,132 +1088,147 @@
 
 /* 1. The Container Animation */
 .animate-slide-down {
-    animation: slideDown 0.2s ease-out;
+  animation: slideDown 0.2s ease-out;
 }
 
 @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 2. Dropdown Header */
 .filter-header {
-    padding: 10px 14px;
-    font-size: var(--font-size-base);
-    font-weight: 800;
-    text-transform: uppercase;
-    color: var(--color-primary-light);
-    border-bottom: 1px solid var(--color-border);
-    letter-spacing: 0.5px;
+  padding: 10px 14px;
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--color-primary-light);
+  border-bottom: 1px solid var(--color-border);
+  letter-spacing: 0.5px;
 }
 
 /* 3. The Scrollable List */
 .filter-options-list {
-    flex: 1;
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 6px 0;
+  flex: 1;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 6px 0;
 }
 
-  /* 4. Individual Items */
-  .table-filter-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      cursor: pointer;
-      transition: background 0.2s;
-      font-size: var(--font-size-base);
-      color: var(--color-darkslategray) !important; /* Dark Slate Gray */
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 1;
-  }
+/* 4. Individual Items */
+.table-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: var(--font-size-base);
+  color: var(--color-darkslategray) !important;
+  /* Dark Slate Gray */
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+}
 
-  .table-filter-item:hover {
-      background: var(--color-bg-blue);
-  }
+.table-filter-item:hover {
+  background: var(--color-bg-blue);
+}
 
-  /* 5. Custom Checkbox Styling (Gentle Design) */
-  .table-filter-item input[type="checkbox"],
-  .table-filter-item input[type="radio"] {
-      accent-color: var(--color-primary-2); /* Your Primary 2nd Blue */
-      width: 15px;
-      height: 15px;
-      cursor: pointer;
-  }
+/* 5. Custom Checkbox Styling (Gentle Design) */
+.table-filter-item input[type="checkbox"],
+.table-filter-item input[type="radio"] {
+  accent-color: var(--color-primary-2);
+  /* Your Primary 2nd Blue */
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
 
 /* 6. Footer Button */
 .clear-filter-btn {
-    width: 100%;
-    padding: 8px;
-    background: var(--color-bg);
-    border: none;
-    border-top: 1px solid var(--color-border);
-    color: var(--color-accent); /* Red Accent */
-    font-size: var(--font-size-span);
-    font-weight: 700;
-    cursor: pointer;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    transition: background 0.2s;
+  width: 100%;
+  padding: 8px;
+  background: var(--color-bg);
+  border: none;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-accent);
+  /* Red Accent */
+  font-size: var(--font-size-span);
+  font-weight: 700;
+  cursor: pointer;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  transition: background 0.2s;
 }
 
 .clear-filter-btn:hover {
-    background: var(--color-accent);
-    color: var(--color-bg);
+  background: var(--color-accent);
+  color: var(--color-bg);
 }
 
 /* 7. Scrollbar for the list (Gentle/Thin) */
 .filter-options-list::-webkit-scrollbar {
-    width: 4px;
+  width: 4px;
 }
 
 .filter-options-list::-webkit-scrollbar-thumb {
-    background: var(--color-border);
-    border-radius: 10px;
+  background: var(--color-border);
+  border-radius: 10px;
 }
 
 /* Container adjustments */
 .table-container-responsive.is-fit-x {
-    width: 100%;
+  width: 100%;
 }
 
 .table-container-responsive.is-scrollable-x {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Table Layout adjustments */
 .gsdc-reusable-table.fixed-layout {
-    table-layout: fixed; /* Forces columns to fit inside the 100% width */
-    width: 100%;
+  table-layout: fixed;
+  /* Forces columns to fit inside the 100% width */
+  width: 100%;
 }
 
 .gsdc-reusable-table:not(.fixed-layout) {
-    table-layout: auto; /* Allows table to expand past container if needed */
-    min-width: 100%;
+  table-layout: auto;
+  /* Allows table to expand past container if needed */
+  min-width: 100%;
 }
 
 /* Scrollbar styling for a "gentle" design */
 .table-container-responsive::-webkit-scrollbar {
-    height: 6px;
-    width: 6px;
+  height: 6px;
+  width: 6px;
 }
 
 .table-container-responsive::-webkit-scrollbar-thumb {
-    background: var(--color-border); /* Soft gray */
-    border-radius: 10px;
+  background: var(--color-border);
+  /* Soft gray */
+  border-radius: 10px;
 }
 
 .table-container-responsive::-webkit-scrollbar-thumb:hover {
-    background: var(--table-theme); /* Navy on hover */
+  background: var(--table-theme);
+  /* Navy on hover */
 }
 
 .table-config-wrapper {
-  position: relative; /* Crucial for absolute positioning of the menu */
+  position: relative;
+  /* Crucial for absolute positioning of the menu */
   display: flex;
   align-items: center;
   height: auto;
@@ -1153,7 +1237,8 @@
 .config-toggle-btn {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  color: var(--table-theme); /* Navy Blue */
+  color: var(--table-theme);
+  /* Navy Blue */
   padding: 8px;
   border-radius: 8px;
   cursor: pointer;
@@ -1163,7 +1248,8 @@
   justify-content: center;
 }
 
-.config-toggle-btn:hover, .config-toggle-btn.active {
+.config-toggle-btn:hover,
+.config-toggle-btn.active {
   background: var(--table-theme);
   transform: scale(1.05);
   color: var(--color-bg) !important;
@@ -1175,8 +1261,13 @@
 }
 
 @keyframes rotateGear {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* The Collapsible Menu */
@@ -1214,7 +1305,8 @@
 
 .action-item:hover {
   background: var(--color-bg-hover);
-  color: color-mix(in srgb, var(--table-theme) 80%, black 90%); /* Hover to Navy */
+  color: color-mix(in srgb, var(--table-theme) 80%, black 90%);
+  /* Hover to Navy */
 }
 
 /* Animation for the pop-in effect */
@@ -1223,8 +1315,15 @@
 }
 
 @keyframes popIn {
-  0% { opacity: 0; transform: scale(0.95) translateY(-10px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Container for the loader to ensure it sticks to the top of the scroll area */
@@ -1233,8 +1332,9 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 5px; /* Thin and professional */
-  background:  var(--table-theme);
+  height: 5px;
+  /* Thin and professional */
+  background: var(--table-theme);
   z-index: 120;
   overflow: hidden;
 }
@@ -1253,6 +1353,7 @@
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -1261,48 +1362,58 @@
 /* Optional: Soften the table opacity while refreshing */
 .table-view-master-container.data-refreshing .gsdc-reusable-table {
   opacity: 0.6;
-  filter: grayscale(0.5); /* Optional: adds a slight gray feel */
-  pointer-events: none;   /* Blocks clicks while loading */
+  filter: grayscale(0.5);
+  /* Optional: adds a slight gray feel */
+  pointer-events: none;
+  /* Blocks clicks while loading */
   transition: all 0.3s ease;
 }
 
 .table-refresh-btn {
-    background: none;
-    border: none;
-    color: var(--navy-theme); /* Or white depending on your ribbon bg */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    transition: transform 0.2s ease, color 0.2s ease;
+  background: none;
+  border: none;
+  color: var(--navy-theme);
+  /* Or white depending on your ribbon bg */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .table-refresh-btn:hover {
-    color: var(--color-accent); /* Red accent on hover */
+  color: var(--color-accent);
+  /* Red accent on hover */
 }
 
 .table-refresh-btn.spinning svg {
-    animation: rotate 1s linear infinite;
+  animation: rotate 1s linear infinite;
 }
 
 @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .gsdc-reusable-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed; /* Keep fixed to respect our calculated % precisely */
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  /* Keep fixed to respect our calculated % precisely */
 }
 
 /* Ensure cells don't shrink smaller than their content if portion is small */
-.gsdc-reusable-table td, 
+.gsdc-reusable-table td,
 .gsdc-reusable-table th {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .filter-search-container {
@@ -1311,13 +1422,14 @@
   align-items: center;
   background: var(--color-bg-hover);
   border: 1px solid var(--color-border);
-  
+
   padding: 4px 8px;
   transition: border-color 0.2s;
 }
 
 .filter-search-container:focus-within {
-  border-color: var(--table-theme); /* Navy Blue */
+  border-color: var(--table-theme);
+  /* Navy Blue */
   background: var(--color-bg);
 }
 
@@ -1341,7 +1453,8 @@
 }
 
 .clear-mini-search:hover {
-  color: var(--color-accent); /* Red Accent */
+  color: var(--color-accent);
+  /* Red Accent */
 }
 
 /* --- EMPTY STATE --- */
@@ -1361,8 +1474,8 @@
 /* Using a soft Navy-tinted highlight */
 .table-row-interactive:hover {
   /* This lifts the dark navy into a lighter, more vibrant blue */
-  filter: brightness(0.9) saturate(1.1); 
-  
+  filter: brightness(0.9) saturate(1.1);
+
   /* Optional: Add a subtle lift to make the row feel "closer" to the user */
   transform: translateY(-1px);
   transition: all 0.2s ease;
@@ -1431,20 +1544,23 @@
 }
 
 /* --- SELECTION COLUMN (THIN) --- */
-.selection-col-header, 
+.selection-col-header,
 .selection-cell {
-  width: 45px;         /* Fixed thin width */
+  width: 45px;
+  /* Fixed thin width */
   min-width: 45px;
   max-width: 45px;
   text-align: center;
-  padding: 0 !important; /* Remove bulk padding to keep it tight */
+  padding: 0 !important;
+  /* Remove bulk padding to keep it tight */
   vertical-align: middle;
 }
 
 /* Ensure the checkbox is centered and uses your theme */
 .gsdc-checkbox {
   cursor: pointer;
-  accent-color: var(--table-theme); /* Navy Blue */
+  accent-color: var(--table-theme);
+  /* Navy Blue */
   width: 16px;
   height: 16px;
   margin: 0 auto;
@@ -1455,7 +1571,8 @@
 
 /* Optional: A subtle red left-border indicator for selected rows */
 .row-selected td:first-child {
-  box-shadow: inset 4px 0 0 var(--color-secondary); /* Red Accent */
+  box-shadow: inset 4px 0 0 var(--color-secondary);
+  /* Red Accent */
 }
 
 /* --- HIGHLIGHTED ROW (scrollTo) --- */
@@ -1464,18 +1581,22 @@
   background: var(--color-bg-info) !important;
   z-index: 400;
 }
+
 .highlight-success {
   border-color: var(--color-border-success) !important;
   background: var(--color-bg-success) !important;
 }
+
 .highlight-warning {
   border-color: var(--color-border-warning) !important;
   background: var(--color-bg-warning) !important;
 }
+
 .highlight-info {
   border-color: var(--color-border-info) !important;
   background: var(--color-bg-info) !important;
 }
+
 .highlight-danger {
   border-color: var(--color-border-danger) !important;
   background: var(--color-bg-danger) !important;
@@ -1495,29 +1616,35 @@
 
 .table-container-responsive {
   overflow-y: auto;
-  scroll-behavior: smooth; /* Makes the content slide gently */
-  
+  scroll-behavior: smooth;
+  /* Makes the content slide gently */
+
   /* Optimization for touch devices */
-  -webkit-overflow-scrolling: touch; 
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Default State (Idle) */
 .table-container-responsive::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--table-theme), transparent 70%); /* Your Navy Blue */
+  background: color-mix(in srgb, var(--table-theme), transparent 70%);
+  /* Your Navy Blue */
   border-radius: 10px;
-  transition: background 0.5s ease; /* Smooth transition */
-  
+  transition: background 0.5s ease;
+  /* Smooth transition */
+
 }
 
 /* Active State (When Scrolling) */
 .table-container-responsive.is-scrolling::-webkit-scrollbar-thumb {
-  background: var(--table-theme); /* Your Red Accent */
-  transition: background 0.5s ease; /* Smooth transition */
+  background: var(--table-theme);
+  /* Your Red Accent */
+  transition: background 0.5s ease;
+  /* Smooth transition */
 }
 
 /* Hover State (Optional: if they hover the scrollbar area) */
 .table-container-responsive::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--table-theme) 100%, var(--color-bg) 40%); /* Your Primary 2nd Blue */
+  background: color-mix(in srgb, var(--table-theme) 100%, var(--color-bg) 40%);
+  /* Your Primary 2nd Blue */
 }
 
 /* Only triggers when clicking the bar */
@@ -1526,24 +1653,27 @@
 }
 
 /* --- NUMBERING COLUMN (CELL & HEADER) --- */
-.numbering-cell, 
+.numbering-cell,
 .numbering-header {
-  width: 5%; /* Bumped to 25px for safety; 15px is too narrow for "10" or "20" */
+  width: 5%;
+  /* Bumped to 25px for safety; 15px is too narrow for "10" or "20" */
   white-space: nowrap;
   min-width: max-content !important;
 
 
   text-align: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: var(--font-size-span); /* Smaller font to fit the narrow width */
+  font-size: var(--font-size-span);
+  /* Smaller font to fit the narrow width */
   font-weight: 700;
-  padding: 0 8px !important; /* Remove padding to maximize space */
+  padding: 0 8px !important;
+  /* Remove padding to maximize space */
   display: table-cell;
   vertical-align: middle;
-  
+
   /* Sticky Logic: Keeps the number visible during horizontal scroll */
   position: sticky;
-  left: 0; 
+  left: 0;
   z-index: 10;
 
 }
@@ -1553,14 +1683,17 @@ th.numbering-header {
   background-color: var(--table-theme) !important;
   color: var(--color-bg) !important;
   text-transform: uppercase;
-  z-index: 250; /* Higher than cell to stay above during scroll */
+  z-index: 250;
+  /* Higher than cell to stay above during scroll */
   text-align: center !important;
 }
 
 .numbering-header .header-content {
   display: flex;
-  justify-content: center; /* Centers horizontally in Flex */
-  align-items: center;     /* Centers vertically in Flex */
+  justify-content: center;
+  /* Centers horizontally in Flex */
+  align-items: center;
+  /* Centers vertically in Flex */
   width: 100%;
   height: 100%;
   margin: 0;
@@ -1576,12 +1709,14 @@ th.numbering-header {
 td.numbering-cell {
   /*background-color: #f9f9f9 !important; /* Very light gray to distinguish from data */
   color: var(--table-theme);
-  opacity: 0.5; /* Keeps it subtle/gentle */
-  user-select: none; /* Prevent accidental highlighting of numbers */
+  opacity: 0.5;
+  /* Keeps it subtle/gentle */
+  user-select: none;
+  /* Prevent accidental highlighting of numbers */
   width: auto;
 }
 
-td.numbering-cell.numbering-blur{
+td.numbering-cell.numbering-blur {
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   background: color-mix(in srgb, var(--color-bg), transparent 15%) !important;
@@ -1595,29 +1730,34 @@ td.cell.cell-blur {
 
 
 @keyframes tableflex-text-background-glow {
-  0% { 
+  0% {
     background-color: rgba(255, 240, 0, 0.3);
     /*box-shadow: 0 0 8px #fff000;*/
   }
-  20% { 
+
+  20% {
     background-color: rgba(255, 240, 0, 0.7);
     /*box-shadow: 0 0 18px #fff000;*/
   }
-  80% { 
+
+  80% {
     background-color: rgba(255, 240, 0, 0.7);
     /*box-shadow: 0 0 18px #fff000;*/
   }
-  100% { 
+
+  100% {
     background-color: rgba(255, 240, 0, 0.3);
     /*box-shadow: 0 0 8px #fff000;*/
   }
 }
 
 .text-glow-wrapper {
-  display: inline-block; /* Essential to wrap only the text width */
+  display: inline-block;
+  /* Essential to wrap only the text width */
   padding: 2px 6px;
   border-radius: 4px;
-  color: #000; /* High contrast for the yellow glow */
+  color: #000;
+  /* High contrast for the yellow glow */
   font-weight: 600;
   animation: tableflex-text-background-glow 1s infinite ease-in-out;
   line-height: 1;
@@ -1636,14 +1776,15 @@ td.cell.cell-blur {
 
 .table-group-header-row td {
   padding: 10px 16px !important;
-  background-color: var(--color-bg-blue-2) !important; /* Soft backdrop color */
+  background-color: var(--color-bg-blue-2) !important;
+  /* Soft backdrop color */
   text-align: left !important;
   border-bottom: 1px solid var(--color-border);
 
   width: 50px;
-  
+
   /* Stickiness is now declared safely with dynamic runtime positions */
-  position: sticky; 
+  position: sticky;
 }
 
 .table-group-header-content {
@@ -1659,7 +1800,8 @@ td.cell.cell-blur {
 .group-chevron-icon {
   display: inline-flex;
   align-items: center;
-  color: var(--table-theme); /* Navy main color */
+  color: var(--table-theme);
+  /* Navy main color */
   transition: transform 0.42s cubic-bezier(0.33, 0, 0.1, 1);
 }
 
@@ -1668,7 +1810,8 @@ td.cell.cell-blur {
 }
 
 .group-chevron-icon:not(.collapsed) {
-  transform: rotate(95deg); /* Slightly past 90 degrees for a lively kinetic bounce */
+  transform: rotate(95deg);
+  /* Slightly past 90 degrees for a lively kinetic bounce */
 }
 
 .table-group-header-title {
@@ -1679,7 +1822,8 @@ td.cell.cell-blur {
 
 .table-group-header-count {
   font-weight: 600;
-  color: var(--color-accent); /* Accent Red context counter */
+  color: var(--color-accent);
+  /* Accent Red context counter */
   font-size: var(--font-size-sm);
 }
 
@@ -1690,8 +1834,8 @@ td.cell.cell-blur {
 
 
 .table-group-header-content {
-    position: relative;
-    will-change: transform;
+  position: relative;
+  will-change: transform;
 }
 
 
@@ -1699,7 +1843,7 @@ td.cell.cell-blur {
 
 /* Base setup for rows belonging to an accordion group */
 .transitioning-group-row {
-  transition: 
+  transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.25s ease,
     visibility 0.3s ease;
@@ -1715,7 +1859,8 @@ td.cell.cell-blur {
 
 /* Collapsed State */
 .transitioning-group-row.group-row-collapsed {
-  visibility: collapse; /* Tells the table layout engine to safely hide the row frame */
+  visibility: collapse;
+  /* Tells the table layout engine to safely hide the row frame */
   opacity: 0;
   transform: scaleY(0);
 }
@@ -1738,14 +1883,18 @@ td.cell.cell-blur {
   align-items: center;
   gap: 8px;
   background: transparent;
-  border: 1px solid rgba(58, 78, 252, 0.25); /* Primary 2nd blue border soft tint */
-  color: #3a4efc; /* Primary 2nd blue */
+  border: 1px solid rgba(58, 78, 252, 0.25);
+  /* Primary 2nd blue border soft tint */
+  color: #3a4efc;
+  /* Primary 2nd blue */
   font-size: 13px;
   font-weight: 500;
   padding: 6px 12px;
-  border-radius: 8px; /* Gentle design rounded corner */
+  border-radius: 8px;
+  /* Gentle design rounded corner */
   cursor: pointer;
-  height: 36px; /* Matches normal ribbon input/button row alignment */
+  height: 36px;
+  /* Matches normal ribbon input/button row alignment */
   transition: all 0.2s ease-in-out;
 }
 
@@ -1801,15 +1950,16 @@ td.cell.cell-blur {
 
 /* 1. Master Container State Indicator */
 .table-view-master-container.arrangement-active {
-  border: 2px solid var(--color-accent, #ff0000); /* Red Accent Border when editing layout */
+  border: 3px solid var(--color-primary-2, #0004ff);
+  /* Red Accent Border when editing layout */
   border-radius: 12px;
   padding: 2px;
   background: linear-gradient(135deg, rgba(58, 78, 252, 0.03) 0%, rgba(255, 0, 0, 0.02) 100%);
-  
+
   /* Red accent glow effect */
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.25), 
-              inset 0 0 8px rgba(255, 0, 0, 0.1);
-  
+  box-shadow: 0 0 15px rgba(0, 255, 195, 0.5),
+    inset 0 0 8px rgba(0, 140, 255, 0.2);
+
   /* Smooth transition when entering/exiting arrangement mode */
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
@@ -1840,7 +1990,8 @@ td.cell.cell-blur {
 }
 
 .grip-move-icon {
-  color: var(--color-accent, #ff0000); /* Make the grip icon pop with Red */
+  color: var(--color-accent, #ff0000);
+  /* Make the grip icon pop with Red */
   opacity: 0.7;
   transition: opacity 0.2s;
 }
@@ -1863,11 +2014,12 @@ td.cell.cell-blur {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  border-radius: 8px; /* Gentle design rounded corners */
+  border-radius: 8px;
+  /* Gentle design rounded corners */
   border: 1px solid var(--color-border, #ccc);
   background-color: var(--color-bg, #ffffff);
   cursor: pointer;
-  
+
   /* Smooth transitions for entering active mode */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -1876,7 +2028,8 @@ td.cell.cell-blur {
 
 /* Hover state when inactive */
 .action-btn.mode-toggle-btn:not(.active-arrangement):hover {
-  background-color: rgba(58, 78, 252, 0.05); /* Soft secondary blue tint */
+  background-color: rgba(58, 78, 252, 0.05);
+  /* Soft secondary blue tint */
   border-color: var(--color-primary-2, #3a4efc);
   transform: translateY(-1px);
 }
@@ -1886,7 +2039,7 @@ td.cell.cell-blur {
   background: var(--color-yellow, #ff0000) !important;
   color: #ffffff !important;
   border-color: var(--color-yellow, #ff0000) !important;
-  
+
   /* Start the pulse loop animation */
   animation: pulse-red-glow 2s infinite ease-in-out;
 }
@@ -1900,6 +2053,7 @@ td.cell.cell-blur {
 .btn-icon-move {
   transition: transform 0.3s ease;
 }
+
 .btn-icon-move.spinning-icon {
   animation: gentle-float 2s infinite ease-in-out;
 }
@@ -1911,9 +2065,11 @@ td.cell.cell-blur {
   0% {
     box-shadow: 0 0 0 0 rgba(255, 162, 0, 0.7), 0 2px 4px rgba(0, 0, 0, 0.1);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(255, 0, 0, 0), 0 4px 8px rgba(0, 0, 0, 0.15);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(255, 0, 0, 0), 0 2px 4px rgba(0, 0, 0, 0.1);
   }
@@ -1921,10 +2077,112 @@ td.cell.cell-blur {
 
 /* 2. Gentle Nudge/Float for the Move Icon to show active utility */
 @keyframes gentle-float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) scale(1);
   }
+
   50% {
     transform: translateY(-2px) scale(1.1);
   }
+}
+
+
+
+
+
+
+
+/* 1. Apply the row background tint and rounded outer corners */
+.gsdc-reusable-table tr.row-repositioned td {
+  background-color: rgba(58, 78, 252, 0.05);
+}
+
+.gsdc-reusable-table tr.row-repositioned td:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  position: relative;
+  /* Anchor for the gradient pill */
+}
+
+.gsdc-reusable-table tr.row-repositioned td:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* 2. The Green Gradient Pill Indicator */
+.gsdc-reusable-table tr.row-repositioned td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10%;
+  /* Floats nicely inside the cell height */
+  bottom: 10%;
+  width: 5px;
+  /* Fades from a vibrant emerald green to a deeper forest green (or use your success theme variables) */
+  background: linear-gradient(to bottom, #10b981, #059669);
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+
+
+
+/* src/components/comp_css/tableFlex.css */
+
+.arrangement-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon-primary {
+  color: var(--table-theme);
+  /* Fallback to primary Navy Blue */
+}
+
+/* Base style overrides for the new action states */
+.confirm-arrange-btn,
+.cancel-arrange-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--border-radius-gentle, 6px);
+  /* Gentle design approach */
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+/* Base transition */
+.gsdc-reusable-table tr {
+  transition: background-color 0.4s ease, transform 0.4s ease, opacity 0.4s ease;
+}
+
+/* 1. CONFIRMATION FADE (2 Seconds) */
+.gsdc-reusable-table tr.row-repositioned.is-confirming {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  transition: background-color 2s ease-out !important;
+}
+
+.gsdc-reusable-table tr.row-repositioned.is-confirming td:first-child::before {
+  opacity: 0;
+  transform: scaleY(0);
+  transition: opacity 2s ease-out, transform 2s ease-out;
+}
+
+/* 2. CANCELLATION REVERT (2 Seconds) */
+.gsdc-reusable-table tr.row-repositioned.is-reverting {
+  opacity: 0.3;
+  transform: translateX(-8px);
+  background-color: transparent !important;
+  transition: opacity 2s ease-out, transform 2s ease-out, background-color 2s ease-out !important;
+}
+
+.gsdc-reusable-table tr.row-repositioned.is-reverting td:first-child::before {
+  opacity: 0;
+  transition: opacity 1.5s ease-out;
 }

@@ -16,6 +16,7 @@ import React, { useRef, useState, useEffect } from 'react';
     className?: string;
     contentWidth?: string; // e.g., '80%'
     contentHeight?: string; // e.g., '90%'
+    contentPadding?: string;
     overflowX?: boolean;
     overflowY?: boolean;
     hideFooter?: boolean;
@@ -24,7 +25,18 @@ import React, { useRef, useState, useEffect } from 'react';
   
 
 
-  const PageTemplate: React.FC<PageTemplateProps> = ({ title, children, actions, className, contentWidth, contentHeight, overflowX = false, overflowY = false, hideFooter = true }) => {
+  const PageTemplate: React.FC<PageTemplateProps> = ({ 
+    title, 
+    children, 
+    actions, 
+    className, 
+    contentWidth, 
+    contentHeight, 
+    contentPadding,
+    overflowX = false, 
+    overflowY = false, 
+    hideFooter = true 
+  }) => {
     // --- 1. ALL HOOKS AT THE TOP ---
     const navigate = useNavigate();
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -111,7 +123,11 @@ import React, { useRef, useState, useEffect } from 'react';
           >
             <div 
               className="content-inner-box"
-              style={{ width: contentWidth, height: contentHeight }}
+              style={{ 
+                width: contentWidth, 
+                height: contentHeight, 
+                padding: contentPadding
+              }}
             >
               {children}
             </div>

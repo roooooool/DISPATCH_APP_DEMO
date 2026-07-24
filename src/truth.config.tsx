@@ -763,12 +763,12 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
   table_config: [
     { col: "OE", alias: "OE #", sticky: true, cellStyle: () => {return { fontWeight: 'bold' }} },
     // { col: "Trip Status", alias: "Status", filter: {type: "dropdown-multiple", options: statusOptions}, cellStyle: () => {return { fontWeight: 'bold' }}},
-    { col: "Loading Sequence", alias: "LS", defaultSort: 'asc', orderSort: 2 },
+    // { col: "Loading Sequence", alias: "LS", defaultSort: 'asc', orderSort: 2 },
 
       { col: "Driver", cellStyle: () => {return { textAlign: 'left' }} },
     { col: "Helper", cellStyle: () => {return { textAlign: 'left' }} },
     { col: "Vehicle", alias: "Truck" },
-    { col: "BO", alias: "Trailer" },  
+    { col: "BO", alias: "Trailer" },   
 
     
     { col: "Customer", cellStyle: () => {return { textAlign: 'left' }} },
@@ -924,10 +924,10 @@ export const NEW_TRIPS_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
 
   searchable_cols: ["OE", "SourceName", "DestiName"] as const,
 
-    accordion: {
-    enabled: true,
-    groupByCol: "SourceName"
-  }
+  //   accordion: {
+  //   enabled: true,
+  //   groupByCol: "SourceName"
+  // }
 
 }
 

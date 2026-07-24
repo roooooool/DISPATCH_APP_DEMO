@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import PageTemplate from './template';
 import { 
   RefreshCcw, 
-  Pencil, Check,
+  Pencil, Check, X
 } from 'lucide-react';
 
 import { useUser } from '../utils/useUser';
@@ -44,7 +44,7 @@ import AutoDismissBanner from '../components/ewul_Banner';
 import './css/OrderDistribution.css';
 import './css/OrderManagement.css';
 
-type ViewMode = 'NEW' | 'ASSIGNED';
+type ViewMode = 'NEW' | 'ASSIGNED' | '1A' | '1B';
 
 interface OrdersModuleProps {
   mode: ViewMode;
@@ -121,6 +121,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
           <TableView
             ref={assignedTableRef}
             data={assignedOrders}
+            rowKey='ID'
             config={assignedTableConfig}
             storageKey={`ordr_dist_assigned_grid_${user?.id || 'guest'}`}
             searchCol={LIVE_DMS_ASSIGNED_TABLE_CONFIG.searchable_cols as string[]}
@@ -143,13 +144,21 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
           />
         </div>
 
+        <div className="ordr-dist-dashboard-table-frame">
+          1A
+        </div>
+
+        <div className="ordr-dist-dashboard-table-frame">
+          1B
+        </div>
+
       </div>
     </div>
   );
 };
 
 const OrderDistribution: React.FC = () => {
-  const { user } = useUser();
+  // const { user } = useUser();
   const [activeMode, setActiveMode] = useState<ViewMode>('ASSIGNED');
   const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{from: string, to: string} | null>(null);
 
@@ -157,34 +166,99 @@ const OrderDistribution: React.FC = () => {
   // const formRef = useRef<OrderDistributionFormRef>(null);
 
   // Lifted States & Sidebar Management
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  const currentOrderData = selectedOrder || { OE: '', LS: 0 };
-  // const [sidebarVisible, setSidebarVisible] = useState(false);
-  // const [sidebarWidth, setSidebarWidth] = useState(33.33);
-  // const isResizing = useRef(false);
-  // const sidebarRef = useRef<HTMLDivElement>(null);
-  // const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
-  // const [isFormMaximized, setIsFormMaximized] = useState(false);
+  // const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  // const currentOrderData = selectedOrder || { OE: '', LS: 0 };
 
-  // Options & Aux States required by OrderDistributionForm
-  // const [livetruckassignment, setLiveTruckAssignment] = useState<any[]>([]);
-  // const [truckOptions, setTruckOptions] = useState<any[]>([]);
-  // const [trailerOptions, setTrailerOptions] = useState<any[]>([]);
-  // const [sourceOptions, setSourceOptions] = useState<any[]>([]);
-  // const [destinationOptions, setDestinationOptions] = useState<any[]>([]);
-  // const [stationOptions, setStationOptions] = useState<any[]>([]);
-  // const [driverHelperList, setDriverHelperList] = useState<any[]>([]);
-  // const [fuelRequests, setFuelRequests] = useState<any[]>([]);
-  // const [previewTripTicketID, setPreviewTripTicketID] = useState<any>(null);
+  const modeButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null); // 1. Add a container ref
+  const [modeSliderStyles, setModeSliderStyles] = useState<React.CSSProperties>({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const modes: ViewMode[] = ['NEW', 'ASSIGNED', '1A', '1B'];
+    
+    const updateSlider = () => {
+      const activeIndex = modes.indexOf(activeMode);
+      const activeTarget = modeButtonRefs.current[activeIndex];
+
+      if (activeTarget) {
+        setModeSliderStyles({
+          left: `${activeTarget.offsetLeft}px`,
+          width: `${activeTarget.offsetWidth}px`,
+        });
+      }
+    };
+
+    // Run immediately on mount/mode changes
+    updateSlider();
+
+    // 2. Watch for parent layout changes to handle dynamic flex rendering perfectly
+    if (!containerRef.current) return;
+    
+    const resizeObserver = new ResizeObserver(() => {
+      updateSlider(); // Recalculates if fonts load, window resizes, or flex snaps into place
+    });
+    
+    resizeObserver.observe(containerRef.current);
+    
+    return () => resizeObserver.disconnect();
+  }, [activeMode]);
 
 
+  
   const [isArranging, setIsArranging] = useState<boolean>(false);
+  const [assignedOrdersBackup, setAssignedOrdersBackup] = useState<any[]>([]);
+  const handleStartArranging = () => {
+    // Take a snapshot of the current state before modifications happen
+    setAssignedOrdersBackup([...assignedOrders]);
+    setIsArranging(true);
+  };
 
-  // useEffect(() => {
-  //   const handleResize = () => setIsMobile(window.innerWidth <= 1024);
-  //   window.addEventListener('resize', handleResize);
-  //   return () => window.removeEventListener('resize', handleResize);
-  // }, []);
+  const handleConfirmArrangement = () => {
+    // Commit changes (you can trigger an API save sequence here if needed)
+    setIsArranging(false);
+    setAssignedOrdersBackup([]); 
+  };
+
+  const handleCancelArrangement = () => {
+    // Roll back the table data to your original snapshot
+    setAssignedOrders(assignedOrdersBackup);
+    setIsArranging(false);
+    // setAssignedOrdersBackup([]);
+  };
+
+  // Continuous execution for pen icon animation
+  const penIconRef = useRef<{ startAnimation: () => Promise<void>; stopAnimation: () => void }>(null);
+  useEffect(() => {
+    let isMounted = true;
+
+    const runRepeatedAnimation = async () => {
+      // Keep looping as long as arrangement mode is enabled
+      while (isArranging && isMounted) {
+        if (penIconRef.current?.startAnimation) {
+          // Wait for the complete 1.55s timeline to run completely
+          await penIconRef.current.startAnimation();
+          // Add a tiny padding delay before triggering the next cycle if desired
+          await new Promise((resolve) => setTimeout(resolve, 300));
+        } else {
+          // Break instantly if reference is unavailable to prevent lock loops
+          break;
+        }
+      }
+    };
+
+    if (isArranging) {
+      runRepeatedAnimation();
+    } else {
+      // Immediately stop and snap the pen back to baseline if turned off
+      penIconRef.current?.stopAnimation();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isArranging]);
+
+
 
   // LIFTED ARCHITECTURE: State tracking for both tables is managed here
   const [newOrders, setNewOrders] = useState<any[]>([]);
@@ -196,23 +270,40 @@ const OrderDistribution: React.FC = () => {
   const [activeGroup, setActiveGroup] = useState<typeof TRIP_GROUPS[number]['id'] | 'ALL'>('ALL');
   const [sliderStyles, setSliderStyles] = useState<React.CSSProperties>({ left: 0, width: 0 });
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const groupContainerRef = useRef<HTMLDivElement | null>(null); // 1. Added container ref
 
-  // Re-calculate the position whenever the active selection changes
+  // Re-calculate the position whenever active selection changes or layout mounts
   useEffect(() => {
-    // Find the correct index based on the option state
-    const activeIndex = activeGroup === 'ALL' 
-      ? 0 
-      : TRIP_GROUPS.findIndex(group => group.id === activeGroup) + 1; // +1 to offset the 'All' button
-      
-    const activeTarget = buttonRefs.current[activeIndex];
+    const updateGroupSlider = () => {
+      // Find the correct index based on the option state
+      const activeIndex = activeGroup === 'ALL' 
+        ? 0 
+        : TRIP_GROUPS.findIndex(group => group.id === activeGroup) + 1; // +1 to offset the 'All' button
+        
+      const activeTarget = buttonRefs.current[activeIndex];
 
-    if (activeTarget) {
-      setSliderStyles({
-        left: `${activeTarget.offsetLeft}px`,
-        width: `${activeTarget.offsetWidth}px`,
-      });
-    }
-  }, [activeGroup]);
+      if (activeTarget) {
+        setSliderStyles({
+          left: `${activeTarget.offsetLeft}px`,
+          width: `${activeTarget.offsetWidth}px`,
+        });
+      }
+    };
+
+    // Run calculation immediately on state updates
+    updateGroupSlider();
+
+    // Watch for mount layout updates and parent dimension adjustments
+    if (!groupContainerRef.current) return;
+    
+    const resizeObserver = new ResizeObserver(() => {
+      updateGroupSlider();
+    });
+    
+    resizeObserver.observe(groupContainerRef.current);
+    
+    return () => resizeObserver.disconnect();
+  }, [activeGroup, TRIP_GROUPS]); // TRIP_GROUPS included in deps in case it loads asynchronously
 
   const [assignedTableConfig, setAssignedTableConfig] = useState<ColumnConfig[]>(
     LIVE_DMS_ASSIGNED_TABLE_CONFIG.table_config as ColumnConfig[]
@@ -266,16 +357,7 @@ const OrderDistribution: React.FC = () => {
   }, [activeGroup]);
 
 
-  // const [isAnyCollapsed, setIsAnyCollapsed] = useState(false);
-  // const handleAccordionToggle = () => {
-  //   if (!assignedTableRef.current) return;
-    
-  //   if (isAnyCollapsed) {
-  //     assignedTableRef.current.expandAll();
-  //   } else {
-  //     assignedTableRef.current.collapseAll();
-  //   }
-  // };
+
 
   // DATA SOURCE 1: Fetching Unassigned Requests
   const fetchNewOrders = useCallback(async () => {
@@ -305,7 +387,19 @@ const OrderDistribution: React.FC = () => {
     try {
       const fromInt = ISOtoInt(selectedRangeNewOrders.from);
       const toInt = ISOtoInt(selectedRangeNewOrders.to);
-      const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt} and TripProgress eq 'Assigned'`;
+      const dateFilter = 
+        `
+          OEDateAsInt ge ${fromInt} and 
+          OEDateAsInt le ${toInt} and 
+          (
+            TripProgress eq 'Assigned' or 
+            TripProgress eq 'Dispatched To Source' or 
+            TripProgress eq 'Dispatched To Destination'
+          ) and 
+          (
+            _tripGroup ne 'Preload' and _tripGroup ne 'Mobilization'
+          )
+        `;
       const result = await ewulFetchAll<any>(LiveDMSView_CEMService, { filter: dateFilter, orderBy: ["OEDateAsInt desc"] }, 10000, 'ID');
       setAssignedOrders(result || []);
     } catch (err) {
@@ -317,34 +411,6 @@ const OrderDistribution: React.FC = () => {
   }, [selectedRangeNewOrders]);
 
 
-  //FETCH 2
-  // const fetchTruckList = useCallback(async () => {
-  //   try {
-  //     const result = await ewulFetchAll<any>(LiveVehicleAssignmentLIstViewService, { filter: `Assignment eq 'VASQUEZ' or Assignment eq 'INTERCITY'` }, 3000) || [];
-  //     setLiveTruckAssignment(result);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }, []);
-
-  // const fetchDriverHelperList = useCallback(async () => {
-  //   try {
-  //     const result = await ewulFetchAll<any>(LiveDriverDispatchedList_AllService, { filter: `contains(Deploystatus, 'Deployed')` }, 3000, 'Id');
-  //     setDriverHelperList(result || []);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }, []);
-
-  // const generateTripTicketID = async (OE?: string) => {
-  //   try {
-  //     const res = await GenerateNewTripTicketService.GenerateNewTripTicket({ OE } as any);
-  //     const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
-  //     if (table1 && table1.length > 0) setPreviewTripTicketID(table1[0].TripTicketID + ' (Preview)');
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
 
   // COMBINED CONTROLLER: Targets active runtime context grid
   const handleSync = useCallback(() => {
@@ -378,106 +444,6 @@ const OrderDistribution: React.FC = () => {
     });
   }, []);
 
-  // // Action handler for generating Preload or Mobilization context
-  // const handleAdditionalOEGeneration = async (type: 'Preload' | 'Mobilization') => {
-  //   try {
-  //     // 1. Generate the extra OE logic via your imported Service
-  //     const response = await GenerateAdditionalOE_IDService.GenerateAdditionalOE_ID({
-  //       Type: type,
-  //       User: localUser.FullName
-  //     } as any);
-
-  //     const generatedData = (response.data?.ResultSets?.Table1 as any[])[0];
-      
-  //     if (generatedData) {
-  //       // 2. Map the generated structural shell to the selection state
-  //       setSelectedOrder({
-  //         OE: generatedData.OE_ID || '',
-  //         LS: 0,
-  //         TripProgress: 'Unassigned',
-  //         _tripGroup: type.toUpperCase(),
-  //         QTYDelivered_Actual: 0,
-  //         QTYWithdrawn_Actual: 0,
-  //         // Spread default values needed by OrderDistributionForm
-  //       });
-        
-  //       // 3. Open the sidebar so the user can immediately edit the newly generated item
-  //       setSidebarVisible(true);
-  //     }
-  //   } catch (error) {
-  //     console.error(`Failed to execute additional OE generation for ${type}:`, error);
-  //   }
-  // };
-
-  // const handleRowClick = async (record: any) => {
-  //   const canProceed = await formRef.current?.showUnsavedChangesModal();
-  //   if (canProceed === false) return;
-
-  //   setSelectedOrder({
-  //     ...record,
-  //     QTYDelivered_Actual: record.QTYDelivered_Actual ?? 0,
-  //     QTYWithdrawn_Actual: record.QTYWithdrawn_Actual ?? 0,
-  //   });
-  //   // setSidebarVisible(true);
-  // };
-
-  // const localUser: FormUserInfo = useMemo(() => {
-  //   return {
-  //     id: user?.id,
-  //     FullName: user?.FullName,
-  //     BusinessUnit: user?.BusinessUnit,
-  //     Position: user?.Position
-  //   } as FormUserInfo;
-  // }, [user?.id, user?.FullName, user?.BusinessUnit, user?.Position]);
-  // console.log(localUser);
-
-  // const renderOrderForm = (isMaximized: boolean) => (
-  //   <OrderDistributionForm
-  //     ref={formRef}
-  //     orderId={currentOrderData.OE}
-  //     initialData={currentOrderData}
-  //     onClose={() => {
-  //       if (isMaximized) {
-  //         setIsFormMaximized(false);
-  //       } else {
-  //         setSidebarVisible(false);
-  //         setSelectedOrder(null);
-  //       }
-  //     }}
-  //     allTrips={activeMode === 'ASSIGNED' ? assignedOrders : newOrders}
-  //     onFormDataChange={(formData) => {
-  //       if (formData.OE) setSelectedOrder(formData);
-  //     }}
-  //     onClearSelectedTrip={() => setSelectedOrder(null)}
-  //     onProceed={(updatedTrip, deselect) => {
-  //       if (deselect) setSelectedOrder(null);
-  //       else setSelectedOrder(updatedTrip);
-  //       handleSync();
-  //     }}
-  //     onCancelTrip={() => {
-  //       setSelectedOrder(null);
-  //       setSidebarVisible(false);
-  //     }}
-  //     onRefreshTrips={handleSync}
-  //     onRefreshDriverHelpers={fetchDriverHelperList}
-  //     onUpdateDriverHelperAttendance={(name, attendance, position) => {
-  //       setDriverHelperList(prev => prev.map(item => item.FullName === name && item.Position === position ? { ...item, DMS_Attendance: attendance } : item));
-  //     }}
-  //     onUpdateTruckTrailers={() => {}}
-  //     onShowFuelRequest={() => {}}
-  //     onRequestChangeTrip={() => {}}
-  //     truckOptions={truckOptions}
-  //     trailerOptions={trailerOptions}
-  //     driverOptions={[]}
-  //     helperOptions={[]}
-  //     sourceOptions={sourceOptions}
-  //     lsList={[]}
-  //     driverHelperList={driverHelperList}
-  //     editingUser={localUser}
-  //     canChangeTrip={true}
-  //     fuelFetching={false}
-  //   />
-  // );
 
 
   const handleRowDragDrop = (signal: DragDropSignalData) => {
@@ -555,17 +521,20 @@ const OrderDistribution: React.FC = () => {
   return (
     <PageTemplate
       title="Orders Distribution Center"
+      contentPadding='0px'
+      contentWidth='100%'
+      contentHeight='100%'
       actions={
         <div className="ordr-dist-dashboard-actions-bar">
-          <div className="ordr-dist-sliding-toggle-container">
-            {/* The sliding highlight background block */}
+          <div ref={containerRef} className="ordr-dist-sliding-toggle-container">
+            {/* Dynamic sliding highlight block */}
             <div 
-              className={`ordr-dist-slider-highlight ${
-                activeMode === 'NEW' ? 'slide-left' : 'slide-right'
-              }`} 
+              className="ordr-dist-slider-highlight" 
+              style={modeSliderStyles}
             />
             
             <button 
+              ref={(el) => { modeButtonRefs.current[0] = el; }}
               type="button"
               className={`ordr-dist-toggle-btn ${activeMode === 'NEW' ? 'active' : ''}`}
               onClick={() => setActiveMode('NEW')}
@@ -574,11 +543,30 @@ const OrderDistribution: React.FC = () => {
             </button>
             
             <button 
+              ref={(el) => { modeButtonRefs.current[1] = el; }}
               type="button"
               className={`ordr-dist-toggle-btn ${activeMode === 'ASSIGNED' ? 'active' : ''}`}
               onClick={() => setActiveMode('ASSIGNED')}
             >
-              <span>Assigned Orders</span>
+              <span>Order Summary</span>
+            </button>
+
+            <button 
+              ref={(el) => { modeButtonRefs.current[2] = el; }}
+              type="button"
+              className={`ordr-dist-toggle-btn ${activeMode === '1A' ? 'active' : ''}`}
+              onClick={() => setActiveMode('1A')}
+            >
+              <span>1A</span>
+            </button>
+
+            <button 
+              ref={(el) => { modeButtonRefs.current[3] = el; }}
+              type="button"
+              className={`ordr-dist-toggle-btn ${activeMode === '1B' ? 'active' : ''}`}
+              onClick={() => setActiveMode('1B')}
+            >
+              <span>1B</span>
             </button>
           </div>
 
@@ -601,51 +589,7 @@ const OrderDistribution: React.FC = () => {
 
         <div className="ordr-dist-dashboard-workspace-bg" style={{ display: 'flex', height: '100%', width: '100%', position: 'relative', gap: '5px' }}>
 
-        {/* Sidebar Toggle Tab */}
-        {/* <div 
-          title='Open DMS Form/Dashboard'
-          className={`ordr-dist-sidebar-toggle-tab ${sidebarVisible ? 'ordr-dist-hidden' : ''}`}
-          onClick={() => setSidebarVisible(true)}
-        >
-          <Menu size={24} />
-        </div> */}
-
-
-          {/* MANAGEMENT SIDEBAR PANEL */}
-          {/* <div
-            ref={sidebarRef}
-            className={`management-sidebar animate-sidebar${sidebarVisible ? ' sidebar-in' : ' sidebar-out'}`}
-            style={{
-              flex: sidebarVisible ? `0 0 ${isMobile ? 100 : sidebarWidth}%` : '0 0 0%',
-              minWidth: sidebarVisible ? (isMobile ? '100%' : 200) : 0,
-              maxWidth: sidebarVisible ? (isMobile ? '100%' : '60%') : 0,
-              pointerEvents: sidebarVisible ? 'auto' : 'none',
-              opacity: sidebarVisible ? 1 : 0,
-              transition: 'all 0.35s cubic-bezier(.4,2,.6,1), opacity 0.25s',
-              zIndex: 2,
-              display: !sidebarVisible && isMobile ? 'none' : 'flex'
-            }}
-            aria-hidden={!sidebarVisible}
-          >
-            <div className="utility-floating-actions">
-              <div className="utility-maximize show-icon">
-                <button className="maximize-btn" onClick={() => setIsFormMaximized(true)}>
-                  <Maximize2 size={16} />
-                </button>
-              </div>
-              <div className="utility-close">
-                <button className="close-btn" onClick={() => setSidebarVisible(false)}>
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-
-            <div className="utility-content animate-fade-in">
-              <div className="order-form-compact">
-                {renderOrderForm(false)} 
-              </div>
-            </div>
-          </div> */}
+        
 
           {/* MAIN TABLES CONTAINER */}
           <div className="ordr-dist-dashboard-gradient-wrapper ordr-dist-fullscreen-mode">
@@ -660,13 +604,28 @@ const OrderDistribution: React.FC = () => {
                   <h3 className={`ordr-dist-fade-heading ${(activeMode === 'ASSIGNED' && !isArranging) ? 'visible' : ''}`}>
                     Waiting to be Dispatched
                   </h3>
-                  <h3 className={`ordr-dist-fade-heading ${isArranging ? 'visible' : ''}`}>
+                  <h3 className={`ordr-dist-fade-heading ${(activeMode === '1A' && !isArranging) ? 'visible' : ''}`}>
+                    Trip Monitoring: 1A
+                  </h3>
+                  <h3 className={`ordr-dist-fade-heading ${(activeMode === '1B' && !isArranging) ? 'visible' : ''}`}>
+                    Trip Monitoring: 1B
+                  </h3>
+                  <h3 
+                    className={`ordr-dist-fade-heading ${isArranging ? 'visible' : ''}`} 
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
                     Editing Loading Sequence
+                    <PenIcon 
+                      ref={penIconRef} 
+                      size={25} 
+                      color="var(--color-primary, `#000080`)" 
+                      className="sequence-edit-pen"
+                    />
                   </h3>
                 </div>
 
 
-                <div className="ordr-dist-group-toggle-container">
+                <div ref={groupContainerRef} className="ordr-dist-group-toggle-container">
                   {/* Sliding highlight box */}
                   <div 
                     className="ordr-dist-group-slider-highlight"
@@ -741,23 +700,39 @@ const OrderDistribution: React.FC = () => {
                 )} */}
                 
                 {/** RIGHT BUTTONS */}
-                <div style={{gap: '5px', display: 'flex', flexDirection: 'row'}}>
-                  <button 
-                    onClick={() => setIsArranging(!isArranging)}
-                    className='ordr-dist-dashboard-action-btn ordr-dist-primary-solid'
-                  >
+                <div style={{gap: '8px', display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+
                     {isArranging ? (
                       <>
-                        <Check size={16} strokeWidth={2.5} />
-                        Confirm Sequence
+                        {/* CANCEL BUTTON */}
+                        <button 
+                          onClick={handleCancelArrangement}
+                          className="ordr-dist-dashboard-action-btn btn-sequence-cancel"
+                        >
+                          <X size={16} strokeWidth={2.5} />
+                          Cancel
+                        </button>
+
+                        {/* CONFIRM BUTTON */}
+                        <button 
+                          onClick={handleConfirmArrangement}
+                          className="ordr-dist-dashboard-action-btn btn-sequence-confirm"
+                        >
+                          <Check size={16} strokeWidth={2.5} />
+                          Confirm Sequence
+                        </button>
                       </>
                     ) : (
-                      <>
+                      /* ENTER EDIT MODE BUTTON */
+                      <button 
+                        onClick={handleStartArranging}
+                        className="ordr-dist-dashboard-action-btn btn-sequence-edit"
+                      >
                         <Pencil size={16} strokeWidth={2} />
                         Edit Sequence
-                      </>
+                      </button>
                     )}
-                  </button>
+
 
                   <button 
                     className="ordr-dist-dashboard-action-btn ordr-dist-primary-solid" 

@@ -1520,3 +1520,84 @@ select.status-new {
   gap: 10px;
   margin-top: 8px;
 }
+
+
+/* Container layout row alignment */
+.ordr-dist-sequence-controls-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-family-secondary); /* Inter for scannable interface UI controls */
+}
+
+/* Base control button properties */
+.ordr-dist-sequence-controls-row .ordr-dist-dashboard-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius); /* Uses your centralized 10px rounded corners template */
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition); /* Matches theme 0.2s ease-in-out curve */
+}
+
+/* 1. EDIT BUTTON: Uses standard Deep Navy Primary */
+.btn-sequence-edit {
+  background-color: var(--color-primary);
+  color: var(--color-text-2); /* Solid white text */
+  border: 1px solid var(--color-primary);
+}
+
+.btn-sequence-edit:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+
+/* 2. CONFIRM BUTTON: Positive confirmation action utilizing your Secondary Blue #3a4efc */
+/* 2. CONFIRM BUTTON: Common sense green confirmation utilizing your theme color */
+.btn-sequence-confirm {
+  background-color: var(--color-green); /* Professional Green #28a745 */
+  color: var(--color-text-2); /* Solid white text */
+  border: 1px solid var(--color-green);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.25);
+}
+
+.btn-sequence-confirm:hover:not(:disabled) {
+  /* Blends 80% of your green with 20% dark overlay for a rich hover state */
+  background-color: color-mix(in srgb, var(--color-green) 80%, var(--color-mix-hover) 20%);
+  border-color: color-mix(in srgb, var(--color-green) 80%, var(--color-mix-hover) 20%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* 3. CANCEL BUTTON: Warns user using an outline of your Core Red Accent color */
+.btn-sequence-cancel {
+  background-color: var(--color-bg); /* Clean solid white background surface */
+  color: var(--color-accent); /* Accent Red #da1613 */
+  border: 1px solid var(--color-accent);
+}
+
+.btn-sequence-cancel:hover:not(:disabled) {
+  background-color: rgba(218, 22, 19, 0.06); /* Soft, lightweight tint of your core red */
+  transform: translateY(-1px);
+}
+
+/* Disabled micro-state fallback if sync is locked or actions freeze */
+.ordr-dist-sequence-controls-row .ordr-dist-dashboard-action-btn:disabled {
+  background-color: var(--color-muted);
+  border-color: var(--color-border);
+  color: var(--color-text-2);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* Click feedback micro-interaction transition across all active rows */
+.ordr-dist-sequence-controls-row .ordr-dist-dashboard-action-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}

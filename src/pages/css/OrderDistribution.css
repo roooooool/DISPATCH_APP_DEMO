@@ -153,7 +153,10 @@
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--color-border);
-  width: 100%;
+  width: 25%;
+
+
+  flex-shrink: 0;
 
   flex: 1;            /* Tells the frame to grow and fill all remaining space */
   min-height: 0;
@@ -189,10 +192,10 @@
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--color-white, #ffffff);
+  background: var(--color-bg, #ffffff);
   border-radius: 8px; /* Gentle design rounded corners */
   padding: 3px;
-  width: 280px;
+  width: 100%; /* INCREASED: Expanded from 280px to hold 4 choices cleanly */
   height: 38px;
   border: 1px solid rgba(58, 78, 252, 0.2); /* #3a4efc subtle outer trace */
   user-select: none;
@@ -204,41 +207,40 @@
   position: absolute;
   top: 3px;
   bottom: 3px;
-  left: 3px;
-  width: calc(50% - 3px);
   /* Primary Navy Blue + Red Accent Gradient */
   background: linear-gradient(135deg, var(--color-primary, #002060) 0%, var(--color-accent, #ff0000) 100%);
   border-radius: 6px;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  /* CHANGED: Added left and width transitions so the Ref values morph smoothly */
+  transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              width 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1;
 }
 
-/* Sliding directional transform frames */
-.ordr-dist-slider-highlight.slide-left {
-  transform: translateX(0%);
-}
 
-.ordr-dist-slider-highlight.slide-right {
-  transform: translateX(100%);
-}
 
 /* The transparent button layers sitting on top */
 .ordr-dist-toggle-btn {
-  position: relative;
-  flex: 1;
-  height: 100%;
+  /* Key properties for text-based scaling: */
+  flex-grow: 1;                 /* Allows buttons to grow and fill remaining empty space */
+  flex-shrink: 0;               /* Prevents text from clipping/wrapping awkwardly */
+  flex-basis: auto;             /* Base size is calculated naturally off text content width */
+  
+  /* Give it some padding so short text (like '1A') still feels clickable */
+  padding: 8px 16px; 
+  
+  white-space: nowrap;          /* Forces text to stay on a single line */
   background: transparent;
   border: none;
-  outline: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
+  z-index: 2;                   /* Keeps text layered above the sliding background indicator */
+  
+  /* Centering the text inside its own bounding box */
+  display: inline-flex;
   justify-content: center;
-  font-size: var(--font-family-primary);
+  align-items: center;
+
   font-weight: 600;
-  color: var(--color-primary, #002060); /* Navy default */
-  transition: color 0.2s ease;
-  z-index: 2;
 }
 
 /* Swap text color to white when the sliding layer rests underneath */
@@ -258,7 +260,7 @@
 /* Double-wide container strip holding both panels side-by-side */
 .ordr-dist-orders-slider-track {
   display: flex;
-  width: 200%; /* Enough room for 2 full-width panels */
+  width: 400%; /* Enough room for 2 full-width panels */
   height: 100%;
   transition: transform 0.48s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -277,8 +279,17 @@
 }
 
 .ordr-dist-orders-slider-track.state-assigned {
+  transform: translateX(-25%); /* Shifts left to bring the second table into view */
+}
+
+.ordr-dist-orders-slider-track.state-1a {
   transform: translateX(-50%); /* Shifts left to bring the second table into view */
 }
+
+.ordr-dist-orders-slider-track.state-1b {
+  transform: translateX(-75%); /* Shifts left to bring the second table into view */
+}
+
 
 /* Layout wrapper to bound the layered text elements */
 .ordr-dist-heading-crossfade-wrapper {
@@ -474,4 +485,12 @@
 .ordr-dist-sidebar-toggle-tab:hover {
   background-color: #3a4efc; 
   transform: translateY(-50%) scale(1.05);
+}
+
+/* Align icon elegantly within the dynamic header layout framework */
+.ordr-dist-fade-heading .sequence-edit-pen {
+  display: inline-flex;
+  vertical-align: middle;
+  transform: translateY(-1px);
+  pointer-events: none; /* Prevents manual mouse hover states from overriding the automated loop */
 }

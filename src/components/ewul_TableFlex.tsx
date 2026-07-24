@@ -3,11 +3,11 @@
 export const TABLE_PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 500] as const;
 export type TablePageSize = typeof TABLE_PAGE_SIZE_OPTIONS[number];
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { 
-  ArrowUp, ArrowDown, ArrowUpDown, GripVertical, 
-  Search, X, ChevronLeft, ChevronRight, 
-  ChevronsLeft, ChevronsRight , Save, RotateCcw, Filter,
-  Settings, ChevronsUpDown, ChevronsDownUp, Move
+import {
+  ArrowUp, ArrowDown, ArrowUpDown, GripVertical,
+  Search, X, Check, ChevronLeft, ChevronRight,
+  ChevronsLeft, ChevronsRight, Save, RotateCcw, Filter,
+  Settings, Move, FoldVertical, UnfoldVertical
 } from 'lucide-react';
 import {
   DndContext,
@@ -92,7 +92,7 @@ export interface ColumnConfig {
   calculate?: (row: any) => any;
   useCalculatedSort?: boolean;
   cellStyle?: (row: any) => React.CSSProperties;
-  render?: (val: any, row: any, searchTerm: string, addTask?: (task: Omit<Task, 'id'>) => void, fontSize?: number) => React.ReactNode; 
+  render?: (val: any, row: any, searchTerm: string, addTask?: (task: Omit<Task, 'id'>) => void, fontSize?: number) => React.ReactNode;
 }
 
 export interface scrollToConfig {
@@ -104,6 +104,7 @@ export interface scrollToConfig {
 
 interface TableViewProps {
   data: any[];
+  rowKey?: string;
   config: ColumnConfig[];
   isLoading?: boolean;
   triggerScroll?: number;
@@ -112,7 +113,7 @@ interface TableViewProps {
   showRowCount?: TablePageSize;
   pageSizeOptions?: readonly TablePageSize[];
   onSaveConfig?: (newConfig: ColumnConfig[]) => void;
-  overflowX?: boolean; 
+  overflowX?: boolean;
   overflowY?: boolean;
   maxHeight?: string | number;
   loadingNoPreventAction?: boolean;
@@ -122,7 +123,7 @@ interface TableViewProps {
   onRowClick?: (record: any) => void;
   allowMultipleSelection?: boolean;
   onSelectionChange?: (selectedRecords: any[]) => void;
-  theme?: string; 
+  theme?: string;
   themeGradient?: string;
   tableMinHeight?: string | number;
   rowStyle?: (row: any) => React.CSSProperties;
@@ -140,6 +141,7 @@ interface TableViewProps {
   isArrangementMode?: boolean;
   onArrangementModeChange?: (enabled: boolean) => void;
   showArrangeToggle?: boolean;
+  onConfirmArrangement?: (confirmed: boolean, currentOrder: any[]) => void;
 }
 
 export const encodeColumnName = (name: string): string => {
@@ -150,147 +152,147 @@ export const encodeColumnName = (name: string): string => {
 };
 
 // FILTER COMPONENT
-const ColumnFilter = ({ 
-    config, 
-    data, 
-    activeFilters, 
-    onFilterChange 
-  }: { 
-    config: ColumnConfig, 
-    data: any[], 
-    activeFilters: any, 
-    onFilterChange: (val: any) => void 
-  }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const [filterSearch, setFilterSearch] = useState("");
+const ColumnFilter = ({
+  config,
+  data,
+  activeFilters,
+  onFilterChange
+}: {
+  config: ColumnConfig,
+  data: any[],
+  activeFilters: any,
+  onFilterChange: (val: any) => void
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [filterSearch, setFilterSearch] = useState("");
 
-    
 
-    // Generate options: Use provided or find distinct values in data
-    const options = useMemo(() => {
-      let baseOptions = config.filter?.options;
-      if (!baseOptions) {
-        const distinct = Array.from(new Set(data.map(item => item[config.col]))).filter(v => v !== null && v !== '');
-        baseOptions = distinct.map(v => ({ value: v, label: String(v) }));
-      }
-      
-      if (!filterSearch) return baseOptions;
-      
-      return baseOptions.filter(opt => 
-        String(opt.label || opt.value).toLowerCase().includes(filterSearch.toLowerCase())
-      );
-    }, [config, data, filterSearch]);
 
-    // Reset search when closing
-    useEffect(() => {
-      if (!isOpen) setFilterSearch("");
-    }, [isOpen]);
+  // Generate options: Use provided or find distinct values in data
+  const options = useMemo(() => {
+    let baseOptions = config.filter?.options;
+    if (!baseOptions) {
+      const distinct = Array.from(new Set(data.map(item => item[config.col]))).filter(v => v !== null && v !== '');
+      baseOptions = distinct.map(v => ({ value: v, label: String(v) }));
+    }
 
-    const currentVal = activeFilters[config.col] || (config.filter?.type.includes('multiple') || config.filter?.type === 'checkbox' ? [] : '');
+    if (!filterSearch) return baseOptions;
 
-    const toggleVal = (val: any) => {
-      if (config.filter?.type === 'dropdown-multiple' || config.filter?.type === 'checkbox') {
-        const next = currentVal.includes(val) ? currentVal.filter((v: any) => v !== val) : [...currentVal, val];
-        onFilterChange(next);
-      } else {
-        onFilterChange(val === currentVal ? '' : val);
+    return baseOptions.filter(opt =>
+      String(opt.label || opt.value).toLowerCase().includes(filterSearch.toLowerCase())
+    );
+  }, [config, data, filterSearch]);
+
+  // Reset search when closing
+  useEffect(() => {
+    if (!isOpen) setFilterSearch("");
+  }, [isOpen]);
+
+  const currentVal = activeFilters[config.col] || (config.filter?.type.includes('multiple') || config.filter?.type === 'checkbox' ? [] : '');
+
+  const toggleVal = (val: any) => {
+    if (config.filter?.type === 'dropdown-multiple' || config.filter?.type === 'checkbox') {
+      const next = currentVal.includes(val) ? currentVal.filter((v: any) => v !== val) : [...currentVal, val];
+      onFilterChange(next);
+    } else {
+      onFilterChange(val === currentVal ? '' : val);
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // If the menu is open and the click is NOT inside the dropdownRef
+      if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            // If the menu is open and the click is NOT inside the dropdownRef
-            if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
+    // Attach listener
+    document.addEventListener('mousedown', handleClickOutside);
 
-        // Attach listener
-        document.addEventListener('mousedown', handleClickOutside);
-        
-        // Clean up listener on unmount
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isOpen]);
+    // Clean up listener on unmount
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
-    return (
-      <div className="filter-wrapper" ref={dropdownRef}>
-        <button 
-          className={`filter-trigger ${currentVal.length > 0 || currentVal !== '' ? 'active' : ''}`}
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <Filter size={12} />
-        </button>
+  return (
+    <div className="filter-wrapper" ref={dropdownRef}>
+      <button
+        className={`filter-trigger ${currentVal.length > 0 || currentVal !== '' ? 'active' : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <Filter size={12} />
+      </button>
 
-        {isOpen && (
-          <div className="filter-dropdown-content animate-slide-down">
-            {/* PINNED HEADER SECTION */}
-            <div className="filter-sticky-header">
-              <div className="filter-header">Filter {config.alias || config.col}</div>
-              
-              {/* Moved Clear Button here for visibility */}
-              {(Array.isArray(currentVal) ? currentVal.length > 0 : currentVal !== '') && (
-                <button 
-                  className="clear-filter-link" 
-                  onClick={() => { 
-                    const resetVal = (config.filter?.type.includes('multiple') || config.filter?.type === 'checkbox') ? [] : '';
-                    onFilterChange(resetVal); 
-                    setIsOpen(false); 
-                  }}
-                >
-                  Clear All
-                </button>
-              )}
-            </div>
+      {isOpen && (
+        <div className="filter-dropdown-content animate-slide-down">
+          {/* PINNED HEADER SECTION */}
+          <div className="filter-sticky-header">
+            <div className="filter-header">Filter {config.alias || config.col}</div>
 
-            <div className="filter-search-container">
-              <Search size={14} className="search-icon-dim" />
-              <input 
-                type="text" 
-                className="filter-search-input" 
-                placeholder="Search options..." 
-                value={filterSearch}
-                onChange={(e) => setFilterSearch(e.target.value)}
-                autoFocus
-              />
-              {filterSearch && <X size={12} className="clear-mini-search" onClick={() => setFilterSearch("")} />}
-            </div>
-
-            {/* SCROLLABLE LIST SECTION */}
-            <div className="filter-options-list">
-              {options.map((opt, i) => (
-                <label key={i} className="table-filter-item">
-                  <input 
-                    type={config.filter?.type.includes('multiple') || config.filter?.type === 'checkbox' ? "checkbox" : "radio"}
-                    checked={Array.isArray(currentVal) ? currentVal.includes(opt.value) : currentVal === opt.value}
-                    onChange={() => toggleVal(opt.value)}
-                  />
-                  <span>{opt.label || opt.value}</span>
-                </label>
-              ))}
-            </div>
+            {/* Moved Clear Button here for visibility */}
+            {(Array.isArray(currentVal) ? currentVal.length > 0 : currentVal !== '') && (
+              <button
+                className="clear-filter-link"
+                onClick={() => {
+                  const resetVal = (config.filter?.type.includes('multiple') || config.filter?.type === 'checkbox') ? [] : '';
+                  onFilterChange(resetVal);
+                  setIsOpen(false);
+                }}
+              >
+                Clear All
+              </button>
+            )}
           </div>
-        )}
 
-      </div>
-    );
-  };
+          <div className="filter-search-container">
+            <Search size={14} className="search-icon-dim" />
+            <input
+              type="text"
+              className="filter-search-input"
+              placeholder="Search options..."
+              value={filterSearch}
+              onChange={(e) => setFilterSearch(e.target.value)}
+              autoFocus
+            />
+            {filterSearch && <X size={12} className="clear-mini-search" onClick={() => setFilterSearch("")} />}
+          </div>
+
+          {/* SCROLLABLE LIST SECTION */}
+          <div className="filter-options-list">
+            {options.map((opt, i) => (
+              <label key={i} className="table-filter-item">
+                <input
+                  type={config.filter?.type.includes('multiple') || config.filter?.type === 'checkbox' ? "checkbox" : "radio"}
+                  checked={Array.isArray(currentVal) ? currentVal.includes(opt.value) : currentVal === opt.value}
+                  onChange={() => toggleVal(opt.value)}
+                />
+                <span>{opt.label || opt.value}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
 
 // --- SUB-COMPONENT: SORTABLE & RESIZABLE HEADER ---
-const SortableHeader = React.forwardRef<HTMLTableCellElement, { 
-  column: ColumnConfig, 
-  onSort: (key: string) => void, 
+const SortableHeader = React.forwardRef<HTMLTableCellElement, {
+  column: ColumnConfig,
+  onSort: (key: string) => void,
   onTogglePreventNoSort: (key: string) => void,
   activeSorts: SortRule[],
   width: number,
   onResize: (id: string, newWidth: number) => void,
   styleOverride: React.CSSProperties,
   minWidth: number,
-}>(({ 
-  column, onSort, onTogglePreventNoSort, activeSorts, onResize, styleOverride, minWidth 
+}>(({
+  column, onSort, onTogglePreventNoSort, activeSorts, onResize, styleOverride, minWidth
 }, ref) => {
   const {
     attributes, listeners, setNodeRef,
@@ -299,7 +301,7 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
 
   // Merge the dnd-kit ref and the external scroll ref
   const setCombinedRef = (element: HTMLTableCellElement | null) => {
-    setNodeRef(element); 
+    setNodeRef(element);
     if (typeof ref === 'function') {
       ref(element);
     } else if (ref) {
@@ -310,7 +312,7 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
   const isSticky = styleOverride?.position === 'sticky';
   const style: React.CSSProperties = {
     ...styleOverride,
-    transition, 
+    transition,
     transform: transform ? CSS.Translate.toString(transform) : undefined,
     opacity: isDragging ? 0.8 : 1,
     zIndex: isSticky ? 10 : (isDragging ? 10 : 5),
@@ -322,13 +324,13 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
   const handleResizeStart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const thElement = (e.currentTarget as HTMLElement).closest('th');
     const currentActualWidth = thElement?.offsetWidth || minWidth;
     const startX = e.pageX;
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      const floor = Math.min(10, minWidth); 
+      const floor = Math.min(10, minWidth);
       const newWidth = Math.max(floor, currentActualWidth + (moveEvent.pageX - startX));
       onResize(column.col, newWidth);
     };
@@ -349,9 +351,9 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
   const indicatorStyle = isPreventNoSort ? { color: 'var(--color-yellow)' } : {};
 
   return (
-    <th 
-      ref={setCombinedRef} 
-      style={style} 
+    <th
+      ref={setCombinedRef}
+      style={style}
       className={`sortable-header ${currentSort ? 'active-sort' : ''}`}
     >
       <div className="header-content">
@@ -361,8 +363,8 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
         </div>
 
         {/* CLICKABLE AREA: Updated with Multi-Sort UI */}
-        <div 
-          className="clickable-header-area" 
+        <div
+          className="clickable-header-area"
           onClick={() => onSort(column.col)}
           onContextMenu={(e) => {
             e.preventDefault(); // Stop default browser right-click menu
@@ -373,12 +375,12 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
           <span className="sort-icon-container" style={indicatorStyle}>
             {currentSort ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                {currentSort.dir === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>}
+                {currentSort.dir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
                 {activeSorts.length > 1 && (
-                  <span style={{ 
-                    fontSize: '10px', 
+                  <span style={{
+                    fontSize: '10px',
                     color: 'var(--color-accent)', // Your red accent
-                    fontWeight: 'bold' 
+                    fontWeight: 'bold'
                   }}>
                     {sortIndex + 1}
                   </span>
@@ -391,12 +393,12 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
         </div>
 
         {/* RESIZER: Restored */}
-        <div 
-          className="col-resizer" 
+        <div
+          className="col-resizer"
           onMouseDown={(e) => {
             e.stopPropagation(); // Stop dnd-kit from seeing this as a potential drag
             handleResizeStart(e);
-          }} 
+          }}
           // Disable touch/drag defaults
           style={{ touchAction: 'none' }}
         />
@@ -406,20 +408,20 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
 });
 
 // --- SUB-COMPONENT: SORTABLE ROW COMPONENT ---
-const SortableRow = ({ 
-  id, 
-  row, 
-  renderRowContent, 
+const SortableRow = ({
+  id,
+  row,
+  renderRowContent,
   isArrangementMode,
   className, // 1. Accept className here
   styleOverride,
   onMouseDown,
   onMouseUp,
   rowRef,
-}: { 
-  id: string; 
-  row: any; 
-  renderRowContent: (row: any) => React.ReactNode; 
+}: {
+  id: string;
+  row: any;
+  renderRowContent: (row: any) => React.ReactNode;
   isArrangementMode: boolean;
   className?: string; // 2. Add type definition
   styleOverride?: React.CSSProperties; // <-- Add this
@@ -434,7 +436,7 @@ const SortableRow = ({
 
   const style: React.CSSProperties = {
     // Only apply the transition if the item is NOT being dragged
-    transition: isDragging ? 'none' : transition, 
+    transition: isDragging ? 'none' : transition,
     transform: transform ? CSS.Translate.toString(transform) : undefined,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 120 : 'auto',
@@ -449,10 +451,10 @@ const SortableRow = ({
   };
 
   return (
-    <tr 
+    <tr
       id={id}
       ref={setCombinedRef}
-      style={style} 
+      style={style}
       className={className} // 3. Pass it down to the native tr element
       onMouseDown={onMouseDown} // <-- Attach it here
       onMouseUp={onMouseUp}     // <-- Attach it here
@@ -485,30 +487,30 @@ const saveLayout = (key: string, config: any) => {
 };
 
 export const HighlightText = ({ text, highlight, isSearchable }: { text: any, highlight: string, isSearchable: boolean }) => {
-    // 1. Force convert to string and handle nulls/undefined
-    const stringText = text !== null && text !== undefined ? String(text) : '---';
+  // 1. Force convert to string and handle nulls/undefined
+  const stringText = text !== null && text !== undefined ? String(text) : '---';
 
-    // Ignore non searchable columns
-    if (!highlight.trim() || !isSearchable) {
-      return <span>{stringText}</span>;
-    }
+  // Ignore non searchable columns
+  if (!highlight.trim() || !isSearchable) {
+    return <span>{stringText}</span>;
+  }
 
-    const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    
-    const parts = stringText.split(new RegExp(`(${escapedHighlight})`, 'gi'));
+  const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    return (
-      <span>
-        {parts.map((part, i) => (
-          part.toLowerCase() === highlight.toLowerCase() ? (
-            <mark key={i} className="search-highlight">{part}</mark>
-          ) : (
-            part
-          )
-        ))}
-      </span>
-    );
-  };
+  const parts = stringText.split(new RegExp(`(${escapedHighlight})`, 'gi'));
+
+  return (
+    <span>
+      {parts.map((part, i) => (
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <mark key={i} className="search-highlight">{part}</mark>
+        ) : (
+          part
+        )
+      ))}
+    </span>
+  );
+};
 
 
 
@@ -519,14 +521,15 @@ interface SortRule {
 
 // --- MAIN COMPONENT ---
 
-const TableView = React.forwardRef<TableViewRef, TableViewProps>(({ 
-  data: rawData, 
-  config: initialConfig, 
-  isLoading, 
-  triggerScroll, 
-  renderControlRibbon, 
-  searchCol = [], 
-  showRowCount = TABLE_PAGE_SIZE_OPTIONS[0], 
+const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
+  data: rawData,
+  rowKey,
+  config: initialConfig,
+  isLoading,
+  triggerScroll,
+  renderControlRibbon,
+  searchCol = [],
+  showRowCount = TABLE_PAGE_SIZE_OPTIONS[0],
   pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS,
   onSaveConfig,
   storageKey = null,
@@ -537,7 +540,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   onRefresh,
   colMinWidth = 150,
   onRowClick,
-  theme = 'var(--color-primary)', 
+  theme = 'var(--color-primary)',
   themeGradient = 'var(--loadbar-gradient)',
   allowMultipleSelection = false,
   onSelectionChange,
@@ -556,11 +559,18 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   isArrangementMode: controlledArrangementMode,
   onArrangementModeChange,
   showArrangeToggle,
+  onConfirmArrangement
 }, ref) => {
 
   // Arrangement state fallbacks if parent does not pass controller values
   const [internalArrangementMode, setInternalArrangementMode] = useState(false);
   const isArrangement = controlledArrangementMode !== undefined ? controlledArrangementMode : internalArrangementMode;
+  useEffect(() => {
+    // If the parent toggles the arrangement mode off, clear the highlights
+    if (!controlledArrangementMode) {
+      setRepositionedRows([]);
+    }
+  }, [controlledArrangementMode]);
 
   const toggleArrangement = () => {
     const nextMode = !isArrangement;
@@ -657,16 +667,16 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
 
       // 2. Clear the previous "stop" detection timer
       if (scrollEndTimerRef.current) clearTimeout(scrollEndTimerRef.current);
-      
+
       if (!isDraggingRef.current && topScrollRef.current) {
         topScrollRef.current.scrollLeft = tableScroll.scrollLeft;
       }
 
       const scrollLeft = tableScroll.scrollLeft;
       Object.values(accordionRefs.current).forEach(el => {
-          if (el) {
-              el.style.transform = `translateX(${scrollLeft}px)`;
-          }
+        if (el) {
+          el.style.transform = `translateX(${scrollLeft}px)`;
+        }
       });
     };
 
@@ -678,8 +688,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
       isDraggingRef.current = true;
       setIsFakeScrollActive(true);
       // Force auto scroll behavior during drag for 1:1 precision
-      tableScroll.style.scrollBehavior = 'auto'; 
-      
+      tableScroll.style.scrollBehavior = 'auto';
+
     };
 
     const handleFakeMouseUp = () => {
@@ -687,7 +697,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
       tableScroll.style.scrollBehavior = 'smooth';
 
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      
+
       timeoutRef.current = setTimeout(() => {
         isDraggingRef.current = false;
         setIsFakeScrollActive(false);
@@ -708,7 +718,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
       tableScroll.removeEventListener('scroll', handleTableScroll); // Fixed: was addEventListener
       topScroll.removeEventListener('mousedown', handleFakeMouseDown);
       window.removeEventListener('mouseup', handleFakeMouseUp);
-      
+
       if (scrollEndTimerRef.current) clearTimeout(scrollEndTimerRef.current);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
@@ -726,10 +736,10 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   useEffect(() => {
     if (scrollTo && scrollTo.search_col && scrollTo.key !== undefined && scrollTo.key !== null) {
       const encodedCol = encodeColumnName(scrollTo.search_col);
-      
+
       // 1. Find index in sortedData
       const idx = sortedData.findIndex(row => row[encodedCol] === scrollTo.key);
-      
+
       if (idx !== -1) {
         const page = Math.floor(idx / pageSize) + 1;
         setCurrentPage(page);
@@ -741,25 +751,25 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
         setTimeout(() => {
           const rowRef = rowRefs.current[sortedData[idx]._rowId];
           const container = tableContainerRef.current;
-          
+
           if (rowRef && container) {
             // Vertical Position
             const rowTop = rowRef.offsetTop;
-            
+
             // Horizontal Position (Logic for target_col)
             let targetLeft = container.scrollLeft; // Stay where we are by default
-            
+
             if (scrollTo.target_col) {
               // 1. Find the index of the current edited column
               const currentColIndex = columns.findIndex(c => c.col === scrollTo.target_col);
-              
+
               // 2. Identify the "Previous" column (Index - 1)
               // We use Math.max(0, ...) to ensure we don't go below index 0
-              const prevColIndex = Math.max(0, currentColIndex - 1);  
+              const prevColIndex = Math.max(0, currentColIndex - 1);
               const prevColKey = columns[prevColIndex].col;
 
               const targetHeader = headerRefs.current[prevColKey];
-              
+
               if (targetHeader) {
                 // 3. Get the left position of the previous column
                 const offsetLeft = targetHeader.offsetLeft;
@@ -794,35 +804,56 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     // eslint-disable-next-line
   }, [scrollTo]);
 
+  // Add this above your `data` useMemo
+  const rowIdCache = useRef(new WeakMap<object, string>());
+
+  // Replace your existing `data` useMemo with this updated version
   const data = useMemo(() => {
-    return rawData.map((row, index) => ({
-      ...row,
-      _rowId: row.ID ? String(row.ID) : `row-id-${index}`,
-      _rowIdx: index
-    }));
-  }, [rawData]);
+    return rawData.map((row, index) => {
+
+      // 1. Check for explicit rowKey, uppercase ID, or lowercase id
+      let stableId = (rowKey && row[rowKey])
+        ? String(row[rowKey])
+        : (row.ID ? String(row.ID) : (row.id ? String(row.id) : null));
+
+      // 2. If no explicit ID is found, bind a persistent ID to the object reference
+      if (!stableId) {
+        if (!rowIdCache.current.has(row)) {
+          // Generates a random stable string once per object
+          rowIdCache.current.set(row, `gsdc-row-${Math.random().toString(36).substring(2, 11)}`);
+        }
+        stableId = rowIdCache.current.get(row)!;
+      }
+
+      return {
+        ...row,
+        _rowId: stableId,
+        _rowIdx: index
+      };
+    });
+  }, [rawData, rowKey]);
 
   const dynamicThemeVars = {
     '--table-theme': theme,
     '--table-gradient': themeGradient,
     '--table-hover': `${theme}0a`,
     '--table-theme-neon': increaseContrast(getHexFromCssVar(theme), 10),
-    '--table-min-height': typeof tableMinHeight === 'number' 
-      ? `${tableMinHeight}px` 
+    '--table-min-height': typeof tableMinHeight === 'number'
+      ? `${tableMinHeight}px`
       : tableMinHeight
   } as React.CSSProperties;
 
   const showBlockingLoading = isLoading && !loadingNoPreventAction;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const handleRefreshClick = () => {
-  if (onRefresh) {
-        setIsRefreshing(true);
-        onRefresh(true); // Send "true" signal to parent
-        setTimeout(() => {
-          setIsRefreshing(false);
-          onRefresh(false); // Send "false" signal back
-        }, 1000);
-      }
+    if (onRefresh) {
+      setIsRefreshing(true);
+      onRefresh(true); // Send "true" signal to parent
+      setTimeout(() => {
+        setIsRefreshing(false);
+        onRefresh(false); // Send "false" signal back
+      }, 1000);
+    }
   };
   const tableRef = useRef<HTMLDivElement>(null);
   const [columns, setColumns] = useState<ColumnConfig[]>(() => {
@@ -870,11 +901,11 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
         ...prev,
         [groupName]: !prev[groupName]
       };
-      
+
       // Calculate if anything is collapsed in the next state frame
       const isAnyCollapsedNow = Object.values(next).some(val => val === true);
       onAccordionChange?.(isAnyCollapsedNow);
-      
+
       return next;
     });
   };
@@ -891,28 +922,28 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
 
   const columnStyles = useMemo(() => {
     //const totalPortions = columns.reduce((sum, col) => sum + (col.portion || 0), 0);
-    
+
     // We define a 'Base Unit' (e.g., 1 portion = 300px)
     // You can adjust this 'baseUnit' to make the table wider or narrower
-    const baseUnit = BUn; 
+    const baseUnit = BUn;
 
     let stickyLeftOffset = 30;
 
     return columns.reduce((acc, col) => {
       const manualWidth = columnWidths[col.col];
-      
+
       // Calculate the pixel floor based on your portion
       const portionMinWidth = col.portion ? col.portion * baseUnit : colMinWidth;
       let widthStyle: React.CSSProperties = {};
 
       if (manualWidth) {
-        acc[col.col] = { 
-          width: `${manualWidth}px`, 
+        acc[col.col] = {
+          width: `${manualWidth}px`,
           minWidth: `${manualWidth}px`,
-          flex: '0 0 auto' 
+          flex: '0 0 auto'
         };
       } else {
-        acc[col.col] = { 
+        acc[col.col] = {
           // We use flex-grow based on portion, but set a hard minWidth floor
           flex: `${col.portion || 1} 0 0%`,
           minWidth: `${portionMinWidth}px`,
@@ -944,35 +975,35 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   //TOGGLE FOR MULTI-SELECT
   const toggleRowSelection = (record: any) => {
     // Use the internal stable ID instead of the potentially missing .ID
-    const recordKey = record._rowId || record.ID; 
+    const recordKey = record._rowId || record.ID;
 
     const isSelected = selectedRows.some(r => (r._rowId || r.ID) === recordKey);
-    
-    const nextSelection = isSelected 
-      ? selectedRows.filter(r => (r._rowId || r.ID) !== recordKey) 
+
+    const nextSelection = isSelected
+      ? selectedRows.filter(r => (r._rowId || r.ID) !== recordKey)
       : [...selectedRows, record];
-    
+
     setSelectedRows(nextSelection);
     onSelectionChange?.(nextSelection);
   };
 
   const handleSelectAll = () => {
-    const allInPageSelected = paginatedData.length > 0 && 
+    const allInPageSelected = paginatedData.length > 0 &&
       paginatedData.every(row => selectedRows.some(r => r._rowId === row._rowId));
-    
+
     let nextSelection;
-    
+
     if (allInPageSelected) {
-      nextSelection = selectedRows.filter(sRow => 
+      nextSelection = selectedRows.filter(sRow =>
         !paginatedData.some(pRow => pRow._rowId === sRow._rowId)
       );
     } else {
-      const newRows = paginatedData.filter(pRow => 
+      const newRows = paginatedData.filter(pRow =>
         !selectedRows.some(sRow => sRow._rowId === pRow._rowId)
       );
       nextSelection = [...selectedRows, ...newRows];
     }
-    
+
     setSelectedRows(nextSelection);
     onSelectionChange?.(nextSelection);
   };
@@ -985,7 +1016,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   // CHECK FOR USER PREFERENCE SORT
   useEffect(() => {
     const newDefaults: Record<string, any> = {};
-    
+
     initialConfig.forEach(col => {
       if (col.filter?.default && col.filter.default.length > 0) {
         const isMulti = col.filter.type.includes('multiple') || col.filter.type === 'checkbox';
@@ -999,8 +1030,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
       setActiveFilters(prev => ({ ...prev, ...newDefaults }));
     }*/
     // This overwrites the filters with exactly what the new config specifies.
-    setActiveFilters(newDefaults); 
-    
+    setActiveFilters(newDefaults);
+
   }, [initialConfig]);
 
   // --- AUTO SCROLL LOGIC ---
@@ -1008,17 +1039,18 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     // If triggerScroll is a timestamp (e.g., Date.now()), 
     // it will be unique every time the user clicks 'Scroll'.
     if (triggerScroll && tableRef.current) {
-      tableRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
+      tableRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
       });
     }
   }, [triggerScroll]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
+  // const sensors = useSensors(
+  //   useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  //   useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  // );
+
 
   //COLUMN SYNC
   useEffect(() => {
@@ -1052,20 +1084,20 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     // Priority A: Load from saved layout
     if (saved?.multiSort && Array.isArray(saved.multiSort)) {
       initialSorts = saved.multiSort;
-    } 
+    }
     // Priority B: Fallback to initialConfig defaults
     else {
       initialSorts = initialConfig
-          .filter(col => col.defaultSort)
-          .sort((a, b) => {
-              const orderA = a.orderSort ?? Number.MAX_SAFE_INTEGER;
-              const orderB = b.orderSort ?? Number.MAX_SAFE_INTEGER;
-              return orderA - orderB;
-          })
-          .map(col => ({
-              col: encodeColumnName(col.col),
-              dir: col.defaultSort!
-          }));
+        .filter(col => col.defaultSort)
+        .sort((a, b) => {
+          const orderA = a.orderSort ?? Number.MAX_SAFE_INTEGER;
+          const orderB = b.orderSort ?? Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+        })
+        .map(col => ({
+          col: encodeColumnName(col.col),
+          dir: col.defaultSort!
+        }));
     }
 
     setMultiSort(initialSorts);
@@ -1079,8 +1111,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   }, [initialConfig, config, storageKey]);
 
   // Update the pagination reset effect to watch multiSort instead of sortCol/sortDir
-  useEffect(() => { 
-    setCurrentPage(1); 
+  useEffect(() => {
+    setCurrentPage(1);
   }, [searchTerm, multiSort, initialConfig]);
 
   const handleColumnResize = (colId: string, newWidth: number) => {
@@ -1102,7 +1134,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     setMultiSort(prev => {
       const existingIndex = prev.findIndex(s => s.col === columnKey);
       const newSort = [...prev];
-      
+
       // Find the original column configuration to check for preventNoSort
       const targetColConfig = columns.find(c => c.col === columnKey);
       const preventNoSort = targetColConfig?.preventNoSort ?? false;
@@ -1148,7 +1180,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   // FILTER AND SEARCH
   const processedData = useMemo(() => {
     if (!Array.isArray(data)) return [];
-    
+
     let filtered = data;
 
     // 1. Apply Column-Specific Filters
@@ -1162,8 +1194,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
 
       filtered = filtered.filter(row => {
         // Determine value to compare: Raw or Calculated
-        const cellVal = (useCalculated && colConfig?.calculate) 
-          ? colConfig.calculate(row) 
+        const cellVal = (useCalculated && colConfig?.calculate)
+          ? colConfig.calculate(row)
           : row[colKey];
 
         if (Array.isArray(filterVal)) {
@@ -1177,13 +1209,13 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     if (!searchTerm) return filtered;
     const lowerSearch = searchTerm.toLowerCase();
     const targetKeys = searchCol.length > 0 ? searchCol.map(c => encodeColumnName(c)) : columns.map(c => c.col);
-    
-    return filtered.filter(row => 
+
+    return filtered.filter(row =>
       targetKeys.some(key => {
-          // Optional: Apply calculation logic to global search as well
-          const colConfig = columns.find(c => c.col === key);
-          const val = colConfig?.calculate ? colConfig.calculate(row) : row[key];
-          return val && String(val).toLowerCase().includes(lowerSearch);
+        // Optional: Apply calculation logic to global search as well
+        const colConfig = columns.find(c => c.col === key);
+        const val = colConfig?.calculate ? colConfig.calculate(row) : row[key];
+        return val && String(val).toLowerCase().includes(lowerSearch);
       })
     );
   }, [data, searchTerm, searchCol, columns, activeFilters]);
@@ -1217,7 +1249,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
         const aIsEmpty = aVal === null || aVal === undefined || aVal === '';
         const bIsEmpty = bVal === null || bVal === undefined || bVal === '';
 
-        if (aIsEmpty && bIsEmpty) continue; 
+        if (aIsEmpty && bIsEmpty) continue;
 
         if (aIsEmpty || bIsEmpty) {
           const shouldApplySortBlanks = multiSort.length === 1 || i > 0;
@@ -1241,58 +1273,58 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   const groupedData = useMemo(() => {
 
     if (!accordion?.enabled || !accordion.groupByCol) {
-        return [{
-            group: null,
-            rows: sortedData
-        }];
+      return [{
+        group: null,
+        rows: sortedData
+      }];
     }
 
     const groupKey = encodeColumnName(accordion.groupByCol);
 
     const groups: {
-        group: string;
-        rows: any[];
+      group: string;
+      rows: any[];
     }[] = [];
 
     const lookup = new Map<string, any>();
 
     sortedData.forEach(row => {
 
-        const colConfig = columns.find(c => c.col === groupKey);
+      const colConfig = columns.find(c => c.col === groupKey);
 
-        const value =
-            colConfig?.calculate
-                ? colConfig.calculate(row)
-                : (row[groupKey] ?? row[accordion.groupByCol]);
+      const value =
+        colConfig?.calculate
+          ? colConfig.calculate(row)
+          : (row[groupKey] ?? row[accordion.groupByCol]);
 
-        const groupName =
-            value !== null &&
-            value !== undefined &&
-            value !== ''
-                ? String(value)
-                : 'Unassigned';
+      const groupName =
+        value !== null &&
+          value !== undefined &&
+          value !== ''
+          ? String(value)
+          : 'Unassigned';
 
-        if (!lookup.has(groupName)) {
+      if (!lookup.has(groupName)) {
 
-            const obj = {
-                group: groupName,
-                rows: []
-            };
+        const obj = {
+          group: groupName,
+          rows: []
+        };
 
-            lookup.set(groupName, obj);
+        lookup.set(groupName, obj);
 
-            groups.push(obj);
-        }
+        groups.push(obj);
+      }
 
-        lookup.get(groupName).rows.push(row);
+      lookup.get(groupName).rows.push(row);
 
     });
 
     return groups;
 
-}, [sortedData, accordion, columns]); 
+  }, [sortedData, accordion, columns]);
 
-const paginatedGroups = useMemo(() => {
+  const paginatedGroups = useMemo(() => {
 
     const pages = [];
 
@@ -1302,37 +1334,37 @@ const paginatedGroups = useMemo(() => {
 
     groupedData.forEach(group => {
 
-        if (
-            currentRows > 0 &&
-            currentRows + group.rows.length > pageSize
-        ) {
+      if (
+        currentRows > 0 &&
+        currentRows + group.rows.length > pageSize
+      ) {
 
-            pages.push(currentPageGroups);
+        pages.push(currentPageGroups);
 
-            currentPageGroups = [];
-            currentRows = 0;
-        }
+        currentPageGroups = [];
+        currentRows = 0;
+      }
 
-        currentPageGroups.push(group);
+      currentPageGroups.push(group);
 
-        currentRows += group.rows.length;
+      currentRows += group.rows.length;
 
     });
 
     if (currentPageGroups.length)
-        pages.push(currentPageGroups);
+      pages.push(currentPageGroups);
 
     return pages;
 
-}, [groupedData, pageSize]);
+  }, [groupedData, pageSize]);
 
-const totalPages = Math.max(1, paginatedGroups.length);
-const currentGroups = paginatedGroups[currentPage-1] ?? [];
-const paginatedData = useMemo(() => {
+  const totalPages = Math.max(1, paginatedGroups.length);
+  const currentGroups = paginatedGroups[currentPage - 1] ?? [];
+  const paginatedData = useMemo(() => {
 
     return currentGroups.flatMap(g => g.rows);
 
-}, [currentGroups]);
+  }, [currentGroups]);
 
   // --- PAGE SAFETY SYNC ---
   useEffect(() => {
@@ -1341,7 +1373,7 @@ const paginatedData = useMemo(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
       console.log(`curr set to: ${totalPages}`);
-    } 
+    }
     // If the table becomes empty, reset to page 1
     else if (totalPages === 0 && currentPage !== 1) {
       setCurrentPage(1);
@@ -1357,22 +1389,22 @@ const paginatedData = useMemo(() => {
     const encoded = initialConfig.map(c => ({ ...c, col: encodeColumnName(c.col), rawCol: c.col }));
     setColumns(encoded);
     setSortBlanks(false);
-    
+
     // Set multiSort to defaults from initialConfig
     const initialSorts = initialConfig
       .filter(col => col.defaultSort)
       .sort((a, b) => {
-          const orderA = a.orderSort ?? Number.MAX_SAFE_INTEGER;
-          const orderB = b.orderSort ?? Number.MAX_SAFE_INTEGER;
-          return orderA - orderB;
+        const orderA = a.orderSort ?? Number.MAX_SAFE_INTEGER;
+        const orderB = b.orderSort ?? Number.MAX_SAFE_INTEGER;
+        return orderA - orderB;
       })
       .map(col => ({
-          col: encodeColumnName(col.col),
-          dir: col.defaultSort!
+        col: encodeColumnName(col.col),
+        dir: col.defaultSort!
       }));
 
     setMultiSort(initialSorts);
-    
+
     setColumnWidths({});
     setActiveFilters({});
     setFontSizePercent(100);
@@ -1388,7 +1420,7 @@ const paginatedData = useMemo(() => {
   // SAVE ARRANGEMENT
   const handleSave = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.blur();
-    
+
     const layoutToSave = {
       columns: columns.map(c => ({
         col: c.col,
@@ -1425,8 +1457,8 @@ const paginatedData = useMemo(() => {
     }
   }, [columns, columnWidths, paginatedData, isLoading, isArrangement, isSelectionMode, showNumbering]);
 
-  
-  
+
+  const [repositionedRows, setRepositionedRows] = useState<string[]>([]);
   const handleRowDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -1441,7 +1473,7 @@ const paginatedData = useMemo(() => {
 
     if (accordion?.enabled && accordion?.groupByCol) {
       const groupKey = encodeColumnName(accordion.groupByCol);
-      
+
       // Calculate active record's group context
       const activeRecord = paginatedData.find(r => r._rowId === activeId);
       if (activeRecord) {
@@ -1463,6 +1495,9 @@ const paginatedData = useMemo(() => {
 
       if (onDragDrop && oldIndexWithinGroup !== -1 && newIndexWithinGroup !== -1) {
         const sortedBoundary = arrayMove(boundaryRows, oldIndexWithinGroup, newIndexWithinGroup);
+        if (!repositionedRows.includes(activeId)) {
+          setRepositionedRows(prev => [...prev, activeId]);
+        }
         onDragDrop({
           record: activeRecord,
           newIndex: newIndexWithinGroup + 1, // Output human-readable order index 1-based
@@ -1474,9 +1509,12 @@ const paginatedData = useMemo(() => {
       // Standard structural mapping flat arrays
       const oldIndex = paginatedData.findIndex(r => r._rowId === activeId);
       const newIndex = paginatedData.findIndex(r => r._rowId === overId);
-      
+
       if (onDragDrop && oldIndex !== -1 && newIndex !== -1) {
         const reorderedSlice = arrayMove(paginatedData, oldIndex, newIndex);
+        if (!repositionedRows.includes(activeId)) {
+          setRepositionedRows(prev => [...prev, activeId]);
+        }
         onDragDrop({
           record: paginatedData[oldIndex],
           newIndex: newIndex + 1,
@@ -1489,13 +1527,13 @@ const paginatedData = useMemo(() => {
 
   // Altered contents wrapper matching renderRow structure
   const renderRowContentElements = (row: any, rowIndex: number, groupIndex?: number, isSelected?: boolean) => {
-    
+
     // 1. If inside an accordion group, use the isolated 1-based group index.
     // Otherwise, default to the page-absolute baseline index.
-    const displayIndex = (groupIndex !== undefined) 
-      ? groupIndex + 1 
+    const displayIndex = (groupIndex !== undefined)
+      ? groupIndex + 1
       : (currentPage - 1) * pageSize + (rowIndex + 1);
-    
+
     return (
       <>
         {isArrangement && (
@@ -1506,8 +1544,8 @@ const paginatedData = useMemo(() => {
 
         {isSelectionMode && !isArrangement && (
           <td className="selection-cell" onClick={(e) => e.stopPropagation()}>
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               className="gsdc-checkbox"
               checked={isSelected}
               onChange={() => toggleRowSelection(row)}
@@ -1528,16 +1566,16 @@ const paginatedData = useMemo(() => {
           const isSticky = columnStyles[column.col]?.position === 'sticky';
 
           return (
-            <td key={colIndex} style={{...columnStyles[column.col], ...conditionalStyle }} className={`cell ${(isSticky && isScrolledX) ? 'cell-blur' : ''}`}>
+            <td key={colIndex} style={{ ...columnStyles[column.col], ...conditionalStyle }} className={`cell ${(isSticky && isScrolledX) ? 'cell-blur' : ''}`}>
               {column.render
-                ? column.render(cellValue, row, searchTerm, addTask, (fontSizePercent/100))
+                ? column.render(cellValue, row, searchTerm, addTask, (fontSizePercent / 100))
                 : neonCell?.rowId === row._rowId && neonCell?.colKey === column.col ? (
-                    <span className="text-glow-wrapper">
-                      <HighlightText text={cellValue} highlight={searchTerm} isSearchable={isSearchable} />
-                    </span>
-                  ) : (
+                  <span className="text-glow-wrapper">
                     <HighlightText text={cellValue} highlight={searchTerm} isSearchable={isSearchable} />
-                  )}
+                  </span>
+                ) : (
+                  <HighlightText text={cellValue} highlight={searchTerm} isSearchable={isSearchable} />
+                )}
             </td>
           );
         })}
@@ -1549,12 +1587,14 @@ const paginatedData = useMemo(() => {
   const renderRow = (row: any, rowIndex: number, groupIndex?: number) => {
     const isSelected = selectedRows.some(r => r._rowId === row._rowId);
     const isHighlighted = highlightedRowId === row._rowId;
+    const isRepositioned = repositionedRows.includes(row._rowId);
 
     const dynamicRowStyle = typeof rowStyle === 'function' ? rowStyle({ ...row, _idx: rowIndex }) : {};
 
-    const highlightClass = isHighlighted 
-      ? `highlight-row highlight-${highlightType || 'success'}` 
-      : '';
+    const highlightClass = [
+      isHighlighted ? `highlight-row highlight-${highlightType || 'success'}` : '',
+      isRepositioned ? 'row-repositioned' : ''
+    ].filter(Boolean).join(' ');
 
     const handleMouseDown = (e: React.MouseEvent) => {
       if (isArrangement) return; // Allow dnd-kit sensors to drive actions completely
@@ -1582,26 +1622,26 @@ const paginatedData = useMemo(() => {
     };
 
     return (
-    <SortableRow
-      key={row._rowId}
-      id={row._rowId}
-      row={row}
-      isArrangementMode={isArrangement}
-      className={highlightClass}
-      styleOverride={dynamicRowStyle} 
-      onMouseDown={handleMouseDown} 
-      onMouseUp={handleMouseUp} 
-      rowRef={(el) => { rowRefs.current[row._rowId] = el; }}
-      renderRowContent={(r) => renderRowContentElements(r, rowIndex, groupIndex, isSelected)}
-    />
+      <SortableRow
+        key={row._rowId}
+        id={row._rowId}
+        row={row}
+        isArrangementMode={isArrangement}
+        className={highlightClass}
+        styleOverride={dynamicRowStyle}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        rowRef={(el) => { rowRefs.current[row._rowId] = el; }}
+        renderRowContent={(r) => renderRowContentElements(r, rowIndex, groupIndex, isSelected)}
+      />
     );
   };
 
 
   const toggleExpanCollapseAllGroup = () => {
     const isAnyCollapsedBefore = Object.keys(collapsedGroups).length > 0;
-    
-    const willBeAllCollapsed = !isAnyCollapsedBefore; 
+
+    const willBeAllCollapsed = !isAnyCollapsedBefore;
 
     if (isAnyCollapsedBefore) {
       setCollapsedGroups({});
@@ -1609,14 +1649,14 @@ const paginatedData = useMemo(() => {
       if (!accordion?.groupByCol || !paginatedData.length) return;
       const groupKey = encodeColumnName(accordion.groupByCol);
       const allGroups: Record<string, boolean> = {};
-      
+
       paginatedData.forEach((row) => {
         const colConfig = columns.find(c => c.col === groupKey);
         const value = colConfig?.calculate ? colConfig.calculate(row) : (row[groupKey] ?? row[accordion.groupByCol]);
         const groupName = value !== null && value !== undefined && value !== '' ? String(value) : 'Unassigned';
         allGroups[groupName] = true;
       });
-      
+
       setCollapsedGroups(allGroups);
     }
 
@@ -1634,10 +1674,10 @@ const paginatedData = useMemo(() => {
     const currentSort = multiSort.find(s => s.col === columnKey);
 
     // 2. Update the columns configuration state
-    setColumns(prevColumns => 
-      prevColumns.map(col => 
-        col.col === columnKey 
-          ? { ...col, preventNoSort: willBePreventNoSort } 
+    setColumns(prevColumns =>
+      prevColumns.map(col =>
+        col.col === columnKey
+          ? { ...col, preventNoSort: willBePreventNoSort }
           : col
       )
     );
@@ -1647,7 +1687,7 @@ const paginatedData = useMemo(() => {
       // Transition: false -> true
       // If it is NOT currently sorted as 'asc' or 'desc', trigger standard sort behavior (default to 'asc')
       if (!currentSort || (currentSort.dir !== 'asc' && currentSort.dir !== 'desc')) {
-        handleSort(columnKey); 
+        handleSort(columnKey);
       }
     } else {
       // Transition: true -> false
@@ -1661,9 +1701,9 @@ const paginatedData = useMemo(() => {
 
 
   return (
-    <div 
+    <div
       className={`table-view-master-container ${showBlockingLoading ? 'data-refreshing' : ''} ${isArrangement ? 'arrangement-active' : ''}`}
-      ref={tableRef} 
+      ref={tableRef}
       style={dynamicThemeVars}
     >
       <div className="table-control-ribbon">
@@ -1677,21 +1717,85 @@ const paginatedData = useMemo(() => {
             </div>
           </div>
 
-          {/* ARRANGEMENT MODE TOGGLE BUTTON */}
-          {(isArrangement || showArrangeToggle) && (
-            <button 
-              onClick={toggleArrangement}
-              className={`action-btn mode-toggle-btn ${isArrangement ? 'active-arrangement' : ''}`}
-              title={isArrangement ? "Switch to View Mode" : "Switch to Arrangement Mode"}
-              disabled={!showArrangeToggle}
+          {accordion?.enabled && (
+            <button
+              onClick={toggleExpanCollapseAllGroup}
+              className={`ribbon-accordion-btn ${!isAllGroupsCollapsed ? 'expanded' : ''}`}
+              title={!isAllGroupsCollapsed ? "Collapse All Groups" : "Expand All Groups"}
             >
-              <Move 
-                size={16} 
-                className={`btn-icon-move ${isArrangement ? 'spinning-icon' : ''}`}
-                style={{ color: isArrangement ? '#fff' : 'var(--table-theme)' }} 
-              />
-              <span>{isArrangement ? 'Arranging...' : 'Arrange Rows'}</span>
+              <span className="ribbon-accordion-icon">
+                {!isAllGroupsCollapsed ? (
+                  <UnfoldVertical size={16} className="stop-propagation" />
+                ) : (
+                  <FoldVertical size={16} className="stop-propagation" />
+                )}
+              </span>
             </button>
+          )}
+
+          {/* ARRANGEMENT MODE TOGGLE BUTTON */}
+          {(isArrangement && showArrangeToggle) && (
+            <div className="arrangement-controls-group">
+              {!isArrangement ? (
+                <button
+                  onClick={toggleArrangement}
+                  className="action-btn mode-toggle-btn"
+                  title="Switch to Arrangement Mode"
+                  disabled={!showArrangeToggle}
+                >
+                  <Move size={16} className="btn-icon-primary" />
+                  <span>Arrange Rows</span>
+                </button>
+              ) : (
+                <>
+                  {/* CONFIRM BUTTON */}
+                  <button
+                    onClick={() => {
+                      // 1. Trigger fade-out animation class across rows
+                      const rows = document.querySelectorAll('.row-repositioned');
+                      rows.forEach(r => r.classList.add('is-confirming'));
+
+                      setTimeout(() => {
+                        if (onConfirmArrangement) {
+                          onConfirmArrangement(true, paginatedData);
+                        }
+                        setRepositionedRows([]);
+                        if (onArrangementModeChange) onArrangementModeChange(false);
+                        else setInternalArrangementMode(false);
+                      }, 2000); // Match this timeout to your CSS transition duration
+                    }}
+                    className="action-btn confirm-arrange-btn"
+                    title="Confirm & Save Arrangement"
+                  >
+                    <Check size={16} />
+                    <span>Confirm</span>
+                  </button>
+
+                  {/* CANCEL BUTTON */}
+                  <button
+                    onClick={() => {
+                      // 1. Trigger reversion/fade-out animation class
+                      const rows = document.querySelectorAll('.row-repositioned');
+                      rows.forEach(r => r.classList.add('is-reverting'));
+
+                      setTimeout(() => {
+                        if (onConfirmArrangement) {
+                          onConfirmArrangement(false, []);
+                        }
+                        setRepositionedRows([]);
+                        if (onArrangementModeChange) onArrangementModeChange(false);
+                        else setInternalArrangementMode(false);
+                      }, 2000);
+                    }}
+                    className="action-btn cancel-arrange-btn"
+                    title="Cancel Arrangement"
+                  >
+                    <X size={16} />
+                    <span>Cancel</span>
+                  </button>
+                </>
+              )}
+            </div>
           )}
 
           {/* MULTI-SELECT CONTROL */}
@@ -1699,7 +1803,7 @@ const paginatedData = useMemo(() => {
             <div className="selection-controls">
 
               {!isSelectionMode && (
-                <button 
+                <button
                   className={`selection-toggle ${isSelectionMode ? 'active' : ''}`}
                   onClick={() => {
                     setIsSelectionMode(!isSelectionMode);
@@ -1715,7 +1819,7 @@ const paginatedData = useMemo(() => {
               {isSelectionMode && (
                 <div className="selection-count-chip animate-pop-in">
                   <span>{selectedRows.length} Selected</span>
-                  <X size={14} onClick={() => { clearAllSelections(); setIsSelectionMode(false);} } className="clear-selection-icon" />
+                  <X size={14} onClick={() => { clearAllSelections(); setIsSelectionMode(false); }} className="clear-selection-icon" />
                 </div>
               )}
             </div>
@@ -1738,9 +1842,9 @@ const paginatedData = useMemo(() => {
                   return (
                     <div key={`ribbon-filter-${column.col}`} className="ribbon-table-filter-item">
                       <span className="ribbon-filter-label">{column.alias || column.col}</span>
-                      <ColumnFilter 
-                        config={column} 
-                        data={data} 
+                      <ColumnFilter
+                        config={column}
+                        data={data}
                         activeFilters={activeFilters}
                         onFilterChange={(val) => setActiveFilters(prev => ({ ...prev, [column.col]: val }))}
                       />
@@ -1756,21 +1860,21 @@ const paginatedData = useMemo(() => {
             {Object.entries(activeFilters).map(([colKey, value]) => {
               //console.log(`Rendering filter chip for ${colKey} with value:`, value);
               if (!value || (Array.isArray(value) && value.length === 0)) return null;
-              
+
               const colConfig = columns.find(c => c.col === colKey);
               const displayValue = Array.isArray(value) ? `${value.length}` : value;
               const hoverText = Array.isArray(value)
-                    ? (value.length > 10 ? value.slice(0, 10).join(', ') + '...' : value.join(', '))
-                    : value;
+                ? (value.length > 10 ? value.slice(0, 10).join(', ') + '...' : value.join(', '))
+                : value;
 
               return (
-                
+
                 <div key={colKey} className="filter-chip" onClick={() => setActiveFilters(prev => ({ ...prev, [colKey]: [] }))}>
                   <div className="chip-tooltip-wew">{hoverText}</div>
                   <span className="chip-label">{colConfig?.alias || colKey}:</span>
                   <span className="chip-value">{displayValue}</span>
-                  <button 
-                    className="chip-remove" 
+                  <button
+                    className="chip-remove"
                     onClick={() => setActiveFilters(prev => ({ ...prev, [colKey]: [] }))}
                   >
                     <X size={16} />
@@ -1779,7 +1883,7 @@ const paginatedData = useMemo(() => {
                 </div>
               );
             })}
-            
+
             {/* CLEAR ALL BUTTON */}
             {/*Object.values(activeFilters).some(v => 
               (Array.isArray(v) && v.length > 0) || 
@@ -1797,26 +1901,8 @@ const paginatedData = useMemo(() => {
 
         <div className="ribbon-right-controls">
 
-          
-          {accordion?.enabled && (
-            <button 
-              onClick={toggleExpanCollapseAllGroup}
-              className={`ribbon-accordion-btn ${!isAllGroupsCollapsed ? 'expanded' : ''}`}
-              title={!isAllGroupsCollapsed ? "Collapse All Groups" : "Expand All Groups"}
-            >
-              <span className="ribbon-accordion-icon">
-                {!isAllGroupsCollapsed ? (
-                  <ChevronsDownUp size={16} className="stop-propagation" />
-                ) : (
-                  <ChevronsUpDown size={16} className="stop-propagation" />
-                )}
-              </span>
-            </button>
-          )}
-
-
           {/* REFRESH BUTTON */}
-          <button 
+          <button
             className={`table-refresh-btn ${isRefreshing || isLoading ? 'spinning' : ''}`}
             onClick={handleRefreshClick}
             disabled={isLoading}
@@ -1831,7 +1917,7 @@ const paginatedData = useMemo(() => {
           {/* ACTION BUTTONS */}
           <div className="table-config-wrapper">
             {/* GEAR BUTTON */}
-            <button 
+            <button
               className={`config-toggle-btn ${showConfig ? 'active' : ''}`}
               onClick={() => setShowConfig(!showConfig)}
               title="Table Settings"
@@ -1853,10 +1939,10 @@ const paginatedData = useMemo(() => {
                 </button>
 
                 {/* NEW: Sort Blanks Checkbox Section */}
-                <div style={{ 
-                  padding: '4px 0', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                <div style={{
+                  padding: '4px 0',
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: '8px',
                   cursor: 'pointer'
                 }}
@@ -1870,11 +1956,11 @@ const paginatedData = useMemo(() => {
                     onClick={(e) => e.stopPropagation()} // Prevent double-toggle from parent div
                     style={{ cursor: 'pointer', accentColor: 'var(--color-primary)' }} // Using your navy blue
                   />
-                  <label 
-                    htmlFor="sortBlanksToggle" 
-                    style={{ 
-                      fontWeight: 600, 
-                      fontSize: 'var(--font-size-base)', 
+                  <label
+                    htmlFor="sortBlanksToggle"
+                    style={{
+                      fontWeight: 600,
+                      fontSize: 'var(--font-size-base)',
                       cursor: 'pointer',
                       userSelect: 'none'
                     }}
@@ -1912,7 +1998,7 @@ const paginatedData = useMemo(() => {
                     </div>
                   );
                 })()}
-                
+
               </div>
             )}
           </div>
@@ -1971,7 +2057,7 @@ const paginatedData = useMemo(() => {
             cursor: 'grabbing'
           }}
         >
-          <div style={{ width: tableWidth, height: '100%'}} />
+          <div style={{ width: tableWidth, height: '100%' }} />
         </div>
       )}
       <div
@@ -1990,12 +2076,12 @@ const paginatedData = useMemo(() => {
             <div className="loader-progress-bar"></div>
           </div>
         )}
-        
+
         <DndContext sensors={rowSensors} collisionDetection={closestCenter} onDragEnd={handleRowDragEnd}>
-          <table 
+          <table
             className="gsdc-reusable-table"
-            style={{ 
-              width: '100%', 
+            style={{
+              width: '100%',
               borderCollapse: 'collapse',
               display: 'table', // Ensure it stays as a table
               minWidth: 'max-content' // This tells the table to expand to fit its children's minWidths
@@ -2006,21 +2092,21 @@ const paginatedData = useMemo(() => {
                 <tr>
 
                   {isArrangement && (
-                    <th 
-                      style={{ 
-                        width: '50px', 
-                        minWidth: '50px', 
-                      }} 
+                    <th
+                      style={{
+                        width: '50px',
+                        minWidth: '50px',
+                      }}
                       className="stop-propagation arrangement-header-blank"
                     />
                   )}
-                  
+
                   {/* SELECTION HEADER */}
                   {isSelectionMode && (
                     <th className="selection-col-header" style={{ width: '40px', minWidth: '40px' }}>
                       <div className="header-content justify-center">
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           className="gsdc-checkbox"
                           checked={paginatedData.length > 0 && paginatedData.every(row => selectedRows.some(r => r._rowId === row._rowId))}
                           onChange={handleSelectAll}
@@ -2031,10 +2117,10 @@ const paginatedData = useMemo(() => {
 
                   {/* # HEADER */}
                   {showNumbering && (
-                    <th className="numbering-header" 
-                      style={{ 
-                        width: `${numberingWidth}px`, 
-                        minWidth: `${numberingWidth}px`, 
+                    <th className="numbering-header"
+                      style={{
+                        width: `${numberingWidth}px`,
+                        minWidth: `${numberingWidth}px`,
                         flex: `0 0 ${numberingWidth}px` // 0 0 means "don't grow, don't shrink"
                       }}
                     >
@@ -2046,98 +2132,98 @@ const paginatedData = useMemo(() => {
 
                   {/* DATA HEADER */}
                   <SortableContext key={columns.map(c => c.col).join(',')} items={columns.map(c => c.col)} strategy={horizontalListSortingStrategy}>
-                    
-                      {columns.map((column) => (
-                      <SortableHeader 
-                          key={column.col} 
-                          column={column} 
-                          onSort={handleSort} 
-                          onTogglePreventNoSort={handleTogglePreventNoSort}
-                          activeSorts={multiSort}
-                          width={columnWidths[column.col] || 60} 
-                          onResize={handleColumnResize} 
-                          styleOverride={columnStyles[column.col]}
-                          minWidth={colMinWidth}
-                          ref={(el: HTMLTableCellElement | null) => { 
-                              headerRefs.current[column.col] = el; 
-                          }}
-                        />
-                      ))}
+
+                    {columns.map((column) => (
+                      <SortableHeader
+                        key={column.col}
+                        column={column}
+                        onSort={handleSort}
+                        onTogglePreventNoSort={handleTogglePreventNoSort}
+                        activeSorts={multiSort}
+                        width={columnWidths[column.col] || 60}
+                        onResize={handleColumnResize}
+                        styleOverride={columnStyles[column.col]}
+                        minWidth={colMinWidth}
+                        ref={(el: HTMLTableCellElement | null) => {
+                          headerRefs.current[column.col] = el;
+                        }}
+                      />
+                    ))}
 
                   </SortableContext>
                 </tr>
               </DndContext>
             </thead>
-              <tbody>
-                <SortableContext items={paginatedData.map(r => r._rowId)} strategy={verticalListSortingStrategy}>
-                  {(() => {
-                    if (paginatedData.length === 0) return null;
+            <tbody>
+              <SortableContext items={paginatedData.map(r => r._rowId)} strategy={verticalListSortingStrategy}>
+                {(() => {
+                  if (paginatedData.length === 0) return null;
 
-                    // 1. FLAT MODE: Render rows standard style if accordion is off
-                    if (!accordion?.enabled || !accordion?.groupByCol) {
-                      return paginatedData.map((row, rowIndex) => renderRow(row, rowIndex));
-                    }
+                  // 1. FLAT MODE: Render rows standard style if accordion is off
+                  if (!accordion?.enabled || !accordion?.groupByCol) {
+                    return paginatedData.map((row, rowIndex) => renderRow(row, rowIndex));
+                  }
 
-                    // Calculate absolute column width for the span
-                    const totalCols = columns.length + (isSelectionMode ? 1 : 0) + (showNumbering ? 1 : 0) + (isArrangement ? 1 : 0);
+                  // Calculate absolute column width for the span
+                  const totalCols = columns.length + (isSelectionMode ? 1 : 0) + (showNumbering ? 1 : 0) + (isArrangement ? 1 : 0);
 
-                    // 2. ACCORDION MODE: Direct render from your pre-calculated pagination chunks
-                    return currentGroups.map((groupBlock: any) => {
-                      const groupName = groupBlock.group ?? 'Unassigned';
-                      const isCollapsed = !!collapsedGroups[groupName];
-                      
-                      return (
-                        <React.Fragment key={`group-${groupName}`}>
-                          {/* Accordion Separator Row */}
-                          <tr className="table-group-header-row stop-propagation">
-                            <td 
-                              colSpan={totalCols} 
-                              onClick={() => toggleGroup(groupName)}
-                              className='accordion-cell'
+                  // 2. ACCORDION MODE: Direct render from your pre-calculated pagination chunks
+                  return currentGroups.map((groupBlock: any) => {
+                    const groupName = groupBlock.group ?? 'Unassigned';
+                    const isCollapsed = !!collapsedGroups[groupName];
+
+                    return (
+                      <React.Fragment key={`group-${groupName}`}>
+                        {/* Accordion Separator Row */}
+                        <tr className="table-group-header-row stop-propagation">
+                          <td
+                            colSpan={totalCols}
+                            onClick={() => toggleGroup(groupName)}
+                            className='accordion-cell'
+                          >
+                            <div
+                              ref={el => {
+                                accordionRefs.current[groupName] = el;
+                              }}
+                              className="table-group-header-content"
                             >
-                              <div 
-                                ref={el => {
-                                    accordionRefs.current[groupName] = el;
-                                }}
-                                className="table-group-header-content"
-                              >
-                                <span className={`group-chevron-icon ${isCollapsed ? 'collapsed' : ''}`}>
-                                  <ChevronRight size={16} />
-                                </span>
-                                <span className="table-group-header-title">{groupName}</span>
-                                <span className="table-group-header-count">({groupBlock.rows.length})</span>
-                              </div>
-                            </td>
-                          </tr>
-                          
-                          {/* Render child records directly from the mapped group block */}
-                          {groupBlock.rows.map((row: any, idx: number) => {
-                            const renderedRow = renderRow(row, row._rowIdx, idx);
-                            
-                            return React.cloneElement(renderedRow, {
-                              className: `${renderedRow.props.className || ''} transitioning-group-row ${isCollapsed ? 'group-row-collapsed' : 'group-row-expanded'}`
-                            });
-                          })}
-                        </React.Fragment>
-                      );
-                    });
-                  })()}
-                </SortableContext>
-              </tbody>
+                              <span className={`group-chevron-icon ${isCollapsed ? 'collapsed' : ''}`}>
+                                <ChevronRight size={16} />
+                              </span>
+                              <span className="table-group-header-title">{groupName}</span>
+                              <span className="table-group-header-count">({groupBlock.rows.length})</span>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Render child records directly from the mapped group block */}
+                        {groupBlock.rows.map((row: any, idx: number) => {
+                          const renderedRow = renderRow(row, row._rowIdx, idx);
+
+                          return React.cloneElement(renderedRow, {
+                            className: `${renderedRow.props.className || ''} transitioning-group-row ${isCollapsed ? 'group-row-collapsed' : 'group-row-expanded'}`
+                          });
+                        })}
+                      </React.Fragment>
+                    );
+                  });
+                })()}
+              </SortableContext>
+            </tbody>
           </table>
         </DndContext>
       </div>
 
 
-            {/** BANNER MESSAGE */}
-            {bannerMsg && (
-              <AutoDismissBanner 
-                message={bannerMsg} 
-                onClose={() => setBannerMsg(null)} 
-                duration={2000}
-              />
-            )}
-      
+      {/** BANNER MESSAGE */}
+      {bannerMsg && (
+        <AutoDismissBanner
+          message={bannerMsg}
+          onClose={() => setBannerMsg(null)}
+          duration={2000}
+        />
+      )}
+
     </div>
   );
 });
