@@ -35,10 +35,13 @@ import {
   // frStatuses,
 } from '../truth.config';
 
+const BUSINESS_UNITS = ['1A', '1B'];
+
 //COMPONENTS
 import TableView, { type ColumnConfig, type TableViewRef, type DragDropSignalData, encodeColumnName as enc } from '../components/ewul_TableFlex';
 import DateRangePicker from '../components/ewul_DateRangePicker';
 import AutoDismissBanner from '../components/ewul_Banner';
+import OrderAssignmentDashboard from '../components/OrderAssignmentDashboard';
 // import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
 // import Modal from '../components/ewul_Modal';
 
@@ -91,7 +94,16 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
     console.log(record.OE || record.ID);
   };
 
-
+  const tripDisplayConfig = {
+    titleField: 'OE',
+    statusField: 'SAPStatus',
+    routeStartField: 'SourceName',
+    routeEndField: 'DestiName',
+    additionalDetails: [
+      { field: 'DriverName', label: 'Driver' },
+      { field: 'PlateNo', label: 'Truck' }
+    ]
+  };
 
 
   return (
@@ -99,23 +111,12 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
       <div className={`ordr-dist-orders-slider-track state-${mode.toLowerCase()}`}>
 
         {/* NEW ORDERS PANEL */}
-        <div className="ordr-dist-dashboard-table-frame">
-          <TableView
-            data={newOrders}
-            config={newTripsTableConfig}
-            storageKey={`ordr_dist_new_grid_${user?.id || 'guest'}`}
-            searchCol={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.searchable_cols as string[]}
-            isLoading={isLoadingNew}
-            showRowCount={20}
-            onRefresh={fetchNewOrders}
-            overflowY={true}
-            colMinWidth={100}
-            onRowClick={handleRowClick}
-            highlightSelected={true}
-            theme="var(--color-primary)"
-            showNumbering={true}
-            loadingNoPreventAction={true}
-            accordion={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.accordion}
+        <div className="ordr-dist-dashboard-table-frame unique-dashboard-override">
+          <OrderAssignmentDashboard
+            newOrdersList={newOrders}
+            tripAssignedList={assignedOrders}
+            businessUnits={BUSINESS_UNITS}
+            displayMapping={tripDisplayConfig}
           />
         </div>
 
@@ -680,7 +681,7 @@ const OrderDistribution: React.FC = () => {
 
                 <div className="ordr-dist-heading-crossfade-wrapper">
                   <h3 className={`ordr-dist-fade-heading ${(activeMode === 'NEW' && !isArranging) ? 'visible' : ''}`}>
-                    Plot New Orders
+                    Assign Orders to BU
                   </h3>
                   <h3 className={`ordr-dist-fade-heading ${(activeMode === 'ASSIGNED' && !isArranging) ? 'visible' : ''}`}>
                     Waiting to be Dispatched

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSearchParams } from "react-router-dom";
 import PageTemplate from './template';
-import { 
-    NEW_TRIPS_UNFILTERED_TABLE_CONFIG, 
-    LIVE_DMS_TABLE_CONFIG,GPS_STATUS_EMOJIS, 
-    ATTENDANCE_STATUS_COLORS, 
-    ATTENDANCE_STATUSES, 
+import {
+    NEW_TRIPS_UNFILTERED_TABLE_CONFIG,
+    LIVE_DMS_TABLE_CONFIG, GPS_STATUS_EMOJIS,
+    ATTENDANCE_STATUS_COLORS,
+    ATTENDANCE_STATUSES,
     TRIP_PROGRESS,
     FETCH_LOADING_KEYS,
     FUEL_REQUESTS_TABLE_CONFIG,
@@ -23,21 +23,21 @@ import { getContext } from "@microsoft/power-apps/app";
 import './css/OrderManagement.css';
 
 // Power apps services
-import { NewTripsView_CEM_unfilteredService} from '../generated/services/NewTripsView_CEM_unfilteredService';
-import { LiveDMSView_CEMService} from '../generated/services/LiveDMSView_CEMService';
+import { NewTripsView_CEM_unfilteredService } from '../generated/services/NewTripsView_CEM_unfilteredService';
+import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMService';
 import { LiveVehicleAssignmentLIstViewService } from '../generated/services/LiveVehicleAssignmentLIstViewService'
 import { type LiveVehicleAssignmentLIstView } from '../generated/models/LiveVehicleAssignmentLIstViewModel';
 import { LiveDriverDispatchedList_AllService } from '../generated/services/LiveDriverDispatchedList_AllService'
-import {GenerateAdditionalOE_IDService} from '../generated/services/GenerateAdditionalOE_IDService';
-import { GenerateNewTripTicketService} from '../generated/services/GenerateNewTripTicketService';
+import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAdditionalOE_IDService';
+import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
 //import {Vw_SOURCE_LIST_CEMService } from '../generated/services/Vw_SOURCE_LIST_CEMService'; //alread being fetch on fct routes
 //import {DMS_TripFuelRequestsListService} from '../generated/services/DMS_TripFuelRequestsListService';
 import { Live_LatestFuelRequestsService } from '../generated/services/Live_LatestFuelRequestsService';
-import {Vw_FCT_RouteNodeListService} from '../generated/services/Vw_FCT_RouteNodeListService';
+import { Vw_FCT_RouteNodeListService } from '../generated/services/Vw_FCT_RouteNodeListService';
 import { DMS_CEMService } from '../generated/services/DMS_CEMService';
-import {FctFinalService} from '../generated/services/FctFinalService';
-import { type FctFinal } from '../generated/models/FctFinalModel'; 
-import { DMS_TripFuelRequestsListService} from '../generated/services/DMS_TripFuelRequestsListService';
+import { FctFinalService } from '../generated/services/FctFinalService';
+import { type FctFinal } from '../generated/models/FctFinalModel';
+import { DMS_TripFuelRequestsListService } from '../generated/services/DMS_TripFuelRequestsListService';
 import { GetLastLiquidatedOdometerService } from '../generated/services/GetLastLiquidatedOdometerService';
 import FuelRequestManager from '../components/FuelRequestManager';
 // import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
@@ -48,16 +48,16 @@ import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFM
 
 
 // Custom Components
-import TableView,  { type ColumnConfig, type scrollToConfig, encodeColumnName as enc } from '../components/ewul_TableFlex';
+import TableView, { type ColumnConfig, type scrollToConfig, encodeColumnName as enc } from '../components/ewul_TableFlex';
 import DateRangePicker from '../components/ewul_DateRangePicker';
-import TripGroup_DonutChart, { type TripGroupDonutChartRef } from '../components/tripGroup_DonutChart'; 
+import TripGroup_DonutChart, { type TripGroupDonutChartRef } from '../components/tripGroup_DonutChart';
 import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
 import Modal from '../components/ewul_Modal';
 import AutoDismissBanner from '../components/ewul_Banner';
 
 
 //Utils
-import type { DropdownOption} from '@components/SearchableDropdown';
+import type { DropdownOption } from '@components/SearchableDropdown';
 import { useUser } from '../utils/useUser';
 import {
 
@@ -138,23 +138,23 @@ const OrderManagement: React.FC = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
     useEffect(() => {
         const handlePowerAppsDeepLink = async () => {
-        try {
-            // 1. Fetch the native Power Apps Code App context container
-            const ctx = await getContext();
-            const queryParams = ctx.app.queryParams;
-            
-            // 2. Look specifically for your tracking 'oe' parameter
-            const targetOE = queryParams?.['oe'];
-            
-            if (targetOE && displayData.length > 0) {
-                const oeRecord = displayData.find(item => item.OE === targetOE);
-                handleTripsTableOnClick(oeRecord);
-            }
-            console.log('Did not go to target OE for table is not fully loaded.');
+            try {
+                // 1. Fetch the native Power Apps Code App context container
+                const ctx = await getContext();
+                const queryParams = ctx.app.queryParams;
 
-        } catch (error) {
-            console.error("Failed to parse query params via Power Apps SDK:", error);
-        }
+                // 2. Look specifically for your tracking 'oe' parameter
+                const targetOE = queryParams?.['oe'];
+
+                if (targetOE && displayData.length > 0) {
+                    const oeRecord = displayData.find(item => item.OE === targetOE);
+                    handleTripsTableOnClick(oeRecord);
+                }
+                console.log('Did not go to target OE for table is not fully loaded.');
+
+            } catch (error) {
+                console.error("Failed to parse query params via Power Apps SDK:", error);
+            }
         };
 
         handlePowerAppsDeepLink();
@@ -179,7 +179,7 @@ const OrderManagement: React.FC = () => {
         if (activeView === 'form' && view === 'dashboard' && formRef.current && selectedOrder !== null) {
             const canClose = await formRef.current?.showUnsavedChangesModal();
             if (canClose) {
-                setSelectedOrder(null); 
+                setSelectedOrder(null);
                 setPreviewTrip({});
                 handleChangeActiveView('dashboard');
                 return;
@@ -189,8 +189,8 @@ const OrderManagement: React.FC = () => {
         }
     };
 
-    const [selectedRange, setSelectedRange] = useState<{from: string, to: string} | null>(null);
-    const handleDateChange = useCallback((range: {from: string, to: string}) => {
+    const [selectedRange, setSelectedRange] = useState<{ from: string, to: string } | null>(null);
+    const handleDateChange = useCallback((range: { from: string, to: string }) => {
         setSelectedRange(prev => {
             // If the values are exactly the same, return the previous state to avoid a re-render
             if (prev?.from === range.from && prev?.to === range.to) {
@@ -200,12 +200,12 @@ const OrderManagement: React.FC = () => {
         });
     }, []);
 
-    const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{from: string, to: string} | null>(null);
-    const handleDateChangeNewOrders = useCallback((range: {from: string, to: string}) => {
+    const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{ from: string, to: string } | null>(null);
+    const handleDateChangeNewOrders = useCallback((range: { from: string, to: string }) => {
         setSelectedRangeNewOrders(prev => {
             // If the values are exactly the same, return the previous state to avoid a re-render
             if (prev?.from === range.from && prev?.to === range.to) {
-                
+
                 return prev;
             }
             return range;
@@ -224,23 +224,23 @@ const OrderManagement: React.FC = () => {
         if (!canFetch(FETCH_LOADING_KEYS.newOrders)) return;
 
         console.log("Fetching new orders with date range:", selectedRangeNewOrders);
-        
+
         // Convert "2026-03-26" to 20260326 for your SQL OEDateAsInt column
         const fromInt = ISOtoInt(selectedRangeNewOrders.from);
         const toInt = ISOtoInt(selectedRangeNewOrders.to);
-        
+
         const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt}`;
 
         const options = {
-                filter: dateFilter, // Pass the filter here!
-                orderBy: ["OEDateAsInt desc"]
+            filter: dateFilter, // Pass the filter here!
+            orderBy: ["OEDateAsInt desc"]
         }
 
         setLoadingFor(FETCH_LOADING_KEYS.newOrders, true);
-        try { 
+        try {
             const result = await ewulFetchAll<any>(
-                NewTripsView_CEM_unfilteredService, 
-                options, 
+                NewTripsView_CEM_unfilteredService,
+                options,
                 10000
             );
 
@@ -253,7 +253,7 @@ const OrderManagement: React.FC = () => {
             } else {
                 setOrders([]);
             }
-            
+
         } catch (err) {
             console.error("Fetch Error during batching:", err);
             setOrders([]);
@@ -268,29 +268,29 @@ const OrderManagement: React.FC = () => {
 
 
     // 1. Data Fetching Logic
-    const [CIFMEOrders,setCIFMEOrders] = useState<any[]>([]);
+    const [CIFMEOrders, setCIFMEOrders] = useState<any[]>([]);
     const fetchCIFMEOrders = useCallback(async () => {
         if (!selectedRangeNewOrders) return;
         if (!canFetch(FETCH_LOADING_KEYS.cifmeOrders)) return;
 
         console.log("Fetching new orders with date range:", selectedRangeNewOrders);
-        
+
         // Convert "2026-03-26" to 20260326 for your SQL OEDateAsInt column
         const fromInt = ISOtoInt(selectedRangeNewOrders.from);
         const toInt = ISOtoInt(selectedRangeNewOrders.to);
-        
+
         const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt}`;
 
         const options = {
-                filter: dateFilter, // Pass the filter here!
-                orderBy: ["OEDateAsInt desc"]
+            filter: dateFilter, // Pass the filter here!
+            orderBy: ["OEDateAsInt desc"]
         }
 
         setLoadingFor(FETCH_LOADING_KEYS.cifmeOrders, true);
-        try { 
+        try {
             const result = await ewulFetchAll<any>(
-                CIFMETripsView_CEM_unfilteredService, 
-                options, 
+                CIFMETripsView_CEM_unfilteredService,
+                options,
                 2000
             );
 
@@ -303,7 +303,7 @@ const OrderManagement: React.FC = () => {
             } else {
                 setCIFMEOrders([]);
             }
-            
+
         } catch (err) {
             console.error("Fetch Error during batching:", err);
             setCIFMEOrders([]);
@@ -318,8 +318,8 @@ const OrderManagement: React.FC = () => {
 
     const handleGlobalRefresh = async () => {
         if (donutChartRef.current) {
-        // Execute the child's internal data fetch call smoothly
-        await donutChartRef.current.refresh();
+            // Execute the child's internal data fetch call smoothly
+            await donutChartRef.current.refresh();
         }
     };
 
@@ -332,9 +332,9 @@ const OrderManagement: React.FC = () => {
         if (!nocd && fuelRequests.length > 0 && !canFetch(`${FETCH_LOADING_KEYS.fuelRequests}-${vehicle}-${oe}`)) return;
         setLoadingFor(`${FETCH_LOADING_KEYS.fuelRequests}`, true);
 
-        
 
-       
+
+
         // Filter 2: All requests for that Head on that OE
         const currentOEFilter = `(Head eq '${vehicle}' and OE eq '${oe}') or (Head eq '${vehicle}' and isOngoing eq 'Yes')`;
         setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, true);
@@ -353,9 +353,9 @@ const OrderManagement: React.FC = () => {
             setLoadingFor(`${FETCH_LOADING_KEYS.fuelRequests}`, false);
 
             console.log("fetching last Odometer:");
-            const resOdo = await GetLastLiquidatedOdometerService.GetLastLiquidatedOdometer({ 
-                        Head: vehicle,
-                } as any);
+            const resOdo = await GetLastLiquidatedOdometerService.GetLastLiquidatedOdometer({
+                Head: vehicle,
+            } as any);
 
 
             const tableOdoData = resOdo.data?.ResultSets?.Table1 as lastOdometerResult[];
@@ -378,14 +378,14 @@ const OrderManagement: React.FC = () => {
         }
     }, []);
 
-    
-    const fetchFCTRoutes = useCallback(async () => {
-        if (stationOptions.length > 0 && sourceOptions.length > 0 && destinationOptions.length > 0) if (!canFetch(FETCH_LOADING_KEYS.sourceList,1000*60*60 /** CD of 1 hr since its not always updated */)) return; // Only fetch if we don't already have options
 
-        try{
+    const fetchFCTRoutes = useCallback(async () => {
+        if (stationOptions.length > 0 && sourceOptions.length > 0 && destinationOptions.length > 0) if (!canFetch(FETCH_LOADING_KEYS.sourceList, 1000 * 60 * 60 /** CD of 1 hr since its not always updated */)) return; // Only fetch if we don't already have options
+
+        try {
             const result = await ewulFetchAll<any>(
                 Vw_FCT_RouteNodeListService,
-                { filter: ''},
+                { filter: '' },
                 2000,
                 'Route'
             );
@@ -400,7 +400,7 @@ const OrderManagement: React.FC = () => {
                         subtext: item.Type,
                         type: 'multi',
                         record: item // Store the original record for later use when an option is selected
-                        
+
                     }));
 
                 const source_options: DropdownOption[] = result
@@ -439,8 +439,8 @@ const OrderManagement: React.FC = () => {
         } catch (err) {
             console.error("Fetch Error during FCT Route fetching:", err);
         }
-        
-    },[]);
+
+    }, []);
 
 
 
@@ -451,13 +451,13 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, true);
         let isCreate = formData.Frstatus === 'New' || formData.Frstatus === 'Pre-New';
         let isFRDisapproveUpdate = formData.Frstatus === 'FR Disapproved';
-        let createData: FctFinal = { ...formData, Id: Number(attachmentSPID) || 0, Frstatus:  isCreate ? formData.Frstatus === 'Pre-New' ? 'Pre-Request' : 'Request' : formData.Frstatus }; // Ensure the status is set to 'Request' for new submissions
-        let updateData: FctFinal  = { ...formData, Frstatus: 'Request', SQLID: undefined}; // For updates, only change status if it's a disapproval update
+        let createData: FctFinal = { ...formData, Id: Number(attachmentSPID) || 0, Frstatus: isCreate ? formData.Frstatus === 'Pre-New' ? 'Pre-Request' : 'Request' : formData.Frstatus }; // Ensure the status is set to 'Request' for new submissions
+        let updateData: FctFinal = { ...formData, Frstatus: 'Request', SQLID: undefined }; // For updates, only change status if it's a disapproval update
 
 
 
         console.log("Fuel request form data before submission:", isFRDisapproveUpdate, " // ", formData, ' // Create?', isCreate, ' // Update?', isFRDisapproveUpdate);
-        
+
         addTask({
             id: `fuelRequest-${formData.Orderentryref}-${formData.Head}`,
             name: `Fuel Request for trip ${formData.Orderentryref}`,
@@ -512,8 +512,8 @@ const OrderManagement: React.FC = () => {
                 }
             },
             checkSuccess: (result: { success: boolean }) => result.success,
-            onSuccess: () => {null},
-            onFailure: () => {null},
+            onSuccess: () => { null },
+            onFailure: () => { null },
             message: `Submitting fuel request for OE ${formData.Orderentryref}...`,
             message_success: `Fuel request for OE ${formData.Orderentryref} submitted successfully.`,
             message_failure: `Failed to submit fuel request for OE ${formData.Orderentryref}.`,
@@ -539,7 +539,7 @@ const OrderManagement: React.FC = () => {
         // console.log("trip data: ", tripData);
         fetchNewOrders(); // Refresh orders to get the latest OEs for selection
     };
-    
+
 
 
     const fetchTrips = useCallback(async (nocd: boolean = false) => {
@@ -547,7 +547,7 @@ const OrderManagement: React.FC = () => {
         if (!nocd && trips.length > 0) null; //if (!canFetch(FETCH_LOADING_KEYS.trips)) return;
         console.log("Fetching trips with date range:", selectedRange);
 
-        
+
         const fromInt = ISOtoInt(selectedRange.from);
         const toInt = ISOtoInt(selectedRange.to);
         const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt} and TripProgress ne 'PLD Done'`;
@@ -555,15 +555,15 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.trips, true);
         try {
             const result = await ewulFetchAll<any>(
-                LiveDMSView_CEMService, 
-                { filter: dateFilter, orderBy: ["OEDateAsInt desc"] }, 
+                LiveDMSView_CEMService,
+                { filter: dateFilter, orderBy: ["OEDateAsInt desc"] },
                 10000,
                 'ID'
             );
 
             // Only update if the result is actually different or exists
             setTrips(result || []);
-    
+
         } catch (err) {
             console.error("Fetch Error:", err);
         } finally {
@@ -573,7 +573,7 @@ const OrderManagement: React.FC = () => {
 
     const LSlist = useMemo(() => {
         const encodedLSKey = enc('Loading Sequence');
-        
+
         // Filter out 'Done' items since fetchTrips only handles 'PLD Done'
         return trips
             .filter(trip => trip.TripProgress !== 'Done')
@@ -596,8 +596,8 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.truckList, true);
         try {
             const result = await ewulFetchAll<any>(
-                LiveVehicleAssignmentLIstViewService, 
-                { filter: `Assignment eq 'VASQUEZ' or Assignment eq 'INTERCITY'` }, 
+                LiveVehicleAssignmentLIstViewService,
+                { filter: `Assignment eq 'VASQUEZ' or Assignment eq 'INTERCITY'` },
                 3000
             ) || [];
 
@@ -607,28 +607,28 @@ const OrderManagement: React.FC = () => {
             // console.log('tractor: ',result.find((item: any) => item.Head == 'H-1020'));
 
             const truck_options: DropdownOption[] = result
-            .filter((item: any) => item.Head) // Only include if a head exists
-            .map((item: any) => {
-                const statusEmoji = GPS_STATUS_EMOJIS[item.GpsStatus] ?? '⚫';
-                
-                return {
-                    value: item.Head ?? '',
-                    label: item.Head_Full ?? '',
-                    subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.PairedTrailer ?? 'NO BO'} | ${item.OE ?? 'NO TRIP'} |  ${item.TractorJRNumber ? item.TractorJRNumber + ': ' + item.Tractor_JRStatus : 'NO UR '} | ${item.TractorIRID ? item.TractorIRID : 'NO IR'}`,
-                    type: 'multi',
-                    record: item
-                };
-            });
+                .filter((item: any) => item.Head) // Only include if a head exists
+                .map((item: any) => {
+                    const statusEmoji = GPS_STATUS_EMOJIS[item.GpsStatus] ?? '⚫';
+
+                    return {
+                        value: item.Head ?? '',
+                        label: item.Head_Full ?? '',
+                        subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.PairedTrailer ?? 'NO BO'} | ${item.OE ?? 'NO TRIP'} |  ${item.TractorJrNumber ? item.TractorJrNumber + ': ' + item.Tractor_JRStatus : 'NO UR '} | ${item.TractorIRID ? item.TractorIRID : 'NO IR'}`,
+                        type: 'multi',
+                        record: item
+                    };
+                });
 
             const trailer_options: DropdownOption[] = result
                 .filter((item: any) => item.PairedTrailer) // Only include if a trailer exists
                 .map((item: any) => {
                     const statusEmoji = GPS_STATUS_EMOJIS[item.GpsStatus] ?? '⚫';
-                    
+
                     return {
                         value: item.PairedTrailer ?? '',
                         label: item.Trailer_Full ?? '',
-                        subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.Head ?? 'NO HEAD'} | ${item.OE ?? 'NO TRIP'} |  ${item.TrailerJRNumber ? item.TrailerJRNumber + ': ' + item.Trailer_JRStatus : 'NO UR '} | ${item.TrailerIRID ? item.TrailerIRID : 'NO IR'}`,
+                        subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.Head ?? 'NO HEAD'} | ${item.OE ?? 'NO TRIP'} |  ${item.TrailerJrNumber ? item.TrailerJrNumber + ': ' + item.Trailer_JRStatus : 'NO UR '} | ${item.TrailerIRID ? item.TrailerIRID : 'NO IR'}`,
                         type: 'multi',
                         record: item // Store the original record for later use when an option is selected
                     }
@@ -655,17 +655,17 @@ const OrderManagement: React.FC = () => {
 
     const handleUpdateTruckTrailerOptions = (item: any) => {
 
-        const result = livetruckassignment.map((oldItem) => 
+        const result = livetruckassignment.map((oldItem) =>
             oldItem.Id === item.Id ? { ...oldItem, ...item } : oldItem
         );
-        
+
         setLiveTruckAssignment(result);
 
         const truck_options: DropdownOption[] = result
             .filter((item: any) => item.Head) // Only include if a head exists
             .map((item: any) => {
                 const statusEmoji = GPS_STATUS_EMOJIS[item.GpsStatus] ?? '⚫';
-                
+
                 return {
                     value: item.Head ?? '',
                     label: item.Head_Full ?? '',
@@ -679,7 +679,7 @@ const OrderManagement: React.FC = () => {
             .filter((item: any) => item.PairedTrailer) // Only include if a trailer exists
             .map((item: any) => {
                 const statusEmoji = GPS_STATUS_EMOJIS[item.GpsStatus] ?? '⚫';
-                
+
                 return {
                     value: item.PairedTrailer ?? '',
                     label: item.Trailer_Full ?? '',
@@ -702,7 +702,7 @@ const OrderManagement: React.FC = () => {
         setTruckOptions([...prefix, ...truck_options]);
         setTrailerOptions([...prefix, ...trailer_options]);
 
-        
+
     };
 
 
@@ -713,33 +713,33 @@ const OrderManagement: React.FC = () => {
             label: item.FullName ?? '',
             type: 'card',
             cardConfig: [
-            // Row 1: Attendance and Trip Status
-            [
-                { 
-                    label: 'Attendance', 
-                    value: item.DMS_Attendance ?? 'ABSENT',
-                    color: ATTENDANCE_STATUS_COLORS[item.DMS_Attendance as keyof typeof ATTENDANCE_STATUS_COLORS]?.bg ?? '#ff0000'
-                },
-                { 
-                    label: 'Deployment', 
-                    value: item.EmploymentStatus ?? 'Undeployed',
-                    color: item.EmploymentStatus === 'Deployed' ? '#3a4efc' : '#64748b'
-                }
-            ],
-            // Row 2: Employment and Pairing
-            [
-                { 
-                    label: 'Trip', 
-                    value: item.OE ? `${item.OE}` : 'NO TRIP',
-                    color: item.OE ? '#3a4efc' : '#64748b',
-                    proportion: 1 // Give more space to the trip description
-                },
-                { 
-                    label: 'Status', 
-                    value: `${item.DMS_TripStatus ?? '---'}`,
-                    proportion: 1
-                }
-            ]
+                // Row 1: Attendance and Trip Status
+                [
+                    {
+                        label: 'Attendance',
+                        value: item.DMS_Attendance ?? 'ABSENT',
+                        color: ATTENDANCE_STATUS_COLORS[item.DMS_Attendance as keyof typeof ATTENDANCE_STATUS_COLORS]?.bg ?? '#ff0000'
+                    },
+                    {
+                        label: 'Deployment',
+                        value: item.EmploymentStatus ?? 'Undeployed',
+                        color: item.EmploymentStatus === 'Deployed' ? '#3a4efc' : '#64748b'
+                    }
+                ],
+                // Row 2: Employment and Pairing
+                [
+                    {
+                        label: 'Trip',
+                        value: item.OE ? `${item.OE}` : 'NO TRIP',
+                        color: item.OE ? '#3a4efc' : '#64748b',
+                        proportion: 1 // Give more space to the trip description
+                    },
+                    {
+                        label: 'Status',
+                        value: `${item.DMS_TripStatus ?? '---'}`,
+                        proportion: 1
+                    }
+                ]
             ],
             record: item
         };
@@ -770,13 +770,13 @@ const OrderManagement: React.FC = () => {
             value: 'Apple',
             label: 'Apple',
             type: 'multi',
-            record: {Id: 'test', FullName: 'Apple', DMS_Attendance: 'PRESENT'}
+            record: { Id: 'test', FullName: 'Apple', DMS_Attendance: 'PRESENT' }
         },
         {
             value: 'Cherry',
             label: 'Cherry',
             type: 'multi',
-            record: {Id: 'test3', FullName: 'Cherry', DMS_Attendance: 'PRESENT'}
+            record: { Id: 'test3', FullName: 'Cherry', DMS_Attendance: 'PRESENT' }
         }
     ];
 
@@ -785,13 +785,13 @@ const OrderManagement: React.FC = () => {
             value: 'Berry',
             label: 'Berry',
             type: 'single',
-            record: {Id: 'test2', FullName: 'Berry'}
+            record: { Id: 'test2', FullName: 'Berry' }
         },
         {
             value: 'Dates',
             label: 'Dates',
             type: 'multi',
-            record: {Id: 'test4', FullName: 'Dates', DMS_Attendance: 'PRESENT'}
+            record: { Id: 'test4', FullName: 'Dates', DMS_Attendance: 'PRESENT' }
         }
     ];
 
@@ -800,7 +800,7 @@ const OrderManagement: React.FC = () => {
     const { driverOptions, helperOptions } = useMemo(() => {
         const { drivers, helpers } = processPersonnelData(driverHelperList);
         const isDeveloper = user?.Position === 'Developer';
-        
+
         return {
             driverOptions: isDeveloper ? [...dummyOption, ...drivers] : drivers,
             helperOptions: isDeveloper ? [...dummyOption2, ...helpers] : helpers
@@ -816,8 +816,8 @@ const OrderManagement: React.FC = () => {
         try {
             setLoadingFor(FETCH_LOADING_KEYS.driverHelperList, true);
             const result = await ewulFetchAll<any>(
-                LiveDriverDispatchedList_AllService, 
-                { filter: `contains(Deploystatus, 'Deployed') and (contains(EmploymentStatus, 'Regular') or contains(EmploymentStatus, 'Probationary'))`  }, 
+                LiveDriverDispatchedList_AllService,
+                { filter: `contains(Deploystatus, 'Deployed') and (contains(EmploymentStatus, 'Regular') or contains(EmploymentStatus, 'Probationary'))` },
                 3000,
                 'Id'
             );
@@ -836,18 +836,18 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.generatedTripID, true);
 
         try {
-        const res = await GenerateNewTripTicketService.GenerateNewTripTicket({ 
-            OE: OE,
-        } as any);
+            const res = await GenerateNewTripTicketService.GenerateNewTripTicket({
+                OE: OE,
+            } as any);
 
 
-        const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
-        console.log("Response from GenerateNewTripTicketService:", res);
-        if (table1 && table1.length > 0) {
-            setPreviewTripTicketID(table1[0].TripTicketID + ' (Preview)' || null);
-        } else {
-            setPreviewTripTicketID(null);
-        }
+            const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+            console.log("Response from GenerateNewTripTicketService:", res);
+            if (table1 && table1.length > 0) {
+                setPreviewTripTicketID(table1[0].TripTicketID + ' (Preview)' || null);
+            } else {
+                setPreviewTripTicketID(null);
+            }
 
 
         } catch (error) {
@@ -866,19 +866,19 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.generateAddOE, true);
 
         try {
-        const res = await GenerateAdditionalOE_IDService.GenerateAdditionalOE_ID({ 
-            Type: type,
-        } as any);
+            const res = await GenerateAdditionalOE_IDService.GenerateAdditionalOE_ID({
+                Type: type,
+            } as any);
 
 
-        const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
-        if (!table1 || table1.length === 0) {
-            console.error("No data returned for new OE generation.");
-            return;
-        }
+            const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+            if (!table1 || table1.length === 0) {
+                console.error("No data returned for new OE generation.");
+                return;
+            }
 
-        if (type === 'Preload') setPreviewPreloadOE( table1[0].NewID);
-        if (type === 'Mobilization') setPreviewMobilizationOE( table1[0].NewID);
+            if (type === 'Preload') setPreviewPreloadOE(table1[0].NewID);
+            if (type === 'Mobilization') setPreviewMobilizationOE(table1[0].NewID);
 
         } catch (error) {
             console.error("Fetch error:", error);
@@ -899,7 +899,7 @@ const OrderManagement: React.FC = () => {
             Source: "",
             Destination: "",
             cementType: "",
-            [enc("Buisness Unit") ]: 'SBUO-1A',
+            [enc("Buisness Unit")]: 'SBUO-1A',
             TripProgress: TRIP_PROGRESS[0].Progress,
             _tripGroup: type,
             TripTicketID: previewTripTicketID || '',
@@ -916,7 +916,7 @@ const OrderManagement: React.FC = () => {
     };
 
     const handleSelectCIFMEOrder = (order: any) => {
-        setSelectedOrder({...selectedOrder, CIFME_OE: order.OE, CIFME_DESTINATION: order.DestiName});
+        setSelectedOrder({ ...selectedOrder, CIFME_OE: order.OE, CIFME_DESTINATION: order.DestiName });
     };
 
     const [cooldown, setCooldown] = useState<number>(0);
@@ -934,7 +934,7 @@ const OrderManagement: React.FC = () => {
     }, [cooldown]);
 
     // MAIN REFRESH
-    const handleRefresh = useCallback( () => {
+    const handleRefresh = useCallback(() => {
 
         fetchTruckList();
         fetchDriverHelperList();
@@ -947,7 +947,7 @@ const OrderManagement: React.FC = () => {
         fetchFCTRoutes();
         handleGlobalRefresh();
 
-    },[]); 
+    }, []);
 
     const TIME_PENALTY = 5;
     const MAX_PENALTY = 30;
@@ -987,8 +987,8 @@ const OrderManagement: React.FC = () => {
         /* --- THE DYNAMIC TRAP WINDOW --- */
         // Base trap window is 8s, adding 5s per extra streak level, capping it at 15s max (15000ms)
         const baseTrapWindowMs = 8000;
-        const trapPenaltyMs = (clickStreakRef.current - 1) * (TIME_PENALTY*1000); // Scales up cleanly with your penalty
-        const dynamicTrapWindow = Math.min(baseTrapWindowMs + trapPenaltyMs, (MAX_PENALTY*1000));
+        const trapPenaltyMs = (clickStreakRef.current - 1) * (TIME_PENALTY * 1000); // Scales up cleanly with your penalty
+        const dynamicTrapWindow = Math.min(baseTrapWindowMs + trapPenaltyMs, (MAX_PENALTY * 1000));
 
         // 7. Reset the streak if they manage to stay cool for the duration of the dynamic window
         streakTimeoutRef.current = setTimeout(() => {
@@ -1012,7 +1012,7 @@ const OrderManagement: React.FC = () => {
     }, [handleRefresh]);
 
     // REFRESH TRIP WHEN DATE RANGE CHANGES WITHOUT CD
-    useEffect(() => { 
+    useEffect(() => {
         fetchTrips();
         //fetchNewOrders();
     }, [selectedRange]);
@@ -1042,7 +1042,7 @@ const OrderManagement: React.FC = () => {
 
         // 1. Lowercase the entire string first
         const lowercased = str.toLowerCase();
-        
+
         // 2. Capitalize just the absolute first character of the string
         const processedStr = lowercased.charAt(0).toUpperCase() + lowercased.slice(1);
         console.log(processedStr)
@@ -1050,60 +1050,60 @@ const OrderManagement: React.FC = () => {
         return processedStr
             .split(/\s+/)
             .map((word) => {
-            // If the word matches "fb" (since we lowercased everything), force it to "FB"
-            // We check strip punctuation if FB might be attached to a comma/dash, 
-            // but if it's standalone, a simple check works:
-            if (word === 'fb') {
-                return 'FB';
-            }
-            return word;
+                // If the word matches "fb" (since we lowercased everything), force it to "FB"
+                // We check strip punctuation if FB might be attached to a comma/dash, 
+                // but if it's standalone, a simple check works:
+                if (word === 'fb') {
+                    return 'FB';
+                }
+                return word;
             })
             .join(' ');
     };
 
-    const handleDonutInteraction = (chartClickData: { 
-    tripgroup: string | null; 
-    tripgroup_total: number | null; 
-    tripprogress: string | null; 
-    tripprogress_count: number | null; 
+    const handleDonutInteraction = (chartClickData: {
+        tripgroup: string | null;
+        tripgroup_total: number | null;
+        tripprogress: string | null;
+        tripprogress_count: number | null;
     }) => {
-    if (!chartClickData) return;
+        if (!chartClickData) return;
 
-    const encodedTripGroupKey = encodeColumnName("_tripGroup");
-    const encodedProgressKey = encodeColumnName("TripProgress");
+        const encodedTripGroupKey = encodeColumnName("_tripGroup");
+        const encodedProgressKey = encodeColumnName("TripProgress");
 
-    setTableFilters(prevFilters => {
-        const nextFilters = { ...prevFilters };
+        setTableFilters(prevFilters => {
+            const nextFilters = { ...prevFilters };
 
-        // If tripgroup is null, completely purge both filters to reset back to default
-        if (chartClickData.tripgroup === null) {
-        delete nextFilters[encodedTripGroupKey];
-        delete nextFilters[encodedProgressKey];
-        return nextFilters;
-        }
+            // If tripgroup is null, completely purge both filters to reset back to default
+            if (chartClickData.tripgroup === null) {
+                delete nextFilters[encodedTripGroupKey];
+                delete nextFilters[encodedProgressKey];
+                return nextFilters;
+            }
 
-        // Otherwise, carry out normal resolution & filter adjustments
-        const matchedGroup = TRIP_GROUPS.find(
-        group => group.id === chartClickData.tripgroup || group.label === chartClickData.tripgroup
-        );
+            // Otherwise, carry out normal resolution & filter adjustments
+            const matchedGroup = TRIP_GROUPS.find(
+                group => group.id === chartClickData.tripgroup || group.label === chartClickData.tripgroup
+            );
 
-        const rawLabelValue = matchedGroup ? matchedGroup.label : chartClickData.tripgroup;
-        const formattedLabelValue = capitalizeOnlyFirstLetter(rawLabelValue);
+            const rawLabelValue = matchedGroup ? matchedGroup.label : chartClickData.tripgroup;
+            const formattedLabelValue = capitalizeOnlyFirstLetter(rawLabelValue);
 
-        if (formattedLabelValue) {
-        nextFilters[encodedTripGroupKey] = [formattedLabelValue];
-        } else {
-        delete nextFilters[encodedTripGroupKey];
-        }
+            if (formattedLabelValue) {
+                nextFilters[encodedTripGroupKey] = [formattedLabelValue];
+            } else {
+                delete nextFilters[encodedTripGroupKey];
+            }
 
-        if (chartClickData.tripprogress) {
-        nextFilters[encodedProgressKey] = [chartClickData.tripprogress];
-        } else {
-        delete nextFilters[encodedProgressKey];
-        }
+            if (chartClickData.tripprogress) {
+                nextFilters[encodedProgressKey] = [chartClickData.tripprogress];
+            } else {
+                delete nextFilters[encodedProgressKey];
+            }
 
-        return nextFilters;
-    });
+            return nextFilters;
+        });
     };
 
     const liveTripsTableConfig = useMemo(() => {
@@ -1111,19 +1111,19 @@ const OrderManagement: React.FC = () => {
 
         return LIVE_DMS_TABLE_CONFIG.table_config.map((column: ColumnConfig) => {
             const encodedKey = encodeColumnName(column.col);
-            
+
             if (tableFilters[encodedKey]) {
-            return {
-                ...column,
-                filter: {
-                ...column.filter,
-                type: column.filter?.type || "dropdown-multiple",
-                // Force inject the dynamic selections as default rules
-                default: tableFilters[encodedKey]
-                }
-            };
+                return {
+                    ...column,
+                    filter: {
+                        ...column.filter,
+                        type: column.filter?.type || "dropdown-multiple",
+                        // Force inject the dynamic selections as default rules
+                        default: tableFilters[encodedKey]
+                    }
+                };
             }
-            
+
             // Return a clean structural copy to ensure the component recognizes the reference change
             return { ...column };
         });
@@ -1140,7 +1140,7 @@ const OrderManagement: React.FC = () => {
         console.log(soNumber);
 
         return (
-            <TableView 
+            <TableView
                 data={CIFMEOrders.filter(order => order.OE === 'CIF26-07-0162')}
                 config={changeConfig}
                 searchCol={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.searchable_cols as string[]}
@@ -1165,7 +1165,7 @@ const OrderManagement: React.FC = () => {
     };
 
     const actions = (
-        <>  
+        <>
             {/* <span className="bu-label">Business Unit:</span>
             <select 
                 className="bu-dropdown-title"
@@ -1181,11 +1181,11 @@ const OrderManagement: React.FC = () => {
                     </option>
                 ))}
             </select> */}
-            <button 
-                className="header-btn secondary" 
+            <button
+                className="header-btn secondary"
                 onClick={() => setShowCharts(prev => !prev)}
                 style={{ minWidth: 110 }}
-            >   
+            >
                 {showCharts ? <EyeOff size={16} /> : <Eye size={16} />}
                 <span>{showCharts ? 'Hide Trip Groups' : 'Show Trip Groups'}</span>
             </button>
@@ -1196,32 +1196,32 @@ const OrderManagement: React.FC = () => {
             >
                 + New Trip
             </button> */}
-            <button className="header-btn secondary preload" onClick={() => { handleAdditionalOEGeneration("Preload"); setActiveView('form'); setSidebarVisible(true);}} style={{ minWidth: 90 }}>Preload</button>
+            <button className="header-btn secondary preload" onClick={() => { handleAdditionalOEGeneration("Preload"); setActiveView('form'); setSidebarVisible(true); }} style={{ minWidth: 90 }}>Preload</button>
             <button className="header-btn secondary mobilization" onClick={() => { handleAdditionalOEGeneration("Mobilization"); setActiveView('form'); setSidebarVisible(true); }} style={{ minWidth: 120 }}>Mobilization</button>
             {/*<button className="header-btn secondary" onClick={() => {setShowFuelRequestModal(true); fetchFuelRequests(true);}}>
                 <Fuel size={16} />
                 <span>Fuel Requests</span>
             </button>*/}
-            <DateRangePicker 
-                    allowedTypes={['Today','Yesterday','Last Week','Weekly','Monthly'/*, 'Yearly', 'Custom'*/]} 
-                    initialType='Monthly'
-                    onFilterChange={(range) => { handleDateChange(range);}} 
-                    opacity={0.2}
-                    bgColor='var(--color-primary)'
-                    hoverColor='var(--color-primary)'
+            <DateRangePicker
+                allowedTypes={['Today', 'Yesterday', 'Last Week', 'Weekly', 'Monthly'/*, 'Yearly', 'Custom'*/]}
+                initialType='Monthly'
+                onFilterChange={(range) => { handleDateChange(range); }}
+                opacity={0.2}
+                bgColor='var(--color-primary)'
+                hoverColor='var(--color-primary)'
             />
             <button className="header-btn secondary" onClick={handleExport}>
                 <Download size={16} />
                 <span>Export CSV</span>
             </button>
-            <button 
-                className={`header-btn primary ${cooldown > 0 ? 'spinning' : ''}`} 
+            <button
+                className={`header-btn primary ${cooldown > 0 ? 'spinning' : ''}`}
                 onClick={handleRefreshWithCooldown}
-                // disabled={cooldown > 0}
+            // disabled={cooldown > 0}
             >
                 <RefreshCcw size={16} />
                 <span>
-                    {cooldown > 0  ? `Wait ${cooldown}s...` : 'Refresh'}
+                    {cooldown > 0 ? `Wait ${cooldown}s...` : 'Refresh'}
                 </span>
             </button>
         </>
@@ -1264,7 +1264,7 @@ const OrderManagement: React.FC = () => {
 
 
         // 2. Check if the request's status is one of the 'isOpen' statuses
-        const isOpenStatus = frStatuses.some(status => 
+        const isOpenStatus = frStatuses.some(status =>
             status.isOpen && status.value === req.Frstatus
         );
 
@@ -1309,9 +1309,9 @@ const OrderManagement: React.FC = () => {
                     setPreviewTrip(preview);
 
 
-                    setScrollTo({ 
-                        search_col: 'OE', 
-                        key: formData.OE as any, 
+                    setScrollTo({
+                        search_col: 'OE',
+                        key: formData.OE as any,
                         highlight: isValid ? 'success' : 'danger',
                         target_col: editedColumn,
                     });
@@ -1319,7 +1319,7 @@ const OrderManagement: React.FC = () => {
                     setPreviewTrip({});
                 }
             }}
-            onClearSelectedTrip={() => {setSelectedOrder(null); setPreviewTrip({});}}
+            onClearSelectedTrip={() => { setSelectedOrder(null); setPreviewTrip({}); }}
             onProceed={(updatedTrip, deselect) => {
                 console.log("Proceeding with trip:", updatedTrip);
                 setTrips(prevTrips => {
@@ -1336,14 +1336,14 @@ const OrderManagement: React.FC = () => {
                 });
 
                 if (deselect) {
-                     setSelectedOrder(null);
-                     fetchTrips(true);
+                    setSelectedOrder(null);
+                    fetchTrips(true);
                 } else {
                     setSelectedOrder(updatedTrip);
                 }
 
-                
-                
+
+
             }}
             onOEInputClick={() => {
                 setShowNewTripModal(true);
@@ -1364,8 +1364,8 @@ const OrderManagement: React.FC = () => {
                 setSelectedOrder(null);
                 setPreviewTrip({});
             }}
-            onRefreshTrips={() => {fetchTrips(true);}}
-            onRefreshDriverHelpers={() => {fetchDriverHelperList(true)}}
+            onRefreshTrips={() => { fetchTrips(true); }}
+            onRefreshDriverHelpers={() => { fetchDriverHelperList(true) }}
             onUpdateDriverHelperAttendance={(name, attendance, position) => {
                 setDriverHelperList(prevList => prevList.map(item => {
                     if (item.FullName === name && item.Position === position) {
@@ -1385,7 +1385,7 @@ const OrderManagement: React.FC = () => {
                     tractor: tripData.Vehicle || '',
                     trailer: tripData.BO || '',
                     data: tripData,
-                }); 
+                });
                 fetchFuelRequests(true, tripData.Vehicle, tripData.OE);
             }}
             onRequestChangeTrip={(tripData, action) => {
@@ -1398,14 +1398,14 @@ const OrderManagement: React.FC = () => {
             driverOptions={driverOptions}
             helperOptions={helperOptions}
             sourceOptions={sourceOptions}
-            
+
             lsList={LSlist}
             driverHelperList={driverHelperList}
 
             editingUser={localUser}
 
             canChangeTrip={
-                (loadingList[FETCH_LOADING_KEYS.fuelRequests] ? false : true) && 
+                (loadingList[FETCH_LOADING_KEYS.fuelRequests] ? false : true) &&
                 openRequestsCount === 0
             } // Disable if there are any open fuel requests for that OE
             fuelFetching={loadingList[FETCH_LOADING_KEYS.fuelRequests] || false}
@@ -1424,10 +1424,10 @@ const OrderManagement: React.FC = () => {
                     default: originalOESource ? [originalOESource] : [],
                 }
             },
-            { 
-                col: "CementTypeName", alias: "Type", portion:1, 
+            {
+                col: "CementTypeName", alias: "Type", portion: 1,
                 filter: {
-                    type: "dropdown-multiple", 
+                    type: "dropdown-multiple",
                     options: cementTypeOptions,
                     default: currentOrderData.cementType ? [currentOrderData.cementType] : [],
                 }
@@ -1452,7 +1452,7 @@ const OrderManagement: React.FC = () => {
 
 
         return (
-            <TableView 
+            <TableView
                 data={orders}
                 config={changeConfig}
                 searchCol={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.searchable_cols as string[]}
@@ -1490,19 +1490,19 @@ const OrderManagement: React.FC = () => {
         // 1. Define Validation Rules
         if (["Tagged", "Completed"].includes(raw_record.SAPStatus)) {
             errorMessage = isDev ? null : `This Trip is already ${raw_record.SAPStatus.toLowerCase()}.`;
-        } 
+        }
         else if (raw_record.SAPStatus !== "Approved" && !(raw_record._tripGroup == 'Preload' && raw_record.SAPStatus === 'Manual' && original._tripGroup === 'Preload')) {
             errorMessage = "Only approved trips can be selected.";
-        } 
+        }
         else if (raw_record.SourceName !== original.Source) {
             errorMessage = isDev ? null : "Source does not match the original trip. Please select a trip with the same source.";
-        } 
+        }
         else if (
-            raw_record._tripGroup !== original._tripGroup && 
+            raw_record._tripGroup !== original._tripGroup &&
             !['Preload', 'Mobilization'].includes(original._tripGroup)
         ) {
             errorMessage = isDev ? null : "Trip group does not match. Please select a trip with the same trip group.";
-        } 
+        }
         else if (raw_record.CementTypeName !== original.cementType) {
             errorMessage = isDev ? null : "Cement type does not match. Please select a trip with the same cement type.";
         }
@@ -1525,13 +1525,13 @@ const OrderManagement: React.FC = () => {
     // handle GSDC_NAVIGATE_TO_TRIP
     useEffect(() => {
         const handleNavigation = (event: any) => {
-            const { oe} = event.detail;
+            const { oe } = event.detail;
             console.log("Navigating to trip:", oe);
             helperNavigateToOEfromExternal(oe);
         };
 
         window.addEventListener(GSDC_NAVIGATE_TO_TRIP_key, handleNavigation);
-        
+
         return () => {
             window.removeEventListener(GSDC_NAVIGATE_TO_TRIP_key, handleNavigation);
         };
@@ -1540,7 +1540,7 @@ const OrderManagement: React.FC = () => {
     const [bannerMessage, setBannerMessage] = useState<string | null>(null);
     const helperNavigateToOEfromExternal = async (oe: string) => {
         const oeRecord = displayData.find(item => item.OE === oe);
-        
+
         if (!oeRecord) {
             // Show banner and auto-hide after 3000ms (3 seconds)
             setBannerMessage(`No record found for OE: ${oe}. Make sure the trips are loaded to the correct Month.`);
@@ -1557,30 +1557,30 @@ const OrderManagement: React.FC = () => {
 
     const handleTripsTableOnClick = async (record: any, noDeselect?: boolean) => {
         const isDeselecting = noDeselect ? false : selectedOrder?.OE === record.OE;
-        const isselectedrecordvalid = /*await formRef.current?.runValidation(record)*/ {isValid: true}; // For now, we'll assume it's valid. You can implement this function to validate the record before selecting it.
+        const isselectedrecordvalid = /*await formRef.current?.runValidation(record)*/ { isValid: true }; // For now, we'll assume it's valid. You can implement this function to validate the record before selecting it.
         const highlight = isselectedrecordvalid?.isValid ? 'success' : 'danger';
         const selectrecord = () => {
             setSelectedOrder({
-                ...record, 
-                QTYDelivered_Actual: record.TripProgress === 'Done' 
-                    ? (record.QTYDelivered_Actual ?? record.QTYDelivered ?? 0) 
+                ...record,
+                QTYDelivered_Actual: record.TripProgress === 'Done'
+                    ? (record.QTYDelivered_Actual ?? record.QTYDelivered ?? 0)
                     : (record.QTYDelivered_Actual ?? 0),
 
-                QTYWithdrawn_Actual: record.TripProgress === 'Done' 
-                    ? (record.QTYWithdrawn_Actual ?? record.QTYWithdrawn ?? 0) 
+                QTYWithdrawn_Actual: record.TripProgress === 'Done'
+                    ? (record.QTYWithdrawn_Actual ?? record.QTYWithdrawn ?? 0)
                     : (record.QTYWithdrawn_Actual ?? 0),
             });
             handleChangeActiveView('form');
             setShowNewTripModal(false);
             setSidebarVisible(true);
-            setScrollTo({ 
-                search_col: 'OE', 
-                key: record.OE as any, 
+            setScrollTo({
+                search_col: 'OE',
+                key: record.OE as any,
                 highlight: highlight,
             });
         };
 
-        if (selectedOrder == undefined) {selectrecord(); return;}
+        if (selectedOrder == undefined) { selectrecord(); return; }
 
         // Always check for unsaved changes if the form might be open.
         const canProceed = await formRef.current?.showUnsavedChangesModal();
@@ -1588,9 +1588,9 @@ const OrderManagement: React.FC = () => {
 
         if (!canProceed) {
             console.log("User canceled navigation. Staying on current order.");
-            setScrollTo({ 
-                search_col: 'OE', 
-                key: selectedOrder?.OE as any, 
+            setScrollTo({
+                search_col: 'OE',
+                key: selectedOrder?.OE as any,
                 highlight: highlight,
             });
             return;
@@ -1615,522 +1615,522 @@ const OrderManagement: React.FC = () => {
 
     //FOR TRIPS TABLE
     const displayData = useMemo(() => {
-    if (!previewTrip.OE) return trips;
-    
-    // Return the preview at the top, followed by all other trips
-    return [previewTrip, ...trips.filter(t => t.OE !== previewTrip.OE)];
+        if (!previewTrip.OE) return trips;
+
+        // Return the preview at the top, followed by all other trips
+        return [previewTrip, ...trips.filter(t => t.OE !== previewTrip.OE)];
     }, [trips, previewTrip]);
-    
+
 
     return (
-        <PageTemplate 
-            title="Trip Dispatch" 
-            actions={actions} 
+        <PageTemplate
+            title="Trip Dispatch"
+            actions={actions}
             overflowY={true}
         >
             <div className="order-management-page">
-            {/* Sidebar Toggle Tab */}
-            <div 
-                title='Open DMS Form/Dashboard'
-                className={`sidebar-toggle-tab ${sidebarVisible ? 'hidden' : ''}`}
-                onClick={() => setSidebarVisible(true)}
-            >
-                <Menu size={24} />
-            </div>
-
-            
-
-            <div className='chart-stretch-wrapper' hidden={!showCharts}>
-                <div className="mini-dashboard-stack" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
-                    <div className="chart-container-card" style={{ flex: 1, minWidth: 280 }}>
-                        {/* <h4 className="chart-title">Trip Distribution</h4> */}
-                        <TripGroup_DonutChart 
-                            ref={donutChartRef}
-                            key={selectedRange?.from || 'initial'}
-                            BU={null}
-                            fromStr={selectedRange?.from || ""} 
-                            toStr={selectedRange?.to || ""} 
-                            onChartClick={handleDonutInteraction}
-                            defaultView='simple'
-                            orientation='horizontal'
-                            highlight={null}
-                            showScrollX={false}
-                            showScrollY={true}
-                            defaultFilterOptions={{
-                                done: false // Starts unchecked
-                            }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-
-            <div
-                className="main-content-split"
-                id="main-content-split"
-            >
-            {/* LEFT SIDE: Management Utility (Resizable) */}
+                {/* Sidebar Toggle Tab */}
                 <div
-                    ref={sidebarRef}
-                    className={`management-sidebar animate-sidebar${sidebarVisible ? ' sidebar-in' : ' sidebar-out'}`}
-                    style={{
-                        flex: sidebarVisible ? `0 0 ${isMobile ? 100 : sidebarWidth}%` : '0 0 0%',
-                        minWidth: sidebarVisible ? (isMobile ? '100%' : 200) : 0,
-                        maxWidth: sidebarVisible ? (isMobile ? '100%' : '60%') : 0,
-                        pointerEvents: sidebarVisible ? 'auto' : 'none',
-                        opacity: sidebarVisible ? 1 : 0,
-                        transition: 'all 0.35s cubic-bezier(.4,2,.6,1), opacity 0.25s',
-                        zIndex: 2,
-                        display: !sidebarVisible && isMobile ? 'none' : 'flex'
-                    }}
-                    aria-hidden={!sidebarVisible}
+                    title='Open DMS Form/Dashboard'
+                    className={`sidebar-toggle-tab ${sidebarVisible ? 'hidden' : ''}`}
+                    onClick={() => setSidebarVisible(true)}
                 >
-                    {/* FLOATING ACTION UTILITIES */}
-                    <div className="utility-floating-actions">
-                        <div className="utility-maximize show-icon">
-                            <button className="maximize-btn" onClick={() => setIsFormMaximized(true)}>
-                                <Maximize2 size={16} />
-                            </button>
-                        </div>
+                    <Menu size={24} />
+                </div>
 
-                        <div className="utility-close">
-                            <button className="close-btn" onClick={() => setSidebarVisible(false)}>
-                                <X size={18} />
-                            </button>
-                        </div>
-                    </div>
 
-                    {/* CONTENT AREA */}
-                    <div className="utility-content animate-fade-in">
-                        <div className="order-form-compact">
-                            {renderOrderForm(false)} 
+
+                <div className='chart-stretch-wrapper' hidden={!showCharts}>
+                    <div className="mini-dashboard-stack" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        <div className="chart-container-card" style={{ flex: 1, minWidth: 280 }}>
+                            {/* <h4 className="chart-title">Trip Distribution</h4> */}
+                            <TripGroup_DonutChart
+                                ref={donutChartRef}
+                                key={selectedRange?.from || 'initial'}
+                                BU={null}
+                                fromStr={selectedRange?.from || ""}
+                                toStr={selectedRange?.to || ""}
+                                onChartClick={handleDonutInteraction}
+                                defaultView='simple'
+                                orientation='horizontal'
+                                highlight={null}
+                                showScrollX={false}
+                                showScrollY={true}
+                                defaultFilterOptions={{
+                                    done: false // Starts unchecked
+                                }}
+                            />
                         </div>
                     </div>
                 </div>
 
-            {/* RIGHT SIDE: Trips Table */}
-            <div className={`table-main-area animate-table${sidebarVisible ? ' table-in' : ' table-out'}`}> 
-                <TableView
-                    data={displayData}
-                    config={liveTripsTableConfig as ColumnConfig[]}
-                    storageKey={`order_page_live_trips${user?.id}`}
-                    searchCol={LIVE_DMS_TABLE_CONFIG.searchable_cols as string[]}
-                    isLoading={loadingList[FETCH_LOADING_KEYS.trips] || false}
-                    showRowCount={50}
-                    onRefresh={(signal) => signal && fetchTrips()}
-                    overflowY={true}
-                    overflowX={true}
-                    /* maxHeight={sidebarHeight} REMOVED - This was causing the height issue */
-                    colMinWidth={60}
-                    // You can add row click or other handlers as needed
-                    rowStyle={LIVE_DMS_TABLE_CONFIG.rowStyle}
-                    loadingNoPreventAction={true}
-                    showNumbering={true}
-                    scrollTo={scrollTo}
-                    highlightSelected={true}
-                    theme="var(--color-primary)"
-                    onRowClick={async (record) => {
-                        handleTripsTableOnClick(record);
-                    }}
-                    accordion={LIVE_DMS_TABLE_CONFIG.accordion}
-                />
-            </div>
 
-            {/* Fuel Request Modal */}
-            {showFuelRequestModal && (
-                <Modal 
-                    onClose={() => {setShowFuelRequestModal(null);}}
-                    width={'90%'}
-                    height={'90vh'}
+                <div
+                    className="main-content-split"
+                    id="main-content-split"
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        <div className="new-order-modal-header">
-                            <div>
-                                <h2>{`Fuel Requests: ${showFuelRequestModal?.title || ''}`}</h2>
-                                <p>{`Order Reference: ${showFuelRequestModal?.subtitle || ''}`}</p>
+                    {/* LEFT SIDE: Management Utility (Resizable) */}
+                    <div
+                        ref={sidebarRef}
+                        className={`management-sidebar animate-sidebar${sidebarVisible ? ' sidebar-in' : ' sidebar-out'}`}
+                        style={{
+                            flex: sidebarVisible ? `0 0 ${isMobile ? 100 : sidebarWidth}%` : '0 0 0%',
+                            minWidth: sidebarVisible ? (isMobile ? '100%' : 200) : 0,
+                            maxWidth: sidebarVisible ? (isMobile ? '100%' : '60%') : 0,
+                            pointerEvents: sidebarVisible ? 'auto' : 'none',
+                            opacity: sidebarVisible ? 1 : 0,
+                            transition: 'all 0.35s cubic-bezier(.4,2,.6,1), opacity 0.25s',
+                            zIndex: 2,
+                            display: !sidebarVisible && isMobile ? 'none' : 'flex'
+                        }}
+                        aria-hidden={!sidebarVisible}
+                    >
+                        {/* FLOATING ACTION UTILITIES */}
+                        <div className="utility-floating-actions">
+                            <div className="utility-maximize show-icon">
+                                <button className="maximize-btn" onClick={() => setIsFormMaximized(true)}>
+                                    <Maximize2 size={16} />
+                                </button>
+                            </div>
+
+                            <div className="utility-close">
+                                <button className="close-btn" onClick={() => setSidebarVisible(false)}>
+                                    <X size={18} />
+                                </button>
                             </div>
                         </div>
-                        <div className="fuel-modal-body" style={{padding: 0}}>
-                            <FuelRequestManager
-                                truckOE={(showFuelRequestModal?.tractor || '') + (showFuelRequestModal?.subtitle || '')}
-                                fuelRequests={fuelRequests}
-                                lastFuelRequestOE={lastFuelReqOE}
-                                vehicleLists={livetruckassignment}
-                                tableConfig={FUEL_REQUESTS_TABLE_CONFIG.table_config as ColumnConfig[]}
-                                storageKey={`fuel_requests_${localUser?.id}`}
-                                searchableCols={FUEL_REQUESTS_TABLE_CONFIG.searchable_cols as string[]}
-                                isLoading={loadingList[FETCH_LOADING_KEYS.fuelRequests] || false}
-                                onRefresh={(signal) => signal && showFuelRequestModal && fetchFuelRequests(false, showFuelRequestModal.tractor, showFuelRequestModal.subtitle)}
-                                onFormSubmit={handleFuelRequestSubmit}
-                                tripData={showFuelRequestModal.data}
-                                initialFormData={(() => {
-                                    const truckRecord: LiveVehicleAssignmentLIstView = livetruckassignment.find((t: any) => t.Head === showFuelRequestModal?.tractor);
 
-                                    return {
-                                        Head: showFuelRequestModal.tractor,
-                                        Trailer: showFuelRequestModal.trailer,
-                                        Driversname: showFuelRequestModal.data?.Driver || '',
-                                        Orderentryref: showFuelRequestModal.data?.OE || '',
-                                        Category: 'New Trip',
-                                        Orderentrystatus: 'OE REFERENCE',
-                                        Status: (showFuelRequestModal.data?.QTYWithdrawn ?? 0) > 0 ? 'Loaded' : 'Empty',
-
-                                        Currentlocation: truckRecord?.LiveLocation || '',
-                                        Plate: truckRecord?.PlateNo || '',
-                                        Brand: truckRecord?.Brand || '',
-                                        Wheelertype: truckRecord?.WheelerType || '',
-                                        Platetrailer: truckRecord?.TPlateNo || '',
-                                        Classification: truckRecord?.Classification || '',
-                                        Axle: truckRecord?.Axle || '',
-                                        Subengine: truckRecord?.SubEngine || '',
-                                        Type: truckRecord?.TrailerType || '',
-
-                                        Odometer:  lastOdometer || '',
-
-                                        Frstatus: 'New',
-
-                                        CreatedBy: localUser?.FullName || '',
-                                        Created: formatToLocalISO(new Date().toISOString()) ,
-                                        Businessunit: 'SBUO-1A',
-                                        Requestedby: localUser?.FullName || '',
-
-                                        Karga: showFuelRequestModal.data?.QTYWithdrawn || '',
-
-                                        Ts1: formatToLocalISO(new Date().toISOString()),
-
-                                    } as Partial<FctFinal>;
-                                })()}
-                                onRowClick={(record) => {
-                                    console.log("Editing fuel request:", record);
-                                    // The component will automatically switch to the form view
-                                }}
-
-                                stationOptions={stationOptions}
-                                sourceOptions={sourceOptions}
-                                destinationOptions={destinationOptions}
-                                user={localUser}
-                            />
+                        {/* CONTENT AREA */}
+                        <div className="utility-content animate-fade-in">
+                            <div className="order-form-compact">
+                                {renderOrderForm(false)}
+                            </div>
                         </div>
                     </div>
-                </Modal>
-            )}
 
-            {/* Change Trip/OE Modal */}
-            {showChangeTripModal?.show && (
-                <Modal 
-                    onClose={() => {setShowChangeTripModal(null); setScrollToNewTrips(null);}}
-                    width={'90%'}
-                    height={'90vh'}
-                    contentStyle={{ paddingBottom: "0px"}}
-                >
-                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        <div className="new-order-modal-header">
-                            <div>
-                                <h2>{showChangeTripModal.action} Trip: {showChangeTripModal.record?.OE} | {showChangeTripModal.record?.Source} | {showChangeTripModal.record?.cementType}</h2>
-                                <p>Select a trip to {showChangeTripModal.action.toLowerCase()} into</p>
-                            </div>
-
-                            <DateRangePicker 
-                                allowedTypes={['Monthly', 'Yearly', 'Custom']} 
-                                onFilterChange={(range) => {
-                                    handleDateChangeNewOrders(range);
-                                }} 
-                                opacity={1}
-                                bgColor='var(--color-primary)'
-                                hoverColor='var(--color-primary)'
-                            />
-
-                        </div>
-                        <div className="modal-body" style={{ paddingBottom: 80 }}>
-                            <div style={{ marginTop: 24 }}>
-                                {
-                                    (() => {    
-                                        
-                                        return renderNewTripsTable(onSelectChangeTrip, showChangeTripModal.configChange);
-                                    })()
-                                }
-                            </div>
-                        </div>
-                        {/* Sticky Footer */}
-                        <div
-                            style={{
-                                position: 'sticky',
-                                left: 0,
-                                bottom: 0,
-                                width: '100%',
-                                background: 'var(--color-bg, #fff)',
-                                borderTop: '1px solid #eee',
-                                padding: '16px 24px',
-                                display: 'flex',
-                                justifyContent: 'flex-end',
-                                zIndex: 10,
+                    {/* RIGHT SIDE: Trips Table */}
+                    <div className={`table-main-area animate-table${sidebarVisible ? ' table-in' : ' table-out'}`}>
+                        <TableView
+                            data={displayData}
+                            config={liveTripsTableConfig as ColumnConfig[]}
+                            storageKey={`order_page_live_trips${user?.id}`}
+                            searchCol={LIVE_DMS_TABLE_CONFIG.searchable_cols as string[]}
+                            isLoading={loadingList[FETCH_LOADING_KEYS.trips] || false}
+                            showRowCount={50}
+                            onRefresh={(signal) => signal && fetchTrips()}
+                            overflowY={true}
+                            overflowX={true}
+                            /* maxHeight={sidebarHeight} REMOVED - This was causing the height issue */
+                            colMinWidth={60}
+                            // You can add row click or other handlers as needed
+                            rowStyle={LIVE_DMS_TABLE_CONFIG.rowStyle}
+                            loadingNoPreventAction={true}
+                            showNumbering={true}
+                            scrollTo={scrollTo}
+                            highlightSelected={true}
+                            theme="var(--color-primary)"
+                            onRowClick={async (record) => {
+                                handleTripsTableOnClick(record);
                             }}
+                            accordion={LIVE_DMS_TABLE_CONFIG.accordion}
+                        />
+                    </div>
+
+                    {/* Fuel Request Modal */}
+                    {showFuelRequestModal && (
+                        <Modal
+                            onClose={() => { setShowFuelRequestModal(null); }}
+                            width={'90%'}
+                            height={'90vh'}
                         >
-                            <span
-                                className={`sticky-footer-message${selectedChangeTripOE ? ' selected' : ' not-selected'}`}
-                            >
-                                {selectedChangeTripOE
-                                    ? `Selected ${showChangeTripModal.action.toLocaleLowerCase()} OE: ${selectedChangeTripOE.OE}`
-                                    : `Please select an OE to ${showChangeTripModal.action.toLocaleLowerCase()} into.`}
-                            </span>
-                            <button
-                                className={`gradient-btn-proceed ${selectedChangeTripOE ? '' : 'disabled'}`}
-                                style={{ minWidth: 120, fontWeight: 600, fontSize: 'var(--font-size-lg, 18px)' }}
-                                disabled={!selectedChangeTripOE}
-                                onClick={() => {
-                                    if (!selectedChangeTripOE) return;
-                                    console.log(`${showChangeTripModal.action} Trip to:`, selectedChangeTripOE.OE);
-                                    const original = selectedOrder;
-                                    const changedTripRecord = 
+                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                <div className="new-order-modal-header">
+                                    <div>
+                                        <h2>{`Fuel Requests: ${showFuelRequestModal?.title || ''}`}</h2>
+                                        <p>{`Order Reference: ${showFuelRequestModal?.subtitle || ''}`}</p>
+                                    </div>
+                                </div>
+                                <div className="fuel-modal-body" style={{ padding: 0 }}>
+                                    <FuelRequestManager
+                                        truckOE={(showFuelRequestModal?.tractor || '') + (showFuelRequestModal?.subtitle || '')}
+                                        fuelRequests={fuelRequests}
+                                        lastFuelRequestOE={lastFuelReqOE}
+                                        vehicleLists={livetruckassignment}
+                                        tableConfig={FUEL_REQUESTS_TABLE_CONFIG.table_config as ColumnConfig[]}
+                                        storageKey={`fuel_requests_${localUser?.id}`}
+                                        searchableCols={FUEL_REQUESTS_TABLE_CONFIG.searchable_cols as string[]}
+                                        isLoading={loadingList[FETCH_LOADING_KEYS.fuelRequests] || false}
+                                        onRefresh={(signal) => signal && showFuelRequestModal && fetchFuelRequests(false, showFuelRequestModal.tractor, showFuelRequestModal.subtitle)}
+                                        onFormSubmit={handleFuelRequestSubmit}
+                                        tripData={showFuelRequestModal.data}
+                                        initialFormData={(() => {
+                                            const truckRecord: LiveVehicleAssignmentLIstView = livetruckassignment.find((t: any) => t.Head === showFuelRequestModal?.tractor);
+
+                                            return {
+                                                Head: showFuelRequestModal.tractor,
+                                                Trailer: showFuelRequestModal.trailer,
+                                                Driversname: showFuelRequestModal.data?.Driver || '',
+                                                Orderentryref: showFuelRequestModal.data?.OE || '',
+                                                Category: 'New Trip',
+                                                Orderentrystatus: 'OE REFERENCE',
+                                                Status: (showFuelRequestModal.data?.QTYWithdrawn ?? 0) > 0 ? 'Loaded' : 'Empty',
+
+                                                Currentlocation: truckRecord?.LiveLocation || '',
+                                                Plate: truckRecord?.PlateNo || '',
+                                                Brand: truckRecord?.Brand || '',
+                                                Wheelertype: truckRecord?.WheelerType || '',
+                                                Platetrailer: truckRecord?.TPlateNo || '',
+                                                Classification: truckRecord?.Classification || '',
+                                                Axle: truckRecord?.Axle || '',
+                                                Subengine: truckRecord?.SubEngine || '',
+                                                Type: truckRecord?.TrailerType || '',
+
+                                                Odometer: lastOdometer || '',
+
+                                                Frstatus: 'New',
+
+                                                CreatedBy: localUser?.FullName || '',
+                                                Created: formatToLocalISO(new Date().toISOString()),
+                                                Businessunit: 'SBUO-1A',
+                                                Requestedby: localUser?.FullName || '',
+
+                                                Karga: showFuelRequestModal.data?.QTYWithdrawn || '',
+
+                                                Ts1: formatToLocalISO(new Date().toISOString()),
+
+                                            } as Partial<FctFinal>;
+                                        })()}
+                                        onRowClick={(record) => {
+                                            console.log("Editing fuel request:", record);
+                                            // The component will automatically switch to the form view
+                                        }}
+
+                                        stationOptions={stationOptions}
+                                        sourceOptions={sourceOptions}
+                                        destinationOptions={destinationOptions}
+                                        user={localUser}
+                                    />
+                                </div>
+                            </div>
+                        </Modal>
+                    )}
+
+                    {/* Change Trip/OE Modal */}
+                    {showChangeTripModal?.show && (
+                        <Modal
+                            onClose={() => { setShowChangeTripModal(null); setScrollToNewTrips(null); }}
+                            width={'90%'}
+                            height={'90vh'}
+                            contentStyle={{ paddingBottom: "0px" }}
+                        >
+                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                <div className="new-order-modal-header">
+                                    <div>
+                                        <h2>{showChangeTripModal.action} Trip: {showChangeTripModal.record?.OE} | {showChangeTripModal.record?.Source} | {showChangeTripModal.record?.cementType}</h2>
+                                        <p>Select a trip to {showChangeTripModal.action.toLowerCase()} into</p>
+                                    </div>
+
+                                    <DateRangePicker
+                                        allowedTypes={['Monthly', 'Yearly', 'Custom']}
+                                        onFilterChange={(range) => {
+                                            handleDateChangeNewOrders(range);
+                                        }}
+                                        opacity={1}
+                                        bgColor='var(--color-primary)'
+                                        hoverColor='var(--color-primary)'
+                                    />
+
+                                </div>
+                                <div className="modal-body" style={{ paddingBottom: 80 }}>
+                                    <div style={{ marginTop: 24 }}>
                                         {
-                                            OE: selectedChangeTripOE.OE,
-                                            Source: selectedChangeTripOE.SourceName,
-                                            Destination: selectedChangeTripOE.DestiName,
-                                            Customer: selectedChangeTripOE.Customer,
-                                            Ordered_x0020_Date: selectedChangeTripOE.OrderedDate,
-                                            Needed_x0020_Date: selectedChangeTripOE.NeededDate,
-                                            OE_x0020_Date: selectedChangeTripOE.OE_x0020_Date,
-                                            _tripGroup: selectedChangeTripOE._tripGroup,  
+                                            (() => {
+
+                                                return renderNewTripsTable(onSelectChangeTrip, showChangeTripModal.configChange);
+                                            })()
                                         }
-
-                                    setSelectedOrder({...selectedOrder, ...changedTripRecord});
-                                    setShowChangeTripModal(null);
-
-                                    addTask({
-                                        name: `${showChangeTripModal.action} trip ${selectedChangeTripOE.OE}`,
-                                        execute: async () => {
-                                            try {
-                                
-                                            const result = await DMS_CEMService.update(
-                                                showChangeTripModal.record.ID.toString(), 
-                                                changedTripRecord
-                                            );
-                                            
-
-                                            const result2 = await TripTicketsService.update(
-                                                showChangeTripModal.record.TripTicketID || '',
-                                                {
-                                                    OE: selectedChangeTripOE.OE,
-                                                }
-                                            );
-                                            
-                                            //change OF of triptask too
-                                            console.log("changing oe of trip task from ", showChangeTripModal.record.OE || '', " to ", selectedChangeTripOE.OE || '');
-                                            Usp_ChangeTripTaskTrackerOEService.Usp_ChangeTripTaskTrackerOE({ 
-                                                OldOE: showChangeTripModal.record.OE || '',
-                                                NewOE: selectedChangeTripOE.OE || '',
-                                            } as any);
-
-                                            // const result3 = await TripTaskTrackerService.update(
-                                            //     showChangeTripModal.record?.OE,
-                                            //     { OE: selectedChangeTripOE.OE }
-                                            // );
-
-
-                                
-                                            if (result.error) {
-                                                throw new Error(result.error.message);
+                                    </div>
+                                </div>
+                                {/* Sticky Footer */}
+                                <div
+                                    style={{
+                                        position: 'sticky',
+                                        left: 0,
+                                        bottom: 0,
+                                        width: '100%',
+                                        background: 'var(--color-bg, #fff)',
+                                        borderTop: '1px solid #eee',
+                                        padding: '16px 24px',
+                                        display: 'flex',
+                                        justifyContent: 'flex-end',
+                                        zIndex: 10,
+                                    }}
+                                >
+                                    <span
+                                        className={`sticky-footer-message${selectedChangeTripOE ? ' selected' : ' not-selected'}`}
+                                    >
+                                        {selectedChangeTripOE
+                                            ? `Selected ${showChangeTripModal.action.toLocaleLowerCase()} OE: ${selectedChangeTripOE.OE}`
+                                            : `Please select an OE to ${showChangeTripModal.action.toLocaleLowerCase()} into.`}
+                                    </span>
+                                    <button
+                                        className={`gradient-btn-proceed ${selectedChangeTripOE ? '' : 'disabled'}`}
+                                        style={{ minWidth: 120, fontWeight: 600, fontSize: 'var(--font-size-lg, 18px)' }}
+                                        disabled={!selectedChangeTripOE}
+                                        onClick={() => {
+                                            if (!selectedChangeTripOE) return;
+                                            console.log(`${showChangeTripModal.action} Trip to:`, selectedChangeTripOE.OE);
+                                            const original = selectedOrder;
+                                            const changedTripRecord =
+                                            {
+                                                OE: selectedChangeTripOE.OE,
+                                                Source: selectedChangeTripOE.SourceName,
+                                                Destination: selectedChangeTripOE.DestiName,
+                                                Customer: selectedChangeTripOE.Customer,
+                                                Ordered_x0020_Date: selectedChangeTripOE.OrderedDate,
+                                                Needed_x0020_Date: selectedChangeTripOE.NeededDate,
+                                                OE_x0020_Date: selectedChangeTripOE.OE_x0020_Date,
+                                                _tripGroup: selectedChangeTripOE._tripGroup,
                                             }
-                                            if (result2.error) {
-                                                throw new Error(result2.error.message);
-                                            }
 
-                                            //log to transaction history
-                                            logDmsUpdate({
-                                                userName: user?.FullName || '',
-                                                userID: Number(user?.id) || 0,
-                                                inputOE: selectedChangeTripOE.OE || '',
-                                                action: `Trip ${showChangeTripModal.action}ed from [${showChangeTripModal.record.OE}] to [${selectedChangeTripOE.OE}].`,
-                                                value: selectedChangeTripOE.OE || '',
-                                                context: `Trip - Divert/Change`,
-                                                role: user?.Position || '',
+                                            setSelectedOrder({ ...selectedOrder, ...changedTripRecord });
+                                            setShowChangeTripModal(null);
+
+                                            addTask({
+                                                name: `${showChangeTripModal.action} trip ${selectedChangeTripOE.OE}`,
+                                                execute: async () => {
+                                                    try {
+
+                                                        const result = await DMS_CEMService.update(
+                                                            showChangeTripModal.record.ID.toString(),
+                                                            changedTripRecord
+                                                        );
+
+
+                                                        const result2 = await TripTicketsService.update(
+                                                            showChangeTripModal.record.TripTicketID || '',
+                                                            {
+                                                                OE: selectedChangeTripOE.OE,
+                                                            }
+                                                        );
+
+                                                        //change OF of triptask too
+                                                        console.log("changing oe of trip task from ", showChangeTripModal.record.OE || '', " to ", selectedChangeTripOE.OE || '');
+                                                        Usp_ChangeTripTaskTrackerOEService.Usp_ChangeTripTaskTrackerOE({
+                                                            OldOE: showChangeTripModal.record.OE || '',
+                                                            NewOE: selectedChangeTripOE.OE || '',
+                                                        } as any);
+
+                                                        // const result3 = await TripTaskTrackerService.update(
+                                                        //     showChangeTripModal.record?.OE,
+                                                        //     { OE: selectedChangeTripOE.OE }
+                                                        // );
+
+
+
+                                                        if (result.error) {
+                                                            throw new Error(result.error.message);
+                                                        }
+                                                        if (result2.error) {
+                                                            throw new Error(result2.error.message);
+                                                        }
+
+                                                        //log to transaction history
+                                                        logDmsUpdate({
+                                                            userName: user?.FullName || '',
+                                                            userID: Number(user?.id) || 0,
+                                                            inputOE: selectedChangeTripOE.OE || '',
+                                                            action: `Trip ${showChangeTripModal.action}ed from [${showChangeTripModal.record.OE}] to [${selectedChangeTripOE.OE}].`,
+                                                            value: selectedChangeTripOE.OE || '',
+                                                            context: `Trip - Divert/Change`,
+                                                            role: user?.Position || '',
+                                                        });
+
+                                                        return { success: true, data: result.data };
+
+                                                    } catch (error) {
+                                                        console.error('Failed to save trip:', error);
+                                                        return { success: false, error };
+                                                    }
+                                                },
+                                                checkSuccess: (result: { success: boolean }) => result.success,
+                                                onSuccess: (updatedData) => {
+                                                    const data = updatedData.data
+
+                                                    // console.log("Successfully saved trip change. Updating trips state... ",data);
+                                                    handleTripsTableOnClick({});
+                                                    setTrips(prevTrips => {
+                                                        const index = prevTrips.findIndex(t => t.ID === data.ID);
+                                                        if (index !== -1) {
+                                                            // Update existing trip
+                                                            const newTrips = [...prevTrips];
+                                                            newTrips[index] = data;
+                                                            return newTrips;
+                                                        } else {
+                                                            // Add new trip
+                                                            return [data, ...prevTrips];
+                                                        }
+                                                    });
+                                                },
+                                                onFailure: () => { setSelectedOrder(original); },
+
+                                                message: `Saving changes for trip ${selectedChangeTripOE.OE}...`,
+                                                message_success: `Trip ${selectedChangeTripOE.OE} saved successfully!`,
+                                                message_failure: (result) => `Failed to save trip ${selectedChangeTripOE.OE}. Reason: ${result.error?.message || 'Unknown error'}`
                                             });
-                                
-                                            return { success: true, data: result.data };
-                                
-                                            } catch (error) {
-                                            console.error('Failed to save trip:', error);
-                                            return { success: false, error };
-                                            }
-                                        },
-                                        checkSuccess: (result: { success: boolean }) => result.success,
-                                        onSuccess: (updatedData) => {
-                                            const data = updatedData.data
 
-                                            // console.log("Successfully saved trip change. Updating trips state... ",data);
-                                            handleTripsTableOnClick({});
-                                            setTrips(prevTrips => {
-                                                const index = prevTrips.findIndex(t => t.ID === data.ID);
-                                                if (index !== -1) {
-                                                    // Update existing trip
-                                                    const newTrips = [...prevTrips];
-                                                    newTrips[index] = data;
-                                                    return newTrips;
-                                                } else {
-                                                    // Add new trip
-                                                    return [data, ...prevTrips];
-                                                }
-                                            });
-                                        },
-                                        onFailure: () => {setSelectedOrder(original);},
-                                
-                                        message: `Saving changes for trip ${selectedChangeTripOE.OE}...`,
-                                        message_success: `Trip ${selectedChangeTripOE.OE} saved successfully!`,
-                                        message_failure: (result) => `Failed to save trip ${selectedChangeTripOE.OE}. Reason: ${result.error?.message || 'Unknown error'}`
-                                        });
+                                        }}
+                                    >
+                                        {showChangeTripModal.action} Trip
+                                    </button>
+                                </div>
+                            </div>
+                        </Modal>
+                    )}
 
-                                }}
-                            >
-                                {showChangeTripModal.action} Trip
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
-            )}
+                    {(selectChangeTripError && showChangeTripModal) && (
+                        <Modal
+                            onClose={() => setSelectChangeTripError(null)}
+                            width={'400px'} // Using fixed width for small alerts is usually cleaner
+                            height={'auto'}
+                        >
+                            <div className="invalid-changetrip-trip-modal-container">
+                                {/* Title Section */}
+                                <h3 className="invalid-changetrip-modal-title-red">Invalid Trip Selected!</h3>
 
-            {(selectChangeTripError && showChangeTripModal) && (
-                <Modal 
-                    onClose={() => setSelectChangeTripError(null)}
-                    width={'400px'} // Using fixed width for small alerts is usually cleaner
-                    height={'auto'}
-                >
-                    <div className="invalid-changetrip-trip-modal-container">
-                        {/* Title Section */}
-                        <h3 className="invalid-changetrip-modal-title-red">Invalid Trip Selected!</h3>
-                        
-                        {/* Body Section */}
-                        <div className="invalid-changetrip-modal-body-content">
-                            <p>{selectChangeTripError}</p>
-                        </div>
+                                {/* Body Section */}
+                                <div className="invalid-changetrip-modal-body-content">
+                                    <p>{selectChangeTripError}</p>
+                                </div>
 
-                        {/* Action Footer */}
-                        <div className="invalid-changetrip-modal-footer-right">
-                            <button 
-                                className="gradient-btn-proceed" 
-                                onClick={() => setSelectChangeTripError(null)}
-                            >
-                                OK
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
-            )}
+                                {/* Action Footer */}
+                                <div className="invalid-changetrip-modal-footer-right">
+                                    <button
+                                        className="gradient-btn-proceed"
+                                        onClick={() => setSelectChangeTripError(null)}
+                                    >
+                                        OK
+                                    </button>
+                                </div>
+                            </div>
+                        </Modal>
+                    )}
 
-            {/* New Trip Modal */}
-            {showNewTripModal && (
-                <Modal onClose={() => setShowNewTripModal(false)}>
-                    <div className="new-order-modal-header">
-                        <div>
-                            <h2>SAP New Orders</h2>
-                            <p>Select an order for a new trip</p>
-                        </div>
-                        
-                        <DateRangePicker 
-                            allowedTypes={['Monthly', 'Yearly', 'Custom']} 
-                            onFilterChange={(range) => {
-                                handleDateChangeNewOrders(range);
-                            }} 
-                            opacity={1}
-                            bgColor='var(--color-primary)'
-                            hoverColor='var(--color-primary)'
+                    {/* New Trip Modal */}
+                    {showNewTripModal && (
+                        <Modal onClose={() => setShowNewTripModal(false)}>
+                            <div className="new-order-modal-header">
+                                <div>
+                                    <h2>SAP New Orders</h2>
+                                    <p>Select an order for a new trip</p>
+                                </div>
+
+                                <DateRangePicker
+                                    allowedTypes={['Monthly', 'Yearly', 'Custom']}
+                                    onFilterChange={(range) => {
+                                        handleDateChangeNewOrders(range);
+                                    }}
+                                    opacity={1}
+                                    bgColor='var(--color-primary)'
+                                    hoverColor='var(--color-primary)'
+                                />
+                            </div>
+                            <div className="modal-body">
+                                <div style={{ marginTop: 24 }}>
+                                    {
+                                        (() => {
+                                            const onRowClick = (raw_record: any) => {
+                                                generateTripTicketID();
+                                                const record = {
+                                                    ...raw_record,
+                                                    Source: raw_record.SourceName,
+                                                    Destination: raw_record.DestiName,
+                                                    cementType: raw_record.CementTypeName,
+                                                    [enc("Buisness Unit")]: 'SBUO-1A',
+                                                    TripProgress: TRIP_PROGRESS[0].Progress,
+                                                    TripTicketID: previewTripTicketID || '',
+                                                    Ordered_x0020_Date: raw_record.OrderedDate,
+                                                    Needed_x0020_Date: raw_record.NeededDate
+                                                };
+                                                setSelectedOrder(record);
+                                                console.log("Selected order for new trip:", record);
+                                                setActiveView('form');
+                                                setShowNewTripModal(false);
+                                                setSidebarVisible(true);
+                                                const exists = trips.some(t => t.OE === record.OE);
+
+                                                const preview = record;
+
+                                                if (!exists) setPreviewTrip(preview);
+                                                else setPreviewTrip({});
+                                                setScrollTo({ search_col: 'OE', key: record.OE, highlight: 'warning' });
+                                            };
+                                            return renderNewTripsTable(onRowClick);
+                                        })()
+                                    }
+                                </div>
+                            </div>
+                        </Modal>
+                    )}
+
+                    {/* CIFME Trip Modal */}
+                    {showCIFMETable && (
+                        <Modal onClose={() => setShowCIFMETable(null)}>
+                            <div className="new-order-modal-header">
+                                <div>
+                                    <h2>Select a CIFME order for {currentOrderData.OE}</h2>
+                                </div>
+
+                                <DateRangePicker
+                                    allowedTypes={['Monthly', 'Yearly', 'Custom']}
+                                    onFilterChange={(range) => {
+                                        handleDateChangeNewOrders(range);
+                                    }}
+                                    opacity={1}
+                                    bgColor='var(--color-primary)'
+                                    hoverColor='var(--color-primary)'
+                                />
+                            </div>
+                            <div className="modal-body">
+                                <div style={{ marginTop: 24 }}>
+                                    {
+                                        (() => {
+                                            const onRowClick = (raw_record: any) => {
+                                                handleSelectCIFMEOrder(raw_record);
+                                                console.log("CIFME row clicked:", raw_record);
+                                                setShowCIFMETable(null);
+                                            };
+                                            return renderCIFMETable(onRowClick, showCIFMETable);
+                                        })()
+                                    }
+                                </div>
+                            </div>
+                        </Modal>
+                    )}
+
+                    {/* Fullscreen Form Modal */}
+                    {isFormMaximized && (
+                        <Modal onClose={() => setIsFormMaximized(false)}>
+                            <div className="modal-header-fullscreen">
+                                <h2>Order Distribution: {currentOrderData.OE}</h2>
+                            </div>
+                            <div className="modal-body-fullscreen" style={{ padding: '20px', maxHeight: '80vh', overflowY: 'auto' }}>
+                                {renderOrderForm(true)}
+                            </div>
+                        </Modal>
+                    )}
+
+
+                    {bannerMessage && (
+                        <AutoDismissBanner
+                            message={bannerMessage}
+                            onClose={() => setBannerMessage(null)}
                         />
-                    </div>
-                    <div className="modal-body">
-                        <div style={{ marginTop: 24 }}>
-                            {
-                                (() => {
-                                    const onRowClick = (raw_record: any) => {
-                                        generateTripTicketID();
-                                        const record = {
-                                            ...raw_record,
-                                            Source: raw_record.SourceName,
-                                            Destination: raw_record.DestiName,
-                                            cementType: raw_record.CementTypeName,
-                                            [enc("Buisness Unit") ]: 'SBUO-1A',
-                                            TripProgress: TRIP_PROGRESS[0].Progress,
-                                            TripTicketID: previewTripTicketID || '',
-                                            Ordered_x0020_Date: raw_record.OrderedDate,
-                                            Needed_x0020_Date: raw_record.NeededDate
-                                        };
-                                        setSelectedOrder(record);
-                                        console.log("Selected order for new trip:", record);
-                                        setActiveView('form');
-                                        setShowNewTripModal(false);
-                                        setSidebarVisible(true);
-                                        const exists = trips.some(t => t.OE === record.OE);
+                    )}
 
-                                        const preview = record;
-
-                                        if (!exists) setPreviewTrip(preview);
-                                        else setPreviewTrip({});
-                                        setScrollTo({ search_col: 'OE', key: record.OE, highlight: 'warning' });
-                                    };
-                                    return renderNewTripsTable(onRowClick);
-                                })()
-                            }
-                        </div>
-                    </div>
-                </Modal>
-            )}
-
-            {/* CIFME Trip Modal */}
-            {showCIFMETable && (
-                <Modal onClose={() => setShowCIFMETable(null)}>
-                    <div className="new-order-modal-header">
-                        <div>
-                            <h2>Select a CIFME order for {currentOrderData.OE}</h2>
-                        </div>
-                        
-                        <DateRangePicker 
-                            allowedTypes={['Monthly', 'Yearly', 'Custom']} 
-                            onFilterChange={(range) => {
-                                handleDateChangeNewOrders(range);
-                            }} 
-                            opacity={1}
-                            bgColor='var(--color-primary)'
-                            hoverColor='var(--color-primary)'
-                        />
-                    </div>
-                    <div className="modal-body">
-                        <div style={{ marginTop: 24 }}>
-                            {
-                                (() => {
-                                    const onRowClick = (raw_record: any) => {
-                                        handleSelectCIFMEOrder(raw_record);
-                                        console.log("CIFME row clicked:", raw_record);
-                                        setShowCIFMETable(null);
-                                    };
-                                    return renderCIFMETable(onRowClick,showCIFMETable);
-                                })()
-                            }
-                        </div>
-                    </div>
-                </Modal>
-            )}
-
-            {/* Fullscreen Form Modal */}
-            {isFormMaximized && (
-                <Modal onClose={() => setIsFormMaximized(false)}>
-                    <div className="modal-header-fullscreen">
-                        <h2>Order Distribution: {currentOrderData.OE}</h2>
-                    </div>
-                    <div className="modal-body-fullscreen" style={{ padding: '20px', maxHeight: '80vh', overflowY: 'auto' }}>
-                        {renderOrderForm(true)}
-                    </div>
-                </Modal>
-            )}
-
-
-            {bannerMessage && (
-            <AutoDismissBanner 
-                message={bannerMessage} 
-                onClose={() => setBannerMessage(null)} 
-            />
-            )}
-        
-        </div>
-        </div>
-    </PageTemplate>
+                </div>
+            </div>
+        </PageTemplate>
     );
 };
 

@@ -632,3 +632,12 @@
 
 
 /* src/components/comp_css/tableEmptyState.css */
+
+
+.ordr-dist-dashboard-table-frame.unique-dashboard-override {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+}

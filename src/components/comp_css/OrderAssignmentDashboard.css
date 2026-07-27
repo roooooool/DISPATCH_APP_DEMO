@@ -1,0 +1,440 @@
+.order-assignment-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Left Section - 6 Parts Ratio */
+.orders-table-section {
+    flex: 6;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+}
+
+/* Right Section - 5 Parts Ratio */
+.bu-cards-section {
+    flex: 5;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+}
+
+/* Card Header Dashboard Matrix */
+.bu-card-header {
+    padding: 6px 10px;
+    /* Slightly tighter padding for the compact look */
+    background: var(--bg-gradient-main);
+    /* Preserves your Navy to Red Gradient */
+    color: var(--color-text-2);
+}
+
+/* Line 1 Container */
+.bu-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    /* Reduced from 12px for a tighter 2-line layout */
+}
+
+.bu-ass-dash-section-header h2 {
+    margin: 0;
+    font-size: var(--font-size-subtitle);
+    color: var(--color-primary);
+    font-weight: 700;
+    padding: 5px;
+}
+
+.bu-ass-dash-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 5px;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-bg-blue);
+    box-sizing: border-box;
+}
+
+/* Actions Wrapper */
+.header-actions-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Base style for no-fill outline action buttons */
+.btn-action-outline {
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: var(--font-size-sm, 14px);
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    /* Gentle design rounded corner logic */
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-action-outline svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Confirm Action Button Styling */
+.btn-action-outline.btn-confirm {
+    border: 1px solid var(--color-border-success, #22c55e);
+    color: var(--color-border-success, #22c55e);
+}
+
+.btn-action-outline.btn-confirm:hover {
+    background-color: rgba(34, 197, 94, 0.08);
+    /* Minimal subtle alpha-fill on hover */
+}
+
+/* Cancel Action Button Styling */
+.btn-action-outline.btn-cancel {
+    border: 1px solid var(--color-border-danger, #ef4444);
+    color: var(--color-border-danger, #ef4444);
+}
+
+.btn-action-outline.btn-cancel:hover {
+    background-color: rgba(239, 68, 68, 0.08);
+    /* Minimal subtle alpha-fill on hover */
+}
+
+.bu-title-row h3 {
+    margin: 0;
+    color: var(--color-text-2);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+}
+
+.bu-ass-dash-section-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* Gives perfect spacing between the title and the tag */
+}
+
+.bu-header-pending-tag {
+    font-size: var(--font-size-sm, 14px);
+    font-weight: 500;
+    color: var(--color-accent-red, #ef4444);
+    /* Pulls in your sub/accent red */
+    animation: fadeInTag 0.2s ease-in-out;
+}
+
+/* Optional subtle entry animation so it doesn't just awkwardly snap in */
+@keyframes fadeInTag {
+    from {
+        opacity: 0;
+        transform: translateX(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Kanban Cards Grid Setup */
+.bu-cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+    overflow-y: auto;
+    flex-grow: 1;
+    background-color: var(--color-bg-blue);
+}
+
+/* Visual Card Styling */
+.bu-visual-card {
+    background: var(--color-bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.bu-visual-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(9, 33, 98, 0.1);
+}
+
+
+
+.bu-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.bu-title-row h3 {
+    margin: 0;
+    color: var(--color-text-2);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+}
+
+.capacity-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: var(--font-size-caption);
+    font-weight: 600;
+}
+
+/* Metrics Numbers Grid */
+.bu-metrics-grid {
+    display: flex;
+    /* Changed from grid to flex */
+    gap: 12px;
+    margin-bottom: 0;
+    /* Removed bottom margin */
+}
+
+.metric-box {
+    display: flex;
+    gap: 4px;
+    align-items: baseline;
+    background: transparent;
+    /* Removed the semi-transparent box background */
+    padding: 0;
+    backdrop-filter: none;
+}
+
+.metric-label {
+    font-size: var(--font-size-base);
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: var(--font-size-base);
+    /* Slightly smaller to fit the top row beautifully */
+    font-weight: 700;
+}
+
+/* Line 2 Container (New class) */
+.bu-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* Capacity Load Progress Bar */
+.bu-load-bar-container {
+    flex-grow: 1;
+    /* Allows the bar to take up the remaining width */
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bu-load-bar-fill {
+    height: 100%;
+    background: var(--color-bg);
+    /* Preserves your theme's fill color */
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.capacity-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: var(--font-size-caption);
+    font-weight: 600;
+    white-space: nowrap;
+    /* Prevents the text from stacking weirdly */
+}
+
+/* Card Body Drop Zone Area */
+.bu-card-body {
+    padding: 15px;
+    min-height: 100px;
+    background-color: var(--color-bg);
+    display: flex;
+    flex-direction: column;
+}
+
+.drop-zone-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    border: 2px dashed var(--color-border);
+    border-radius: calc(var(--radius) - 2px);
+    color: var(--color-muted);
+    font-size: var(--font-size-sm);
+    background-color: var(--color-bg-blue);
+    padding: 20px;
+    text-align: center;
+}
+
+/* Assigned Inline Lists cards */
+.assigned-orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.assigned-order-item {
+    background: var(--color-bg-blue);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: var(--font-size-sm);
+}
+
+.order-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 4px;
+}
+
+.order-item-route {
+    color: var(--color-muted);
+    font-size: var(--font-size-caption);
+}
+
+.assigned-order-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    /* Gentle design rounding */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Flash animation targeting the success theme variable */
+.assigned-order-item.just-dropped-flash {
+    border-color: var(--color-border-success, #22c55e) !important;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+    animation: gentlePulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes gentlePulse {
+    from {
+        opacity: 0.95;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+/* --- New Chevron and Title Grouping --- */
+.bu-title-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* Spacing between chevron and title */
+}
+
+/* Chevron Button Styling */
+.collapse-chevron {
+    background: transparent;
+    border: none;
+    color: var(--color-text-2, #ffffff);
+    /* Inherit header text color */
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    /* Gentle rounding */
+    transition: background-color 0.2s ease;
+}
+
+.collapse-chevron:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.collapse-chevron svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+    /* Smooth rotation */
+}
+
+/* Rotate right when collapsed */
+.collapse-chevron.is-collapsed svg {
+    transform: rotate(-90deg);
+}
+
+
+
+/* Outer Column Wrapper: Spans the full height of the row grid */
+.dashboard-flow-arrow-container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-left: -10px;
+    /* Pulls the left table closer */
+    margin-right: -10px;
+    /* Pulls the right BU section closer */
+    /* Tiny cushion gutter */
+}
+
+/* The actual arrow badge */
+.dashboard-flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--color-white, #ffffff);
+    border: 1px solid var(--color-border, #e2e8f0);
+    color: #3a4efc;
+    /* Your primary 2nd blue */
+    box-shadow: 0 2px 8px rgba(58, 78, 252, 0.08);
+    pointer-events: none;
+    z-index: 5;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboard-flow-arrow svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* 📱 Responsive Adjustment for Stacking Layouts */
+@media (max-width: 1024px) {
+    .dashboard-flow-arrow-container {
+        height: auto;
+        width: 100%;
+        padding: 10px 0;
+    }
+
+    .dashboard-flow-arrow {
+        transform: rotate(90deg);
+        /* Points downward when columns break to rows */
+    }
+}

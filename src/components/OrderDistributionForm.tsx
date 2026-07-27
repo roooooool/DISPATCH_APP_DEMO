@@ -1,22 +1,22 @@
 import React, { useState, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { SaveIcon, Plus, Fuel, Printer, Replace, Ban, CheckCheck, Menu, ArrowRight, AtSign, Loader, Calendar, Loader2, Send, ClipboardList, FileSpreadsheet, Undo2} from 'lucide-react';
+import { SaveIcon, Plus, Fuel, Printer, Replace, Ban, CheckCheck, Menu, ArrowRight, AtSign, Loader, Calendar, Loader2, Send, ClipboardList, FileSpreadsheet, Undo2 } from 'lucide-react';
 import Modal from './ewul_Modal';
 
 // POWER APPS SERVICES
 import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
 import { DMS_AttachmentsService } from '../generated/services/DMS_AttachmentsService'
 import { DMS_CEMService } from '../generated/services/DMS_CEMService';
-import {GenerateAdditionalOE_IDService} from '../generated/services/GenerateAdditionalOE_IDService';
-import { GenerateNewTripTicketService} from '../generated/services/GenerateNewTripTicketService';
+import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAdditionalOE_IDService';
+import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
-import {GSDC_AttendanceService} from '../generated/services/GSDC_AttendanceService';
-import { type GSDC_AttendanceBase} from '../generated/models/GSDC_AttendanceModel';
+import { GSDC_AttendanceService } from '../generated/services/GSDC_AttendanceService';
+import { type GSDC_AttendanceBase } from '../generated/models/GSDC_AttendanceModel';
 import type { UpsertTripTaskTrackerRequest } from '../generated/models/UpsertTripTaskTrackerModel';
 import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
-import {CheckIfOEExistsService} from '../generated/services/CheckIfOEExistsService';
+import { CheckIfOEExistsService } from '../generated/services/CheckIfOEExistsService';
 import { Action_Logs_HistoryService } from '../generated/services/Action_Logs_HistoryService';
-import {type OP_IncidentReports} from '../generated/models/OP_IncidentReportsModel';
+import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
 import { GetEmployeeServedCountService } from '../generated/services/GetEmployeeServedCountService';
 import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
 
@@ -24,12 +24,12 @@ import { OP_IncidentReportsService } from '../generated/services/OP_IncidentRepo
 import './comp_css/OrderDistributionForm.css';
 
 // TRUTH SOURCE
-import { 
-  PRINT_DMS_ENDPOINT, 
-  TRIP_STATUSES, TRIP_PROGRESS, 
-  ATTENDANCE_STATUSES, 
-  UPLOAD_ATTACHMENTS_ENDPOINT, 
-  cementTypeOptions, 
+import {
+  PRINT_DMS_ENDPOINT,
+  TRIP_STATUSES, TRIP_PROGRESS,
+  ATTENDANCE_STATUSES,
+  UPLOAD_ATTACHMENTS_ENDPOINT,
+  cementTypeOptions,
   GSDC_SEND_TO_CHAT_key,
   ATTENDANCE_SERVED_COUNTS_INITIAL,
   loaderTypeOptions,
@@ -44,20 +44,20 @@ import {
 // COMPONENTS
 import SearchableDropdown, { type DropdownOption } from './SearchableDropdown';
 import CustomDateTimePicker from './ModernTimestampInput';
-import CustomFileAttachment, {type CustomFileAttachmentRef} from './DropFile';
+import CustomFileAttachment, { type CustomFileAttachmentRef } from './DropFile';
 import { Assi_icon, DispSrc_icon, DispDst_icon, Done_icon, CheckCircleSolidIcon, XCircleIcon } from './ewul_Icons';
 import { MapPin } from 'lucide-react';
 import IncidentReportForm, { type IncidentFormHandle, type CreateIR_EmployeeDetails } from '../components/CreateIncidentReportForm';
 import TripTimeline from './TripTimeline';
-import { type IR_ShortBags_Form_Model, IR_ShortBags_Form} from './IR_ShortBags_Form';
+import { type IR_ShortBags_Form_Model, IR_ShortBags_Form } from './IR_ShortBags_Form';
 
 
 //Utils
-import { 
-  ewulFetchAll, 
-  formatDate, 
-  logDmsUpdate, 
-  fetchSharepointAttachments, 
+import {
+  ewulFetchAll,
+  formatDate,
+  logDmsUpdate,
+  fetchSharepointAttachments,
   type FormatDateOptions,
   convertFormDataToHtmlTable,
 } from '../utils/Ewul_GSDC_Utils';
@@ -68,7 +68,7 @@ import { useTaskWorker } from '../utils/TaskWorkerContext';
 export type FormUserInfo = {
   BusinessUnit: string;
   Position: string;
-  id: string; 
+  id: string;
   FullName?: string;
 };
 
@@ -148,36 +148,36 @@ const initialFormData: LiveDMSView_CEM = {
 
 
 const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistributionProps & { style?: React.CSSProperties }>(
-  ({ 
-    orderId, 
-    initialData, 
-    onClose, 
-    onFormDataChange, 
-    onProceed, 
-    onOEInputClick, 
+  ({
+    orderId,
+    initialData,
+    onClose,
+    onFormDataChange,
+    onProceed,
+    onOEInputClick,
     onNavigateToTrip,
-    onCancelTrip, 
-    onShowFuelRequest, 
-    onRefreshTrips, 
-    onRefreshDriverHelpers, 
-    onClearSelectedTrip, 
-    onRequestChangeTrip, 
-    onUpdateDriverHelperAttendance, 
+    onCancelTrip,
+    onShowFuelRequest,
+    onRefreshTrips,
+    onRefreshDriverHelpers,
+    onClearSelectedTrip,
+    onRequestChangeTrip,
+    onUpdateDriverHelperAttendance,
     onUpdateTruckTrailers,
     onCIFMESelect,
-    style, 
-    maxHeight, 
-    driverOptions, 
-    helperOptions, 
-    truckOptions, 
-    trailerOptions, 
-    sourceOptions, 
-    allTrips: _wew = [], 
-    lsList = [] , 
-    editingUser, 
-    canChangeTrip = false, 
-    fuelFetching = false, 
-    driverHelperList 
+    style,
+    maxHeight,
+    driverOptions,
+    helperOptions,
+    truckOptions,
+    trailerOptions,
+    sourceOptions,
+    allTrips: _wew = [],
+    lsList = [],
+    editingUser,
+    canChangeTrip = false,
+    fuelFetching = false,
+    driverHelperList
   }, ref) => {
 
 
@@ -289,10 +289,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     });
 
     const NAOption: DropdownOption = {
-        value: 'N/A',
-        label: 'N/A',
-        type: 'single',
-        record: {Id: 'na', FullName: 'N/A', DMS_Attendance: 'N/A'}
+      value: 'N/A',
+      label: 'N/A',
+      type: 'single',
+      record: { Id: 'na', FullName: 'N/A', DMS_Attendance: 'N/A' }
     };
 
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -339,17 +339,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (seq === undefined || seq === null) {
         return { isValid: false, message: 'Loading Sequence is required.' };
       }
-  
+
       if (seq < 1 || seq > 999.99) {
         return { isValid: false, message: 'Sequence must be between 1 and 999.99.' };
       }
-  
+
       const isDuplicate = (lsList || []).some(trip =>
         trip.OE !== data.OE && // Exclude the current order from the check
         trip.Source === currentSource && // Only check within the same source
         Number(trip.Loading_x0020_Sequence) === Number(seq)
       );
-  
+
       if (isDuplicate) {
         const duplicateTrips = (lsList || []).filter(trip =>
           trip.OE !== data.OE && // Exclude the current order from the check
@@ -365,7 +365,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if ((data._tripGroup === 'Preload') && !data.cementType) {
         return { isValid: false, message: 'Please select a cement type.' };
       }
-  
+
       return { isValid: true, message: 'Loading sequence is valid.' };
     };
 
@@ -403,7 +403,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
     const validateDispatchedToSource = (data: LiveDMSView_CEM) => {
-  
+
       const assignedValidation = validateAssigned(data);
       if (!assignedValidation.isValid) return assignedValidation;
 
@@ -424,19 +424,19 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       }
 
       if (data.Driver_x0020_Loader && !data.DriverLoaderType) {
-        return { isValid: false, message: 'Please specify a Driver Loader type.'};
+        return { isValid: false, message: 'Please specify a Driver Loader type.' };
       }
       if (data.Helper_x0020_Loader && !data.HelperLoaderType) {
-        return { isValid: false, message: 'Please specify a Helper Loader type.'};
+        return { isValid: false, message: 'Please specify a Helper Loader type.' };
       }
 
-      
+
 
       if (!data.QTYWithdrawn || data.QTYWithdrawn < 1) {
         return { isValid: false, message: 'QTY Withdrawn must be greater than 0.' };
       }
 
-      const sourceIn = data.Source_x0020_in ? new Date(convNaive(data.Source_x0020_in) ) : null;
+      const sourceIn = data.Source_x0020_in ? new Date(convNaive(data.Source_x0020_in)) : null;
       const sourceOut = data.Source_x0020_out ? new Date(convNaive(data.Source_x0020_out)) : null;
 
       if (!sourceIn || isNaN(sourceIn.getTime())) {
@@ -467,16 +467,16 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const validateLoaderUnloader = (data: LiveDMSView_CEM) => {
 
       if (data.Driver_x0020_Loader && !data.DriverLoaderType) {
-        return { isValid: false, message: 'Please specify a Driver Loader type.'};
+        return { isValid: false, message: 'Please specify a Driver Loader type.' };
       }
       if (data.Helper_x0020_Loader && !data.HelperLoaderType) {
-        return { isValid: false, message: 'Please specify a Helper Loader type.'};
+        return { isValid: false, message: 'Please specify a Helper Loader type.' };
       }
       if (data.Driver_x0020_Unloader && !data.DriverUnloaderType) {
-        return { isValid: false, message: 'Please specify a Driver Unloader type.'};
+        return { isValid: false, message: 'Please specify a Driver Unloader type.' };
       }
       if (data.Helper_x0020_Unloader && !data.HelperUnloaderType) {
-        return { isValid: false, message: 'Please specify a Helper Unloader type.'};
+        return { isValid: false, message: 'Please specify a Helper Unloader type.' };
       }
 
 
@@ -484,21 +484,21 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         return { isValid: false, message: 'Driver Unloader must be assigned if Driver Loader is assigned.' };
       }
       if (!data.Driver_x0020_Loader && data.Driver_x0020_Unloader) {
-        return { isValid: false, message: 'Please specify a Driver Loader, either the assigned Driver or another valid driver.'};
+        return { isValid: false, message: 'Please specify a Driver Loader, either the assigned Driver or another valid driver.' };
       }
 
 
       if ('N/A' === data.Helper_x0020_Loader && data.HelperLoaderType !== 'No Loader') {
-          return { isValid: false, message: 'Driver loader type must be "No Loader" if Helper Loader is "N/A".'};
+        return { isValid: false, message: 'Driver loader type must be "No Loader" if Helper Loader is "N/A".' };
       }
       if ('N/A' === data.Helper_x0020_Unloader && data.HelperUnloaderType !== 'No Unloader') {
-          return { isValid: false, message: 'Driver unloader type must be "No Unloader" if Helper Unloader is "N/A".'};
+        return { isValid: false, message: 'Driver unloader type must be "No Unloader" if Helper Unloader is "N/A".' };
       }
 
       return { isValid: true, message: 'Loader/Unloader details are valid.' };
     };
 
-    
+
 
     const validateDispatchedToDestination = (data: LiveDMSView_CEM) => {
       const sourceValidation = validateDispatchedToSource(data);
@@ -518,7 +518,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (!data.Helper_x0020_Unloader) {
         return { isValid: false, message: 'Helper Unloader must be specified or N/A if none.' };
       }
-        
+
 
 
       if (!data.QTYDelivered || data.QTYDelivered < 1) {
@@ -573,7 +573,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (dateDocumented && destOut && destOut >= dateDocumented) {
         return { isValid: false, message: 'Date Documented must be atleast after Destination Out.' };
       }*/
-      
+
       if (!dateReceived) return { isValid: false, message: 'Date Received is required.' };
       if (dateReceived && destOut && destOut >= dateReceived) {
         return { isValid: false, message: 'Date Received must be atleast after Destination Out.' };
@@ -588,7 +588,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if ((data.QTYDelivered_Actual || 0) <= 0) return { isValid: false, message: 'Actual Delivered cannot be less than or equal to 0.' };
       if ((data.QTYWithdrawn_Actual || 0) <= 0) return { isValid: false, message: 'Actual Withdrawn cannot be less than or equal to 0.' };
 
-      
+
 
       return { isValid: true, message: 'Documentation details are valid.' };
     };
@@ -616,8 +616,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       }
       return null; // Return nothing if the status is undefined
     };
-  
-    
+
+
     const LOADER_TYPE_OPTIONS = loaderTypeOptions as DropdownOption[];
 
 
@@ -654,11 +654,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         return new Promise<boolean>((resolve) => {
           // 2. Wrap the resolve function in another function 
           // This tells React: "Store this specific function, don't execute it"
-          setPendingResolve(() => resolve); 
+          setPendingResolve(() => resolve);
         });
       },
       runValidation: (data: LiveDMSView_CEM) => runValidation(data),
-    }), [formData,hasUnsavedChanges,runValidation]);
+    }), [formData, hasUnsavedChanges, runValidation]);
 
     const [pendingPersonnelValidationResolve, setPendingPersonnelValidationResolve] = useState<((val: boolean) => void) | null>(null);
     const showPersonnelValidationModal = (modalProps: any) => {
@@ -706,10 +706,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
     const handleFieldChange = async (key: keyof LiveDMSView_CEM, value: any) => {
-        if (!formData || !formData.OE) {
-          onOEInputClick?.(); // Prompt user to select an OE
-          return; // Stop the field change
-        };
+      if (!formData || !formData.OE) {
+        onOEInputClick?.(); // Prompt user to select an OE
+        return; // Stop the field change
+      };
 
       const selectedOption = (key === 'Driver' ? driverOptions : helperOptions)?.find(opt => opt.value === value);
       const record = selectedOption?.record;
@@ -727,14 +727,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           return; // Stop the update no matter what
         }
         if (attendance_to_warn.some(status => status === record.DMS_Attendance)) {
-            const userResponse = await showPersonnelValidationModal({
-              type: 'attendance',
-              personnelName: record.FullName || 'the selected person',
-              personnelID: record.Id,
-              personnelType: key === 'Driver' ? 'Driver' : 'Helper',
-            });
-            console.log('User response from attendance modal:', userResponse, ' input: ', value, ' key:', key);
-            return;
+          const userResponse = await showPersonnelValidationModal({
+            type: 'attendance',
+            personnelName: record.FullName || 'the selected person',
+            personnelID: record.Id,
+            personnelType: key === 'Driver' ? 'Driver' : 'Helper',
+          });
+          console.log('User response from attendance modal:', userResponse, ' input: ', value, ' key:', key);
+          return;
         }
       }
 
@@ -798,7 +798,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const getUnloaderOptions = (formData: any, empPos: 'Driver' | 'Helper') =>
       getEmployeeOptions(formData, empPos, 'Unloader');
 
-    const [processTruckIR, setProcessTruckIR] = useState<{irid: string, conflict?: string} | null>(null);
+    const [processTruckIR, setProcessTruckIR] = useState<{ irid: string, conflict?: string } | null>(null);
     const handleTruckChange = (truckValue: string | number) => {
       if (!formData || !formData.OE) {
         onOEInputClick?.(); // Prompt user to select an OE
@@ -807,13 +807,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       //FOR TESTING
       if (truckValue == 'Apple') {
-          handleFieldChange('BO', 'Berry');
-          handleFieldChange('Vehicle', 'Apple');
-          return;
+        handleFieldChange('BO', 'Berry');
+        handleFieldChange('Vehicle', 'Apple');
+        return;
       }
 
       const selectedTruckOption = truckOptions?.find(opt => opt.record?.Head === truckValue);
       const item = selectedTruckOption?.record;
+
+      console.log('truck truck: ', selectedTruckOption);
 
       if (!item) return;
 
@@ -1023,16 +1025,16 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-   
+
 
     //const buOptions: DropdownOption[] = BUSINESS_UNITS.map(bu => ({ label: bu.Title, value: bu.Title, subtext: `${bu.Business_Type} | ${bu.Assignment}`, type: 'multi' }));
     const tripStatusOptions: DropdownOption[] = TRIP_STATUSES
-    .filter(status => status.Progress.some(p => p?.Progress === formData.TripProgress))
-    .map(status => ({ 
-      label: status.Status, 
-      value: status.Status,
-      type: 'multi',
-    }));
+      .filter(status => status.Progress.some(p => p?.Progress === formData.TripProgress))
+      .map(status => ({
+        label: status.Status,
+        value: status.Status,
+        type: 'multi',
+      }));
     if (tripStatusOptions.length === 0) {
       tripStatusOptions.push({ label: '', value: '', type: 'single' });
     }
@@ -1047,12 +1049,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     const refs = [newtripsDetailsRef, assignmentDetailsRef, dispatchedToSourceRef, dispatchedToDestinationRef, doneRef];
     const icons = [
-        <Plus size={'var(--font-size-vlg)'}  color='var(--color-text-2)' />,
-        <Assi_icon color='var(--color-text-2)' />, 
-        <DispSrc_icon size={32} color='var(--color-text-2)' />, 
-        <DispDst_icon size={32} color='var(--color-text-2)' />, 
-        <Done_icon color='var(--color-text-2)' />,
-      ];
+      <Plus size={'var(--font-size-vlg)'} color='var(--color-text-2)' />,
+      <Assi_icon color='var(--color-text-2)' />,
+      <DispSrc_icon size={32} color='var(--color-text-2)' />,
+      <DispDst_icon size={32} color='var(--color-text-2)' />,
+      <Done_icon color='var(--color-text-2)' />,
+    ];
     const trip_progress = TRIP_PROGRESS.filter(item => !item.exclude).map((item, idx) => ({
       ...item,
       ref: refs[idx],
@@ -1061,15 +1063,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const maxprogress = Math.max(...TRIP_PROGRESS.map(item => item.idx));
 
     const progress_idx = () => TRIP_PROGRESS.find(item => item.Progress === formData.TripProgress)?.idx ?? 0;
-  
+
     const prog_completed = 'Done'
     let prog_idx = progress_idx();
     let prog_next = trip_progress[0].Progress;
     let prog_icon = trip_progress[0]?.icon;
-    if (prog_idx !== undefined){
-        let next = trip_progress[prog_idx < maxprogress - 1 ? prog_idx + 1 : prog_idx];
-        prog_next = prog_idx < maxprogress - 1? next?.Progress : prog_completed;
-        prog_icon = prog_idx < maxprogress - 1? next?.icon || null : <CheckCheck/>;
+    if (prog_idx !== undefined) {
+      let next = trip_progress[prog_idx < maxprogress - 1 ? prog_idx + 1 : prog_idx];
+      prog_next = prog_idx < maxprogress - 1 ? next?.Progress : prog_completed;
+      prog_icon = prog_idx < maxprogress - 1 ? next?.icon || null : <CheckCheck />;
     }
     const prog_verified = prog_idx === maxprogress && !!formData.Verified_x0020_By && !!formData.Documented_x0020_Date;
 
@@ -1079,58 +1081,58 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (!progress) return;
       trip_progress.find(item => item.Progress === progress)?.ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    }, [initialData?.TripProgress,orderId]);
+    }, [initialData?.TripProgress, orderId]);
 
 
 
     const generateTripTicketID = async (OE?: string | undefined) => {
 
-        try {
-        const res = await GenerateNewTripTicketService.GenerateNewTripTicket({ 
-            OE: OE,
+      try {
+        const res = await GenerateNewTripTicketService.GenerateNewTripTicket({
+          OE: OE,
         } as any);
 
 
         const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
         if (table1 && table1.length > 0) {
-            return table1[0].TripTicketID + ' (Preview)' || null;
+          return table1[0].TripTicketID + ' (Preview)' || null;
         } else {
-            return null;
+          return null;
         }
 
 
-        } catch (error) {
-            console.error("Error generating trip ticket ID:", error);
-            return null;
-        } finally {
-  
-        }
+      } catch (error) {
+        console.error("Error generating trip ticket ID:", error);
+        return null;
+      } finally {
+
+      }
 
     };
 
     const generateAdditionalOE = async (type: 'Preload' | 'Mobilization') => {
 
 
-        try {
-        const res = await GenerateAdditionalOE_IDService.GenerateAdditionalOE_ID({ 
-            Type: type,
+      try {
+        const res = await GenerateAdditionalOE_IDService.GenerateAdditionalOE_ID({
+          Type: type,
         } as any);
 
 
         const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
         if (!table1 || table1.length === 0) {
-            console.error("No data returned for new OE generation.");
-            return;
+          console.error("No data returned for new OE generation.");
+          return;
         }
 
         if (type === 'Preload') return table1[0].NewID;
         if (type === 'Mobilization') return table1[0].NewID;
 
-        } catch (error) {
-            console.error("Fetch error:", error);
-        } finally {
-  
-        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
+
+      }
     };
 
 
@@ -1178,7 +1180,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       // If no relevant changes were detected, proceed without confirmation.
       if (Object.keys(changes).length === 0 && newData.TripProgress !== 'Done') {
-        return { canProceed: true};
+        return { canProceed: true };
       }
 
       setAssignmentChanges({
@@ -1195,7 +1197,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       // 💡 CHANGE 2: If the user cancels, finalPayloadToUpload is null
       if (!finalPayloadToUpload) {
         console.log("Assignment changes cancelled by user.");
-        return { canProceed: false }; 
+        return { canProceed: false };
       }
 
       // User confirmed, now execute the logic
@@ -1250,31 +1252,31 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             name: 'Uploading attendance records to Coor Apps.',
             execute: async () => {
               try {
-                  for (const record of recordsToUpload) {
-                    console.log(`Uploading attendance for ${record.EmployeeName} with status ${record.OE}...`);
-                      await GSDC_AttendanceService.create({
-                              ...record,
-                              SecondTrip: ATTENDANCE_SERVED_COUNTS_INITIAL[record.SecondTrip ? Math.max(Number(record.SecondTrip), 0) : 0],
-                              // // 💡 CHANGE 5: Read directly from the stateful servedDate reference to preserve picker inputs
-                              // Date: servedDate ? servedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 
-                              // In: servedDate ? servedDate.toISOString() : new Date().toISOString(),
-                      });
-                      console.log(`Successfully logged attendance for: ${record.EmployeeName}`);
-                  }
+                for (const record of recordsToUpload) {
+                  console.log(`Uploading attendance for ${record.EmployeeName} with status ${record.OE}...`);
+                  await GSDC_AttendanceService.create({
+                    ...record,
+                    SecondTrip: ATTENDANCE_SERVED_COUNTS_INITIAL[record.SecondTrip ? Math.max(Number(record.SecondTrip), 0) : 0],
+                    // // 💡 CHANGE 5: Read directly from the stateful servedDate reference to preserve picker inputs
+                    // Date: servedDate ? servedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 
+                    // In: servedDate ? servedDate.toISOString() : new Date().toISOString(),
+                  });
+                  console.log(`Successfully logged attendance for: ${record.EmployeeName}`);
+                }
               } catch (error) {
-                  console.error("Failed to upload attendance records:", error);
-                  return {success: false, error};
+                console.error("Failed to upload attendance records:", error);
+                return { success: false, error };
               } finally {
-                  console.log("Attendance log upload process completed.");
-                  return {success: true};
+                console.log("Attendance log upload process completed.");
+                return { success: true };
               }
             },
             checkSuccess: (result: { success: boolean }) => result.success,
-            onSuccess: () => {null},
-            onFailure: () => {null},
+            onSuccess: () => { null },
+            onFailure: () => { null },
             message: `Finalizing trip attendance...`,
             message_failure: () => `Failed to sync attendance logs.`,
-            message_success: () => `Attendance records synced successfully.`, 
+            message_success: () => `Attendance records synced successfully.`,
           });
         }
       }
@@ -1283,7 +1285,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
 
-    const handleUpdateTripTaskTracker = async (wouldbeformData: LiveDMSView_CEM, deleteAnyways? : boolean) => {
+    const handleUpdateTripTaskTracker = async (wouldbeformData: LiveDMSView_CEM, deleteAnyways?: boolean) => {
       try {
         const progress = wouldbeformData.TripProgress;
         if (!progress) return;
@@ -1315,7 +1317,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         };
 
         console.log('trip task update: ', payload);
-      
+
         UpsertTripTaskTrackerService.UpsertTripTaskTracker(payload as any);
 
       } catch (error) {
@@ -1334,9 +1336,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       //check for assignment changes
       const doDeselect = progress_next === 'Assigned'; // Deselect if moving back to Assigned
       if (!doDeselect && formData.TripProgress !== 'Done') {
-          const { canProceed, attdate } = await checkAssignmentChanges({...formData, TripProgress: progress_next});
-          if (!canProceed) {setIsSubmitting(false); return;} // Stop if user cancels changes
-          confirmedAttDate = attdate;
+        const { canProceed, attdate } = await checkAssignmentChanges({ ...formData, TripProgress: progress_next });
+        if (!canProceed) { setIsSubmitting(false); return; } // Stop if user cancels changes
+        confirmedAttDate = attdate;
       };
 
       let deselectAfterVerified = formData.TripProgress === 'Done' && !!formData.Completed_x0020_Date; // Deselect after verification if moving to Done
@@ -1352,12 +1354,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               const checkResult = await CheckIfOEExistsService.CheckIfOEExists({ OE: formData.OE || '' } as any);
               const table1 = checkResult.data?.ResultSets?.Table1 as any[] | undefined;
               if (table1 && table1.length > 0) {
-                  if (table1[0].DoesExist) {
-                      // Handle the case where the OE already exists
-                      setShowOEDuplicateWarningModal(true);
-                      onClearSelectedTrip?.();
-                      throw new Error("OE already exists. Trip progression halted to prevent duplicates."); // Throw an error to stop the process
-                  }
+                if (table1[0].DoesExist) {
+                  // Handle the case where the OE already exists
+                  setShowOEDuplicateWarningModal(true);
+                  onClearSelectedTrip?.();
+                  throw new Error("OE already exists. Trip progression halted to prevent duplicates."); // Throw an error to stop the process
+                }
               }
             };
 
@@ -1380,13 +1382,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
             switch (progress_next) {
               case 'Assigned':
-                  driverLoader = formData.Driver
-                  driverUnloader = formData.Driver
-                  helperLoader = formData.Helper
-                  helperUnloader = formData.Helper
-                  fulltrip = "Full Trip"
-                  attendanceStatus = 'ON TRIP';
-                  tripStatus = undefined;
+                driverLoader = formData.Driver
+                driverUnloader = formData.Driver
+                helperLoader = formData.Helper
+                helperUnloader = formData.Helper
+                fulltrip = "Full Trip"
+                attendanceStatus = 'ON TRIP';
+                tripStatus = undefined;
                 break;
               case 'Dispatched To Source':
                 attendanceStatus = 'ON TRIP';
@@ -1407,68 +1409,68 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
             onClearSelectedTrip?.(); // Clear selected trip in parent to prevent stale data issues
             onProceed?.({ //update optimistically
-              ...formData, 
-              TripProgress: progress_next, 
+              ...formData,
+              TripProgress: progress_next,
               OE: additionalOE ? additionalOE : formData.OE,
               TripTicketID: tripTicketID || formData.TripTicketID,
             }, doDeselect);
 
             let updatedData: Partial<LiveDMSView_CEM> = {
 
-                Vehicle: formData.Vehicle,
-                Driver: formData.Driver,
-                Helper: formData.Helper,
+              Vehicle: formData.Vehicle,
+              Driver: formData.Driver,
+              Helper: formData.Helper,
 
-                ATW_x002f_LO_x0023_: formData.ATW_x002f_LO_x0023_,
-                SO_x0023_: formData.SO_x0023_,
-                Planning: formData.Planning,
+              ATW_x002f_LO_x0023_: formData.ATW_x002f_LO_x0023_,
+              SO_x0023_: formData.SO_x0023_,
+              Planning: formData.Planning,
 
-                Trip_x0020_Status: tripStatus || formData.Trip_x0020_Status,
+              Trip_x0020_Status: tripStatus || formData.Trip_x0020_Status,
 
-                Source_x0020_in: convNaive(formData.Source_x0020_in),
-                Source_x0020_out: convNaive(formData.Source_x0020_out),
-                Plant_x0020_DR: formData.Plant_x0020_DR,
-                
-                Destination_x0020_in: convNaive(formData.Destination_x0020_in),
-                Destination_x0020_out: convNaive(formData.Destination_x0020_out),
+              Source_x0020_in: convNaive(formData.Source_x0020_in),
+              Source_x0020_out: convNaive(formData.Source_x0020_out),
+              Plant_x0020_DR: formData.Plant_x0020_DR,
 
-                Driver_x0020_Loader: driverLoader || formData.Driver_x0020_Loader,
-                Driver_x0020_Unloader: driverUnloader || formData.Driver_x0020_Unloader,
+              Destination_x0020_in: convNaive(formData.Destination_x0020_in),
+              Destination_x0020_out: convNaive(formData.Destination_x0020_out),
 
-                Aissigned_x0020_By_x0020_OD: formData.Aissigned_x0020_By_x0020_OD,
-                Loading_x0020_Sequence: formData.Loading_x0020_Sequence,
+              Driver_x0020_Loader: driverLoader || formData.Driver_x0020_Loader,
+              Driver_x0020_Unloader: driverUnloader || formData.Driver_x0020_Unloader,
 
-
-                QTYWithdrawn: formData.QTYWithdrawn,
-                QTYDelivered: formData.QTYDelivered,
-                Completed_x0020_Date: formData.Completed_x0020_Date,
-                BO: formData.BO,
+              Aissigned_x0020_By_x0020_OD: formData.Aissigned_x0020_By_x0020_OD,
+              Loading_x0020_Sequence: formData.Loading_x0020_Sequence,
 
 
-                Modified: new Date().toISOString(), // Update modified date to current time
-                //LastModifiedBy: formData.LastModifiedBy,
-                Helper_x0020_Loader: helperLoader || formData.Helper_x0020_Loader,
-                Helper_x0020_Unloader: helperUnloader || formData.Helper_x0020_Unloader,
-                Baranggay_Fee_Total: formData.Baranggay_Fee_Total,
-                FlatTire_Fee_Total: formData.FlatTire_Fee_Total,
-                Toll_Fee_Total: formData.Toll_Fee_Total,
-                Other_Fee_Total: formData.Other_Fee_Total,
-                //Documented_x0020_Date: formData.Documented_x0020_Date,
-                Receive_x0020_Date: formData.Receive_x0020_Date,
-                Transimtted_x0020_Date: formData.Transimtted_x0020_Date,
-                QTYWithdrawn_Actual: formData.QTYWithdrawn_Actual,
-                QTYDelivered_Actual: formData.QTYDelivered_Actual,
-                GSDC_x0020_DR: formData.GSDC_x0020_DR,
-
-                DriverLoaderType: fulltrip || formData.DriverLoaderType,
-                HelperLoaderType: fulltrip || formData.HelperLoaderType,
-                DriverUnloaderType: fulltrip || formData.DriverUnloaderType,
-                HelperUnloaderType: fulltrip || formData.HelperUnloaderType,
+              QTYWithdrawn: formData.QTYWithdrawn,
+              QTYDelivered: formData.QTYDelivered,
+              Completed_x0020_Date: formData.Completed_x0020_Date,
+              BO: formData.BO,
 
 
-              } as Partial<LiveDMSView_CEM>;
-            
-             // Set to true if you want to deselect the trip after verification
+              Modified: new Date().toISOString(), // Update modified date to current time
+              //LastModifiedBy: formData.LastModifiedBy,
+              Helper_x0020_Loader: helperLoader || formData.Helper_x0020_Loader,
+              Helper_x0020_Unloader: helperUnloader || formData.Helper_x0020_Unloader,
+              Baranggay_Fee_Total: formData.Baranggay_Fee_Total,
+              FlatTire_Fee_Total: formData.FlatTire_Fee_Total,
+              Toll_Fee_Total: formData.Toll_Fee_Total,
+              Other_Fee_Total: formData.Other_Fee_Total,
+              //Documented_x0020_Date: formData.Documented_x0020_Date,
+              Receive_x0020_Date: formData.Receive_x0020_Date,
+              Transimtted_x0020_Date: formData.Transimtted_x0020_Date,
+              QTYWithdrawn_Actual: formData.QTYWithdrawn_Actual,
+              QTYDelivered_Actual: formData.QTYDelivered_Actual,
+              GSDC_x0020_DR: formData.GSDC_x0020_DR,
+
+              DriverLoaderType: fulltrip || formData.DriverLoaderType,
+              HelperLoaderType: fulltrip || formData.HelperLoaderType,
+              DriverUnloaderType: fulltrip || formData.DriverUnloaderType,
+              HelperUnloaderType: fulltrip || formData.HelperUnloaderType,
+
+
+            } as Partial<LiveDMSView_CEM>;
+
+            // Set to true if you want to deselect the trip after verification
             if (formData.Completed_x0020_Date) {
               updatedData.Verified_x0020_By = editingUser?.FullName || '';
               updatedData.Documented_x0020_Date = formData.Documented_x0020_Date || new Date().toISOString();
@@ -1483,48 +1485,48 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
             // Create a new record
-           
+
             const result = await (progress_next === 'Assigned' ? DMS_CEMService.create({
-                ...updatedData,
+              ...updatedData,
 
-                Ordered_x0020_Date: additionalOE ? new Date().toDateString() : formData.Ordered_x0020_Date ,
-                Needed_x0020_Date: additionalOE ? new Date().toDateString() : formData.Needed_x0020_Date,
-                Tagged_x0020_Date: new Date().toISOString(), // Set to current date/time when progressing
-                OE: additionalOE ? additionalOE : formData.OE,
-                Customer: formData.Customer,
-                Source: formData.Source,
-                Destination: formData.Destination,
-              
-                Trip_x0020_Status: undefined,
-                Buisness_x0020_Unit: 'SBUO-1A',
-              
-                _tripGroup: formData._tripGroup,
-                cementType: formData.cementType,
-              
-            
+              Ordered_x0020_Date: additionalOE ? new Date().toDateString() : formData.Ordered_x0020_Date,
+              Needed_x0020_Date: additionalOE ? new Date().toDateString() : formData.Needed_x0020_Date,
+              Tagged_x0020_Date: new Date().toISOString(), // Set to current date/time when progressing
+              OE: additionalOE ? additionalOE : formData.OE,
+              Customer: formData.Customer,
+              Source: formData.Source,
+              Destination: formData.Destination,
 
-                TripProgress: progress_next, //next progress
+              Trip_x0020_Status: undefined,
+              Buisness_x0020_Unit: 'SBUO-1A',
 
-                OE_x0020_Date: additionalOE ? new Date().toDateString() : formData.OE_x0020_Date,
-                //MonitoredBy: formData.MonitoredBy,
-                DispatchedBy: formData.DispatchedBy,
-
-              }) : DMS_CEMService.update(formData.ID.toString(), {
-                ...updatedData,
-                TripProgress: progress_next, //next progress
-                Dispatched_x0020_to_x0020_Source: progress_next === 'Dispatched To Source' ? new Date().toISOString() : formData.Dispatched_x0020_to_x0020_Source,
-                Dispatched_x0020_to_x0020_Destination: progress_next === 'Dispatched To Destination' ? new Date().toISOString() : formData.Dispatched_x0020_to_x0020_Destination,
-              }));
+              _tripGroup: formData._tripGroup,
+              cementType: formData.cementType,
 
 
- 
-            
+
+              TripProgress: progress_next, //next progress
+
+              OE_x0020_Date: additionalOE ? new Date().toDateString() : formData.OE_x0020_Date,
+              //MonitoredBy: formData.MonitoredBy,
+              DispatchedBy: formData.DispatchedBy,
+
+            }) : DMS_CEMService.update(formData.ID.toString(), {
+              ...updatedData,
+              TripProgress: progress_next, //next progress
+              Dispatched_x0020_to_x0020_Source: progress_next === 'Dispatched To Source' ? new Date().toISOString() : formData.Dispatched_x0020_to_x0020_Source,
+              Dispatched_x0020_to_x0020_Destination: progress_next === 'Dispatched To Destination' ? new Date().toISOString() : formData.Dispatched_x0020_to_x0020_Destination,
+            }));
+
+
+
+
 
             if (result.error) {
               throw new Error(result.error.message);
             }
 
-            if (progress_next === 'Assigned' && result.data.ID) await DMS_CEMService.update(result.data.ID.toString(), {tripID: result.data.ID});
+            if (progress_next === 'Assigned' && result.data.ID) await DMS_CEMService.update(result.data.ID.toString(), { tripID: result.data.ID });
 
             if (formData.TripProgress !== 'Done') { // dont update attendance when trip is already done
               handleUpdateAttendance(formData.Driver || '', driverOptions?.find(option => option.label === formData.Driver)?.record.Id, 'Driver', attendanceStatus || 'ON TRIP', false, confirmedAttDate);
@@ -1543,13 +1545,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
           return result.success;
         },
-        onSuccess: async (result) => {  
-          setIsSubmitting(false);   
+        onSuccess: async (result) => {
+          setIsSubmitting(false);
           console.log('Trip progressed successfully:', result.data); // You can pass the new trip data back to the parent if needed
-          
+
           let updatedData = {
-            ...formData, 
-            TripProgress: progress_next, 
+            ...formData,
+            TripProgress: progress_next,
             OE: result.data.OE || formData.OE,
             ID: result.data.ID || formData.ID,
             tripID: result.data.ID || formData.tripID,
@@ -1557,7 +1559,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           };
 
           logDmsUpdate({ //log trip update
-            userName: editingUser?.FullName || '', 
+            userName: editingUser?.FullName || '',
             userID: Number(editingUser?.id) || 0,
             inputOE: formData.OE || '',
             action: `Trip progress to [${progress_next}]`,
@@ -1569,12 +1571,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           onProceed?.(updatedData, doDeselect || deselectAfterVerified); //update optimistically in UI with new data from response
           onRefreshTrips?.();
           onRefreshDriverHelpers?.();
-          handleUpdateTripTaskTracker({...formData, TripProgress: progress_next}, !!updatedData.Completed_x0020_Date);
+          handleUpdateTripTaskTracker({ ...formData, TripProgress: progress_next }, !!updatedData.Completed_x0020_Date);
 
-          if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT ) setShowIncidentPrompt(true);
+          if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT) setShowIncidentPrompt(true);
 
         },
-        onFailure: () => {setIsSubmitting(false); onRefreshTrips?.();},
+        onFailure: () => { setIsSubmitting(false); onRefreshTrips?.(); },
         message: `${progress_next.replace('ed', 'ing')}...`,
         message_success: `Trip ${progress_next} successfully!`,
         message_failure: (result) => `Trip failed to be ${progress_next}. Reason: ${result.error?.message || 'Unknown error'}`
@@ -1607,7 +1609,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           try {
 
             const result = await DMS_CEMService.update(
-              formData.ID.toString(), 
+              formData.ID.toString(),
               {
 
                 Vehicle: formData.Vehicle,
@@ -1630,7 +1632,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
                 Driver_x0020_Loader: formData.Driver_x0020_Loader,
                 Driver_x0020_Unloader: formData.Driver_x0020_Unloader,
-                
+
 
                 Aissigned_x0020_By_x0020_OD: formData.Aissigned_x0020_By_x0020_OD,
                 Loading_x0020_Sequence: formData.Loading_x0020_Sequence,
@@ -1684,7 +1686,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           }, false);
           handleUpdateTripTaskTracker(formData, !!formData.Completed_x0020_Date); // Trigger a sync for the task tracker in case of any assignment changes
           logDmsUpdate({ //log trip update
-            userName: editingUser?.FullName || '', 
+            userName: editingUser?.FullName || '',
             userID: Number(editingUser?.id) || 0,
             inputOE: formData.OE || '',
             action: `Trip details saved`,
@@ -1694,7 +1696,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             role: editingUser?.Position || '',
           });
         },
-        onFailure: () => {setIsSubmitting(false);onRefreshTrips?.();},
+        onFailure: () => { setIsSubmitting(false); onRefreshTrips?.(); },
 
         message: `Saving changes for trip ${formData.OE}...`,
         message_success: `Trip ${formData.OE} saved successfully!`,
@@ -1714,7 +1716,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         const base64String = reader.result as string;
         // Strip the prefix (e.g. "data:image/png;base64,") to get the raw content
         const rawBase64 = base64String.split(',')[1];
-        
+
         setAttachedCancellationImage({
           name: file.name,
           base64: rawBase64
@@ -1733,71 +1735,71 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       console.log(remarks);
 
       addTask({
-          id: `tripcancel-${formData.OE}`,
-          name: `Cancelling trip ${formData.OE}`,
-          execute: async () => {
-              onCancelTrip?.(formData.ID); // Optimistically update the UI
-              try {
-                  await DMS_CEMService.delete(formData.ID.toString());
+        id: `tripcancel-${formData.OE}`,
+        name: `Cancelling trip ${formData.OE}`,
+        execute: async () => {
+          onCancelTrip?.(formData.ID); // Optimistically update the UI
+          try {
+            await DMS_CEMService.delete(formData.ID.toString());
 
-                  UpsertTripTaskTrackerService.UpsertTripTaskTracker({ //delete task of cancelled OE
-                      OE: formData.OE || '',
-                      TripProgress: formData.TripProgress || '',
-                      AssignedDriver: !!formData.Driver,
-                      AssignedUnit: !!formData.Vehicle,
-                      HasATW: !!formData.ATW_x002f_LO_x0023_,
-                      HasSO: !!formData.SO_x0023_,
-                      UpdateOnly: false, 
-                      deleteIfComplete: true, //delete
-                      deleteAnyways: true,
-                      EditorName: editingUser?.FullName || 'Unknown User',
-                  }as any);
+            UpsertTripTaskTrackerService.UpsertTripTaskTracker({ //delete task of cancelled OE
+              OE: formData.OE || '',
+              TripProgress: formData.TripProgress || '',
+              AssignedDriver: !!formData.Driver,
+              AssignedUnit: !!formData.Vehicle,
+              HasATW: !!formData.ATW_x002f_LO_x0023_,
+              HasSO: !!formData.SO_x0023_,
+              UpdateOnly: false,
+              deleteIfComplete: true, //delete
+              deleteAnyways: true,
+              EditorName: editingUser?.FullName || 'Unknown User',
+            } as any);
 
-                  logDmsUpdate({ //log trip update
-                    userName: editingUser?.FullName || '', 
-                    userID: Number(editingUser?.id) || 0,
-                    inputOE: formData.OE || '',
-                    action: `Trip Cancelled`,
-                    value: formData.OE || '',
-                    isRecordJSON: true,
-                    context: `Trip - Cancelled`,
-                    role: editingUser?.Position || '',
-                  });
+            logDmsUpdate({ //log trip update
+              userName: editingUser?.FullName || '',
+              userID: Number(editingUser?.id) || 0,
+              inputOE: formData.OE || '',
+              action: `Trip Cancelled`,
+              value: formData.OE || '',
+              isRecordJSON: true,
+              context: `Trip - Cancelled`,
+              role: editingUser?.Position || '',
+            });
 
 
-                  return { success: true };
-              } catch (error) {
-                  console.error('Failed to cancel trip:', error);
-                  return { success: false, error };
-              }
-          },
-          checkSuccess: (result: { success: boolean }) => result.success,
-          onSuccess: () => {
-            onRefreshTrips?.(); 
-            if (formData.OE) {
-              handleUpdateTripTaskTracker(formData, true); 
-              if (broadcast){
-                handleTripAnnounce(
-                  `TRIP CANCELLATION`,
-                  `
+            return { success: true };
+          } catch (error) {
+            console.error('Failed to cancel trip:', error);
+            return { success: false, error };
+          }
+        },
+        checkSuccess: (result: { success: boolean }) => result.success,
+        onSuccess: () => {
+          onRefreshTrips?.();
+          if (formData.OE) {
+            handleUpdateTripTaskTracker(formData, true);
+            if (broadcast) {
+              handleTripAnnounce(
+                `TRIP CANCELLATION`,
+                `
                     <p>The trip <strong>[${formData.TripTicketID}]</strong> was cancelled and all of its dispatch data was cleared from DMS. If you did not intend this please raise a concern.</p>
                     <br>
                     <p>Reason: ${remarks}</p> 
                     ${convertFormDataToHtmlTable(formData)}
-                  ` 
-                  || '',
-                  false,
-                  true,
-                  attachedCancellationImage?.name,
-                  attachedCancellationImage?.base64
-                )
-              };
-            } 
-          },
-          onFailure: () => {onRefreshTrips?.();},
-          message: `Cancelling trip ${formData.OE}...`,
-          message_success: `Trip ${formData.OE} has been cancelled successfully.`,
-          message_failure: (result) => `Failed to cancel trip ${formData.OE}. Reason: ${result.error?.message || 'Unknown error'}`
+                  `
+                || '',
+                false,
+                true,
+                attachedCancellationImage?.name,
+                attachedCancellationImage?.base64
+              )
+            };
+          }
+        },
+        onFailure: () => { onRefreshTrips?.(); },
+        message: `Cancelling trip ${formData.OE}...`,
+        message_success: `Trip ${formData.OE} has been cancelled successfully.`,
+        message_failure: (result) => `Failed to cancel trip ${formData.OE}. Reason: ${result.error?.message || 'Unknown error'}`
       });
 
     };
@@ -1825,7 +1827,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           try {
 
             const result = await DMS_CEMService.update(
-              formData.ID.toString(), 
+              formData.ID.toString(),
               {
                 Trip_x0020_Status: 'ITD',
                 TripProgress: 'Dispatched To Destination',
@@ -1854,10 +1856,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           onProceed?.({ //update optimistically
             ...formData, TripTicketID: ttID || formData.TripTicketID,
             Documented_x0020_Date: undefined,
-            Verified_x0020_By: undefined, 
+            Verified_x0020_By: undefined,
           }, false);
           logDmsUpdate({ //log trip update
-            userName: editingUser?.FullName || '', 
+            userName: editingUser?.FullName || '',
             userID: Number(editingUser?.id) || 0,
             inputOE: formData.OE || '',
             action: `Trip reverted for resubmission.`,
@@ -1866,13 +1868,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             context: `Trip - Reverted`,
             role: editingUser?.Position || '',
           });
-           handleTripAnnounce(
+          handleTripAnnounce(
             'TRIP REVERSION',
-            'The trip was reverted back to [Dispatch To Destination] status for Correction / Resubmission. All ASSIGNMENT changes will be made must be coordinated with the Team.', 
+            'The trip was reverted back to [Dispatch To Destination] status for Correction / Resubmission. All ASSIGNMENT changes will be made must be coordinated with the Team.',
             true
           );
         },
-        onFailure: () => {setIsSubmitting(false);onRefreshTrips?.();},
+        onFailure: () => { setIsSubmitting(false); onRefreshTrips?.(); },
 
         message: `Reverting trip ${formData.OE}...`,
         message_success: `Trip ${formData.OE} reverted successfully!`,
@@ -1882,13 +1884,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     const handleImagePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
       const items = e.clipboardData?.items;
-      
+
       if (!items) return;
 
       for (let i = 0; i < items.length; i++) {
         if (items[i].type.indexOf('image') !== -1) {
           const file = items[i].getAsFile();
-          
+
           if (file) {
             // 1. Generate a file name for the pasted snippet
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -1898,7 +1900,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             const reader = new FileReader();
             reader.onloadend = () => {
               const result = reader.result as string;
-              
+
               // Strip out the data URL prefix (e.g., "data:image/png;base64,") 
               // if your Power Automate flow expects JUST the raw base64 string.
               const base64String = result.split(',')[1] || result;
@@ -1911,7 +1913,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             };
 
             reader.readAsDataURL(file);
-            
+
             e.preventDefault();
             break;
           }
@@ -1927,7 +1929,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       const sourceTime = now; // e.g., 1777457556546
 
       const liveUrl = `https://apps.powerapps.com/play/e/${appID}?tenantId=${tenantID}&sourcetime=${sourceTime}&oe=${encodeURIComponent(formData.OE || '')}`;
-      
+
       const deepLink = liveUrl;
 
       console.log(`Broadcasting announcement for Trip [${formData.OE}]...`);
@@ -1937,10 +1939,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           month: 'long',
           day: '2-digit',
           hour: 'numeric',
-          minute: '2-digit', 
-          hour12: true,  
+          minute: '2-digit',
+          hour12: true,
         },
-        alreadyLocal: false 
+        alreadyLocal: false
       };
 
       try {
@@ -1968,7 +1970,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         }
 
         console.log(`Announcement for [${formData.OE}] successfully posted to ${chat}!`);
-        
+
       } catch (error) {
         console.error(`Failed to broadcast announcement for [${formData.OE}]:`, error);
       }
@@ -1982,10 +1984,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           console.log("Pre-Creating IR...");
           setIsCreatingIR(true);
           setIsIncidentModalOpen(true); // Open modal instantly so user sees the loading state
-          
+
           const data = await incidentFormRef.current.submit();
           console.log('Created IR: ', data);
-          
+
           setCreatedIR(data);
         } catch (e) {
           setIsIncidentModalOpen(false);
@@ -2014,7 +2016,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               </ul>
               <br>
               <em>Note: Units involved on an active IR will not be available for dispatch. Please process and complete the IR first to prevent delay on operations.</em>
-            `, 
+            `,
             true,
             true
           );
@@ -2051,7 +2053,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const handleAttachmentUpload = () => {
       const plantDrFiles = plantDrAttachmentRef.current?.getFilesToUpload() || [];
       const wsFiles = wsAttachmentRef.current?.getFilesToUpload() || [];
-  
+
       // Only proceed if there are files to upload
       if (plantDrFiles.length === 0 && wsFiles.length === 0) {
         console.log("No new attachments to upload.");
@@ -2062,96 +2064,96 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         id: `uploadAttachments-${formData.OE}`, // Unique ID for this task
         name: `Uploading Attachments for ${formData.OE}`,
         execute: async () => {
-            console.log("Uploading attachments...");
+          console.log("Uploading attachments...");
 
-            const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => {
-                    const result = reader.result as string;
-                    const base64String = result.split(',')[1];
-                    resolve(base64String);
-                };
-                reader.onerror = error => reject(error);
-            });
-    
-    
-            const uploadAttachments = async (files: File[], type: 'PLANT DR' | 'WS', itemID: string | undefined) => {
-                if (files.length === 0) {
-                    return { success: true, type, message: `No new ${type} files to upload.` };
-                }
-    
-                try {
-                    const fileContents = await Promise.all(
-                        files.map(async (file) => ({
-                            name: file.name,
-                            contentBytes: await toBase64(file),
-                        }))
-                    );
-    
-                    const body = {
-                        siteAddress: "https://gsdcph.sharepoint.com/sites/ProjectsDevelopments",
-                        ListName: "DMS_Attachments",
-                        ListItemID: itemID || null, // This should be the ID of an existing attachment item if updating, or empty for new
-                        itemRecord: {
-                          dmsID: formData.tripID,
-                          attachment_type: type,
-                          Filename: `${formData.OE}_${type.replace(' ', '_')}`,
-                          UserUploaded: editingUser?.FullName || ''
-                        },
-                        FileContent: fileContents,
-                    };
-    
-                    console.log(`Sending POST request for ${type} with body:`, body);
-    
-                    const response = await fetch( UPLOAD_ATTACHMENTS_ENDPOINT, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body),
-                    });
-    
-                    const responseData = await response.json();
-                    console.log(`Response for ${type} upload:`, responseData);
-
-                    if (response.ok && responseData.statusCode === "200") {
-                      console.log(`Upload successful for ${type}:`, responseData);
-                      return { success: true, type, data: responseData };
-                    } else {
-                      const errorText = responseData.body || `HTTP error! status: ${response.status}`;
-                      throw new Error(errorText);
-                    }
-    
-                } catch (error) {
-                    console.error(`Error during ${type} upload:`, error);
-                    return { success: false, type, error };
-                }
+          const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+              const result = reader.result as string;
+              const base64String = result.split(',')[1];
+              resolve(base64String);
             };
-    
-            const uploadPromises = [];
-            if (plantDrFiles.length > 0) {
-                uploadPromises.push(uploadAttachments(plantDrFiles, 'PLANT DR', plantDrAttachmentItemID));
+            reader.onerror = error => reject(error);
+          });
+
+
+          const uploadAttachments = async (files: File[], type: 'PLANT DR' | 'WS', itemID: string | undefined) => {
+            if (files.length === 0) {
+              return { success: true, type, message: `No new ${type} files to upload.` };
             }
-            if (wsFiles.length > 0) {
-                uploadPromises.push(uploadAttachments(wsFiles, 'WS', wsAttachmentItemID));
-            }
-    
+
             try {
-                const results = await Promise.all(uploadPromises);
-                
-                const failures = results.filter(r => !r.success);
-    
-                if (failures.length > 0) {
-                    const errorMessages = failures.map(f => `${f.type}: ${f.error || 'Unknown error'}`).join('\n');
-                    throw new Error(`Some uploads failed:\n${errorMessages}`);
-                }
-    
-                return { success: true, data: results };
-    
+              const fileContents = await Promise.all(
+                files.map(async (file) => ({
+                  name: file.name,
+                  contentBytes: await toBase64(file),
+                }))
+              );
+
+              const body = {
+                siteAddress: "https://gsdcph.sharepoint.com/sites/ProjectsDevelopments",
+                ListName: "DMS_Attachments",
+                ListItemID: itemID || null, // This should be the ID of an existing attachment item if updating, or empty for new
+                itemRecord: {
+                  dmsID: formData.tripID,
+                  attachment_type: type,
+                  Filename: `${formData.OE}_${type.replace(' ', '_')}`,
+                  UserUploaded: editingUser?.FullName || ''
+                },
+                FileContent: fileContents,
+              };
+
+              console.log(`Sending POST request for ${type} with body:`, body);
+
+              const response = await fetch(UPLOAD_ATTACHMENTS_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              });
+
+              const responseData = await response.json();
+              console.log(`Response for ${type} upload:`, responseData);
+
+              if (response.ok && responseData.statusCode === "200") {
+                console.log(`Upload successful for ${type}:`, responseData);
+                return { success: true, type, data: responseData };
+              } else {
+                const errorText = responseData.body || `HTTP error! status: ${response.status}`;
+                throw new Error(errorText);
+              }
+
             } catch (error) {
-                console.error("An error occurred during the upload process:", error);
-                // Re-throw to be caught by the outer try-catch of the worker
-                throw error;
+              console.error(`Error during ${type} upload:`, error);
+              return { success: false, type, error };
             }
+          };
+
+          const uploadPromises = [];
+          if (plantDrFiles.length > 0) {
+            uploadPromises.push(uploadAttachments(plantDrFiles, 'PLANT DR', plantDrAttachmentItemID));
+          }
+          if (wsFiles.length > 0) {
+            uploadPromises.push(uploadAttachments(wsFiles, 'WS', wsAttachmentItemID));
+          }
+
+          try {
+            const results = await Promise.all(uploadPromises);
+
+            const failures = results.filter(r => !r.success);
+
+            if (failures.length > 0) {
+              const errorMessages = failures.map(f => `${f.type}: ${f.error || 'Unknown error'}`).join('\n');
+              throw new Error(`Some uploads failed:\n${errorMessages}`);
+            }
+
+            return { success: true, data: results };
+
+          } catch (error) {
+            console.error("An error occurred during the upload process:", error);
+            // Re-throw to be caught by the outer try-catch of the worker
+            throw error;
+          }
         },
         checkSuccess: (result: { success: boolean, data?: any[] }) => {
           if (!result.success) return false;
@@ -2178,31 +2180,31 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
     const handleViewTripHistory = async (OE: string) => {
-        setTimelineSelectedOE(OE);
-        setIsTimelineOpen(true);
-        setIsLoadingLogs(true);
+      setTimelineSelectedOE(OE);
+      setIsTimelineOpen(true);
+      setIsLoadingLogs(true);
 
-        try {   
-            const result = await ewulFetchAll<any>(
-                Action_Logs_HistoryService, 
-                { filter: `OE eq '${OE}' or tripID eq '${formData.tripID}'` }, 
-                500,
-                'ID'
-            );
+      try {
+        const result = await ewulFetchAll<any>(
+          Action_Logs_HistoryService,
+          { filter: `OE eq '${OE}' or tripID eq '${formData.tripID}'` },
+          500,
+          'ID'
+        );
 
-            setTripLogs(result); // Use real data when available, fallback to sample data
-        } catch (error) {
-            console.error("Failed to fetch trip logs:", error);
-        } finally {
-            setIsLoadingLogs(false);
-        }
+        setTripLogs(result); // Use real data when available, fallback to sample data
+      } catch (error) {
+        console.error("Failed to fetch trip logs:", error);
+      } finally {
+        setIsLoadingLogs(false);
+      }
     };
 
     const getPersonnelIdByName = (name: string, role: string) => {
-        if (!driverHelperList) return null;
+      if (!driverHelperList) return null;
 
-        const person = driverHelperList.find(p => p.FullName === name && p.Position === role);
-        return person?.Id || null;
+      const person = driverHelperList.find(p => p.FullName === name && p.Position === role);
+      return person?.Id || null;
     };
 
     const getOrdinalServedCount = (n: number): string => {
@@ -2215,7 +2217,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const fetchServedCounts = async (names: string[], date: any) => {
       setIsFetchingServedCounts(true);
       let table1 = [];
-      try{
+      try {
         const result = await GetEmployeeServedCountService.GetEmployeeServedCount({
           EmployeeNames: names.join('|'),
           TargetDate: new Date(date).toDateString(),
@@ -2223,10 +2225,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
         const table = result.data?.ResultSets?.Table1 as any[];
         if (table && table.length > 0) {
-            table1 = table
+          table1 = table
         }
-      } catch(e) {
-        console.log('Failed to fetch served counts: ',e)
+      } catch (e) {
+        console.log('Failed to fetch served counts: ', e)
       } finally {
         setIsFetchingServedCounts(false);
       }
@@ -2253,7 +2255,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       const notNA = (value: any) => { //return value if not null, undefined, N/A or empty string, else return null
         const isNA = value === 'N/A'
         return isNA ? null : value;
-      }; 
+      };
 
       // RESOLVE VALUES (Mirroring the 'With' block)
       const drvU = (notNA(formData.Driver_x0020_Unloader) || "").trim();
@@ -2279,7 +2281,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         multipliers: { kmMult: number; tiMult: number }
       ) => {
         if (!name) return;
-        
+
         //Cross reference the batch dataset using the columns returned by your SQL view (Name / Count)
         const servedCountsRecord = activeServedCounts?.find(
           (att: any) => (att.Name || att.EmployeeName) === name
@@ -2297,10 +2299,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       };
 
       let tobeAddedtoTemps: { role: "Driver" | "Helper"; name: string; type: string; mult: { kmMult: number; tiMult: number } }[] = [];
-      tobeAddedtoTemps.push({role: "Driver", name: drvL, type: formData.DriverLoaderType || "", mult: getTypeMultipliers(formData.DriverLoaderType, 0.25)});
-      tobeAddedtoTemps.push({role: "Driver", name: drvU, type: formData.DriverUnloaderType || "", mult: getTypeMultipliers(formData.DriverUnloaderType, 0.75)});
-      tobeAddedtoTemps.push({role: "Helper", name: hlpL, type: formData.HelperLoaderType || "", mult: getTypeMultipliers(formData.HelperLoaderType, 0.25)});
-      tobeAddedtoTemps.push({role: "Helper", name: hlpU, type: formData.HelperUnloaderType || "", mult: getTypeMultipliers(formData.HelperUnloaderType, 0.75)});
+      tobeAddedtoTemps.push({ role: "Driver", name: drvL, type: formData.DriverLoaderType || "", mult: getTypeMultipliers(formData.DriverLoaderType, 0.25) });
+      tobeAddedtoTemps.push({ role: "Driver", name: drvU, type: formData.DriverUnloaderType || "", mult: getTypeMultipliers(formData.DriverUnloaderType, 0.75) });
+      tobeAddedtoTemps.push({ role: "Helper", name: hlpL, type: formData.HelperLoaderType || "", mult: getTypeMultipliers(formData.HelperLoaderType, 0.25) });
+      tobeAddedtoTemps.push({ role: "Helper", name: hlpU, type: formData.HelperUnloaderType || "", mult: getTypeMultipliers(formData.HelperUnloaderType, 0.75) });
 
       const uniqueToBeAdded = [
         ...new Map(tobeAddedtoTemps.map(item => [item.name, item])).values()
@@ -2353,19 +2355,19 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       console.log('served Date:', servedDate);
       const finalPayload = colTemp.map(item => ({
-          OE: formData.OE,
-          TripKM: item.TripKM,
-          SD: formData.SD,
-          Date: servedDate ? new Date(servedDate).toISOString() : new Date().toISOString(),
-          AttendanceDetail: item.TripIndex,
-          SecondTrip: item.TripCount, 
-          Creator: userName,
-          TCVC: formData.OE?.startsWith("SOTC") ? "TC" : "VC",
-          In: servedDate ? new Date(servedDate).toISOString() : new Date().toISOString(),
-          Position: item.Role,
-          TransactionType: item.Position,
-          EmployeeName: item.SName,
-          hrID: getPersonnelIdByName(item.SName, item.Role) 
+        OE: formData.OE,
+        TripKM: item.TripKM,
+        SD: formData.SD,
+        Date: servedDate ? new Date(servedDate).toISOString() : new Date().toISOString(),
+        AttendanceDetail: item.TripIndex,
+        SecondTrip: item.TripCount,
+        Creator: userName,
+        TCVC: formData.OE?.startsWith("SOTC") ? "TC" : "VC",
+        In: servedDate ? new Date(servedDate).toISOString() : new Date().toISOString(),
+        Position: item.Role,
+        TransactionType: item.Position,
+        EmployeeName: item.SName,
+        hrID: getPersonnelIdByName(item.SName, item.Role)
       })) as GSDC_AttendanceBase[];
 
       //test:
@@ -2379,27 +2381,27 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
     const handleUpdateAttendance = (name: string, empId: string, empType: string, attendance?: string, refresh?: boolean, attdate?: string) => {
-    
-      onUpdateDriverHelperAttendance?.(name,attendance || 'PRESENT',empType as 'Driver' | 'Helper');
+
+      onUpdateDriverHelperAttendance?.(name, attendance || 'PRESENT', empType as 'Driver' | 'Helper');
 
       addTask({
         id: `attendance-update-${name}`,
         name: `Employee Attendance Update`,
         execute: async () => {
 
-                try {
-                  UpsertAttendanceLogService.UpsertAttendanceLog({ 
-                    EmployeeName: name,
-                    EmployeeID: empId,
-                    AttendanceDate: attdate ? new Date(attdate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                    AttendanceStatus: attendance || 'PRESENT',
-                    OE: formData.OE || '',
-                  } as any);
-                  return { success: true};
-                } catch (error) {
-                  console.error("Fetch error:", error);
-                  return { success: false, error };
-                }
+          try {
+            UpsertAttendanceLogService.UpsertAttendanceLog({
+              EmployeeName: name,
+              EmployeeID: empId,
+              AttendanceDate: attdate ? new Date(attdate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+              AttendanceStatus: attendance || 'PRESENT',
+              OE: formData.OE || '',
+            } as any);
+            return { success: true };
+          } catch (error) {
+            console.error("Fetch error:", error);
+            return { success: false, error };
+          }
 
 
 
@@ -2408,19 +2410,19 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         onSuccess: () => {
           if (refresh) onRefreshTrips?.();
 
-            logDmsUpdate({
-                userName: editingUser?.FullName || '',
-                userID: Number(editingUser?.id) || 0,
-                inputOE: formData.OE || '',
-                action: `Set Attendance of ${name} to [${attendance || 'PRESENT'}]`,
-                value: attendance || 'PRESENT',
-                isRecordJSON: false,
-                context: `Attendance`,
-                role: editingUser?.Position || '',
-            });
-        
+          logDmsUpdate({
+            userName: editingUser?.FullName || '',
+            userID: Number(editingUser?.id) || 0,
+            inputOE: formData.OE || '',
+            action: `Set Attendance of ${name} to [${attendance || 'PRESENT'}]`,
+            value: attendance || 'PRESENT',
+            isRecordJSON: false,
+            context: `Attendance`,
+            role: editingUser?.Position || '',
+          });
+
         },
-        onFailure: () => {empType === 'Driver' ? handleFieldChange('Driver', '') : handleFieldChange('Helper', ''); onUpdateDriverHelperAttendance?.(name,attendance || 'ABSENT',empType as 'Driver' | 'Helper');},
+        onFailure: () => { empType === 'Driver' ? handleFieldChange('Driver', '') : handleFieldChange('Helper', ''); onUpdateDriverHelperAttendance?.(name, attendance || 'ABSENT', empType as 'Driver' | 'Helper'); },
         message: `Setting attendance for ${name}...`,
         message_success: `${name} tagged '${attendance || 'PRESENT'}' successfully!`,
         message_failure: `${name} failed to be tagged '${attendance || 'PRESENT'}'.`
@@ -2430,11 +2432,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     useEffect(() => {
       // Only trigger recalculation if the modal is actively open and has an existing payload layout
       if (showAssignmentConfirmModal && assignmentChanges?.attendancePayload) {
-        
+
         const recalculateAttendanceCount = async () => {
           try {
             console.log("Served Date changed! Recalculating attendance metrics for:", servedDate.toDateString());
-            
+
 
             // 2. Await the new async batch count payload execution sequence
             const freshPayload = await generateAttendancePayload(formData, editingUser?.FullName || '');
@@ -2502,8 +2504,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               isothers: !['Trading', 'Hauling'].includes(formData._tripGroup || ''),
               driver_loader: formData.Driver_x0020_Loader || null,
               helper_loader: formData.Helper_x0020_Loader || null,
-              dispsrc_date: formData.Dispatched_x0020_to_x0020_Source? new Date(formData.Dispatched_x0020_to_x0020_Source.slice(0, -1)).toISOString().split('T')[0] : '',
-              dispsrc_time: formData.Dispatched_x0020_to_x0020_Source? new Date(formData.Dispatched_x0020_to_x0020_Source.slice(0, -1)).toLocaleTimeString() : '',
+              dispsrc_date: formData.Dispatched_x0020_to_x0020_Source ? new Date(formData.Dispatched_x0020_to_x0020_Source.slice(0, -1)).toISOString().split('T')[0] : '',
+              dispsrc_time: formData.Dispatched_x0020_to_x0020_Source ? new Date(formData.Dispatched_x0020_to_x0020_Source.slice(0, -1)).toLocaleTimeString() : '',
               dispsrc_arrival_date: formData.Source_x0020_in ? new Date(formData.Source_x0020_in.slice(0, -1)).toISOString().split('T')[0] : null,
               dispsrc_arrival_time: formData.Source_x0020_in ? new Date(formData.Source_x0020_in.slice(0, -1)).toLocaleTimeString() : null,
               dispsrc_departure_date: formData.Source_x0020_out ? new Date(formData.Source_x0020_out.slice(0, -1)).toISOString().split('T')[0] : null,
@@ -2527,7 +2529,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               date_deocumented: formData.Documented_x0020_Date ? new Date(formData.Documented_x0020_Date.slice(0, -1)).toISOString().split('T')[0] : null,
               date_transmitted: formData.Transimtted_x0020_Date ? new Date(formData.Transimtted_x0020_Date.slice(0, -1)).toISOString().split('T')[0] : null,
               verified_by: formData.Verified_x0020_By || null,
-              qty_discrepancy:  actualWithdrawn ? (Number(actualWithdrawn) - Number(actualDelivered)) : (formData.QTYWithdrawn !== undefined && formData.QTYDelivered !== undefined ? (Number(formData.QTYWithdrawn) - Number(formData.QTYDelivered)) : null),
+              qty_discrepancy: actualWithdrawn ? (Number(actualWithdrawn) - Number(actualDelivered)) : (formData.QTYWithdrawn !== undefined && formData.QTYDelivered !== undefined ? (Number(formData.QTYWithdrawn) - Number(formData.QTYDelivered)) : null),
             };
 
             const response = await fetch(PRINT_DMS_ENDPOINT, {
@@ -2551,7 +2553,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             } else {
               throw new Error("No file URL found in the response.");
             }
-            
+
             return { success: true, fileUrl: fileUrl };
 
           } catch (error) {
@@ -2579,8 +2581,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     const handleCannotChangeTrip = () => {
       let message = '';
-      if (!canChangeTrip) message = `This trip cannot be ${(progress_idx() > 2 ? 'Divert' : 'Change').replace('e','').toLowerCase()}ed or canceled because there is an on going fuel request associated with it. Please resolve the fuel request before making changes to the trip.`;
-      else  message = `This trip cannot be ${(progress_idx() > 2 ? 'Divert' : 'Change').replace('e','').toLowerCase()}ed or canceled because it has not been assigned a Trip ID yet. Please try again after the trip has been assigned.`;
+      if (!canChangeTrip) message = `This trip cannot be ${(progress_idx() > 2 ? 'Divert' : 'Change').replace('e', '').toLowerCase()}ed or canceled because there is an on going fuel request associated with it. Please resolve the fuel request before making changes to the trip.`;
+      else message = `This trip cannot be ${(progress_idx() > 2 ? 'Divert' : 'Change').replace('e', '').toLowerCase()}ed or canceled because it has not been assigned a Trip ID yet. Please try again after the trip has been assigned.`;
       setShowCannotChangeTripModal({ isOpen: true, message, what: progress_idx() > 2 ? 'Divert' : 'Change' });
     };
 
@@ -2590,38 +2592,38 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
     const handleConfirmProcessIR = async (irid: string) => {
-       
-        console.log("Fetching incident reports with id:", irid);
+
+      console.log("Fetching incident reports with id:", irid);
 
 
-        const options = {
-            filter: `IRID eq '${irid}'`,
-            orderBy: ["IncidentDateAsInt desc"],
-        };
+      const options = {
+        filter: `IRID eq '${irid}'`,
+        orderBy: ["IncidentDateAsInt desc"],
+      };
 
-        
-        try {
-            const result = await ewulFetchAll<any>(
-                OP_IncidentReportsService,
-                options,
-                1
-            );
 
-            if (result && result.length > 0) {
-                setCreatedIR(result[0]);
-                setIsIncidentModalOpen(true);
-            } else {
-                setCreatedIR(null);
-                setIsIncidentModalOpen(false);
-            }
-        } catch (err) {
-            console.error("Fetch Error fetching incident reports:", err);
-            setCreatedIR(null);
-            setIsIncidentModalOpen(false);
-        } finally {
-            setIsCreatingIR(false);
-            console.log("Fetch incident reports completed."); // Removed count as state update is async
+      try {
+        const result = await ewulFetchAll<any>(
+          OP_IncidentReportsService,
+          options,
+          1
+        );
+
+        if (result && result.length > 0) {
+          setCreatedIR(result[0]);
+          setIsIncidentModalOpen(true);
+        } else {
+          setCreatedIR(null);
+          setIsIncidentModalOpen(false);
         }
+      } catch (err) {
+        console.error("Fetch Error fetching incident reports:", err);
+        setCreatedIR(null);
+        setIsIncidentModalOpen(false);
+      } finally {
+        setIsCreatingIR(false);
+        console.log("Fetch incident reports completed."); // Removed count as state update is async
+      }
     };
 
     const handleUpdateTruckTrailerIRdetails = (createdIR: any) => {
@@ -2629,15 +2631,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       try {
         const truckItem = truckOptions?.find((item: any) => item.Head === createdIR?.EmployeeTractor);
         const trailerItem = trailerOptions?.find((item: any) => item.PairedTrailer === createdIR?.EmployeeTrailer);
-        if (onUpdateTruckTrailers){
+        if (onUpdateTruckTrailers) {
           if (truckItem) {
             onUpdateTruckTrailers(
-              {...truckItem.record, TractorIRID: createdIR.IRStatus === 'Open' ? createdIR?.IRID : null}
+              { ...truckItem.record, TractorIRID: createdIR.IRStatus === 'Open' ? createdIR?.IRID : null }
             );
           };
           if (trailerItem && truckItem?.record.Head !== trailerItem.record.Head) {
             onUpdateTruckTrailers(
-              {...trailerItem.record, TractorIRID: createdIR.IRStatus === 'Open' ? createdIR?.IRID : null}
+              { ...trailerItem.record, TractorIRID: createdIR.IRStatus === 'Open' ? createdIR?.IRID : null }
             );
           };
         }
@@ -2660,352 +2662,352 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const disabledDoneGrp = prog_verified || prog_idx < getProgIdxByProgress("Done") || !validateOE(formData).isValid;
 
     const discrepancy = formData.QTYDelivered == null || formData.QTYWithdrawn == null ? 0 : formData.QTYDelivered - formData.QTYWithdrawn;
-    const actualDiscrepancy = formData.QTYDelivered_Actual == null || formData.QTYWithdrawn_Actual == null ? 0 :  formData.QTYDelivered_Actual - formData.QTYWithdrawn_Actual;
+    const actualDiscrepancy = formData.QTYDelivered_Actual == null || formData.QTYWithdrawn_Actual == null ? 0 : formData.QTYDelivered_Actual - formData.QTYWithdrawn_Actual;
     return (
-    <>
-      <div className="order-dist-container animate-pop-in" style={style}>
-        <div className="order-dist-header">
-          <h3>Delivery Monitoring Sheet {`[${formData.OE}]`}</h3>
-          <div className="header-sub-row">
-            <p>Enter Trip Details for ID: {formData.ID || '[New Trip]'}</p>
-            
-            <div className="header-controls">
+      <>
+        <div className="order-dist-container animate-pop-in" style={style}>
+          <div className="order-dist-header">
+            <h3>Delivery Monitoring Sheet {`[${formData.OE}]`}</h3>
+            <div className="header-sub-row">
+              <p>Enter Trip Details for ID: {formData.ID || '[New Trip]'}</p>
 
-              <button type="button" className="control-btn" onClick={expandAll}>
-                Expand All
-              </button>
+              <div className="header-controls">
 
-              <span className="control-separator">|</span>
-
-              <button type="button" className="control-btn" onClick={collapseAll}>
-                Collapse All
-              </button>
-
-              <span className="control-separator">|</span>
-
-              <div className="more-options-container">
-                <button onClick={() => setMoreOptionsOpen(!isMoreOptionsOpen)} className={`control-btn ${isMoreOptionsOpen ? 'open' : 'close'}`} type="button" title='More Actions'>
-                  {`ACTIONS`}
-                  <Menu size={16} />
-                  {
-                    (
-                      (((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT)  && (formData.TripProgress === 'Done')) ||
-                      (!canChangeTrip && !fuelFetching)
-                    ) && !isMoreOptionsOpen
-                    && <span className="unsaved-indicator">!</span>
-                  }
+                <button type="button" className="control-btn" onClick={expandAll}>
+                  Expand All
                 </button>
-                {isMoreOptionsOpen && (
-                  <div className="more-options-dropdown">
-                    <a href="#" className={(!formData.Vehicle || formData.TripProgress === 'New Trip' ) ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if (!formData.Vehicle || formData.TripProgress === 'New Trip') return; onShowFuelRequest?.(formData); setMoreOptionsOpen(false);}}><Fuel size={16} /> Fuel Request {!canChangeTrip && !fuelFetching && <span className="unsaved-indicator">!</span>}{fuelFetching && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}</a>
-                    <a href="#" className={!formData.Latlong ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); setMoreOptionsOpen(false);}}><MapPin size={16}  /> Check GPS</a>
-                    <a href="#" className={!formData.tripID ? 'disabled' : ''} onClick={(e) => {e.preventDefault();if (!formData.tripID) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
-                    <a href="#" className={!formData.tripID || !canChangeTrip ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if (!formData.tripID || !canChangeTrip) {handleCannotChangeTrip(); return;} onRequestChangeTrip?.(formData,progress_idx() > 2 ? 'Divert' : 'Change'); setMoreOptionsOpen(false);}}><Replace size={16} /> {`${progress_idx() > 2 ? 'Divert' : 'Change'} Trip`}</a>
-                    <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip /*|| formData.TripProgress === 'Done'*/) && !(['Developer','IT SUPPORT'].includes(editingUser?.Position || ''))  ? 'disabled' : ''} onClick={(e) => {e.preventDefault(); if ((!formData.tripID || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && !(['Developer','IT SUPPORT'].includes(editingUser?.Position || ''))) {handleCannotChangeTrip(); return;} setCancelRemarks(""); setAttachedCancellationImage(null); setSkipBroadcast(false); setShowCancelConfirmModal(true); setMoreOptionsOpen(false);}}><Ban size={16} /> Cancel Trip</a>
-                    <a 
-                      href="#" 
-                      className={!formData.OE ? 'disabled' : ''} 
-                      onClick={(e) => {
-                        e.preventDefault(); 
-                        if (formData.OE) {
+
+                <span className="control-separator">|</span>
+
+                <button type="button" className="control-btn" onClick={collapseAll}>
+                  Collapse All
+                </button>
+
+                <span className="control-separator">|</span>
+
+                <div className="more-options-container">
+                  <button onClick={() => setMoreOptionsOpen(!isMoreOptionsOpen)} className={`control-btn ${isMoreOptionsOpen ? 'open' : 'close'}`} type="button" title='More Actions'>
+                    {`ACTIONS`}
+                    <Menu size={16} />
+                    {
+                      (
+                        (((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) && (formData.TripProgress === 'Done')) ||
+                        (!canChangeTrip && !fuelFetching)
+                      ) && !isMoreOptionsOpen
+                      && <span className="unsaved-indicator">!</span>
+                    }
+                  </button>
+                  {isMoreOptionsOpen && (
+                    <div className="more-options-dropdown">
+                      <a href="#" className={(!formData.Vehicle || formData.TripProgress === 'New Trip') ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.Vehicle || formData.TripProgress === 'New Trip') return; onShowFuelRequest?.(formData); setMoreOptionsOpen(false); }}><Fuel size={16} /> Fuel Request {!canChangeTrip && !fuelFetching && <span className="unsaved-indicator">!</span>}{fuelFetching && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}</a>
+                      <a href="#" className={!formData.Latlong ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); setMoreOptionsOpen(false); }}><MapPin size={16} /> Check GPS</a>
+                      <a href="#" className={!formData.tripID ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.tripID) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
+                      <a href="#" className={!formData.tripID || !canChangeTrip ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.tripID || !canChangeTrip) { handleCannotChangeTrip(); return; } onRequestChangeTrip?.(formData, progress_idx() > 2 ? 'Divert' : 'Change'); setMoreOptionsOpen(false); }}><Replace size={16} /> {`${progress_idx() > 2 ? 'Divert' : 'Change'} Trip`}</a>
+                      <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip /*|| formData.TripProgress === 'Done'*/) && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || '')) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if ((!formData.tripID || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || ''))) { handleCannotChangeTrip(); return; } setCancelRemarks(""); setAttachedCancellationImage(null); setSkipBroadcast(false); setShowCancelConfirmModal(true); setMoreOptionsOpen(false); }}><Ban size={16} /> Cancel Trip</a>
+                      <a
+                        href="#"
+                        className={!formData.OE ? 'disabled' : ''}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (formData.OE) {
                             handleShareClick(formData.OE);
-                        } 
-                        setMoreOptionsOpen(false);
+                          }
+                          setMoreOptionsOpen(false);
                         }}>
-                        <AtSign size={16} /> 
+                        <AtSign size={16} />
                         Mention to Chat
-                    </a>
-                    <a 
-                      href="#" 
-                      className={!formData.OE ? 'disabled' : ''} 
-                      onClick={(e) => {
-                          e.preventDefault(); 
+                      </a>
+                      <a
+                        href="#"
+                        className={!formData.OE ? 'disabled' : ''}
+                        onClick={(e) => {
+                          e.preventDefault();
                           handleViewTripHistory(formData.OE || '');
                           setMoreOptionsOpen(false);
                         }}>
-                        <ClipboardList size={16} /> 
+                        <ClipboardList size={16} />
                         View History
-                    </a>
-                    <a 
-                      href="#" 
-                      className={!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') ? 'disabled' : ''} 
-                      onClick={(e) => {
-                        e.preventDefault(); 
-                        if (!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done')) return;
-                        setIsIncidentModalOpen(false);
-                        setShowIncidentPrompt(true);
+                      </a>
+                      <a
+                        href="#"
+                        className={!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') ? 'disabled' : ''}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done')) return;
+                          setIsIncidentModalOpen(false);
+                          setShowIncidentPrompt(true);
                         }}>
-                        <FileSpreadsheet size={16} /> 
+                        <FileSpreadsheet size={16} />
                         Create IR
-                        {((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT)  && (formData.TripProgress === 'Done') && <span className="unsaved-indicator">!</span>}
-                    </a>
+                        {((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) && (formData.TripProgress === 'Done') && <span className="unsaved-indicator">!</span>}
+                      </a>
 
-                  </div>
-                )}
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-
-
-        <div className="order-dist-body scrollable-body" style={maxHeight ? { maxHeight } : undefined}>
-  
-        {/* 1. Order Entry Group */}
-        <div className="input-group-group"  ref={newtripsDetailsRef}>
-          <div className="group-header" onClick={() => toggleGroup('oeRef')}>
-            <div className="group-header-title">
-              <span>Trip Details</span>
-              {showValidationIcon('new_trip')}
-            </div>
-            <span className={`toggle-icon ${collapsed.oeRef ? 'is-collapsed' : ''}`}></span>
-          </div>
-          <div className={`group-content-wrapper ${!collapsed.oeRef ? 'is-open' : ''}`}>
-            <div className="group-content-inner"> 
-              {/*(prog_verified) && <div className='stopper'></div>*/}
-              <div className="form-row">
-                <div className="input-group" style={{ flex: 2 }}>
-                  <label>ORDER REFERENCE # *</label>
-                  <div className="gradient-input-wrapper">
-                    <input 
-                      type="text" 
-                      value={formData.OE || ''} 
-                      readOnly
-                      onClick={onOEInputClick}
-                      placeholder='Click to select SAP Orders'
-                      disabled={disabledOEEntGrp}
-                    />
-                  </div>
-                </div>
-                <div className="input-group" style={{ flex: 1 }}>
-                  <label>Loading Sequence *</label>
-                  <div className={`gradient-input-wrapper ${/*!validation.isValid ? 'invalid-input' : */''}`}>
-                    <input
-                      type="number"
-                      step="1"
-                      min="0"
-                      pattern="^\d+(\.\d{0,2})?$"
-                      value={formData.Loading_x0020_Sequence || 1}
-                      onChange={e => {
-                        let val = e.target.value;
-                        if (val === "") {handleFieldChange('Loading_x0020_Sequence', ""); return;}
-                        if (/^\d+(\.\d{0,2})?$/.test(val)) { handleFieldChange('Loading_x0020_Sequence', parseFloat(val));}
-                      }}
-                      disabled={disabledOEEntGrp}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="input-group" style={{ flex: 2 }}>
-                  <label className="input-label">Trip Ticket #</label>
-                  <div className="gradient-input-wrapper">
-                    <input type="text" value={formData.TripTicketID || ''} disabled />
-                  </div>
-                </div>
-                <div className="input-group" style={{ flex: 1 }}> 
-                  <label className="input-label">DMS ID</label>
-                  <div className="gradient-input-wrapper">
-                    <input type="text" value={formData.tripID || ''} disabled />
-                  </div>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <SearchableDropdown label="Business Unit" options={mappedBusinessUnits} value={formData.Buisness_x0020_Unit || ''} onChange={val => handleFieldChange('Buisness_x0020_Unit', String(val))} disabled={disabledOEEntGrp} />
-              </div>
-
-              <div className="form-row">
-                <SearchableDropdown label="Status" options={tripStatusOptions} value={formData.Trip_x0020_Status || ''} onChange={val => handleFieldChange('Trip_x0020_Status', String(val))} disabled={formData.TripProgress == 'New Trip' || formData.TripProgress == 'Assigned' || disabledOEEntGrp} />
-              </div>
-
-
-            </div>
-          </div>
-        </div>
-
-        {/* 2. OE Details Group */}
-        <div className="input-group-group">
-          <div className="group-header" onClick={() => toggleGroup('oeDetails')}>
-
-            <div className="group-header-title">
-              <span>Order Details</span>
-            </div>
-            
-            <span className={`toggle-icon ${collapsed.oeDetails ? 'is-collapsed' : ''}`}></span>
-          </div>
-          <div className={`group-content-wrapper ${!collapsed.oeDetails ? 'is-open' : ''}`}>
-            <div className="group-content-inner">
-              {/*(prog_verified || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
-              <div className="form-row">
-                <div className="input-group">
-                  <label>SOURCE</label>
-                  {
-                    (formData._tripGroup === 'Preload' || formData._tripGroup === 'Mobilization') && formData.TripProgress == 'New Trip' ? (
-                      <SearchableDropdown disabled={disabledOEDetGrp} label="" allowSearch={true} options={sourceOptions} value={formData.Source || ''} onChange={val => handleFieldChange('Source', String(val))} />
-                    ) :
-                    (<div className="gradient-input-wrapper">
-                      <input type="text" value={formData.Source || ''} disabled />
-                    </div>)
-                  }
-                </div>
-                <div className="input-group">
-
-                    
-                  <label>DESTINATION</label>
-
-                  <div className={`gradient-input-wrapper ${formData._tripGroup === 'Preload' || formData._tripGroup === 'Mobilization' ? 'is-editable' : ''}`}>
-                    <input 
-                        type="text" 
-                        value={formData.Destination || ''} 
-                        disabled
-                        onChange={e => handleFieldChange('Destination', e.target.value)}
-                    />
-                  </div>
-
-                </div>
-              </div>
-              
-              {/* CIFME INPUT */}
-
-              { editingUser?.Position === 'Developer' && (<div className="form-row">
-                  <div className="input-group">
-                    <label>CIFME</label>
-                    <div className="gradient-input-wrapper">
-                      <input type="text" value={formData.CIFME_OE || ''} /*disabled*/ placeholder="Select CIF trip" onClick={() => {if (onCIFMESelect)  {onCIFMESelect(formData.SO_x0023_?.toString() || '')}}} />
-                    </div>
-                  </div>
-                  <div className="input-group">
-                    <label>DESTINATION</label>
-                    <div className="gradient-input-wrapper">
-                      <input type="text" value={formData.CIFME_DESTINATION || ''} disabled />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="form-row">
-                <div className="input-group">
-                  <label>CLIENT</label>
-                  <div className="gradient-input-wrapper">
-                    <input type="text" value={formData.Customer || ''} disabled />
-                  </div>
-                </div>
-                <div className="input-group">
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="input-group">
-                  <label>GROUP</label>
-                  <div className="gradient-input-wrapper">
-                    <input type="text" value={formData._tripGroup || ''} disabled />
-                  </div>
-                </div>
-
-                <div className="input-group">
-                  <label>TYPE</label>
-                  {formData._tripGroup === 'Preload'  && formData.TripProgress == 'New Trip' ? ( // The ':' now has a matching '?'
-                    <SearchableDropdown 
-                      label="" 
-                      allowSearch={true} 
-                      options={cementTypeOptions} 
-                      value={formData.cementType || ''} 
-                      onChange={val => handleFieldChange('cementType', String(val))} 
-                      disabled={disabledOEDetGrp}
-                    />
-                  ) : ( // Changed '&&' to '?'
-                    <div className="gradient-input-wrapper">
-                      <input type="text" value={formData.cementType || ''} disabled />
                     </div>
                   )}
                 </div>
+
               </div>
-
-              <div className="form-row">
-                <div className="input-group">
-                  <label>ORDERED DATE</label>
-                  <div className="gradient-input-wrapper">
-                    <input type="text" value={formatDate(formData.Ordered_x0020_Date || '') || ''} disabled />
-                  </div>
-                </div>
-
-                <div className="input-group">
-                  <label>NEEDED DATE</label>
-                  <div className="gradient-input-wrapper">
-                    <input type="text" value={formatDate(formData.Needed_x0020_Date || '') || ''} disabled />
-                  </div>
-                </div>
-              </div>
-
-
             </div>
           </div>
-        </div>
 
-        {/* 3. Assignment Details Group */}
-        <div className="input-group-group" ref={assignmentDetailsRef}>
-          <div className="group-header" onClick={() => toggleGroup('assignmentDetails')}>
-            <div className="group-header-title">
-              <span>Assignment Details</span>
-              {showValidationIcon('assigned')}
+
+
+          <div className="order-dist-body scrollable-body" style={maxHeight ? { maxHeight } : undefined}>
+
+            {/* 1. Order Entry Group */}
+            <div className="input-group-group" ref={newtripsDetailsRef}>
+              <div className="group-header" onClick={() => toggleGroup('oeRef')}>
+                <div className="group-header-title">
+                  <span>Trip Details</span>
+                  {showValidationIcon('new_trip')}
+                </div>
+                <span className={`toggle-icon ${collapsed.oeRef ? 'is-collapsed' : ''}`}></span>
+              </div>
+              <div className={`group-content-wrapper ${!collapsed.oeRef ? 'is-open' : ''}`}>
+                <div className="group-content-inner">
+                  {/*(prog_verified) && <div className='stopper'></div>*/}
+                  <div className="form-row">
+                    <div className="input-group" style={{ flex: 2 }}>
+                      <label>ORDER REFERENCE # *</label>
+                      <div className="gradient-input-wrapper">
+                        <input
+                          type="text"
+                          value={formData.OE || ''}
+                          readOnly
+                          onClick={onOEInputClick}
+                          placeholder='Click to select SAP Orders'
+                          disabled={disabledOEEntGrp}
+                        />
+                      </div>
+                    </div>
+                    <div className="input-group" style={{ flex: 1 }}>
+                      <label>Loading Sequence *</label>
+                      <div className={`gradient-input-wrapper ${/*!validation.isValid ? 'invalid-input' : */''}`}>
+                        <input
+                          type="number"
+                          step="1"
+                          min="0"
+                          pattern="^\d+(\.\d{0,2})?$"
+                          value={formData.Loading_x0020_Sequence || 1}
+                          onChange={e => {
+                            let val = e.target.value;
+                            if (val === "") { handleFieldChange('Loading_x0020_Sequence', ""); return; }
+                            if (/^\d+(\.\d{0,2})?$/.test(val)) { handleFieldChange('Loading_x0020_Sequence', parseFloat(val)); }
+                          }}
+                          disabled={disabledOEEntGrp}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="input-group" style={{ flex: 2 }}>
+                      <label className="input-label">Trip Ticket #</label>
+                      <div className="gradient-input-wrapper">
+                        <input type="text" value={formData.TripTicketID || ''} disabled />
+                      </div>
+                    </div>
+                    <div className="input-group" style={{ flex: 1 }}>
+                      <label className="input-label">DMS ID</label>
+                      <div className="gradient-input-wrapper">
+                        <input type="text" value={formData.tripID || ''} disabled />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <SearchableDropdown label="Business Unit" options={mappedBusinessUnits} value={formData.Buisness_x0020_Unit || ''} onChange={val => handleFieldChange('Buisness_x0020_Unit', String(val))} disabled={disabledOEEntGrp} />
+                  </div>
+
+                  <div className="form-row">
+                    <SearchableDropdown label="Status" options={tripStatusOptions} value={formData.Trip_x0020_Status || ''} onChange={val => handleFieldChange('Trip_x0020_Status', String(val))} disabled={formData.TripProgress == 'New Trip' || formData.TripProgress == 'Assigned' || disabledOEEntGrp} />
+                  </div>
+
+
+                </div>
+              </div>
             </div>
-            <span className={`toggle-icon ${collapsed.assignmentDetails ? 'is-collapsed' : ''}`}></span>
 
-          </div>
-          <div className={`group-content-wrapper ${!collapsed.assignmentDetails ? 'is-open' : ''}`}>
-            <div className="group-content-inner">
-              {/*(prog_verified || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
+            {/* 2. OE Details Group */}
+            <div className="input-group-group">
+              <div className="group-header" onClick={() => toggleGroup('oeDetails')}>
 
-              <div className="form-row">
-                <SearchableDropdown disabled={disabledAssGrp} label="Driver *" options={driverOptions} value={formData.Driver || ''} onChange={val => handleFieldChange('Driver', String(val))} />
-                <SearchableDropdown disabled={disabledAssGrp} label="Helper" options={helperOptions} value={formData.Helper || ''} onChange={val => handleFieldChange('Helper', String(val))} />
-              </div>
-
-              <div className="form-row">
-                  <SearchableDropdown 
-                          label="Truck *" 
-                          options={truckOptions} 
-                          value={formData.Vehicle || ''} 
-                          onChange={val => handleTruckChange(String(val))} 
-                          disabled={disabledAssGrp}
-                  />
-                  <SearchableDropdown disabled={disabledAssGrp} label="Trailer *" options={trailerOptions} value={formData.BO || ''} onChange={val => handleFieldChange('BO', String(val))} />
-              </div>
-              
-              <div className="form-row">
-                <div className="input-group">
-                  <label>ATW/LO#</label>
-                  <div className="gradient-input-wrapper">
-                    <input disabled={disabledAssGrp} type="text" value={formData.ATW_x002f_LO_x0023_ || ''} onChange={e => handleFieldChange('ATW_x002f_LO_x0023_', e.target.value)} />
-                  </div>
+                <div className="group-header-title">
+                  <span>Order Details</span>
                 </div>
-                <div className="input-group">
-                  <label>SO#</label>
-                  <div className="gradient-input-wrapper">
-                    <input disabled={disabledAssGrp} type="text" value={formData.SO_x0023_ || ''} onChange={e => handleFieldChange('SO_x0023_', e.target.value)} />
+
+                <span className={`toggle-icon ${collapsed.oeDetails ? 'is-collapsed' : ''}`}></span>
+              </div>
+              <div className={`group-content-wrapper ${!collapsed.oeDetails ? 'is-open' : ''}`}>
+                <div className="group-content-inner">
+                  {/*(prog_verified || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>SOURCE</label>
+                      {
+                        (formData._tripGroup === 'Preload' || formData._tripGroup === 'Mobilization') && formData.TripProgress == 'New Trip' ? (
+                          <SearchableDropdown disabled={disabledOEDetGrp} label="" allowSearch={true} options={sourceOptions} value={formData.Source || ''} onChange={val => handleFieldChange('Source', String(val))} />
+                        ) :
+                          (<div className="gradient-input-wrapper">
+                            <input type="text" value={formData.Source || ''} disabled />
+                          </div>)
+                      }
+                    </div>
+                    <div className="input-group">
+
+
+                      <label>DESTINATION</label>
+
+                      <div className={`gradient-input-wrapper ${formData._tripGroup === 'Preload' || formData._tripGroup === 'Mobilization' ? 'is-editable' : ''}`}>
+                        <input
+                          type="text"
+                          value={formData.Destination || ''}
+                          disabled
+                          onChange={e => handleFieldChange('Destination', e.target.value)}
+                        />
+                      </div>
+
+                    </div>
                   </div>
+
+                  {/* CIFME INPUT */}
+
+                  {editingUser?.Position === 'Developer' && (<div className="form-row">
+                    <div className="input-group">
+                      <label>CIFME</label>
+                      <div className="gradient-input-wrapper">
+                        <input type="text" value={formData.CIFME_OE || ''} /*disabled*/ placeholder="Select CIF trip" onClick={() => { if (onCIFMESelect) { onCIFMESelect(formData.SO_x0023_?.toString() || '') } }} />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>DESTINATION</label>
+                      <div className="gradient-input-wrapper">
+                        <input type="text" value={formData.CIFME_DESTINATION || ''} disabled />
+                      </div>
+                    </div>
+                  </div>
+                  )}
+
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>CLIENT</label>
+                      <div className="gradient-input-wrapper">
+                        <input type="text" value={formData.Customer || ''} disabled />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>GROUP</label>
+                      <div className="gradient-input-wrapper">
+                        <input type="text" value={formData._tripGroup || ''} disabled />
+                      </div>
+                    </div>
+
+                    <div className="input-group">
+                      <label>TYPE</label>
+                      {formData._tripGroup === 'Preload' && formData.TripProgress == 'New Trip' ? ( // The ':' now has a matching '?'
+                        <SearchableDropdown
+                          label=""
+                          allowSearch={true}
+                          options={cementTypeOptions}
+                          value={formData.cementType || ''}
+                          onChange={val => handleFieldChange('cementType', String(val))}
+                          disabled={disabledOEDetGrp}
+                        />
+                      ) : ( // Changed '&&' to '?'
+                        <div className="gradient-input-wrapper">
+                          <input type="text" value={formData.cementType || ''} disabled />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>ORDERED DATE</label>
+                      <div className="gradient-input-wrapper">
+                        <input type="text" value={formatDate(formData.Ordered_x0020_Date || '') || ''} disabled />
+                      </div>
+                    </div>
+
+                    <div className="input-group">
+                      <label>NEEDED DATE</label>
+                      <div className="gradient-input-wrapper">
+                        <input type="text" value={formatDate(formData.Needed_x0020_Date || '') || ''} disabled />
+                      </div>
+                    </div>
+                  </div>
+
+
                 </div>
               </div>
+            </div>
 
-              <div className="form-row">
-                <div className="input-group">
-                  <label>PLANT DR</label>
-                  <div className="gradient-input-wrapper">
-                    <input disabled={disabledAssGrp} type="text" value={formData.Plant_x0020_DR || ''} onChange={e => handleFieldChange('Plant_x0020_DR', e.target.value)} />
-                  </div>
+            {/* 3. Assignment Details Group */}
+            <div className="input-group-group" ref={assignmentDetailsRef}>
+              <div className="group-header" onClick={() => toggleGroup('assignmentDetails')}>
+                <div className="group-header-title">
+                  <span>Assignment Details</span>
+                  {showValidationIcon('assigned')}
                 </div>
-                <div className="input-group">
-                  <label>GSDC DR</label>
-                  <div className="gradient-input-wrapper">
-                    <input disabled={disabledAssGrp} type="text" value={formData.GSDC_x0020_DR || ''} onChange={e => handleFieldChange('GSDC_x0020_DR', e.target.value)} />
-                  </div>
-                </div>
+                <span className={`toggle-icon ${collapsed.assignmentDetails ? 'is-collapsed' : ''}`}></span>
+
               </div>
+              <div className={`group-content-wrapper ${!collapsed.assignmentDetails ? 'is-open' : ''}`}>
+                <div className="group-content-inner">
+                  {/*(prog_verified || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
 
-              {/*<div className="form-row">
+                  <div className="form-row">
+                    <SearchableDropdown disabled={disabledAssGrp} label="Driver *" options={driverOptions} value={formData.Driver || ''} onChange={val => handleFieldChange('Driver', String(val))} />
+                    <SearchableDropdown disabled={disabledAssGrp} label="Helper" options={helperOptions} value={formData.Helper || ''} onChange={val => handleFieldChange('Helper', String(val))} />
+                  </div>
+
+                  <div className="form-row">
+                    <SearchableDropdown
+                      label="Truck *"
+                      options={truckOptions}
+                      value={formData.Vehicle || ''}
+                      onChange={val => handleTruckChange(String(val))}
+                      disabled={disabledAssGrp}
+                    />
+                    <SearchableDropdown disabled={disabledAssGrp} label="Trailer *" options={trailerOptions} value={formData.BO || ''} onChange={val => handleFieldChange('BO', String(val))} />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>ATW/LO#</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledAssGrp} type="text" value={formData.ATW_x002f_LO_x0023_ || ''} onChange={e => handleFieldChange('ATW_x002f_LO_x0023_', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>SO#</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledAssGrp} type="text" value={formData.SO_x0023_ || ''} onChange={e => handleFieldChange('SO_x0023_', e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>PLANT DR</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledAssGrp} type="text" value={formData.Plant_x0020_DR || ''} onChange={e => handleFieldChange('Plant_x0020_DR', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>GSDC DR</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledAssGrp} type="text" value={formData.GSDC_x0020_DR || ''} onChange={e => handleFieldChange('GSDC_x0020_DR', e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/*<div className="form-row">
 
                 <SearchableDropdown label={`Buisness Unit${TRIP_PROGRESS[1].Progress === formData.TripProgress ? ' *' : ''}`} options={buOptions} value={formData.Buisness_x0020_Unit || ''} onChange={val => handleFieldChange('Buisness_x0020_Unit', String(val))} />
 
@@ -3014,770 +3016,770 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               <div className="form-row">
                 <SearchableDropdown label={`Monitored By${TRIP_PROGRESS[1].Progress === formData.TripProgress ? ' *' : ''}`} options={[] as DropdownOption[]} value={formData.MonitoredBy || ''} onChange={(val) => handleFieldChange('MonitoredBy', String(val))} />
               </div>*/}
-              
-              <div className="form-row">
-                <div className="input-group">
-                  <label>Dispatched By</label>
-                  <div className="gradient-input-wrapper">
-                    <input disabled={disabledAssGrp} type="text" value={formData.DispatchedBy || ''} onChange={e => handleFieldChange('DispatchedBy', e.target.value)} />
-                  </div>
-                </div>
-              </div>
 
-              <div className="form-row">
-                <div className="input-group">
-                  <label>Dispatcher Remarks</label>
-                  <div className="gradient-input-wrapper textarea-wrapper">
-                    <textarea disabled={disabledAssGrp} rows={5} value={formData.Planning || ''} onChange={(e) => handleFieldChange('Planning', e.target.value)} placeholder='Remarks & Planning...' />
-                  </div>
-                </div>
-              </div>
-
-
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Source Details Group */}
-        <div className="input-group-group" ref={dispatchedToSourceRef}>
-          <div className="group-header" onClick={() => toggleGroup('sourceDetails')}>
-            
-            <div className="group-header-title">
-              <span>Dispatched to Source</span>
-              {showValidationIcon('dispatchedToSource')}
-            </div>
-            <span className={`toggle-icon ${collapsed.sourceDetails ? 'is-collapsed' : ''}`}></span>
-          </div>
-          <div className={`group-content-wrapper ${!collapsed.sourceDetails ? 'is-open' : ''}`}>
-            <div className="group-content-inner">
-              {/*(prog_verified || prog_idx < 2 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
-              
-              <div className="form-row">
-                <SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver" options={driverOptions} value={formData.Driver_x0020_Loader || ''} onChange={val => handleFieldChange('Driver_x0020_Loader', String(val))} noClear />
-                <SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Loader || ''} onChange={val => handleFieldChange('Helper_x0020_Loader', String(val))} noClear />
-              </div>
-                
-
-                <div className="form-row">
-  
-                    <SearchableDropdown 
-                      disabled={disabledSrcGrp} 
-                      label="Loader Driver Type *" 
-                      options={getLoaderOptions(formData,'Driver')} 
-                      value={formData.DriverLoaderType} 
-                      onChange={val => handleFieldChange('DriverLoaderType', String(val))} 
-                      noClear 
-                    />
-
-                    <SearchableDropdown 
-                      disabled={disabledSrcGrp} 
-                      label="Loader Helper Type *" 
-                      options={getLoaderOptions(formData,'Helper')} 
-                      value={formData.HelperLoaderType} 
-                      onChange={val => handleFieldChange('HelperLoaderType', String(val))} 
-                      noClear 
-                    />
-           
-                </div>
-    
-
-              <div className='form-row'>
-                <div className="input-group">
-                  <label>QTY Withdrawn *</label>
-                  <div className="gradient-input-wrapper">
-                    <input disabled={disabledSrcGrp} type="number" value={formData.QTYWithdrawn || 0} onChange={e => handleFieldChange('QTYWithdrawn',  Number(e.target.value))} />
-                  </div>
-                </div>
-                <div className="input-group"></div>
-              </div>
-
-              <div className='form-row'>
-                <div className="input-group">
-                  <label>Source In *</label>
-                  <CustomDateTimePicker 
-                    alreadyLocal={true}
-                    value={formData.Source_x0020_in} 
-                    onChange={(newDate: string) => {console.log("selected date:", newDate); handleFieldChange('Source_x0020_in', newDate);}}
-                    columnKey="Source_x0020_in" 
-                    disabled={disabledSrcGrp}
-                  />
-                </div>
-                <div className="input-group">
-                  <label>Source Out *</label>
-                  <CustomDateTimePicker 
-                    alreadyLocal={true}
-                    value={formData.Source_x0020_out} 
-                    onChange={(newDate: string) => handleFieldChange('Source_x0020_out', newDate)}
-                    columnKey="Source_x0020_out" 
-                    disabled={disabledSrcGrp}
-                  />
-                </div>
-              </div>
-
-              <div className='form-row'>
-                <div className="input-group full-width">
-                  <CustomFileAttachment 
-                    ref={plantDrAttachmentRef}
-                    files={[
-                      ...attachments.filter(attr => attr.raw?.attachment_type === 'PLANT DR'), 
-                      ...tempPlantDrAttachments
-                    ]} 
-                    onFilesChange={(mergedList: any[]) => {
-                      const onlyNewFiles = mergedList.filter(f => f instanceof File);
-                      setTempPlantDrAttachments(onlyNewFiles);
-                    }}
-                    disabled={disabledSrcGrp}
-                    
-                    label={`DR Attachments | ID: ${plantDrAttachmentItemID || 'NONE'}`}
-                  />
-                </div>
-              </div>
-
-
-
-            </div>
-          </div>
-        </div>
-
-        {/* 4. Destination Details Group */}
-        <div className="input-group-group" ref={dispatchedToDestinationRef}>
-          <div className="group-header" onClick={() => toggleGroup('destinationDetails')}>
-            <div className="group-header-title">
-              <span>Dispatched to Destination</span>
-              {showValidationIcon('dispatchedToDestination')}
-            </div>
-            <span className={`toggle-icon ${collapsed.destinationDetails ? 'is-collapsed' : ''}`}></span>
-          </div>
-          <div className={`group-content-wrapper ${!collapsed.destinationDetails ? 'is-open' : ''}`}>
-            <div className={`group-content-inner`}>
-              {/*(prog_verified || prog_idx < 3 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
-              
-              <div className="form-row">
-                <SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver" options={driverOptions} value={formData.Driver_x0020_Unloader || ''} onChange={val => handleFieldChange('Driver_x0020_Unloader', String(val))} noClear />
-                <SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Unloader || ''} onChange={val => handleFieldChange('Helper_x0020_Unloader', String(val))} noClear />
-              </div>
-
-
-                <div className="form-row">
-
-                    <SearchableDropdown 
-                      disabled={disabledDstGrp} 
-                      label="Unloader Driver Type *" 
-                      options={getUnloaderOptions(formData, 'Driver')} 
-                      value={formData.DriverUnloaderType} 
-                      onChange={val => handleFieldChange('DriverUnloaderType', String(val))} 
-                      noClear 
-                    />
-
-                    <SearchableDropdown 
-                      disabled={disabledDstGrp} 
-                      label="Unloader Helper Type *" 
-                      options={getUnloaderOptions(formData, 'Helper')} 
-                      value={formData.HelperUnloaderType} 
-                      onChange={val => handleFieldChange('HelperUnloaderType', String(val))} 
-                      noClear 
-                    />
-         
-                </div>
-        
-
-              <div className='form-row'>
-                <div className="input-group">
-                  <label>QTY Delivered *</label>
-                  <div className="gradient-input-wrapper">
-                    <input disabled={disabledDstGrp} type="number" value={formData.QTYDelivered || 0} onChange={e => handleFieldChange('QTYDelivered',  Number(e.target.value))} />
-                  </div>
-                </div>
-                <div className="input-group">
-                  <label>Discrepancy</label>
-                  <div className="gradient-input-wrapper">
-                    <input 
-                        disabled 
-                        type="number" 
-                        value={discrepancy} 
-                        className={`discrepancy ${discrepancy < 0 ? 'negative' : 'positive'}`}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className='form-row'>
-                <div className="input-group">
-                  <label>Destination In *</label>
-                  <CustomDateTimePicker 
-                    alreadyLocal={true}
-                    value={formData.Destination_x0020_in} 
-                    onChange={(newDate: string) => handleFieldChange('Destination_x0020_in', newDate)}
-                    columnKey="Destination_x0020_in" 
-                    disabled={disabledDstGrp}
-                  />
-                </div>
-                <div className="input-group">
-                  <label>Destination Out *</label>
-                  <CustomDateTimePicker 
-                    alreadyLocal={true}
-                    value={formData.Destination_x0020_out} 
-                    onChange={(newDate: string) => handleFieldChange('Destination_x0020_out', newDate)}
-                    columnKey="Destination_x0020_out" 
-                    disabled={disabledDstGrp}
-                  />
-                </div>
-              </div>
-
-              <div className='form-row'>
-                <div className="input-group full-width">
-                  <CustomFileAttachment 
-                    ref={wsAttachmentRef}
-                    files={[
-                      ...attachments.filter(attr => attr.raw?.attachment_type === 'WS'), 
-                      ...tempWsAttachments
-                    ]} 
-                    onFilesChange={(mergedList: any[]) => {
-                      const onlyNewFiles = mergedList.filter(f => f instanceof File);
-                      setTempWsAttachments(onlyNewFiles);
-                    }}
-                    disabled={disabledDstGrp}
-                    label={`WS Attachments | ID: ${wsAttachmentItemID || 'NONE'}`}
-                  />
-                </div>
-              </div>
-
-              
-
-            </div>
-          </div>
-        </div>
-
-
-        {/* 4. Done/Verification Group */}
-        <div className="input-group-group" ref={doneRef}>
-          <div className="group-header" onClick={() => toggleGroup('doneVerification')}>
-            <div className="group-header-title">
-              <span>Documentation</span>
-              {showValidationIcon('done')}
-            </div>
-            <span className={`toggle-icon ${collapsed.doneVerification ? 'is-collapsed' : ''}`}></span>
-          </div>
-          <div className={`group-content-wrapper ${!collapsed.doneVerification ? 'is-open' : ''}`}>
-            <div className="group-content-inner">
-              {/*(prog_verified || prog_idx < 4 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
-              
-              <div className="form-row">
-
-                  <div className="input-group">
-                    <label>Verified By</label>
-                    <div className="gradient-input-wrapper">
-                      <input disabled type="text" value={prog_verified ? formData.Verified_x0020_By : (prog_idx === getProgIdxByProgress("Done") ? (editingUser?.FullName || '') : '') } onChange={e => handleFieldChange('Verified_x0020_By', e.target.value)} />
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>Dispatched By</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledAssGrp} type="text" value={formData.DispatchedBy || ''} onChange={e => handleFieldChange('DispatchedBy', e.target.value)} />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="input-group">
-                    <label>Documented Date</label>
-                      <CustomDateTimePicker 
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>Dispatcher Remarks</label>
+                      <div className="gradient-input-wrapper textarea-wrapper">
+                        <textarea disabled={disabledAssGrp} rows={5} value={formData.Planning || ''} onChange={(e) => handleFieldChange('Planning', e.target.value)} placeholder='Remarks & Planning...' />
+                      </div>
+                    </div>
+                  </div>
+
+
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Source Details Group */}
+            <div className="input-group-group" ref={dispatchedToSourceRef}>
+              <div className="group-header" onClick={() => toggleGroup('sourceDetails')}>
+
+                <div className="group-header-title">
+                  <span>Dispatched to Source</span>
+                  {showValidationIcon('dispatchedToSource')}
+                </div>
+                <span className={`toggle-icon ${collapsed.sourceDetails ? 'is-collapsed' : ''}`}></span>
+              </div>
+              <div className={`group-content-wrapper ${!collapsed.sourceDetails ? 'is-open' : ''}`}>
+                <div className="group-content-inner">
+                  {/*(prog_verified || prog_idx < 2 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
+
+                  <div className="form-row">
+                    <SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver" options={driverOptions} value={formData.Driver_x0020_Loader || ''} onChange={val => handleFieldChange('Driver_x0020_Loader', String(val))} noClear />
+                    <SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Loader || ''} onChange={val => handleFieldChange('Helper_x0020_Loader', String(val))} noClear />
+                  </div>
+
+
+                  <div className="form-row">
+
+                    <SearchableDropdown
+                      disabled={disabledSrcGrp}
+                      label="Loader Driver Type *"
+                      options={getLoaderOptions(formData, 'Driver')}
+                      value={formData.DriverLoaderType}
+                      onChange={val => handleFieldChange('DriverLoaderType', String(val))}
+                      noClear
+                    />
+
+                    <SearchableDropdown
+                      disabled={disabledSrcGrp}
+                      label="Loader Helper Type *"
+                      options={getLoaderOptions(formData, 'Helper')}
+                      value={formData.HelperLoaderType}
+                      onChange={val => handleFieldChange('HelperLoaderType', String(val))}
+                      noClear
+                    />
+
+                  </div>
+
+
+                  <div className='form-row'>
+                    <div className="input-group">
+                      <label>QTY Withdrawn *</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledSrcGrp} type="number" value={formData.QTYWithdrawn || 0} onChange={e => handleFieldChange('QTYWithdrawn', Number(e.target.value))} />
+                      </div>
+                    </div>
+                    <div className="input-group"></div>
+                  </div>
+
+                  <div className='form-row'>
+                    <div className="input-group">
+                      <label>Source In *</label>
+                      <CustomDateTimePicker
                         alreadyLocal={true}
-                        value={formData.TripProgress === 'Done' ? (formData.Documented_x0020_Date || new Date().toISOString()) : undefined } 
+                        value={formData.Source_x0020_in}
+                        onChange={(newDate: string) => { console.log("selected date:", newDate); handleFieldChange('Source_x0020_in', newDate); }}
+                        columnKey="Source_x0020_in"
+                        disabled={disabledSrcGrp}
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Source Out *</label>
+                      <CustomDateTimePicker
+                        alreadyLocal={true}
+                        value={formData.Source_x0020_out}
+                        onChange={(newDate: string) => handleFieldChange('Source_x0020_out', newDate)}
+                        columnKey="Source_x0020_out"
+                        disabled={disabledSrcGrp}
+                      />
+                    </div>
+                  </div>
+
+                  <div className='form-row'>
+                    <div className="input-group full-width">
+                      <CustomFileAttachment
+                        ref={plantDrAttachmentRef}
+                        files={[
+                          ...attachments.filter(attr => attr.raw?.attachment_type === 'PLANT DR'),
+                          ...tempPlantDrAttachments
+                        ]}
+                        onFilesChange={(mergedList: any[]) => {
+                          const onlyNewFiles = mergedList.filter(f => f instanceof File);
+                          setTempPlantDrAttachments(onlyNewFiles);
+                        }}
+                        disabled={disabledSrcGrp}
+
+                        label={`DR Attachments | ID: ${plantDrAttachmentItemID || 'NONE'}`}
+                      />
+                    </div>
+                  </div>
+
+
+
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Destination Details Group */}
+            <div className="input-group-group" ref={dispatchedToDestinationRef}>
+              <div className="group-header" onClick={() => toggleGroup('destinationDetails')}>
+                <div className="group-header-title">
+                  <span>Dispatched to Destination</span>
+                  {showValidationIcon('dispatchedToDestination')}
+                </div>
+                <span className={`toggle-icon ${collapsed.destinationDetails ? 'is-collapsed' : ''}`}></span>
+              </div>
+              <div className={`group-content-wrapper ${!collapsed.destinationDetails ? 'is-open' : ''}`}>
+                <div className={`group-content-inner`}>
+                  {/*(prog_verified || prog_idx < 3 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
+
+                  <div className="form-row">
+                    <SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver" options={driverOptions} value={formData.Driver_x0020_Unloader || ''} onChange={val => handleFieldChange('Driver_x0020_Unloader', String(val))} noClear />
+                    <SearchableDropdown disabled={disabledDstGrp} label="Unloader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Unloader || ''} onChange={val => handleFieldChange('Helper_x0020_Unloader', String(val))} noClear />
+                  </div>
+
+
+                  <div className="form-row">
+
+                    <SearchableDropdown
+                      disabled={disabledDstGrp}
+                      label="Unloader Driver Type *"
+                      options={getUnloaderOptions(formData, 'Driver')}
+                      value={formData.DriverUnloaderType}
+                      onChange={val => handleFieldChange('DriverUnloaderType', String(val))}
+                      noClear
+                    />
+
+                    <SearchableDropdown
+                      disabled={disabledDstGrp}
+                      label="Unloader Helper Type *"
+                      options={getUnloaderOptions(formData, 'Helper')}
+                      value={formData.HelperUnloaderType}
+                      onChange={val => handleFieldChange('HelperUnloaderType', String(val))}
+                      noClear
+                    />
+
+                  </div>
+
+
+                  <div className='form-row'>
+                    <div className="input-group">
+                      <label>QTY Delivered *</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledDstGrp} type="number" value={formData.QTYDelivered || 0} onChange={e => handleFieldChange('QTYDelivered', Number(e.target.value))} />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>Discrepancy</label>
+                      <div className="gradient-input-wrapper">
+                        <input
+                          disabled
+                          type="number"
+                          value={discrepancy}
+                          className={`discrepancy ${discrepancy < 0 ? 'negative' : 'positive'}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='form-row'>
+                    <div className="input-group">
+                      <label>Destination In *</label>
+                      <CustomDateTimePicker
+                        alreadyLocal={true}
+                        value={formData.Destination_x0020_in}
+                        onChange={(newDate: string) => handleFieldChange('Destination_x0020_in', newDate)}
+                        columnKey="Destination_x0020_in"
+                        disabled={disabledDstGrp}
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Destination Out *</label>
+                      <CustomDateTimePicker
+                        alreadyLocal={true}
+                        value={formData.Destination_x0020_out}
+                        onChange={(newDate: string) => handleFieldChange('Destination_x0020_out', newDate)}
+                        columnKey="Destination_x0020_out"
+                        disabled={disabledDstGrp}
+                      />
+                    </div>
+                  </div>
+
+                  <div className='form-row'>
+                    <div className="input-group full-width">
+                      <CustomFileAttachment
+                        ref={wsAttachmentRef}
+                        files={[
+                          ...attachments.filter(attr => attr.raw?.attachment_type === 'WS'),
+                          ...tempWsAttachments
+                        ]}
+                        onFilesChange={(mergedList: any[]) => {
+                          const onlyNewFiles = mergedList.filter(f => f instanceof File);
+                          setTempWsAttachments(onlyNewFiles);
+                        }}
+                        disabled={disabledDstGrp}
+                        label={`WS Attachments | ID: ${wsAttachmentItemID || 'NONE'}`}
+                      />
+                    </div>
+                  </div>
+
+
+
+                </div>
+              </div>
+            </div>
+
+
+            {/* 4. Done/Verification Group */}
+            <div className="input-group-group" ref={doneRef}>
+              <div className="group-header" onClick={() => toggleGroup('doneVerification')}>
+                <div className="group-header-title">
+                  <span>Documentation</span>
+                  {showValidationIcon('done')}
+                </div>
+                <span className={`toggle-icon ${collapsed.doneVerification ? 'is-collapsed' : ''}`}></span>
+              </div>
+              <div className={`group-content-wrapper ${!collapsed.doneVerification ? 'is-open' : ''}`}>
+                <div className="group-content-inner">
+                  {/*(prog_verified || prog_idx < 4 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
+
+                  <div className="form-row">
+
+                    <div className="input-group">
+                      <label>Verified By</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled type="text" value={prog_verified ? formData.Verified_x0020_By : (prog_idx === getProgIdxByProgress("Done") ? (editingUser?.FullName || '') : '')} onChange={e => handleFieldChange('Verified_x0020_By', e.target.value)} />
+                      </div>
+                    </div>
+
+                    <div className="input-group">
+                      <label>Documented Date</label>
+                      <CustomDateTimePicker
+                        alreadyLocal={true}
+                        value={formData.TripProgress === 'Done' ? (formData.Documented_x0020_Date || new Date().toISOString()) : undefined}
                         onChange={(newDate: string) => handleFieldChange('Documented_x0020_Date', newDate)}
-                        columnKey="Documented_x0020_Date" 
+                        columnKey="Documented_x0020_Date"
                         disabled={true}
                       />
+                    </div>
+
                   </div>
 
-              </div>
+                  <div className="form-row">
 
-              <div className="form-row">
-
-                  <div className="input-group">
-                    <label>Received Date *</label>
-                      <CustomDateTimePicker 
+                    <div className="input-group">
+                      <label>Received Date *</label>
+                      <CustomDateTimePicker
                         alreadyLocal={true}
-                        value={formData.Receive_x0020_Date} 
+                        value={formData.Receive_x0020_Date}
                         onChange={(newDate: string) => handleFieldChange('Receive_x0020_Date', newDate)}
-                        columnKey="Receive_x0020_Date" 
+                        columnKey="Receive_x0020_Date"
                         disabled={disabledDoneGrp}
                       />
-                  </div>
+                    </div>
 
 
-                  <div className="input-group">
-                    <label>Transmitted Date *</label>
-                      <CustomDateTimePicker 
+                    <div className="input-group">
+                      <label>Transmitted Date *</label>
+                      <CustomDateTimePicker
                         alreadyLocal={true}
-                        value={formData.Transimtted_x0020_Date} 
+                        value={formData.Transimtted_x0020_Date}
                         onChange={(newDate: string) => handleFieldChange('Transimtted_x0020_Date', newDate)}
-                        columnKey="Transimtted_x0020_Date" 
+                        columnKey="Transimtted_x0020_Date"
                         disabled={disabledDoneGrp}
                       />
+                    </div>
+
                   </div>
 
-              </div>
+                  <div className="form-row">
 
-              <div className="form-row">
+                    <div className="input-group">
+                      <label>Baranggay Fee</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledDoneGrp} type="number" value={formData.Baranggay_Fee_Total || 0} onChange={e => handleFieldChange('Baranggay_Fee_Total', Number(e.target.value))} />
+                      </div>
+                    </div>
 
-                  <div className="input-group">
-                    <label>Baranggay Fee</label>
-                    <div className="gradient-input-wrapper">
-                      <input disabled={disabledDoneGrp} type="number" value={formData.Baranggay_Fee_Total || 0} onChange={e => handleFieldChange('Baranggay_Fee_Total',  Number(e.target.value))} />
+
+                    <div className="input-group">
+                      <label>Toll Fee</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledDoneGrp} type="number" value={formData.Toll_Fee_Total || 0} onChange={e => handleFieldChange('Toll_Fee_Total', Number(e.target.value))} />
+                      </div>
+                    </div>
+
+                  </div>
+                  <div className="form-row">
+
+                    <div className="input-group">
+                      <label>Flat Tire Fee</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledDoneGrp} type="number" value={formData.FlatTire_Fee_Total || 0} onChange={e => handleFieldChange('FlatTire_Fee_Total', Number(e.target.value))} />
+                      </div>
+                    </div>
+
+
+                    <div className="input-group">
+                      <label>Other Fee</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledDoneGrp} type="number" value={formData.Other_Fee_Total || 0} onChange={e => handleFieldChange('Other_Fee_Total', Number(e.target.value))} />
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div className="form-row">
+
+                    <div className="input-group">
+                      <label>Actual Withdrawn *</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledDoneGrp} type="number" value={formData.QTYWithdrawn_Actual || 0} onChange={e => handleFieldChange('QTYWithdrawn_Actual', Number(e.target.value))} />
+                      </div>
+                    </div>
+
+
+                    <div className="input-group">
+                      <label>Actual Delivered *</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledDoneGrp} type="number" value={formData.QTYDelivered_Actual || 0} onChange={e => handleFieldChange('QTYDelivered_Actual', Number(e.target.value))} />
+                      </div>
+                    </div>
+
+
+                    <div className="input-group">
+                      <label>Actual Discrepancy</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled type="number" value={actualDiscrepancy} />
+                      </div>
+                    </div>
+
+                  </div>
+
+
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>POD Remarks</label>
+                      <div className="gradient-input-wrapper textarea-wrapper">
+                        <textarea disabled={disabledDoneGrp} rows={5} value={formData.Sales_x0020_Remarks || ''} onChange={(e) => handleFieldChange('Sales_x0020_Remarks', e.target.value)} placeholder='Verification Notes & Corrections...' />
+                      </div>
                     </div>
                   </div>
 
 
-                  <div className="input-group">
-                    <label>Toll Fee</label>
-                    <div className="gradient-input-wrapper">
-                      <input disabled={disabledDoneGrp} type="number" value={formData.Toll_Fee_Total || 0} onChange={e => handleFieldChange('Toll_Fee_Total',  Number(e.target.value))} />
-                    </div>
-                  </div>
-
-              </div>
-              <div className="form-row">
-
-                  <div className="input-group">
-                    <label>Flat Tire Fee</label>
-                    <div className="gradient-input-wrapper">
-                      <input disabled={disabledDoneGrp} type="number" value={formData.FlatTire_Fee_Total || 0} onChange={e => handleFieldChange('FlatTire_Fee_Total',  Number(e.target.value))} />
-                    </div>
-                  </div>
 
 
-                  <div className="input-group">
-                    <label>Other Fee</label>
-                    <div className="gradient-input-wrapper">
-                      <input disabled={disabledDoneGrp} type="number" value={formData.Other_Fee_Total || 0} onChange={e => handleFieldChange('Other_Fee_Total',  Number(e.target.value))} />
-                    </div>
-                  </div>
 
-              </div>
-
-              <div className="form-row">
-
-                  <div className="input-group">
-                    <label>Actual Withdrawn *</label>
-                    <div className="gradient-input-wrapper">
-                      <input disabled={disabledDoneGrp} type="number" value={formData.QTYWithdrawn_Actual || 0} onChange={e => handleFieldChange('QTYWithdrawn_Actual',  Number(e.target.value))} />
-                    </div>
-                  </div>
-
-
-                  <div className="input-group">
-                    <label>Actual Delivered *</label>
-                    <div className="gradient-input-wrapper">
-                      <input disabled={disabledDoneGrp} type="number" value={formData.QTYDelivered_Actual || 0} onChange={e => handleFieldChange('QTYDelivered_Actual',  Number(e.target.value))} />
-                    </div>
-                  </div>
-
-
-                  <div className="input-group">
-                    <label>Actual Discrepancy</label>
-                    <div className="gradient-input-wrapper">
-                      <input disabled type="number" value={actualDiscrepancy} />
-                    </div>
-                  </div>
-
-              </div>
-
-
-              <div className="form-row">
-                <div className="input-group">
-                  <label>POD Remarks</label>
-                  <div className="gradient-input-wrapper textarea-wrapper">
-                    <textarea disabled={disabledDoneGrp} rows={5} value={formData.Sales_x0020_Remarks || ''} onChange={(e) => handleFieldChange('Sales_x0020_Remarks', e.target.value)} placeholder='Verification Notes & Corrections...' />
-                  </div>
                 </div>
               </div>
-
-              
-
-              
-
             </div>
+
+
+
           </div>
-        </div>
 
 
+          <div className="order-dist-footer sticky-footer">
+            <div className={`footer-validation-message ${!validation.isValid ? 'invalid' : 'valid'}`}>
+              {prog_verified ? 'This trip has been concluded.' : validation.message}
+            </div>
+            <button className="btn-cancel" onClick={() => { handleOnClose() /*setShowIncidentPrompt(true)*/ }}>Close</button>
+            {(prog_verified || (['Developer', 'IT SUPPORT'].includes(editingUser?.Position || '') && formData.TripProgress === 'Done')) ?
 
-      </div>
+              (<button className="btn-cancel" onClick={() => { if (isSubmitting) return; handleTripRevert(); }} disabled={isSubmitting || !['POD', 'DCC', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')}>
+                {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
+                <Undo2 size={'var(--font-size-vlg)'} />
+                Revert
+              </button>) : (null)
+            }
 
-
-        <div className="order-dist-footer sticky-footer">
-          <div className={`footer-validation-message ${!validation.isValid ? 'invalid' : 'valid'}`}>
-            {prog_verified ? 'This trip has been concluded.' : validation.message}
-          </div>
-          <button className="btn-cancel" onClick={() => {handleOnClose() /*setShowIncidentPrompt(true)*/}}>Close</button>
-          {(prog_verified || (['Developer','IT SUPPORT'].includes(editingUser?.Position || '') && formData.TripProgress === 'Done')) ?
-
-            (<button className="btn-cancel" onClick={() => {if (isSubmitting) return; handleTripRevert();}} disabled={isSubmitting || !['POD', 'DCC', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')  }>
-              {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
-              <Undo2 size={'var(--font-size-vlg)'} />
-              Revert
-            </button>) : (null)
-          }
-
-          { !prog_verified &&  (
+            {!prog_verified && (
               <>
-                <button className="btn-save" onClick={() => {if (isSubmitting) return; handleTripSave();}} disabled={isSubmitting || prog_verified}>
+                <button className="btn-save" onClick={() => { if (isSubmitting) return; handleTripSave(); }} disabled={isSubmitting || prog_verified}>
                   {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
                   <SaveIcon size={'var(--font-size-vlg)'} />
                   Save
                 </button>
-                <button 
-                  className="btn-proceed" 
+                <button
+                  className="btn-proceed"
                   onClick={() => {
                     if (isSubmitting) return;
                     handleTripProceed(prog_next);
                   }}
                   disabled={!validation.isValid || isSubmitting || prog_verified}
                 >
-                  {prog_icon} {prog_verified ? 'Verified' : prog_next.replace('ed','')}
+                  {prog_icon} {prog_verified ? 'Verified' : prog_next.replace('ed', '')}
                 </button>
               </>
             )
-          }
-          {isSubmitting && (<Loader2 style={{animation: 'spin 1s linear infinite'}} size={'var(--font-size-vlg)'} />)}
-        </div>
+            }
+            {isSubmitting && (<Loader2 style={{ animation: 'spin 1s linear infinite' }} size={'var(--font-size-vlg)'} />)}
+          </div>
 
 
 
-        {personnelValidationModal?.isOpen && createPortal(
-          <Modal onClose={() => setPersonnelValidationModal(null)} width={'35%'} height={'30%'}>
-            <div className="personnel-validation-modal">
-              <h3>Validation Issue</h3>
-              {personnelValidationModal.type === 'attendance' ? (
-                <>
-                  <p>{personnelValidationModal.personnelName} is currently not on duty. Would you like to update the attendance?</p>
-                  <div className="modal-actions">
-                    <button className="btn-cancel" onClick={() => {
-                      if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(false);
-                      setPersonnelValidationModal(null);
-                      setPendingPersonnelValidationResolve(null);
-                    }}>Cancel</button>
-                    <button className="btn-proceed" onClick={() => { 
-                      if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(true);
-                      handleUpdateAttendance(personnelValidationModal.personnelName, personnelValidationModal.personnelID.toString(), personnelValidationModal.personnelType, 'PRESENT', false); 
+          {personnelValidationModal?.isOpen && createPortal(
+            <Modal onClose={() => setPersonnelValidationModal(null)} width={'35%'} height={'30%'}>
+              <div className="personnel-validation-modal">
+                <h3>Validation Issue</h3>
+                {personnelValidationModal.type === 'attendance' ? (
+                  <>
+                    <p>{personnelValidationModal.personnelName} is currently not on duty. Would you like to update the attendance?</p>
+                    <div className="modal-actions">
+                      <button className="btn-cancel" onClick={() => {
+                        if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(false);
+                        setPersonnelValidationModal(null);
+                        setPendingPersonnelValidationResolve(null);
+                      }}>Cancel</button>
+                      <button className="btn-proceed" onClick={() => {
+                        if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(true);
+                        handleUpdateAttendance(personnelValidationModal.personnelName, personnelValidationModal.personnelID.toString(), personnelValidationModal.personnelType, 'PRESENT', false);
 
-                      setPersonnelValidationModal(null);
-                      setPendingPersonnelValidationResolve(null);
+                        setPersonnelValidationModal(null);
+                        setPendingPersonnelValidationResolve(null);
 
-                    }}>TAGGED AS PRESENT</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p>{personnelValidationModal.personnelName} is already assigned to trip {personnelValidationModal.tripOE}. Check the trip details for more information.</p>
-                  <div className="modal-actions">
-                    <button className="btn-cancel" onClick={() => {
-                      if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(false);
-                      setPersonnelValidationModal(null);
-                      setPendingPersonnelValidationResolve(null);
-                    }}>Cancel</button>
-                    <button className="btn-proceed" onClick={() => {
-                      if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(false);
+                      }}>TAGGED AS PRESENT</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p>{personnelValidationModal.personnelName} is already assigned to trip {personnelValidationModal.tripOE}. Check the trip details for more information.</p>
+                    <div className="modal-actions">
+                      <button className="btn-cancel" onClick={() => {
+                        if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(false);
+                        setPersonnelValidationModal(null);
+                        setPendingPersonnelValidationResolve(null);
+                      }}>Cancel</button>
+                      <button className="btn-proceed" onClick={() => {
+                        if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(false);
 
-                      if (onNavigateToTrip && personnelValidationModal.tripOE) {
-                        onNavigateToTrip(personnelValidationModal.tripOE);
-                      }
+                        if (onNavigateToTrip && personnelValidationModal.tripOE) {
+                          onNavigateToTrip(personnelValidationModal.tripOE);
+                        }
 
-                      setPersonnelValidationModal(null);
-                      setPendingPersonnelValidationResolve(null);
-                    }}>Go to Trip</button>
-                  </div>
-                </>
-              )}
-            </div>
-          </Modal>,
-          document.body
-        )}
-
-        {showTruckConflictModal && createPortal(
-          <Modal onClose={() => setShowTruckConflictModal(false)} width={'35%'} height={'auto'}>
-            <div className="personnel-validation-modal">
-              <h3>Unit cannot be assigned</h3>
-              <p>The selected truck or paired trailer cannot be assigned due to the following reasons:</p>
-              <ul className="conflict-list">
-                {truckConflictInfo.map((info, index) => (
-                  <li key={index}>{info}</li>
-                ))}
-              </ul>
-              <div className="modal-actions">
-                <button className="btn-proceed" onClick={() => setShowTruckConflictModal(false)}>OK</button>
+                        setPersonnelValidationModal(null);
+                        setPendingPersonnelValidationResolve(null);
+                      }}>Go to Trip</button>
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-          </Modal>,
-          document.body
-        )}
-        
-        {ShowOEDuplicateWarningModal && createPortal(
-          <Modal onClose={() => setShowOEDuplicateWarningModal(false)} width={'35%'} height={'auto'}>
-            <div className="personnel-validation-modal">
-              <h3>OE Already Exists</h3>
-              <p>The OE {formData.OE} already exists in the system. Please choose a different OE.</p>
-              <div className="modal-actions">
-                <button className="btn-proceed" onClick={() => {
-                  if (onNavigateToTrip && formData.OE) {
-                    onNavigateToTrip(formData.OE);
-                  }
-                  setShowOEDuplicateWarningModal(false)
-                  }}>Go to Trip</button>
-              </div>
-            </div>
-          </Modal>,
-          document.body
-        )}
+            </Modal>,
+            document.body
+          )}
 
-        {processTruckIR && createPortal(
-          <Modal onClose={() => {setProcessTruckIR(null); setIsCreatingIR(false);}} width={'35%'} height={'auto'}>
-            <div className="personnel-validation-modal">
-              <h2 style={{fontSize: 'var(--font-size-lg)', fontWeight: 'bold'}}>Do you want to process this Incident Report [{processTruckIR.irid}] now? </h2>
-              <p style={{fontSize: 'var(--font-size-lg)', color: 'var(--color-accent)'}}>{processTruckIR.conflict}</p>
-              <div className="modal-actions">
-                <button className="btn-proceed" onClick={() => {handleConfirmProcessIR(processTruckIR.irid); setProcessTruckIR(null); setIsCreatingIR(true);}}>OK</button>
-                <button className="btn-cancel" onClick={() => {setProcessTruckIR(null); setIsCreatingIR(false);}}>NOT NOW</button>
-              </div>
-            </div>
-          </Modal>,
-          document.body
-        )}
-
-        {showCannotChangeTripModal && createPortal(
-          <Modal onClose={() => setShowCannotChangeTripModal(null)} width={'35%'} height={'auto'}>
-            <div className="personnel-validation-modal">
-              <h2 style={{fontSize: 'var(--font-size-vlg)', fontWeight: 'bold'}}>Cannot {showCannotChangeTripModal.what} Trip</h2>
-              <p style={{fontSize: 'var(--font-size-lg)', color: 'var(--color-accent)'}}>{showCannotChangeTripModal.message}</p>
-              <div className="modal-actions">
-                <button className="btn-proceed" onClick={() => setShowCannotChangeTripModal(null)}>OK</button>
-              </div>
-            </div>
-          </Modal>,
-          document.body
-        )}
-
-        {showCancelConfirmModal && createPortal(
-          <Modal onClose={() => { setShowCancelConfirmModal(false); setCancelRemarks(""); setSkipBroadcast(false); }} width={'25%'} height={'auto'}>
-            <div className="personnel-validation-modal">
-              <h3 className="modal-title">Confirm Cancellation</h3>
-              <p>Are you sure you want to cancel trip <strong>{formData.OE}</strong>? This action cannot be undone.</p>
-              
-              {/* --- Cancellation Remarks Field --- */}
-              <div className="remarks-field-container">
-                <label className="field-label">
-                  Cancellation Remarks <span className="required-asterisk">*</span>
-                </label>
-                
-                <div className="gradient-input-wrapper">
-                  <textarea
-                    rows={3}
-                    placeholder="Please specify the reason for cancellation..."
-                    value={cancelRemarks}
-                    onChange={(e) => setCancelRemarks(e.target.value)}
-                    className="modal-textarea"
-                  />
+          {showTruckConflictModal && createPortal(
+            <Modal onClose={() => setShowTruckConflictModal(false)} width={'35%'} height={'auto'}>
+              <div className="personnel-validation-modal">
+                <h3>Unit cannot be assigned</h3>
+                <p>The selected truck or paired trailer cannot be assigned due to the following reasons:</p>
+                <ul className="conflict-list">
+                  {truckConflictInfo.map((info, index) => (
+                    <li key={index}>{info}</li>
+                  ))}
+                </ul>
+                <div className="modal-actions">
+                  <button className="btn-proceed" onClick={() => setShowTruckConflictModal(false)}>OK</button>
                 </div>
               </div>
+            </Modal>,
+            document.body
+          )}
 
-              {/* --- Image Attachment Field --- */}
-              <div className="image-field-container">
-                <label className="field-label">
-                  Reference Image <span className="optional-tag">(Optional)</span>
-                </label>
-                
-                <div className="gradient-input-wrapper">
-                  <div 
-                    className="image-input-container-box"
-                    onPaste={handleImagePaste}
-                    tabIndex={0} // Allows the box to accept focus for pasting
-                    style={{ outline: 'none' }} // Prevents default browser focus rings if undesirable
-                  >
-                    {attachedCancellationImage ? (
-                      <div className="attached-image-info">
-                        <span className="image-filename">
-                          📎 {attachedCancellationImage.name}
-                        </span>
-                        <button 
-                          onClick={() => setAttachedCancellationImage(null)}
-                          className="btn-remove-image"
-                          title="Remove Image"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="file-upload-label" style={{ cursor: 'pointer' }}>
-                        Choose Image or Paste (Ctrl + V)...
-                        <input 
-                          type="file" 
-                          accept="image/png, image/jpeg, image/jpg" 
-                          onChange={handleCancellatioFileChange} 
-                          className="hidden-file-input"
-                        />
-                      </label>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* --- TEST --- */}
-
-              {/* --- Developer Broadcast Bypass Field --- */}
-              {['Developer','IT SUPPORT'].includes(editingUser?.Position || '') && (
-                <div className="broadcast-bypass-container" style={{ margin: '15px 0 5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    id="bypassTeamsBroadcast"
-                    checked={skipBroadcast}
-                    onChange={(e) => setSkipBroadcast(e.target.checked)}
-                    style={{ cursor: 'pointer', width: '16px', height: '16px' }}
-                  />
-                  <label htmlFor="bypassTeamsBroadcast" style={{ fontSize: '13px', fontWeight: '500', color: '#ff3b3b', cursor: 'pointer', userSelect: 'none' }}>
-                    Do not broadcast to Teams
-                  </label>
-                </div>
-              )}
-
-              {/* --- Modal Actions --- */}
-              <div className="modal-actions">
-                <button className="btn-proceed" onClick={() => { setShowCancelConfirmModal(false); setSkipBroadcast(false); }}>GO BACK</button>
-                <button 
-                  className={`btn-cancel-wait ${isCancelDisabled ? 'disabled' : 'enabled'}`}
-                  onClick={() => {
-                    if (!isCancelDisabled) {
-                      // If checked, pass false (Do not broadcast). If unchecked or not a developer, defaults to true.
-                      const shouldBroadcast = !skipBroadcast;
-                      handleCancelTrip(cancelRemarks.trim(), shouldBroadcast);
-                      
-                      setShowCancelConfirmModal(false);
-                      setSkipBroadcast(false); // Reset field tracking
+          {ShowOEDuplicateWarningModal && createPortal(
+            <Modal onClose={() => setShowOEDuplicateWarningModal(false)} width={'35%'} height={'auto'}>
+              <div className="personnel-validation-modal">
+                <h3>OE Already Exists</h3>
+                <p>The OE {formData.OE} already exists in the system. Please choose a different OE.</p>
+                <div className="modal-actions">
+                  <button className="btn-proceed" onClick={() => {
+                    if (onNavigateToTrip && formData.OE) {
+                      onNavigateToTrip(formData.OE);
                     }
+                    setShowOEDuplicateWarningModal(false)
+                  }}>Go to Trip</button>
+                </div>
+              </div>
+            </Modal>,
+            document.body
+          )}
+
+          {processTruckIR && createPortal(
+            <Modal onClose={() => { setProcessTruckIR(null); setIsCreatingIR(false); }} width={'35%'} height={'auto'}>
+              <div className="personnel-validation-modal">
+                <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 'bold' }}>Do you want to process this Incident Report [{processTruckIR.irid}] now? </h2>
+                <p style={{ fontSize: 'var(--font-size-lg)', color: 'var(--color-accent)' }}>{processTruckIR.conflict}</p>
+                <div className="modal-actions">
+                  <button className="btn-proceed" onClick={() => { handleConfirmProcessIR(processTruckIR.irid); setProcessTruckIR(null); setIsCreatingIR(true); }}>OK</button>
+                  <button className="btn-cancel" onClick={() => { setProcessTruckIR(null); setIsCreatingIR(false); }}>NOT NOW</button>
+                </div>
+              </div>
+            </Modal>,
+            document.body
+          )}
+
+          {showCannotChangeTripModal && createPortal(
+            <Modal onClose={() => setShowCannotChangeTripModal(null)} width={'35%'} height={'auto'}>
+              <div className="personnel-validation-modal">
+                <h2 style={{ fontSize: 'var(--font-size-vlg)', fontWeight: 'bold' }}>Cannot {showCannotChangeTripModal.what} Trip</h2>
+                <p style={{ fontSize: 'var(--font-size-lg)', color: 'var(--color-accent)' }}>{showCannotChangeTripModal.message}</p>
+                <div className="modal-actions">
+                  <button className="btn-proceed" onClick={() => setShowCannotChangeTripModal(null)}>OK</button>
+                </div>
+              </div>
+            </Modal>,
+            document.body
+          )}
+
+          {showCancelConfirmModal && createPortal(
+            <Modal onClose={() => { setShowCancelConfirmModal(false); setCancelRemarks(""); setSkipBroadcast(false); }} width={'25%'} height={'auto'}>
+              <div className="personnel-validation-modal">
+                <h3 className="modal-title">Confirm Cancellation</h3>
+                <p>Are you sure you want to cancel trip <strong>{formData.OE}</strong>? This action cannot be undone.</p>
+
+                {/* --- Cancellation Remarks Field --- */}
+                <div className="remarks-field-container">
+                  <label className="field-label">
+                    Cancellation Remarks <span className="required-asterisk">*</span>
+                  </label>
+
+                  <div className="gradient-input-wrapper">
+                    <textarea
+                      rows={3}
+                      placeholder="Please specify the reason for cancellation..."
+                      value={cancelRemarks}
+                      onChange={(e) => setCancelRemarks(e.target.value)}
+                      className="modal-textarea"
+                    />
+                  </div>
+                </div>
+
+                {/* --- Image Attachment Field --- */}
+                <div className="image-field-container">
+                  <label className="field-label">
+                    Reference Image <span className="optional-tag">(Optional)</span>
+                  </label>
+
+                  <div className="gradient-input-wrapper">
+                    <div
+                      className="image-input-container-box"
+                      onPaste={handleImagePaste}
+                      tabIndex={0} // Allows the box to accept focus for pasting
+                      style={{ outline: 'none' }} // Prevents default browser focus rings if undesirable
+                    >
+                      {attachedCancellationImage ? (
+                        <div className="attached-image-info">
+                          <span className="image-filename">
+                            📎 {attachedCancellationImage.name}
+                          </span>
+                          <button
+                            onClick={() => setAttachedCancellationImage(null)}
+                            className="btn-remove-image"
+                            title="Remove Image"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="file-upload-label" style={{ cursor: 'pointer' }}>
+                          Choose Image or Paste (Ctrl + V)...
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg, image/jpg"
+                            onChange={handleCancellatioFileChange}
+                            className="hidden-file-input"
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* --- TEST --- */}
+
+                {/* --- Developer Broadcast Bypass Field --- */}
+                {['Developer', 'IT SUPPORT'].includes(editingUser?.Position || '') && (
+                  <div className="broadcast-bypass-container" style={{ margin: '15px 0 5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="checkbox"
+                      id="bypassTeamsBroadcast"
+                      checked={skipBroadcast}
+                      onChange={(e) => setSkipBroadcast(e.target.checked)}
+                      style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                    />
+                    <label htmlFor="bypassTeamsBroadcast" style={{ fontSize: '13px', fontWeight: '500', color: '#ff3b3b', cursor: 'pointer', userSelect: 'none' }}>
+                      Do not broadcast to Teams
+                    </label>
+                  </div>
+                )}
+
+                {/* --- Modal Actions --- */}
+                <div className="modal-actions">
+                  <button className="btn-proceed" onClick={() => { setShowCancelConfirmModal(false); setSkipBroadcast(false); }}>GO BACK</button>
+                  <button
+                    className={`btn-cancel-wait ${isCancelDisabled ? 'disabled' : 'enabled'}`}
+                    onClick={() => {
+                      if (!isCancelDisabled) {
+                        // If checked, pass false (Do not broadcast). If unchecked or not a developer, defaults to true.
+                        const shouldBroadcast = !skipBroadcast;
+                        handleCancelTrip(cancelRemarks.trim(), shouldBroadcast);
+
+                        setShowCancelConfirmModal(false);
+                        setSkipBroadcast(false); // Reset field tracking
+                      }
+                    }}
+                    disabled={isCancelDisabled}
+                  >
+                    {isCancelDisabled ? `CANCEL TRIP (${cancelCountdown})` : 'CANCEL TRIP'}
+                  </button>
+                </div>
+              </div>
+            </Modal>,
+            document.body
+          )}
+
+
+          {showUnsavedChangesModal && createPortal(
+            <Modal onClose={() => setShowUnsavedChangesModal(false)} width={'35%'} height={'30%'}>
+              <div className="personnel-validation-modal">
+                <h3>Unsaved Changes</h3>
+                <p>You have unsaved changes that will be lost. Are you sure you want to continue?</p>
+                <div className="modal-actions">
+                  <button className="btn-proceed" onClick={() => { if (pendingResolve) pendingResolve(false); setShowUnsavedChangesModal(false); }}>GO BACK</button>
+                  <button className="btn-cancel" onClick={() => {
+                    if (pendingResolve) pendingResolve(true);
+                    onClose();
+                    setShowUnsavedChangesModal(false);
+                  }}>CONTINUE WITHOUT SAVING</button>
+                </div>
+              </div>
+            </Modal>,
+            document.body
+          )}
+
+          {showShareModal && createPortal(
+            <Modal onClose={() => setShowShareModal(false)} width={'35%'} height={'40%'}>
+              <div className="personnel-validation-modal">
+                <h4>@Mention Trip {shareOE}</h4>
+                <p style={{ marginBottom: '10px' }}>Leave a note to let them know!</p>
+
+                {/* Your signature gradient outline pattern */}
+                <div className="share-gradient-wrapper">
+                  <textarea
+                    className="share-textarea"
+                    value={shareComment}
+                    onChange={(e) => setShareComment(e.target.value)}
+                    placeholder="e.g., Please prioritize this load..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="modal-actions" style={{ marginTop: '20px' }}>
+                  <button className="btn-cancel" onClick={() => setShowShareModal(false)}>
+                    CANCEL
+                  </button>
+                  <button className="btn-proceed" onClick={() => {
+                    const finalText = `[TRIP:${shareOE}] ${shareComment}`.trim();
+
+                    // Dispatch to your ChatBox event listener
+                    window.dispatchEvent(new CustomEvent(GSDC_SEND_TO_CHAT_key, {
+                      detail: { text: finalText, channel: 'Dispatch' }
+                    }));
+
+                    setShareComment("");
+                    setShowShareModal(false);
                   }}
-                  disabled={isCancelDisabled}
-                >
-                  {isCancelDisabled ? `CANCEL TRIP (${cancelCountdown})` : 'CANCEL TRIP'}
-                </button>
+                    style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}
+                  >
+                    SEND TO CHAT <Send size={16} />
+                  </button>
+                </div>
               </div>
-            </div>
-          </Modal>,
-          document.body
-        )}
+            </Modal>,
+            document.body
+          )}
 
 
-        {showUnsavedChangesModal && createPortal(
-          <Modal onClose={() => setShowUnsavedChangesModal(false)} width={'35%'} height={'30%'}>
-            <div className="personnel-validation-modal">
-              <h3>Unsaved Changes</h3>
-              <p>You have unsaved changes that will be lost. Are you sure you want to continue?</p>
-              <div className="modal-actions">
-                <button className="btn-proceed" onClick={() => { if (pendingResolve) pendingResolve(false); setShowUnsavedChangesModal(false); }}>GO BACK</button>
-                <button className="btn-cancel" onClick={() => {
-                  if (pendingResolve) pendingResolve(true);
-                  onClose();
-                  setShowUnsavedChangesModal(false);
-                }}>CONTINUE WITHOUT SAVING</button>
-              </div>
-            </div>
-          </Modal>,
-          document.body
-        )}
 
-        {showShareModal && createPortal(
-          <Modal onClose={() => setShowShareModal(false)} width={'35%'} height={'40%'}>
-            <div className="personnel-validation-modal">
-              <h4>@Mention Trip {shareOE}</h4>
-              <p style={{ marginBottom: '10px' }}>Leave a note to let them know!</p>
-              
-              {/* Your signature gradient outline pattern */}
-              <div className="share-gradient-wrapper">
-                <textarea 
-                  className="share-textarea"
-                  value={shareComment}
-                  onChange={(e) => setShareComment(e.target.value)}
-                  placeholder="e.g., Please prioritize this load..."
-                  rows={4}
-                />
-              </div>
-
-              <div className="modal-actions" style={{ marginTop: '20px' }}>
-                <button className="btn-cancel" onClick={() => setShowShareModal(false)}>
-                  CANCEL
-                </button>
-                <button className="btn-proceed" onClick={() => {
-                  const finalText = `[TRIP:${shareOE}] ${shareComment}`.trim();
-                  
-                  // Dispatch to your ChatBox event listener
-                  window.dispatchEvent(new CustomEvent(GSDC_SEND_TO_CHAT_key, { 
-                    detail: { text: finalText, channel: 'Dispatch' } 
-                  }));
-
-                  setShareComment("");
-                  setShowShareModal(false);
-                }}
-                style={{display: 'flex', flexDirection: 'row', gap: '5px'}}
-                >
-                  SEND TO CHAT <Send size={16}/>
-                </button>
-              </div>
-            </div>
-          </Modal>,
-          document.body
-        )}
-
-        
-
-        {showAssignmentConfirmModal && assignmentChanges && createPortal(
-          <Modal
-            onClose={() => {
-              setShowAssignmentConfirmModal(false);
-              pendingAssignmentConfirmation?.(null); // Resolves the promise with 'false' on close
-              setIsSubmitting(false);
-            }}
-             width={'35%'} height={'auto'}
-          >
-            <div className="assignment-changes-preview" style={{overflowY: 'auto', maxHeight: '70vh', padding: '20px'}}>
-              <h4>Trip Assignment Changes: {`[${formData.OE}]`}</h4>
-              <p>Please review and confirm the following changes: </p>
-              <ul>
-                {assignmentChanges.newDriver && (
-                  <li>
-                    <span className="assignment-label-new"><strong>New Driver:</strong></span> {assignmentChanges.newDriver.name}. <span className="status-change"><span className="status-old">{assignmentChanges.newDriver.lastStatus}</span>  <ArrowRight size={16} />  <span className="status-new">{assignmentChanges.newDriver.status}</span></span>
-                  </li>
-                )}
-                {assignmentChanges.oldDriver && (
-                  <li>
-                    <span className="assignment-label-old"><strong>Old Driver:</strong></span> {assignmentChanges.oldDriver.name}. <span className="status-change"><span className="status-old">{assignmentChanges.oldDriver.lastStatus}</span> <ArrowRight size={16} />
-                      <select
-                        className="status-new"
-                        value={assignmentChanges.oldDriver.newStatus}
-                        onChange={(e) =>
-                          setAssignmentChanges(prev => prev ? { ...prev, oldDriver: { ...prev.oldDriver!, newStatus: e.target.value as 'ABSENT' | 'PRESENT' } } : null)
-                        }
-                      >
-                        <option value="ABSENT">ABSENT</option>
-                        <option value="PRESENT">PRESENT</option>
-                      </select>
-                    </span>
-                  </li>
-                )}
-                {assignmentChanges.newHelper && (
-                  <li>
-                    <span className="assignment-label-new"><strong>New Helper:</strong></span> {assignmentChanges.newHelper.name}. <span className="status-change"><span className="status-old">{assignmentChanges.newHelper.lastStatus}</span> <ArrowRight size={16} /> <span className="status-new">{assignmentChanges.newHelper.status}</span></span>
-                  </li>
-                )}
-                {assignmentChanges.oldHelper && (
-                  <li>
-                    <span className="assignment-label-old"><strong>Old Helper:</strong></span> {assignmentChanges.oldHelper.name}. <span className="status-change"><span className="status-old">{assignmentChanges.oldHelper.lastStatus}</span> <ArrowRight size={16} />
-                      <select
-                        className="status-new"
-                        value={assignmentChanges.oldHelper.newStatus}
-                        onChange={(e) =>
-                          setAssignmentChanges(prev => prev ? { ...prev, oldHelper: { ...prev.oldHelper!, newStatus: e.target.value as 'ABSENT' | 'PRESENT' } } : null)
-                        }
-                      >
-                        <option value="ABSENT">ABSENT</option>
-                        <option value="PRESENT">PRESENT</option>
-                      </select>
-                    </span>
-                  </li>
-                )}
-                {assignmentChanges.newVehicle && <li className="assignment-change-item"><strong>Truck:</strong> <span className="status-old">{assignmentChanges.oldVehicle}</span> <ArrowRight size={16} /> {assignmentChanges.newVehicle} </li>}
-                {assignmentChanges.newBO && <li className="assignment-change-item"><strong>Trailer:</strong> <span className="status-old">{assignmentChanges.oldBO}</span> <ArrowRight size={16} /> {assignmentChanges.newBO} </li>}
-              </ul>
+          {showAssignmentConfirmModal && assignmentChanges && createPortal(
+            <Modal
+              onClose={() => {
+                setShowAssignmentConfirmModal(false);
+                pendingAssignmentConfirmation?.(null); // Resolves the promise with 'false' on close
+                setIsSubmitting(false);
+              }}
+              width={'35%'} height={'auto'}
+            >
+              <div className="assignment-changes-preview" style={{ overflowY: 'auto', maxHeight: '70vh', padding: '20px' }}>
+                <h4>Trip Assignment Changes: {`[${formData.OE}]`}</h4>
+                <p>Please review and confirm the following changes: </p>
+                <ul>
+                  {assignmentChanges.newDriver && (
+                    <li>
+                      <span className="assignment-label-new"><strong>New Driver:</strong></span> {assignmentChanges.newDriver.name}. <span className="status-change"><span className="status-old">{assignmentChanges.newDriver.lastStatus}</span>  <ArrowRight size={16} />  <span className="status-new">{assignmentChanges.newDriver.status}</span></span>
+                    </li>
+                  )}
+                  {assignmentChanges.oldDriver && (
+                    <li>
+                      <span className="assignment-label-old"><strong>Old Driver:</strong></span> {assignmentChanges.oldDriver.name}. <span className="status-change"><span className="status-old">{assignmentChanges.oldDriver.lastStatus}</span> <ArrowRight size={16} />
+                        <select
+                          className="status-new"
+                          value={assignmentChanges.oldDriver.newStatus}
+                          onChange={(e) =>
+                            setAssignmentChanges(prev => prev ? { ...prev, oldDriver: { ...prev.oldDriver!, newStatus: e.target.value as 'ABSENT' | 'PRESENT' } } : null)
+                          }
+                        >
+                          <option value="ABSENT">ABSENT</option>
+                          <option value="PRESENT">PRESENT</option>
+                        </select>
+                      </span>
+                    </li>
+                  )}
+                  {assignmentChanges.newHelper && (
+                    <li>
+                      <span className="assignment-label-new"><strong>New Helper:</strong></span> {assignmentChanges.newHelper.name}. <span className="status-change"><span className="status-old">{assignmentChanges.newHelper.lastStatus}</span> <ArrowRight size={16} /> <span className="status-new">{assignmentChanges.newHelper.status}</span></span>
+                    </li>
+                  )}
+                  {assignmentChanges.oldHelper && (
+                    <li>
+                      <span className="assignment-label-old"><strong>Old Helper:</strong></span> {assignmentChanges.oldHelper.name}. <span className="status-change"><span className="status-old">{assignmentChanges.oldHelper.lastStatus}</span> <ArrowRight size={16} />
+                        <select
+                          className="status-new"
+                          value={assignmentChanges.oldHelper.newStatus}
+                          onChange={(e) =>
+                            setAssignmentChanges(prev => prev ? { ...prev, oldHelper: { ...prev.oldHelper!, newStatus: e.target.value as 'ABSENT' | 'PRESENT' } } : null)
+                          }
+                        >
+                          <option value="ABSENT">ABSENT</option>
+                          <option value="PRESENT">PRESENT</option>
+                        </select>
+                      </span>
+                    </li>
+                  )}
+                  {assignmentChanges.newVehicle && <li className="assignment-change-item"><strong>Truck:</strong> <span className="status-old">{assignmentChanges.oldVehicle}</span> <ArrowRight size={16} /> {assignmentChanges.newVehicle} </li>}
+                  {assignmentChanges.newBO && <li className="assignment-change-item"><strong>Trailer:</strong> <span className="status-old">{assignmentChanges.oldBO}</span> <ArrowRight size={16} /> {assignmentChanges.newBO} </li>}
+                </ul>
                 {/* Insert this inside the .assignment-changes-preview div, after the <ul> */}
                 {assignmentChanges.attendancePayload && assignmentChanges.attendancePayload.length > 0 && (
                   <div className="attendance-payload-preview">
@@ -3785,11 +3787,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       <Calendar size={16} /> Attendance Credit Preview
                     </h5>
                     <div className="payload-table-wrapper">
-                      
-                      <div className="payload-header-wrapper">  
+
+                      <div className="payload-header-wrapper">
                         <div className="payload-label">Base KM:</div>
                         <div className="payload-value">{formData.TripKM}</div>
-                        
+
                         <div className="payload-label">Base index:</div>
                         <div className="payload-value">{formData.TripIndex}</div>
 
@@ -3812,8 +3814,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         <tbody>
                           {assignmentChanges.attendancePayload.map((record, idx) => (
                             <tr key={idx}>
-                              <td style={{color: 'var(--color-darkslategray)'}}>{record.EmployeeName}</td>
-                              <td style={{color: record.Position === 'Driver' ? 'var(--color-orange)' : 'var(--color-primary)', fontWeight: 'bold'}}>{record.Position}</td>
+                              <td style={{ color: 'var(--color-darkslategray)' }}>{record.EmployeeName}</td>
+                              <td style={{ color: record.Position === 'Driver' ? 'var(--color-orange)' : 'var(--color-primary)', fontWeight: 'bold' }}>{record.Position}</td>
                               <td style={{ fontWeight: 'bold' }}>{record.TripKM}</td>
                               <td style={{ fontWeight: 'bold' }}>{record.AttendanceDetail}</td>
                               <td>
@@ -3830,7 +3832,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                                   </div>
                                 ) : (
                                   /* --- RENDER ORDINAL COUNT ONCE RESOLVED --- */
-                                  getOrdinalServedCount(record.SecondTrip === null ? 1 : Number(record.SecondTrip)+1)
+                                  getOrdinalServedCount(record.SecondTrip === null ? 1 : Number(record.SecondTrip) + 1)
                                 )}
                               </td>
                             </tr>
@@ -3844,109 +3846,109 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-            </div>
-            <div className="assignment-changes-modal-actions">
+              </div>
+              <div className="assignment-changes-modal-actions">
 
-              {/* Label and Date Picker Container */}
-              <div className="served-date-container">
-                <label className="served-date-label">
-                  Served Date:
-                </label>
+                {/* Label and Date Picker Container */}
+                <div className="served-date-container">
+                  <label className="served-date-label">
+                    Served Date:
+                  </label>
 
-                <div className="served-date-gradient-input-wrapper">
-                  <div className="served-date-input-inner-container">
-                    <input
-                      type="date"
-                      className="served-date-custom-date-input"
-                      value={servedDate.toISOString().split('T')[0]}
-                      disabled={isFetchingServedCounts as boolean} // Disable input while executing active requests
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          setServedDate(new Date(e.target.value));
-                        }
-                      }}
-                    />
+                  <div className="served-date-gradient-input-wrapper">
+                    <div className="served-date-input-inner-container">
+                      <input
+                        type="date"
+                        className="served-date-custom-date-input"
+                        value={servedDate.toISOString().split('T')[0]}
+                        disabled={isFetchingServedCounts as boolean} // Disable input while executing active requests
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setServedDate(new Date(e.target.value));
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
 
 
-              <button
-                className="btn-cancel"
-                onClick={() => {
-                  setShowAssignmentConfirmModal(false);
-                  pendingAssignmentConfirmation?.(null);
-                  setIsSubmitting(false);
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn-proceed"
-                onClick={() => {
-                  setShowAssignmentConfirmModal(false);
-                  pendingAssignmentConfirmation?.(assignmentChanges.attendancePayload || []);
-                  setIsSubmitting(false);
-                }}
-                disabled={isFetchingServedCounts}
-                style={{flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                {assignmentChanges.attendancePayload && assignmentChanges.attendancePayload.length > 0 && (<CheckCheck/>)}
-                {isFetchingServedCounts ? 'Calculating...' : assignmentChanges.attendancePayload && assignmentChanges.attendancePayload.length > 0 ? 'Trip Complete' : 'Confirm Changes'}
-              </button>
-            </div>
-          </Modal>,
-          document.body
-        )}
-
-        { showIncidentPrompt && (
-          <Modal onClose={() => {setIsIncidentModalOpen(false); setShowIncidentPrompt(false);}} width={'35%'} height={'30%'}>
-            <div className="incident-report-prompt-modal">
-              <h3>Create Short-bags Incident Report?</h3>
-              <p>The selected trip has been detected with short-bags. Would you like to create an incident report now?</p>
-              <span className="modal-hint-text">
-                * You can still file this report anytime via the trip's action history or details panel.
-              </span>
-              <div className="incident-report-prompt-modal-actions">
-                {/* Soft, neutral button for dismissing for now */}
-                <button 
-                  className="btn-later" 
-                  onClick={() => {setIsIncidentModalOpen(false); setShowIncidentPrompt(false);}}
+                <button
+                  className="btn-cancel"
+                  onClick={() => {
+                    setShowAssignmentConfirmModal(false);
+                    pendingAssignmentConfirmation?.(null);
+                    setIsSubmitting(false);
+                  }}
                 >
-                  I'll do it later
+                  Cancel
                 </button>
-                {/* Primary action button using your accent styling */}
-                <button 
-                  className="btn-create-now" 
-                  onClick={() => {setIsIncidentModalOpen(true); setShowIncidentPrompt(false); handleTripCreateIR();}}
+                <button
+                  className="btn-proceed"
+                  onClick={() => {
+                    setShowAssignmentConfirmModal(false);
+                    pendingAssignmentConfirmation?.(assignmentChanges.attendancePayload || []);
+                    setIsSubmitting(false);
+                  }}
+                  disabled={isFetchingServedCounts}
+                  style={{ flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
-                  Create Now
+                  {assignmentChanges.attendancePayload && assignmentChanges.attendancePayload.length > 0 && (<CheckCheck />)}
+                  {isFetchingServedCounts ? 'Calculating...' : assignmentChanges.attendancePayload && assignmentChanges.attendancePayload.length > 0 ? 'Trip Complete' : 'Confirm Changes'}
                 </button>
               </div>
-            </div>
-          </Modal>
-        )}
+            </Modal>,
+            document.body
+          )}
 
-        <div style={{display: 'None'}}>
-          <IncidentReportForm
+          {showIncidentPrompt && (
+            <Modal onClose={() => { setIsIncidentModalOpen(false); setShowIncidentPrompt(false); }} width={'35%'} height={'30%'}>
+              <div className="incident-report-prompt-modal">
+                <h3>Create Short-bags Incident Report?</h3>
+                <p>The selected trip has been detected with short-bags. Would you like to create an incident report now?</p>
+                <span className="modal-hint-text">
+                  * You can still file this report anytime via the trip's action history or details panel.
+                </span>
+                <div className="incident-report-prompt-modal-actions">
+                  {/* Soft, neutral button for dismissing for now */}
+                  <button
+                    className="btn-later"
+                    onClick={() => { setIsIncidentModalOpen(false); setShowIncidentPrompt(false); }}
+                  >
+                    I'll do it later
+                  </button>
+                  {/* Primary action button using your accent styling */}
+                  <button
+                    className="btn-create-now"
+                    onClick={() => { setIsIncidentModalOpen(true); setShowIncidentPrompt(false); handleTripCreateIR(); }}
+                  >
+                    Create Now
+                  </button>
+                </div>
+              </div>
+            </Modal>
+          )}
+
+          <div style={{ display: 'None' }}>
+            <IncidentReportForm
               OE={formData.OE}
               ref={incidentFormRef}
               onClose={() => setIsIncidentModalOpen(false)}
               onSubmit={async (data) => {
-                  console.log("Saving incident:", data);
-                  setIsIncidentModalOpen(false)
+                console.log("Saving incident:", data);
+                setIsIncidentModalOpen(false)
               }}
               ReportBy={editingUser?.FullName || 'Unknown User'}
               ReporterPosition={editingUser?.Position}
               employeeDetails={{
-                    EmployeeName: formData.Driver,
-                    EmployeeID: '123',
-                    EmployeePosition: 'Driver',
-                    EmployeeBUHead: '',
-                    EmployeeTractor: formData.Head_Full,
-                    EmployeeTrailer: formData.BO_Full,
-                    flexValue: actualDiscrepancy ? actualDiscrepancy : discrepancy,
+                EmployeeName: formData.Driver,
+                EmployeeID: '123',
+                EmployeePosition: 'Driver',
+                EmployeeBUHead: '',
+                EmployeeTractor: formData.Head_Full,
+                EmployeeTrailer: formData.BO_Full,
+                flexValue: actualDiscrepancy ? actualDiscrepancy : discrepancy,
               } as CreateIR_EmployeeDetails}
               preFill={{
                 tripReferenceNo: formData.OE,
@@ -3960,163 +3962,163 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 QtyWithdrawn: formData.QTYWithdrawn_Actual ? formData.QTYWithdrawn_Actual : formData.QTYWithdrawn,
                 ShortBags: actualDiscrepancy ? actualDiscrepancy : discrepancy,
               } as IR_ShortBags_Form_Model}
-          />
-        </div>
+            />
+          </div>
 
 
-        {isIncidentModalOpen && (
-          <Modal 
-            onClose={() => {
-              setCreatedIR(null); 
-              setIsIncidentModalOpen(false);
-            }} 
-            height="100%"
-            overlayBlur={4}
-            overlayColor="rgba(11, 19, 43, 0.4)" /* Deep custom navy overlay tint */
-            hideX={true} /* Hide default close button */
-          >
-            {isCreatingIR ? (
-              <div className="ir-modal-loading-container">
-                <div className="ir-modal-loading-spinner" />
-                <p className="ir-modal-loading-text">
-                  Fetching Incident Report, please wait...
-                </p>
-              </div>
-            ) : (
-              /* --- ACTUAL FORM CONTENT --- */
-              <IR_ShortBags_Form 
-                incidentReportItem={createdIR as Partial<OP_IncidentReports>}
-                initialUser={editingUser ?? undefined}
-                onClose={() => {
-                  setCreatedIR(null); 
-                  setIsIncidentModalOpen(false);
-                }}
-              />
-            )}
-          </Modal>
-        )}
+          {isIncidentModalOpen && (
+            <Modal
+              onClose={() => {
+                setCreatedIR(null);
+                setIsIncidentModalOpen(false);
+              }}
+              height="100%"
+              overlayBlur={4}
+              overlayColor="rgba(11, 19, 43, 0.4)" /* Deep custom navy overlay tint */
+              hideX={true} /* Hide default close button */
+            >
+              {isCreatingIR ? (
+                <div className="ir-modal-loading-container">
+                  <div className="ir-modal-loading-spinner" />
+                  <p className="ir-modal-loading-text">
+                    Fetching Incident Report, please wait...
+                  </p>
+                </div>
+              ) : (
+                /* --- ACTUAL FORM CONTENT --- */
+                <IR_ShortBags_Form
+                  incidentReportItem={createdIR as Partial<OP_IncidentReports>}
+                  initialUser={editingUser ?? undefined}
+                  onClose={() => {
+                    setCreatedIR(null);
+                    setIsIncidentModalOpen(false);
+                  }}
+                />
+              )}
+            </Modal>
+          )}
 
-        {/* ==========================================================================
+          {/* ==========================================================================
           PRIMARY WORKSPACE WORKFLOW MODAL
           ========================================================================== */}
-        {isIncidentModalOpen && (
-          <Modal 
-            onClose={handleConfirmIRClose} 
-            height="100%"
-            overlayBlur={4}
-            overlayColor="rgba(11, 19, 43, 0.4)"
-            hideX={true}
-          >
-            {isCreatingIR ? (
-              <div className="ir-modal-loading-container">
-                <div className="ir-modal-loading-spinner" />
-                <p className="ir-modal-loading-text">Generating Incident Report, please wait...</p>
-              </div>
-            ) : (
-              <IR_ShortBags_Form 
-                incidentReportItem={createdIR as Partial<OP_IncidentReports>}
-                initialUser={editingUser ?? undefined}
-                onClose={handleConfirmIRClose} 
-                onSubmit={(data: any) => {
-                  console.log("Submitted successfully");
-                  handleForceCloseIR();
-                  handleUpdateTruckTrailerIRdetails({data});
-                }}
-                onSave={(data: any) => {
-                  console.log("Saved successfully");
-                  handleForceCloseIR();
-                  handleUpdateTruckTrailerIRdetails(data);
-                }}
-
-              />
-            )}
-
-          </Modal>
-        )}
-
-        {isConfirmIRCloseOpen && (
-          <Modal
-            onClose={() => setIsConfirmIRCloseOpen(false)} // Clicking backdrop turns off the warning layer
-            height="auto"
-            overlayBlur={6} // Slightly high blur depth emphasizes structural focal priority
-            overlayColor="rgba(11, 19, 43, 0.6)" // Darker navy overlay focus tint
-            hideX={true}
-            width={'35%'}
-          >
-            <div className="ir-confirm-prompt-box">
-              <h3 className="ir-confirm-title">Are you done editing?</h3>
-              <p className="ir-confirm-body">
-                Are you sure you want to exit? Any unsaved changes will be lost.
-              </p>
-              <p className="ir-confirm-body-hint">
-                You may still edit this later on Incident Reports Page.
-              </p>
-              
-              <div className="ir-confirm-actions">
-                <button 
-                  type="button" 
-                  className="ir-confirm-btn btn-keep" 
-                  onClick={() => setIsConfirmIRCloseOpen(false)}
-                >
-                  Continue Editing
-                </button>
-                <button 
-                  type="button" 
-                  className="ir-confirm-btn btn-discard" 
-                  onClick={handleForceDiscardIR}
-                >
-                  I'm Done
-                </button>
-              </div>
-            </div>
-          </Modal>
-        )}
-
-
-
-
-        {/* TRIP HISTORY TIMELINE MODAL */}
-        {isTimelineOpen && (
-            <Modal 
-                onClose={() => setIsTimelineOpen(false)} 
-                width="35%" // Slightly wider than the IR form to accommodate the timeline layout
+          {isIncidentModalOpen && (
+            <Modal
+              onClose={handleConfirmIRClose}
+              height="100%"
+              overlayBlur={4}
+              overlayColor="rgba(11, 19, 43, 0.4)"
+              hideX={true}
             >
-                <div className="odform-create-ir-modal-header">
-                    Trip Logs History: {selectedTimelineOE}
+              {isCreatingIR ? (
+                <div className="ir-modal-loading-container">
+                  <div className="ir-modal-loading-spinner" />
+                  <p className="ir-modal-loading-text">Generating Incident Report, please wait...</p>
                 </div>
+              ) : (
+                <IR_ShortBags_Form
+                  incidentReportItem={createdIR as Partial<OP_IncidentReports>}
+                  initialUser={editingUser ?? undefined}
+                  onClose={handleConfirmIRClose}
+                  onSubmit={(data: any) => {
+                    console.log("Submitted successfully");
+                    handleForceCloseIR();
+                    handleUpdateTruckTrailerIRdetails({ data });
+                  }}
+                  onSave={(data: any) => {
+                    console.log("Saved successfully");
+                    handleForceCloseIR();
+                    handleUpdateTruckTrailerIRdetails(data);
+                  }}
 
-                <div style={{ 
-                    padding: '5px', 
-                    height: '70vh', // Fixed height for the modal content area
-                    display: 'flex', 
-                    flexDirection: 'column' 
-                }}>
-                    {isLoadingLogs ? (
-                        <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '10px' }}>
-                            <Loader2 className="animate-spin" size={32} color="#000080" />
-                            <span style={{ color: '#000080', fontWeight: 600 }}>Retrieving Trip History...</span>
-                        </div>
-                    ) : (
-                        <TripTimeline 
-                            logs={tripLogs} 
-                            oeReference={selectedTimelineOE} 
-                        />
-                    )}
-                </div>
+                />
+              )}
 
-                <div className="sticky-footer order-dist-footer">
-                    <button className="btn-cancel" style={{ width: '100%' }} onClick={() => setIsTimelineOpen(false)}>
-                        Close History
-                    </button>
-                </div>
             </Modal>
-        )}
+          )}
+
+          {isConfirmIRCloseOpen && (
+            <Modal
+              onClose={() => setIsConfirmIRCloseOpen(false)} // Clicking backdrop turns off the warning layer
+              height="auto"
+              overlayBlur={6} // Slightly high blur depth emphasizes structural focal priority
+              overlayColor="rgba(11, 19, 43, 0.6)" // Darker navy overlay focus tint
+              hideX={true}
+              width={'35%'}
+            >
+              <div className="ir-confirm-prompt-box">
+                <h3 className="ir-confirm-title">Are you done editing?</h3>
+                <p className="ir-confirm-body">
+                  Are you sure you want to exit? Any unsaved changes will be lost.
+                </p>
+                <p className="ir-confirm-body-hint">
+                  You may still edit this later on Incident Reports Page.
+                </p>
+
+                <div className="ir-confirm-actions">
+                  <button
+                    type="button"
+                    className="ir-confirm-btn btn-keep"
+                    onClick={() => setIsConfirmIRCloseOpen(false)}
+                  >
+                    Continue Editing
+                  </button>
+                  <button
+                    type="button"
+                    className="ir-confirm-btn btn-discard"
+                    onClick={handleForceDiscardIR}
+                  >
+                    I'm Done
+                  </button>
+                </div>
+              </div>
+            </Modal>
+          )}
 
 
 
-      </div>
 
-    </>
+          {/* TRIP HISTORY TIMELINE MODAL */}
+          {isTimelineOpen && (
+            <Modal
+              onClose={() => setIsTimelineOpen(false)}
+              width="35%" // Slightly wider than the IR form to accommodate the timeline layout
+            >
+              <div className="odform-create-ir-modal-header">
+                Trip Logs History: {selectedTimelineOE}
+              </div>
+
+              <div style={{
+                padding: '5px',
+                height: '70vh', // Fixed height for the modal content area
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                {isLoadingLogs ? (
+                  <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '10px' }}>
+                    <Loader2 className="animate-spin" size={32} color="#000080" />
+                    <span style={{ color: '#000080', fontWeight: 600 }}>Retrieving Trip History...</span>
+                  </div>
+                ) : (
+                  <TripTimeline
+                    logs={tripLogs}
+                    oeReference={selectedTimelineOE}
+                  />
+                )}
+              </div>
+
+              <div className="sticky-footer order-dist-footer">
+                <button className="btn-cancel" style={{ width: '100%' }} onClick={() => setIsTimelineOpen(false)}>
+                  Close History
+                </button>
+              </div>
+            </Modal>
+          )}
+
+
+
+        </div>
+
+      </>
 
 
     );

@@ -931,10 +931,10 @@ export const NEW_TRIPS_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
 
   searchable_cols: ["OE", "SourceName", "DestiName"] as const,
 
-  //   accordion: {
-  //   enabled: true,
-  //   groupByCol: "SourceName"
-  // }
+  accordion: {
+    enabled: true,
+    groupByCol: "SourceName"
+  }
 
 }
 
