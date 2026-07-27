@@ -7,7 +7,7 @@ import {
   ArrowUp, ArrowDown, ArrowUpDown, GripVertical,
   Search, X, Check, ChevronLeft, ChevronRight,
   ChevronsLeft, ChevronsRight, Save, RotateCcw, Filter,
-  Settings, Move, FoldVertical, UnfoldVertical
+  Settings, Move, ListIcon, ListCollapseIcon
 } from 'lucide-react';
 import {
   DndContext,
@@ -55,6 +55,12 @@ export interface TableViewRef {
   toggleArrangementMode: () => void;
 }
 
+export interface EmptyHintConfig {
+  emptyMsg: string;
+  suggestActionMsg?: string;
+  onHintClick?: () => void;
+}
+
 export interface TableModuleConfig {
   table_config: ColumnConfig[];
   searchable_cols: string[];
@@ -93,6 +99,9 @@ export interface ColumnConfig {
   useCalculatedSort?: boolean;
   cellStyle?: (row: any) => React.CSSProperties;
   render?: (val: any, row: any, searchTerm: string, addTask?: (task: Omit<Task, 'id'>) => void, fontSize?: number) => React.ReactNode;
+  defaultShow?: boolean;
+  hidden?: boolean;
+  noRender?: boolean;
 }
 
 export interface scrollToConfig {
@@ -142,6 +151,7 @@ interface TableViewProps {
   onArrangementModeChange?: (enabled: boolean) => void;
   showArrangeToggle?: boolean;
   onConfirmArrangement?: (confirmed: boolean, currentOrder: any[]) => void;
+  emptyHint?: EmptyHintConfig;
 }
 
 export const encodeColumnName = (name: string): string => {
@@ -559,7 +569,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   isArrangementMode: controlledArrangementMode,
   onArrangementModeChange,
   showArrangeToggle,
-  onConfirmArrangement
+  onConfirmArrangement,
+  emptyHint,
 }, ref) => {
 
   // Arrangement state fallbacks if parent does not pass controller values
@@ -570,6 +581,9 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     if (!controlledArrangementMode) {
       setRepositionedRows([]);
     }
+    setSelectedRows([]);
+    setHighlightedRowId(null);
+    setHighlightType(null);
   }, [controlledArrangementMode]);
 
   const toggleArrangement = () => {
@@ -580,6 +594,40 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
       setInternalArrangementMode(nextMode);
     }
   };
+
+  // Inside your TableView component body:
+  const [showArrangementHint, setShowArrangementHint] = useState(false);
+  const [isHintFading, setIsHintFading] = useState(false);
+  const [isTableHovered, setIsTableHovered] = useState(false);
+
+  // Main timer and arrangement trigger controller
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    let fadeTimer: ReturnType<typeof setTimeout>;
+
+    if (isArrangement && !isTableHovered) {
+      setShowArrangementHint(true);
+      setIsHintFading(false);
+
+      // Keep it fully visible for 5 seconds, then trigger 1s fade out
+      timer = setTimeout(() => {
+        setIsHintFading(true);
+        fadeTimer = setTimeout(() => {
+          setShowArrangementHint(false);
+          setIsHintFading(false);
+        }, 1000); // Matches the 1s CSS fade-out duration
+      }, 5000);
+    } else {
+      // Hide immediately if table is hovered or arrangement mode is disabled
+      setShowArrangementHint(false);
+      setIsHintFading(false);
+    }
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(fadeTimer);
+    };
+  }, [isArrangement, isTableHovered]);
 
   React.useImperativeHandle(ref, () => ({
     expandAll: () => {
@@ -860,14 +908,24 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     const saved = storageKey ? getSavedLayout(storageKey) : null;
     if (saved?.columns) {
       // Re-encode and merge with initialConfig to ensure functions (like calculate) aren't lost
-      return saved.columns.map((c: any) => ({
-        ...initialConfig.find(orig => orig.col === (c.rawCol || c.col)),
-        ...c,
-        col: encodeColumnName(c.rawCol || c.col)
-      }));
+      return saved.columns.map((c: any) => {
+        const orig = initialConfig.find(origCol => origCol.col === (c.rawCol || c.col));
+        return {
+          ...orig,
+          ...c,
+          col: encodeColumnName(c.rawCol || c.col),
+          hidden: c.hidden ?? (orig?.defaultShow === false)
+        };
+      });
     }
-    return initialConfig.map(c => ({ ...c, col: encodeColumnName(c.col), rawCol: c.col }));
+    return initialConfig.map(c => ({
+      ...c,
+      col: encodeColumnName(c.col),
+      rawCol: c.col,
+      hidden: c.defaultShow === false
+    }));
   });
+  const visibleColumns = useMemo(() => columns.filter(c => !c.hidden && !c.noRender), [columns]);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     const saved = storageKey ? getSavedLayout(storageKey) : null;
     return saved?.widths || {};
@@ -929,7 +987,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
 
     let stickyLeftOffset = 30;
 
-    return columns.reduce((acc, col) => {
+    return visibleColumns.reduce((acc, col) => {
       const manualWidth = columnWidths[col.col];
 
       // Calculate the pixel floor based on your portion
@@ -969,7 +1027,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
       };
       return acc;
     }, {} as Record<string, React.CSSProperties>);
-  }, [columns, columnWidths, colMinWidth]);
+  }, [visibleColumns, columnWidths, colMinWidth]);
 
 
   //TOGGLE FOR MULTI-SELECT
@@ -1386,7 +1444,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
 
   // RESET ARRANGEMENT
   const handleReset = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const encoded = initialConfig.map(c => ({ ...c, col: encodeColumnName(c.col), rawCol: c.col }));
+    const encoded = initialConfig.map(c => ({ ...c, col: encodeColumnName(c.col), rawCol: c.col, hidden: c.defaultShow === false }));
     setColumns(encoded);
     setSortBlanks(false);
 
@@ -1426,7 +1484,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
         col: c.col,
         rawCol: (c as any).rawCol,
         alias: c.alias,
-        preventNoSort: c.preventNoSort
+        preventNoSort: c.preventNoSort,
+        hidden: c.hidden
       })),
       widths: columnWidths,
       fontSizePercent,
@@ -1474,12 +1533,26 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     if (accordion?.enabled && accordion?.groupByCol) {
       const groupKey = encodeColumnName(accordion.groupByCol);
 
-      // Calculate active record's group context
+      // 1. Calculate active record's group context
       const activeRecord = paginatedData.find(r => r._rowId === activeId);
       if (activeRecord) {
         const colConfig = columns.find(c => c.col === groupKey);
         const val = colConfig?.calculate ? colConfig.calculate(activeRecord) : (activeRecord[groupKey] ?? activeRecord[accordion.groupByCol]);
         targetGroup = val !== null && val !== undefined && val !== '' ? String(val) : 'Unassigned';
+      }
+
+      // 2. Calculate over record's group context to verify boundary restrictions
+      const overRecord = paginatedData.find(r => r._rowId === overId);
+      if (overRecord) {
+        const colConfig = columns.find(c => c.col === groupKey);
+        const val = colConfig?.calculate ? colConfig.calculate(overRecord) : (overRecord[groupKey] ?? overRecord[accordion.groupByCol]);
+        const overGroup = val !== null && val !== undefined && val !== '' ? String(val) : 'Unassigned';
+
+        // If the drop destination belongs to a different group, block it and warn user
+        if (overGroup !== targetGroup) {
+          setBannerMsg("You cannot place this on other groups");
+          return;
+        }
       }
 
       // Filter contextual elements belonging strictly within this targeted boundary
@@ -1559,7 +1632,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
           </td>
         )}
 
-        {columns.map((column, colIndex) => {
+        {visibleColumns.map((column, colIndex) => {
           const cellValue = column.calculate ? column.calculate(row) : (row[column.col] ?? row[(column as any).rawCol]);
           const isSearchable = searchCol.length > 0 ? searchCol.includes((column as any).rawCol || column.col) : true;
           const conditionalStyle = column.cellStyle ? column.cellStyle(row) : {};
@@ -1705,6 +1778,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
       className={`table-view-master-container ${showBlockingLoading ? 'data-refreshing' : ''} ${isArrangement ? 'arrangement-active' : ''}`}
       ref={tableRef}
       style={dynamicThemeVars}
+      onMouseEnter={() => setIsTableHovered(true)}
+      onMouseLeave={() => setIsTableHovered(false)}
     >
       <div className="table-control-ribbon">
         <div className="ribbon-left-content">
@@ -1725,9 +1800,9 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
             >
               <span className="ribbon-accordion-icon">
                 {!isAllGroupsCollapsed ? (
-                  <UnfoldVertical size={16} className="stop-propagation" />
+                  <ListCollapseIcon size={16} className="stop-propagation" />
                 ) : (
-                  <FoldVertical size={16} className="stop-propagation" />
+                  <ListIcon size={16} className="stop-propagation" />
                 )}
               </span>
             </button>
@@ -1836,7 +1911,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
             </div>
             {filtersOpen && (
               <div className="ribbon-filters-area">
-                {columns.map(column => {
+                {visibleColumns.map(column => {
                   // Only show filter trigger if config exists for this column
                   if (!column.filter) return null;
                   return (
@@ -1937,6 +2012,53 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                   <RotateCcw size={16} />
                   <span>Restore Default</span>
                 </button>
+
+                {/* Show/Hide Columns section */}
+                <div style={{
+                  padding: '8px 0',
+                  borderBottom: '1px solid var(--color-bg)',
+                  borderTop: '1px solid var(--color-bg)',
+                  marginTop: 8,
+                  marginBottom: 8,
+                  maxHeight: '160px',
+                  overflowY: 'auto'
+                }}>
+                  <div style={{ fontWeight: 600, fontSize: 'var(--font-size-base)', marginBottom: '8px' }}>
+                    Show/Hide Columns
+                  </div>
+                  {columns.map((col) => {
+                    if (col.noRender) return null; // <-- Skip noRender columns entirely
+
+                    const colLabel = col.alias || col.col;
+                    const isChecked = !col.hidden;
+                    return (
+                      <div
+                        key={`show-hide-${col.col}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '4px 0',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => {
+                          setColumns(prev => prev.map(c => c.col === col.col ? { ...c, hidden: !c.hidden } : c));
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => { }}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+                        />
+                        <span style={{ fontSize: 'var(--font-size-sm)', userSelect: 'none' }}>
+                          {colLabel}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
 
                 {/* NEW: Sort Blanks Checkbox Section */}
                 <div style={{
@@ -2060,6 +2182,21 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
           <div style={{ width: tableWidth, height: '100%' }} />
         </div>
       )}
+
+      {showArrangementHint && (
+        <div className={`arrangement-mode-overlay ${isHintFading ? 'fade-out' : 'animate-fade-in'}`}>
+          <div className="arrangement-hint-box">
+            <div className="animated-hand-container">
+              <GripVertical size={28} className="moving-hand-icon" />
+              <span className="moving-arrow">→</span>
+            </div>
+            <p>Drag and Drop rows to arrange them.</p>
+          </div>
+        </div>
+      )}
+
+
+
       <div
         className={`table-container-responsive ${overflowX ? 'is-scrollable-x' : 'is-fit-x'} ${isScrolling ? 'is-scrolling' : ''}`}
         style={{ ...containerStyle, overflowX: overflowX ? 'scroll' : 'hidden', paddingBottom: overflowX ? 0 : undefined }}
@@ -2076,6 +2213,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
             <div className="loader-progress-bar"></div>
           </div>
         )}
+
 
         <DndContext sensors={rowSensors} collisionDetection={closestCenter} onDragEnd={handleRowDragEnd}>
           <table
@@ -2131,9 +2269,9 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                   )}
 
                   {/* DATA HEADER */}
-                  <SortableContext key={columns.map(c => c.col).join(',')} items={columns.map(c => c.col)} strategy={horizontalListSortingStrategy}>
+                  <SortableContext key={visibleColumns.map(c => c.col).join(',')} items={visibleColumns.map(c => c.col)} strategy={horizontalListSortingStrategy}>
 
-                    {columns.map((column) => (
+                    {visibleColumns.map((column) => (
                       <SortableHeader
                         key={column.col}
                         column={column}
@@ -2155,8 +2293,13 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
               </DndContext>
             </thead>
             <tbody>
+
+
               <SortableContext items={paginatedData.map(r => r._rowId)} strategy={verticalListSortingStrategy}>
+
+
                 {(() => {
+                  // --- 2. HANDLE EMPTY STATE WITH emptyHint ---
                   if (paginatedData.length === 0) return null;
 
                   // 1. FLAT MODE: Render rows standard style if accordion is off
@@ -2165,7 +2308,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                   }
 
                   // Calculate absolute column width for the span
-                  const totalCols = columns.length + (isSelectionMode ? 1 : 0) + (showNumbering ? 1 : 0) + (isArrangement ? 1 : 0);
+                  const totalCols = visibleColumns.length + (isSelectionMode ? 1 : 0) + (showNumbering ? 1 : 0) + (isArrangement ? 1 : 0);
 
                   // 2. ACCORDION MODE: Direct render from your pre-calculated pagination chunks
                   return currentGroups.map((groupBlock: any) => {

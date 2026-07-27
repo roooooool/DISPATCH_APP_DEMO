@@ -1,16 +1,16 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import PageTemplate from './template';
-import { 
-  RefreshCcw, 
+import {
+  RefreshCcw,
   Pencil, Check, X
 } from 'lucide-react';
 
 import { useUser } from '../utils/useUser';
-import { 
-  ewulFetchAll, 
-  ISOtoInt, 
+import {
+  ewulFetchAll,
+  ISOtoInt,
   useAntiSpam,
-} from '../utils/Ewul_GSDC_Utils'; 
+} from '../utils/Ewul_GSDC_Utils';
 
 //itshover icons
 import PenIcon from '@ui/pen-icon';
@@ -25,17 +25,18 @@ import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMSer
 // import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAdditionalOE_IDService';
 // import { Vw_FCT_RouteNodeListService } from '../generated/services/Vw_FCT_RouteNodeListService';
 
-import { 
-  NEW_TRIPS_UNFILTERED_TABLE_CONFIG, 
-  LIVE_DMS_ASSIGNED_TABLE_CONFIG, 
+import {
+  NEW_TRIPS_UNFILTERED_TABLE_CONFIG,
+  LIVE_DMS_ASSIGNED_TABLE_CONFIG,
   TRIP_GROUPS,
+  LIVE_DMS_TABLE_CONFIG,
   // FETCH_LOADING_KEYS,
   // cementTypeOptions,
   // frStatuses,
 } from '../truth.config';
 
 //COMPONENTS
-import TableView, { type ColumnConfig, type TableViewRef, type DragDropSignalData } from '../components/ewul_TableFlex';
+import TableView, { type ColumnConfig, type TableViewRef, type DragDropSignalData, encodeColumnName as enc } from '../components/ewul_TableFlex';
 import DateRangePicker from '../components/ewul_DateRangePicker';
 import AutoDismissBanner from '../components/ewul_Banner';
 // import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
@@ -58,13 +59,14 @@ interface OrdersModuleProps {
   onAccordionChange?: (isAnyCollapsed: boolean) => void;
   assignedTableConfig: ColumnConfig[];
   newTripsTableConfig: ColumnConfig[];
+  liveDmsTableConfig: ColumnConfig[];
   onRowSelect: (record: any) => void;
   handleRowDragDrop: (signal: any) => void;
   isArrangementMode: boolean;
   onArrangementModeChange: (data: any) => void;
 }
 
-const OrdersModule: React.FC<OrdersModuleProps> = ({ 
+const OrdersModule: React.FC<OrdersModuleProps> = ({
   mode,
   newOrders,
   assignedOrders,
@@ -76,6 +78,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
   onAccordionChange,
   assignedTableConfig,
   newTripsTableConfig,
+  liveDmsTableConfig,
   onRowSelect,
   handleRowDragDrop,
   isArrangementMode,
@@ -87,14 +90,14 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
     onRowSelect(record);
     console.log(record.OE || record.ID);
   };
-  
 
-  
+
+
 
   return (
     <div className="ordr-dist-orders-slider-viewport">
       <div className={`ordr-dist-orders-slider-track state-${mode.toLowerCase()}`}>
-        
+
         {/* NEW ORDERS PANEL */}
         <div className="ordr-dist-dashboard-table-frame">
           <TableView
@@ -145,11 +148,69 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
         </div>
 
         <div className="ordr-dist-dashboard-table-frame">
-          1A
+          <TableView
+            data={assignedOrders.filter(order => order[enc("Buisness Unit")] === 'SBUO-1A' || order[enc("Buisness Unit")] === '1A')}
+            rowKey='ID'
+            config={liveDmsTableConfig}
+            storageKey={`ordr_dist_1a_grid_${user?.id || 'guest'}`}
+            searchCol={LIVE_DMS_TABLE_CONFIG.searchable_cols as string[]}
+            isLoading={isLoadingAssigned}
+            showRowCount={50}
+            onRefresh={fetchAssignedOrders}
+            overflowY={true}
+            overflowX={true}
+            colMinWidth={100}
+            onRowClick={handleRowClick}
+            highlightSelected={true}
+            theme="var(--color-primary)"
+            showNumbering={true}
+            loadingNoPreventAction={true}
+            accordion={LIVE_DMS_ASSIGNED_TABLE_CONFIG.accordion}
+            onAccordionChange={onAccordionChange}
+            onDragDrop={handleRowDragDrop}
+            isArrangementMode={isArrangementMode}
+            onArrangementModeChange={onArrangementModeChange}
+            emptyHint={{
+              emptyMsg: "Looks like no orders assigned to 1A yet.",
+              suggestActionMsg: "select new orders for this BU",
+              onHintClick: () => {
+                // Optional: Could add logic here to open date picker or reset filters
+              }
+            }}
+          />
         </div>
 
         <div className="ordr-dist-dashboard-table-frame">
-          1B
+          <TableView
+            data={assignedOrders.filter(order => order[enc("Buisness Unit")] === 'SBUO-1B' || order[enc("Buisness Unit")] === '1B')}
+            rowKey='ID'
+            config={liveDmsTableConfig}
+            storageKey={`ordr_dist_1b_grid_${user?.id || 'guest'}`}
+            searchCol={LIVE_DMS_TABLE_CONFIG.searchable_cols as string[]}
+            isLoading={isLoadingAssigned}
+            showRowCount={50}
+            onRefresh={fetchAssignedOrders}
+            overflowY={true}
+            overflowX={true}
+            colMinWidth={100}
+            onRowClick={handleRowClick}
+            highlightSelected={true}
+            theme="var(--color-primary)"
+            showNumbering={true}
+            loadingNoPreventAction={true}
+            accordion={LIVE_DMS_ASSIGNED_TABLE_CONFIG.accordion}
+            onAccordionChange={onAccordionChange}
+            onDragDrop={handleRowDragDrop}
+            isArrangementMode={isArrangementMode}
+            onArrangementModeChange={onArrangementModeChange}
+            emptyHint={{
+              emptyMsg: "Looks like no orders assigned to 1B yet.",
+              suggestActionMsg: "select new orders for this BU",
+              onHintClick: () => {
+                // Optional: Could add logic here to open date picker or reset filters
+              }
+            }}
+          />
         </div>
 
       </div>
@@ -160,7 +221,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
 const OrderDistribution: React.FC = () => {
   // const { user } = useUser();
   const [activeMode, setActiveMode] = useState<ViewMode>('ASSIGNED');
-  const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{from: string, to: string} | null>(null);
+  const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{ from: string, to: string } | null>(null);
 
   const assignedTableRef = useRef<TableViewRef>(null);
   // const formRef = useRef<OrderDistributionFormRef>(null);
@@ -175,7 +236,7 @@ const OrderDistribution: React.FC = () => {
 
   useEffect(() => {
     const modes: ViewMode[] = ['NEW', 'ASSIGNED', '1A', '1B'];
-    
+
     const updateSlider = () => {
       const activeIndex = modes.indexOf(activeMode);
       const activeTarget = modeButtonRefs.current[activeIndex];
@@ -193,18 +254,18 @@ const OrderDistribution: React.FC = () => {
 
     // 2. Watch for parent layout changes to handle dynamic flex rendering perfectly
     if (!containerRef.current) return;
-    
+
     const resizeObserver = new ResizeObserver(() => {
       updateSlider(); // Recalculates if fonts load, window resizes, or flex snaps into place
     });
-    
+
     resizeObserver.observe(containerRef.current);
-    
+
     return () => resizeObserver.disconnect();
   }, [activeMode]);
 
 
-  
+
   const [isArranging, setIsArranging] = useState<boolean>(false);
   const [assignedOrdersBackup, setAssignedOrdersBackup] = useState<any[]>([]);
   const handleStartArranging = () => {
@@ -216,7 +277,7 @@ const OrderDistribution: React.FC = () => {
   const handleConfirmArrangement = () => {
     // Commit changes (you can trigger an API save sequence here if needed)
     setIsArranging(false);
-    setAssignedOrdersBackup([]); 
+    setAssignedOrdersBackup([]);
   };
 
   const handleCancelArrangement = () => {
@@ -263,7 +324,7 @@ const OrderDistribution: React.FC = () => {
   // LIFTED ARCHITECTURE: State tracking for both tables is managed here
   const [newOrders, setNewOrders] = useState<any[]>([]);
   const [assignedOrders, setAssignedOrders] = useState<any[]>([]);
-  
+
   const [isLoadingNew, setIsLoadingNew] = useState<boolean>(false);
   const [isLoadingAssigned, setIsLoadingAssigned] = useState<boolean>(false);
 
@@ -276,10 +337,10 @@ const OrderDistribution: React.FC = () => {
   useEffect(() => {
     const updateGroupSlider = () => {
       // Find the correct index based on the option state
-      const activeIndex = activeGroup === 'ALL' 
-        ? 0 
+      const activeIndex = activeGroup === 'ALL'
+        ? 0
         : TRIP_GROUPS.findIndex(group => group.id === activeGroup) + 1; // +1 to offset the 'All' button
-        
+
       const activeTarget = buttonRefs.current[activeIndex];
 
       if (activeTarget) {
@@ -295,13 +356,13 @@ const OrderDistribution: React.FC = () => {
 
     // Watch for mount layout updates and parent dimension adjustments
     if (!groupContainerRef.current) return;
-    
+
     const resizeObserver = new ResizeObserver(() => {
       updateGroupSlider();
     });
-    
+
     resizeObserver.observe(groupContainerRef.current);
-    
+
     return () => resizeObserver.disconnect();
   }, [activeGroup, TRIP_GROUPS]); // TRIP_GROUPS included in deps in case it loads asynchronously
 
@@ -313,10 +374,14 @@ const OrderDistribution: React.FC = () => {
     NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config as ColumnConfig[]
   );
 
+  const [liveDmsTableConfig, setLiveDmsTableConfig] = useState<ColumnConfig[]>(
+    LIVE_DMS_TABLE_CONFIG.table_config as ColumnConfig[]
+  );
+
   useEffect(() => {
     // 1. Process the string once for both configurations
     let formattedGroup: string[] = [];
-    
+
     if (activeGroup !== 'ALL') {
       const processedString = (activeGroup.charAt(0).toUpperCase() + activeGroup.slice(1).toLowerCase()).replace("_", " - ");
       console.log("processed string: ", processedString);
@@ -341,6 +406,22 @@ const OrderDistribution: React.FC = () => {
 
     // 3. Update New Trips Table Configuration
     setNewTripsTableConfig((prevConfig) =>
+      prevConfig.map((colConfig) => {
+        if (colConfig.col === "_tripGroup") {
+          return {
+            ...colConfig,
+            filter: {
+              ...colConfig.filter,
+              default: formattedGroup,
+            },
+          } as ColumnConfig;
+        }
+        return colConfig;
+      })
+    );
+
+    // 4. Update Live DMS Table Configuration
+    setLiveDmsTableConfig((prevConfig) =>
       prevConfig.map((colConfig) => {
         if (colConfig.col === "_tripGroup") {
           return {
@@ -387,7 +468,7 @@ const OrderDistribution: React.FC = () => {
     try {
       const fromInt = ISOtoInt(selectedRangeNewOrders.from);
       const toInt = ISOtoInt(selectedRangeNewOrders.to);
-      const dateFilter = 
+      const dateFilter =
         `
           OEDateAsInt ge ${fromInt} and 
           OEDateAsInt le ${toInt} and 
@@ -416,15 +497,15 @@ const OrderDistribution: React.FC = () => {
   const handleSync = useCallback(() => {
     if (activeMode === 'NEW') {
       fetchNewOrders();
-    } else {
+    } else if (activeMode === 'ASSIGNED') {
       fetchAssignedOrders();
-    }
+    } else return;
   }, [activeMode, fetchNewOrders, fetchAssignedOrders]);
 
-  const { 
-    cooldown, 
-    bannerMessage, 
-    executeProtectedAction: handleSyncWithCooldown 
+  const {
+    cooldown,
+    bannerMessage,
+    executeProtectedAction: handleSyncWithCooldown
   } = useAntiSpam(
     handleSync, // Wrap the main routing function that handles fetchNewOrders / fetchAssignedOrders
     () => isLoadingNew || isLoadingAssigned,
@@ -437,7 +518,7 @@ const OrderDistribution: React.FC = () => {
     }
   }, [selectedRangeNewOrders, activeMode, handleSync]);
 
-  const handleDateChangeNewOrders = useCallback((range: {from: string, to: string}) => {
+  const handleDateChangeNewOrders = useCallback((range: { from: string, to: string }) => {
     setSelectedRangeNewOrders(prev => {
       if (prev?.from === range.from && prev?.to === range.to) return prev;
       return range;
@@ -448,7 +529,7 @@ const OrderDistribution: React.FC = () => {
 
   const handleRowDragDrop = (signal: DragDropSignalData) => {
     console.log("Row Dragged n Dropped!: ", signal);
-    
+
     const { group, newOrder, record } = signal;
     const lsCol = "Loading_x0020_Sequence"; // Adjust if the internal column name matches Power Apps / OData styling (e.g., 'LOADING_x0020_SEQ')
     const groupByCol = LIVE_DMS_ASSIGNED_TABLE_CONFIG.accordion?.groupByCol;
@@ -521,19 +602,19 @@ const OrderDistribution: React.FC = () => {
   return (
     <PageTemplate
       title="Orders Distribution Center"
-      contentPadding='0px'
+      contentPadding='5px'
       contentWidth='100%'
       contentHeight='100%'
       actions={
         <div className="ordr-dist-dashboard-actions-bar">
           <div ref={containerRef} className="ordr-dist-sliding-toggle-container">
             {/* Dynamic sliding highlight block */}
-            <div 
-              className="ordr-dist-slider-highlight" 
+            <div
+              className="ordr-dist-slider-highlight"
               style={modeSliderStyles}
             />
-            
-            <button 
+
+            <button
               ref={(el) => { modeButtonRefs.current[0] = el; }}
               type="button"
               className={`ordr-dist-toggle-btn ${activeMode === 'NEW' ? 'active' : ''}`}
@@ -541,8 +622,8 @@ const OrderDistribution: React.FC = () => {
             >
               <span>New Orders</span>
             </button>
-            
-            <button 
+
+            <button
               ref={(el) => { modeButtonRefs.current[1] = el; }}
               type="button"
               className={`ordr-dist-toggle-btn ${activeMode === 'ASSIGNED' ? 'active' : ''}`}
@@ -551,7 +632,7 @@ const OrderDistribution: React.FC = () => {
               <span>Order Summary</span>
             </button>
 
-            <button 
+            <button
               ref={(el) => { modeButtonRefs.current[2] = el; }}
               type="button"
               className={`ordr-dist-toggle-btn ${activeMode === '1A' ? 'active' : ''}`}
@@ -560,7 +641,7 @@ const OrderDistribution: React.FC = () => {
               <span>1A</span>
             </button>
 
-            <button 
+            <button
               ref={(el) => { modeButtonRefs.current[3] = el; }}
               type="button"
               className={`ordr-dist-toggle-btn ${activeMode === '1B' ? 'active' : ''}`}
@@ -572,9 +653,9 @@ const OrderDistribution: React.FC = () => {
 
 
 
-          <DateRangePicker 
-            allowedTypes={['Monthly', 'Yearly', 'Custom']} 
-            onFilterChange={handleDateChangeNewOrders} 
+          <DateRangePicker
+            allowedTypes={['Monthly', 'Yearly', 'Custom']}
+            onFilterChange={handleDateChangeNewOrders}
             opacity={1}
             bgColor='var(--color-primary)'
             hoverColor='var(--color-primary)'
@@ -585,11 +666,11 @@ const OrderDistribution: React.FC = () => {
       hideFooter={true}
     >
 
-      <div className="order-management-page" style={{ height: '100%', position: 'relative' }}>
+      <div className="ordr-dist-order-management-page" style={{ height: '100%', position: 'relative' }}>
 
         <div className="ordr-dist-dashboard-workspace-bg" style={{ display: 'flex', height: '100%', width: '100%', position: 'relative', gap: '5px' }}>
 
-        
+
 
           {/* MAIN TABLES CONTAINER */}
           <div className="ordr-dist-dashboard-gradient-wrapper ordr-dist-fullscreen-mode">
@@ -610,28 +691,68 @@ const OrderDistribution: React.FC = () => {
                   <h3 className={`ordr-dist-fade-heading ${(activeMode === '1B' && !isArranging) ? 'visible' : ''}`}>
                     Trip Monitoring: 1B
                   </h3>
-                  <h3 
-                    className={`ordr-dist-fade-heading ${isArranging ? 'visible' : ''}`} 
+                  <h3
+                    className={`ordr-dist-fade-heading ${isArranging ? 'visible' : ''}`}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                   >
                     Editing Loading Sequence
-                    <PenIcon 
-                      ref={penIconRef} 
-                      size={25} 
-                      color="var(--color-primary, `#000080`)" 
+                    <PenIcon
+                      ref={penIconRef}
+                      size={25}
+                      color="var(--color-primary, `#000080`)"
                       className="sequence-edit-pen"
                     />
                   </h3>
                 </div>
 
 
+                <div style={{ gap: '8px', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+
+                  {isArranging ? (
+                    <>
+                      {/* CANCEL BUTTON */}
+                      <button
+                        onClick={handleCancelArrangement}
+                        className="ordr-dist-dashboard-action-btn btn-sequence-cancel"
+                      >
+                        <X size={16} strokeWidth={2.5} />
+                        Cancel
+                      </button>
+
+                      {/* CONFIRM BUTTON */}
+                      <button
+                        onClick={handleConfirmArrangement}
+                        className="ordr-dist-dashboard-action-btn btn-sequence-confirm"
+                      >
+                        <Check size={16} strokeWidth={2.5} />
+                        Confirm Sequence
+                      </button>
+                    </>
+                  ) : (
+                    /* ENTER EDIT MODE BUTTON */
+                    <>
+                      {activeMode === "ASSIGNED" && (
+                        <button
+                          onClick={handleStartArranging}
+                          className="ordr-dist-dashboard-action-btn btn-sequence-edit"
+                        >
+                          <Pencil size={16} strokeWidth={2} />
+                          Edit Sequence
+                        </button>
+                      )}
+                    </>
+                  )}
+
+                </div>
+
+
                 <div ref={groupContainerRef} className="ordr-dist-group-toggle-container">
                   {/* Sliding highlight box */}
-                  <div 
+                  <div
                     className="ordr-dist-group-slider-highlight"
                     style={sliderStyles}
                   />
-                  
+
                   {/* HARDCODED 'ALL' BUTTON AT INDEX 0 */}
                   <button
                     ref={(el) => { buttonRefs.current[0] = el; }}
@@ -640,12 +761,12 @@ const OrderDistribution: React.FC = () => {
                     onClick={() => setActiveGroup('ALL')}
                   >
                     {/* Clean gradient circle for 'All' grouping */}
-                    <span 
-                      className="ordr-dist-group-dot" 
-                      style={{ 
+                    <span
+                      className="ordr-dist-group-dot"
+                      style={{
                         background: 'linear-gradient(135deg, var(--color-primary, #092162) 0%, var(--color-accent, #ff0000) 100%)',
                         boxShadow: activeGroup === 'ALL' ? '0 0 4px rgba(255,255,255,0.6)' : 'none'
-                      }} 
+                      }}
                     />
                     All
                   </button>
@@ -654,7 +775,7 @@ const OrderDistribution: React.FC = () => {
                   {TRIP_GROUPS.map((group, index) => {
                     const isActive = activeGroup === group.id;
                     const refIndex = index + 1; // Shifted by 1 to make space for 'All'
-                    
+
                     return (
                       <button
                         key={group.id}
@@ -663,12 +784,12 @@ const OrderDistribution: React.FC = () => {
                         className={`ordr-dist-group-toggle-btn ${isActive ? 'active' : ''}`}
                         onClick={() => setActiveGroup(group.id)}
                       >
-                        <span 
-                          className="ordr-dist-group-dot" 
-                          style={{ 
+                        <span
+                          className="ordr-dist-group-dot"
+                          style={{
                             backgroundColor: group.color,
                             boxShadow: isActive ? '0 0 4px rgba(255,255,255,0.6)' : 'none'
-                          }} 
+                          }}
                         />
                         {group.label}
                       </button>
@@ -676,79 +797,25 @@ const OrderDistribution: React.FC = () => {
                   })}
                 </div>
 
-                {/* SINGLE ICON ACCORDION TOGGLE */}
-                {/* {activeMode === 'ASSIGNED' && assignedOrders.length > 0 && (
-                  <button 
-                    className="ordr-dist-dashboard-action-btn ordr-dist-secondary-outline"
-                    onClick={handleAccordionToggle}
-                    title={isAnyCollapsed ? "Expand All" : "Collapse All"}
-                    style={{ 
-                      padding: '6px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      marginRight: 'auto', 
-                      marginLeft: '16px' 
-                    }}
-                  >
-                    {!isAnyCollapsed ? (
-                      <ChevronsDownUp size={16} className="animate-pop-in" />
-                    ) : (
-                      <ChevronsUpDown size={16} className="animate-pop-in" />
-                    )}
-                  </button>
-                )} */}
-                
                 {/** RIGHT BUTTONS */}
-                <div style={{gap: '8px', display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
 
-                    {isArranging ? (
-                      <>
-                        {/* CANCEL BUTTON */}
-                        <button 
-                          onClick={handleCancelArrangement}
-                          className="ordr-dist-dashboard-action-btn btn-sequence-cancel"
-                        >
-                          <X size={16} strokeWidth={2.5} />
-                          Cancel
-                        </button>
-
-                        {/* CONFIRM BUTTON */}
-                        <button 
-                          onClick={handleConfirmArrangement}
-                          className="ordr-dist-dashboard-action-btn btn-sequence-confirm"
-                        >
-                          <Check size={16} strokeWidth={2.5} />
-                          Confirm Sequence
-                        </button>
-                      </>
-                    ) : (
-                      /* ENTER EDIT MODE BUTTON */
-                      <button 
-                        onClick={handleStartArranging}
-                        className="ordr-dist-dashboard-action-btn btn-sequence-edit"
-                      >
-                        <Pencil size={16} strokeWidth={2} />
-                        Edit Sequence
-                      </button>
-                    )}
-
-
-                  <button 
-                    className="ordr-dist-dashboard-action-btn ordr-dist-primary-solid" 
+                <>
+                  <button
+                    className="ordr-dist-dashboard-action-btn ordr-dist-primary-solid"
                     onClick={handleSyncWithCooldown}
-                    // disabled={cooldown > 0 || isSyncing || !selectedRangeNewOrders} // UPDATE: Explicitly checks cooldown > 0
+                  // disabled={cooldown > 0 || isSyncing || !selectedRangeNewOrders} // UPDATE: Explicitly checks cooldown > 0
                   >
-                    <RefreshCcw size={15} className={isSyncing ? 'ordr-dist-spinning' : ''} /> 
+                    <RefreshCcw size={15} className={isSyncing ? 'ordr-dist-spinning' : ''} />
                     <span>{cooldown > 0 || isSyncing ? `Wait ${cooldown}s...` : `Sync View`}</span>
                   </button>
-                </div>
+                </>
+
 
               </div>
 
               {/* EDIT HERE: Pass all lifted props directly into OrdersModule */}
               <div className="ordr-dist-dashboard-panel-content">
-                <OrdersModule 
+                <OrdersModule
                   mode={activeMode}
                   newOrders={newOrders}
                   assignedOrders={assignedOrders}
@@ -760,16 +827,17 @@ const OrderDistribution: React.FC = () => {
                   // onAccordionChange={setIsAnyCollapsed}
                   assignedTableConfig={assignedTableConfig}
                   newTripsTableConfig={newTripsTableConfig}
+                  liveDmsTableConfig={liveDmsTableConfig}
                   onRowSelect={() => null}
                   handleRowDragDrop={handleRowDragDrop}
                   isArrangementMode={isArranging}
                   onArrangementModeChange={setIsArranging}
                 />
-                {bannerMessage &&             
-                <AutoDismissBanner 
-                  message={bannerMessage} 
-                  onClose={() => null} 
-                />}
+                {bannerMessage &&
+                  <AutoDismissBanner
+                    message={bannerMessage}
+                    onClose={() => null}
+                  />}
               </div>
 
             </div>

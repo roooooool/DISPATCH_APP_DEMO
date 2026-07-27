@@ -2,19 +2,19 @@ export const APP_VERSION = "2.14.8"; // Update this with each release for better
 
 
 //react helper for truths
-import { 
-    PersonnelCell, 
-    renderRepairIcon, 
-    StatusSelect, 
-    openFleetModal, 
-    type ModalOptions, 
-    fetchTractorDetails as _wew,
-    handleUpdateStatus,
-    handleUpdateAttendanceStatus,
-    renderFuelRequestIcon,
-  } from './truth_react_helper.tsx'
+import {
+  PersonnelCell,
+  renderRepairIcon,
+  StatusSelect,
+  openFleetModal,
+  type ModalOptions,
+  fetchTractorDetails as _wew,
+  handleUpdateStatus,
+  handleUpdateAttendanceStatus,
+  renderFuelRequestIcon,
+} from './truth_react_helper.tsx'
 
-import {HighlightText} from './components/ewul_TableFlex';
+import { HighlightText } from './components/ewul_TableFlex';
 
 
 
@@ -55,10 +55,10 @@ export const STATUS_COLORS = {
 
 
 export const GPS_STATUS_EMOJIS: Record<string, string> = {
-    'Online': '🟢',      // Green
-    'Delayed': '🟡',     // Yellow
-    'Offline': '🔴',     // Red
-    'Deactivated': '⚫'  // Black
+  'Online': '🟢',      // Green
+  'Delayed': '🟡',     // Yellow
+  'Offline': '🔴',     // Red
+  'Deactivated': '⚫'  // Black
 };
 
 /**
@@ -70,7 +70,7 @@ export const GPS_STATUS_COLOR = {
     color: '#2cd80e',
     label: 'Online',
     // Neon green glow
-    shadow: '0 0 10px rgba(33, 192, 5, 0.6)', 
+    shadow: '0 0 10px rgba(33, 192, 5, 0.6)',
   },
   Delayed: {
     color: '#FFD700',
@@ -161,38 +161,38 @@ export const ATTENDANCE_SERVED_COUNTS_INITIAL = ["N", "Y", "X", "Z", "A", "B", "
 
 export const SPECIAL_POSITIONS = ['Developer', 'Admin', 'Execom', "Manager", "Supervisor", "IT SUPPORT"]; // Positions that bypass whitelist
 export const NAV_DESTINATIONS = [
-  { 
-    label: "Dashboard", 
-    path: "/dash", 
+  {
+    label: "Dashboard",
+    path: "/dash",
     whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC'],
     noSpecialAccess: false,
     hidden: false
   },
-  { 
-    label: "Order Distribution", 
-    path: "/order-dist", 
+  {
+    label: "Order Distribution",
+    path: "/order-dist",
     whiteList: ["OD", 'DCC', 'LCC'],
     hidden: false
   },
-  { 
-    label: "Trip Dispatch", 
-    path: "/order", 
-    whiteList: ["OD","Coor", 'DCC', 'LCC'],
+  {
+    label: "Trip Dispatch",
+    path: "/order",
+    whiteList: ["OD", "Coor", 'DCC', 'LCC'],
     hidden: false
   },
-  { 
-    label: "Fleet Monitoring", 
-    path: "/fleet", 
+  {
+    label: "Fleet Monitoring",
+    path: "/fleet",
     whiteList: ["Driver", "OD", "Coor", 'DCC', 'LCC'],
     noSpecialAccess: false,
     hidden: false
   },
-  { 
-    label: "Incident Reports", 
-    path: "/incidents", 
+  {
+    label: "Incident Reports",
+    path: "/incidents",
     whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC'],
     noSpecialAccess: false,
-    hidden: false 
+    hidden: false
   },
   // { 
   //   label: "Command Center", 
@@ -210,16 +210,16 @@ export const NAV_DESTINATIONS = [
   // },
 
 
-  { 
-    label: "Update Req", 
-    path: "/update-required", 
+  {
+    label: "Update Req",
+    path: "/update-required",
     noSpecialAccess: true,
     whiteList: ["Developer"],
     hidden: true
   },
-  { 
-    label: "Sys Maint", 
-    path: "/maintenance", 
+  {
+    label: "Sys Maint",
+    path: "/maintenance",
     whiteList: ["Developer"],
     noSpecialAccess: true, // Cannot be accessed by special positions unless whitelisted
     hidden: true
@@ -231,63 +231,63 @@ export const NAV_DESTINATIONS = [
 // BU LIST
 
 export const BUSINESS_UNITS = [
-    { 
-      Title: "SBUO-1A", 
-      Assignment: "Vasquez",
-      Business_Type: "CEMENT"
-    },
-    { 
-      Title: "SBUO-1B", 
-      Assignment: "Vasquez",
-      Business_Type: "CEMENT" 
-    },
-    { 
-      Title: "SBUO-1C", 
-      Assignment: "Intercity",
-      Business_Type: "CEMENT" 
-    },
-    { 
-      Title: "SBUO-1D", 
-      Assignment: "Vasquez",
-      Business_Type: "CEMENT" 
-    },
-    { 
-      Title: "SBUO-2A", 
-      Assignment: "Vasquez",
-      Business_Type: "CEMENT" 
-    },
-    { 
-      Title: "SBUO-2B", 
-      Assignment: "Vasquez",
-      Business_Type: "CEMENT" 
-    },
-    { 
-      Title: "SBUO-3A", 
-      Assignment: "Antipolo",
-      Business_Type: "CEMENT" 
-    },
-    { 
-      Title: "SBUO-4A", 
-      Assignment: "Vasquez",
-      Business_Type: "CEMENT" 
-    },
-    { 
-      Title: "THIRD PARTY", 
-      Assignment: "",
-      Business_Type: "" 
-    },
+  {
+    Title: "SBUO-1A",
+    Assignment: "Vasquez",
+    Business_Type: "CEMENT"
+  },
+  {
+    Title: "SBUO-1B",
+    Assignment: "Vasquez",
+    Business_Type: "CEMENT"
+  },
+  {
+    Title: "SBUO-1C",
+    Assignment: "Intercity",
+    Business_Type: "CEMENT"
+  },
+  {
+    Title: "SBUO-1D",
+    Assignment: "Vasquez",
+    Business_Type: "CEMENT"
+  },
+  {
+    Title: "SBUO-2A",
+    Assignment: "Vasquez",
+    Business_Type: "CEMENT"
+  },
+  {
+    Title: "SBUO-2B",
+    Assignment: "Vasquez",
+    Business_Type: "CEMENT"
+  },
+  {
+    Title: "SBUO-3A",
+    Assignment: "Antipolo",
+    Business_Type: "CEMENT"
+  },
+  {
+    Title: "SBUO-4A",
+    Assignment: "Vasquez",
+    Business_Type: "CEMENT"
+  },
+  {
+    Title: "THIRD PARTY",
+    Assignment: "",
+    Business_Type: ""
+  },
 ];
 
 
 
 // TRIP PROGRESS
 export const TRIP_PROGRESS = [
-  {idx: 0, Progress: "New Trip", label: "", color: 'var(--progress-newtrip)', selected: true, exclude: false},
+  { idx: 0, Progress: "New Trip", label: "", color: 'var(--progress-newtrip)', selected: true, exclude: false },
   // {idx: 1, Progress: "Plotted", label: "", color: 'var(--progress-newtrip)', selected: true},
-  {idx: 1, Progress: "Assigned", label: "Assigned", color: 'var(--progress-assigned)', selected: true},
-  {idx: 2, Progress: "Dispatched To Source", label: "To Source", color: 'var(--progress-source)', selected: true},
-  {idx: 3, Progress: "Dispatched To Destination", label: "To Destination", color: 'var(--progress-destination)', selected: true},
-  {idx: 4, Progress: "Done", label: "Done", color: 'var(--progress-done)', selected: false},
+  { idx: 1, Progress: "Assigned", label: "Assigned", color: 'var(--progress-assigned)', selected: true },
+  { idx: 2, Progress: "Dispatched To Source", label: "To Source", color: 'var(--progress-source)', selected: true },
+  { idx: 3, Progress: "Dispatched To Destination", label: "To Destination", color: 'var(--progress-destination)', selected: true },
+  { idx: 4, Progress: "Done", label: "Done", color: 'var(--progress-done)', selected: false },
   //{idx: 4, Progress: "PLD Done", label: "PLD Done", color: 'var(--progress-done)', exclude: true},
 ]
 
@@ -296,111 +296,111 @@ export const TRIP_PROGRESS = [
 
 // TRIP STATUSES
 export const TRIP_STATUSES = [
-    { 
-        Status: "AssignedTrips",
-        _actual_dmsstat: "",
-        Alias: "ASS",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 1)],
-        frDispatchStatus: "Empty",
-    },
-    { 
-        Status: "EMS",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
-        frDispatchStatus: "Empty",
-    },
-    {
-        Status: "ITS",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
-        frDispatchStatus: "Empty",
-    },
-    {
-        Status: "WTL",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
-        frDispatchStatus: "Empty",
-    },
-    {
-        Status: "LDN",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
-        frDispatchStatus: "Loaded",
-    },
-    {
-        Status: "LDS",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
-        frDispatchStatus: "Loaded",
-    },
-    {
-        Status: "LDG",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 2), TRIP_PROGRESS.find(item => item.idx === 3)],
-        frDispatchStatus: "Loaded",
-    },
-    {
-        Status: "Preloaded",
-        Alias: "PLD",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 2), TRIP_PROGRESS.find(item => item.idx === 3)],
-        frDispatchStatus: "Empty",
-    },
+  {
+    Status: "AssignedTrips",
+    _actual_dmsstat: "",
+    Alias: "ASS",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 1)],
+    frDispatchStatus: "Empty",
+  },
+  {
+    Status: "EMS",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
+    frDispatchStatus: "Empty",
+  },
+  {
+    Status: "ITS",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
+    frDispatchStatus: "Empty",
+  },
+  {
+    Status: "WTL",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
+    frDispatchStatus: "Empty",
+  },
+  {
+    Status: "LDN",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
+    frDispatchStatus: "Loaded",
+  },
+  {
+    Status: "LDS",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 2)],
+    frDispatchStatus: "Loaded",
+  },
+  {
+    Status: "LDG",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 2), TRIP_PROGRESS.find(item => item.idx === 3)],
+    frDispatchStatus: "Loaded",
+  },
+  {
+    Status: "Preloaded",
+    Alias: "PLD",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 2), TRIP_PROGRESS.find(item => item.idx === 3)],
+    frDispatchStatus: "Empty",
+  },
 
-    {
-        Status: "ITD",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
-        frDispatchStatus: "Loaded",
-    },
-    {
-        Status: "LDD",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
-        frDispatchStatus: "Loaded",
-    },
-    {
-        Status: "WTU",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
-        frDispatchStatus: "Loaded",
-    },
-    {
-        Status: "ULD",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
-        frDispatchStatus: "Empty",
-    },
-    {
-        Status: "ITG",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
-        frDispatchStatus: "Empty",
-    },
-    {
-        Status: "ITR",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
-        frDispatchStatus: "Empty",
-    },
+  {
+    Status: "ITD",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
+    frDispatchStatus: "Loaded",
+  },
+  {
+    Status: "LDD",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
+    frDispatchStatus: "Loaded",
+  },
+  {
+    Status: "WTU",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
+    frDispatchStatus: "Loaded",
+  },
+  {
+    Status: "ULD",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
+    frDispatchStatus: "Empty",
+  },
+  {
+    Status: "ITG",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
+    frDispatchStatus: "Empty",
+  },
+  {
+    Status: "ITR",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 3)],
+    frDispatchStatus: "Empty",
+  },
 
-    { 
-        Status: "ITG",
-        Alias: "",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 4)],
-        frDispatchStatus: "Empty",
-    },
-    {
-        Status: "Served",
-        Alias: "SRV",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 4)],
-        frDispatchStatus: "Empty",
-    },
-    {
-        Status: "Cancelled",
-        Alias: "CNC",
-        Progress: [TRIP_PROGRESS.find(item => item.idx === 4)],
-        frDispatchStatus: "Empty",
-    }
+  {
+    Status: "ITG",
+    Alias: "",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 4)],
+    frDispatchStatus: "Empty",
+  },
+  {
+    Status: "Served",
+    Alias: "SRV",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 4)],
+    frDispatchStatus: "Empty",
+  },
+  {
+    Status: "Cancelled",
+    Alias: "CNC",
+    Progress: [TRIP_PROGRESS.find(item => item.idx === 4)],
+    frDispatchStatus: "Empty",
+  }
 ];
 
 
@@ -408,14 +408,14 @@ export const TRIP_STATUSES = [
 export const ATTENDANCE_STATUSES = [
 
   //ANY
-  { seq: 0.0, Status: 'ABSENT', Alias: 'ABSENT', onduty: false, sort: 1.0  }, // ABSENT
+  { seq: 0.0, Status: 'ABSENT', Alias: 'ABSENT', onduty: false, sort: 1.0 }, // ABSENT
   { seq: 1.1, Status: "PRESENT", Alias: "PRESENT", onduty: true, sort: 0.0 },
 
   //if has OE
-  { seq: 2.1, Status: "ON TRIP", Alias: "ON TRIP", onduty: true, sort: 2.0  },
-  { seq: 2.2, Status: "IN TRANSIT", Alias: "IN TRANSIT", onduty: true, sort: 2.1  },
-  { seq: 2.3, Status: "TUKOD", Alias: "TUKOD", onduty: true, sort: 2.2  },
-  { seq: 2.4, Status: "SERVED", Alias: "SERVED", onduty: true, sort: 0.1  },
+  { seq: 2.1, Status: "ON TRIP", Alias: "ON TRIP", onduty: true, sort: 2.0 },
+  { seq: 2.2, Status: "IN TRANSIT", Alias: "IN TRANSIT", onduty: true, sort: 2.1 },
+  { seq: 2.3, Status: "TUKOD", Alias: "TUKOD", onduty: true, sort: 2.2 },
+  { seq: 2.4, Status: "SERVED", Alias: "SERVED", onduty: true, sort: 0.1 },
 
   //if NO TRIP
   { seq: 3.1, Status: "REST DAY", Alias: "REST DAY", onduty: false, sort: 1.1 },
@@ -428,9 +428,9 @@ export const ATTENDANCE_STATUSES = [
 
 // IR Types
 export const IR_TYPES = [
-  {label: "Short Bags", value: "Short Bags"},
-  {label: "Idling", value: "Idling"},
-  {label: "Overspeeding", value: "Overspeeding"},
+  { label: "Short Bags", value: "Short Bags" },
+  { label: "Idling", value: "Idling" },
+  { label: "Overspeeding", value: "Overspeeding" },
 ]
 
 
@@ -459,24 +459,24 @@ export const GSDC_SEND_TO_CHAT_key = '4557554c4d414c414b4554495445';
 
 
 export const FR_REQUEST_CATEGORY = [
-  {label: "New Trip", value: "New Trip", onlyFirstTime: true},
-  {label: "Additional", value: "Additional Diesel request", onlyFirstTime: false},
-  {label: "Diverted", value: "Diverted", onlyFirstTime: false},
-  {label: "Rescue", value: "Rescue", onlyFirstTime: false},
-  {label: "Service", value: "Service", onlyFirstTime: false},
-  {label: "Mobilization", value: "Mobilization", onlyFirstTime: false},
-  {label: "Maintenance", value: "Maintenance use", onlyFirstTime: false},
+  { label: "New Trip", value: "New Trip", onlyFirstTime: true },
+  { label: "Additional", value: "Additional Diesel request", onlyFirstTime: false },
+  { label: "Diverted", value: "Diverted", onlyFirstTime: false },
+  { label: "Rescue", value: "Rescue", onlyFirstTime: false },
+  { label: "Service", value: "Service", onlyFirstTime: false },
+  { label: "Mobilization", value: "Mobilization", onlyFirstTime: false },
+  { label: "Maintenance", value: "Maintenance use", onlyFirstTime: false },
 ]
 
 export const FR_OE_STATUS = [
-  {label: "OE REFERENCE", value: "OE REFERENCE", for: 'oe'},
-  {label: "BACK-UP OE REFERENCE", value: "BACK-UP OE", for: null},
-  {label: "RESCUE", value: "RESCUE", for: 'mob'},
-  {label: "MOBILIZATION", value: "MOBILIZATION", for: 'mob'},
-  {label: "MAINTENANCE", value: "MAINTENANCE", for: null},
-  {label: "PRELOAD", value: "PRELOAD", for: 'pld'},
-  {label: "SERVICE VEHICLE", value: "SERVICE VEHICLE", for: null},
-  {label: "ADBLUE", value: "ADBLUE", for: null}
+  { label: "OE REFERENCE", value: "OE REFERENCE", for: 'oe' },
+  { label: "BACK-UP OE REFERENCE", value: "BACK-UP OE", for: null },
+  { label: "RESCUE", value: "RESCUE", for: 'mob' },
+  { label: "MOBILIZATION", value: "MOBILIZATION", for: 'mob' },
+  { label: "MAINTENANCE", value: "MAINTENANCE", for: null },
+  { label: "PRELOAD", value: "PRELOAD", for: 'pld' },
+  { label: "SERVICE VEHICLE", value: "SERVICE VEHICLE", for: null },
+  { label: "ADBLUE", value: "ADBLUE", for: null }
 ]
 
 
@@ -484,7 +484,7 @@ export const FR_OE_STATUS = [
 // ------------------------------------------------------------------------------------------------------------- //
 
 //UTILS
-import {formatDate,ISOtoInt as _} from './utils/Ewul_GSDC_Utils';
+import { formatDate, ISOtoInt as _ } from './utils/Ewul_GSDC_Utils';
 
 // CONFIG TABLES
 import { encodeColumnName as enc, type TableModuleConfig } from './components/ewul_TableFlex';
@@ -495,8 +495,8 @@ import { type CardFieldConfig } from './components/ewul_CardGallery';
 
 
 const statusOptions = TRIP_STATUSES.map(item => ({
-    value: item.Status,
-    label: (item.Alias && item.Alias.trim() !== "") ? item.Alias : item.Status
+  value: item.Status,
+  label: (item.Alias && item.Alias.trim() !== "") ? item.Alias : item.Status
 }));
 
 /*const buOptions = BUSINESS_UNITS.map(item => ({
@@ -519,10 +519,10 @@ const tripgroupOptions = TRIP_GROUPS.map(item => {
 
 export const loaderTypeOptions = [
   {
-    value: "Loader Only", 
-    label: "Loader Only", 
-    type: "multi", 
-    subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", 
+    value: "Loader Only",
+    label: "Loader Only",
+    type: "multi",
+    subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM",
     record: {
       tcMult: .25,
       tiMult: .25,
@@ -532,10 +532,10 @@ export const loaderTypeOptions = [
     },
   },
   {
-    value: "Unloader Only", 
-    label: "Unloader Only", 
-    type: "multi", 
-    subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", 
+    value: "Unloader Only",
+    label: "Unloader Only",
+    type: "multi",
+    subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM",
     record: {
       tcMult: .25,
       tiMult: .25,
@@ -545,10 +545,10 @@ export const loaderTypeOptions = [
     },
   },
   {
-    value: "Short Trip Loader", 
-    label: "Short Trip", 
-    type: "multi", 
-    subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM", 
+    value: "Short Trip Loader",
+    label: "Short Trip",
+    type: "multi",
+    subtext: "0.25 Trip Count | 0.25 Index | 0.25 KM",
     record: {
       tcMult: .25,
       tiMult: .25,
@@ -558,10 +558,10 @@ export const loaderTypeOptions = [
     },
   },
   {
-    value: "Half Trip Loader", 
-    label: "Half Trip", 
-    type: "multi", 
-    subtext: "0.50 Trip Count | 0.50 Index | 0.50 KM", 
+    value: "Half Trip Loader",
+    label: "Half Trip",
+    type: "multi",
+    subtext: "0.50 Trip Count | 0.50 Index | 0.50 KM",
     record: {
       tcMult: .50,
       tiMult: .50,
@@ -571,10 +571,10 @@ export const loaderTypeOptions = [
     },
   },
   {
-    value: "Long Trip Loader", 
-    label: "Long Trip", 
-    type: "multi", 
-    subtext: "0.75 Trip Count | 0.75 Index | 0.75 KM", 
+    value: "Long Trip Loader",
+    label: "Long Trip",
+    type: "multi",
+    subtext: "0.75 Trip Count | 0.75 Index | 0.75 KM",
     record: {
       tcMult: .75,
       tiMult: .75,
@@ -584,10 +584,10 @@ export const loaderTypeOptions = [
     },
   },
   {
-    value: "No Loader", 
-    label: "No Loader", 
-    type: "multi", 
-    subtext: "0 Trip Count | 0 Index | 0 KM", 
+    value: "No Loader",
+    label: "No Loader",
+    type: "multi",
+    subtext: "0 Trip Count | 0 Index | 0 KM",
     record: {
       tcMult: 0,
       tiMult: 0,
@@ -597,10 +597,10 @@ export const loaderTypeOptions = [
     },
   },
   {
-    value: "No Unloader", 
-    label: "No Unloader", 
-    type: "multi", 
-    subtext: "0 Trip Count | 0 Index | 0 KM", 
+    value: "No Unloader",
+    label: "No Unloader",
+    type: "multi",
+    subtext: "0 Trip Count | 0 Index | 0 KM",
     record: {
       tcMult: 0,
       tiMult: 0,
@@ -610,10 +610,10 @@ export const loaderTypeOptions = [
     },
   },
   {
-    value: "Convoy", 
-    label: "Convoy", 
-    type: "multi", 
-    subtext: "0 Trip Count | 0 Index | 0 KM", 
+    value: "Convoy",
+    label: "Convoy",
+    type: "multi",
+    subtext: "0 Trip Count | 0 Index | 0 KM",
     record: {
       tcMult: 0,
       tiMult: 0,
@@ -623,10 +623,10 @@ export const loaderTypeOptions = [
     },
   },
   {
-    value: "Convoy Loader & Unloader", 
-    label: "Convoy Loader & Unloader", 
-    type: "multi", 
-    subtext: "1 Trip Count | 1 Index | 0 KM", 
+    value: "Convoy Loader & Unloader",
+    label: "Convoy Loader & Unloader",
+    type: "multi",
+    subtext: "1 Trip Count | 1 Index | 0 KM",
     record: {
       tcMult: 1,
       tiMult: 1,
@@ -636,15 +636,15 @@ export const loaderTypeOptions = [
     },
   },
   {
-    value: "Full Trip", 
-    label: "Full Trip", 
-    type: "multi", 
-    subtext: "1 Trip Count | 1 Index | 1 KM", 
+    value: "Full Trip",
+    label: "Full Trip",
+    type: "multi",
+    subtext: "1 Trip Count | 1 Index | 1 KM",
     record: {
       tcMult: 1,
       tiMult: 1,
       kmMult: 1,
-      empPos: ['Driver','Helper'],
+      empPos: ['Driver', 'Helper'],
       multicase: false,
     },
   }
@@ -656,33 +656,34 @@ export const loaderTypeOptions = [
 export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
-    { col: "OE", alias: "OE #", sticky: true, cellStyle: () => {return { fontWeight: 'bold' }} },
-    { col: "Trip Status", alias: "Status", filter: {type: "dropdown-multiple", options: statusOptions}, cellStyle: () => {return { fontWeight: 'bold' }}},
-    { col: "Loading Sequence", defaultSort: 'asc', orderSort: 1, alias: "LS" },
-    { col: "OE Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("OE Date")])  },
-    { col: "Buisness Unit", alias: "BU", filter: {type: "dropdown-multiple"}  },
-    { col: "Driver", cellStyle: () => {return { textAlign: 'left' }} },
-    { col: "Helper", cellStyle: () => {return { textAlign: 'left' }} },
+    { col: "OE", alias: "OE #", sticky: true, cellStyle: () => { return { fontWeight: 'bold' } } },
+    { col: "Trip Status", alias: "Status", filter: { type: "dropdown-multiple", options: statusOptions }, cellStyle: () => { return { fontWeight: 'bold' } } },
+    { col: "Loading Sequence", defaultSort: 'asc', orderSort: 2, alias: "LS", hidden: true },
+    { col: "OE Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("OE Date")]) },
+    { col: "Buisness Unit", alias: "BU", filter: { type: "dropdown-multiple" } },
+    { col: "Driver", cellStyle: () => { return { textAlign: 'left' } } },
+    { col: "Helper", cellStyle: () => { return { textAlign: 'left' } } },
     { col: "Vehicle", alias: "Truck" },
-    { col: "BO", alias: "Trailer" },  
-    { col: 'HasFuelRequest', alias: 'FR', 
+    { col: "BO", alias: "Trailer" },
+    {
+      col: 'HasFuelRequest', alias: 'FR',
       render(_val, row, _searchTerm, _addTask, fontSize) {
-        return(renderFuelRequestIcon(row.HasFuelRequest,row.HasFuelPO,row.HasFuelDisapproved, fontSize));
+        return (renderFuelRequestIcon(row.HasFuelRequest, row.HasFuelPO, row.HasFuelDisapproved, fontSize));
       },
     },
-    { 
+    {
       col: "TripProgress",
       alias: "Progress",
       filter: {
         type: "dropdown-multiple",
-        options: [...TRIP_PROGRESS.map(item => ({ value: item.Progress, label: item.label })), {value: 'Verified', label: 'Verified'} ],
+        options: [...TRIP_PROGRESS.map(item => ({ value: item.Progress, label: item.label })), { value: 'Verified', label: 'Verified' }],
         default: TRIP_PROGRESS.filter(item => item.selected).map(item => item.Progress),
         useCalculatedValue: true
       },
       cellStyle: (row: any) => {
-        let font_color: React.CSSProperties = { color: '#666'};
+        let font_color: React.CSSProperties = { color: '#666' };
         font_color = TRIP_PROGRESS.find(item => item.Progress === row["TripProgress"])?.color ? { color: TRIP_PROGRESS.find(item => item.Progress === row["TripProgress"])!.color } : font_color;
-        if (row.TripProgress === 'Done' && !!row.Verified_x0020_By && !!row.Documented_x0020_Date) font_color = {color: 'var(--progress-newtrip)' };
+        if (row.TripProgress === 'Done' && !!row.Verified_x0020_By && !!row.Documented_x0020_Date) font_color = { color: 'var(--progress-newtrip)' };
         return { textAlign: 'left', fontWeight: 'bold', ...font_color }
       },
       calculate(row) {
@@ -690,58 +691,60 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
         return row.TripProgress
       },
     },
-    { col: "Customer", cellStyle: () => {return { textAlign: 'left' }} },
-    { col: "Source", defaultSort: 'asc', orderSort: 1, preventNoSort: true, cellStyle: () => {return { textAlign: 'left' }} },
-    { col: "Destination", cellStyle: () => {return { textAlign: 'left' }}},
-    { col: "_tripGroup", alias: "Group", filter: {type: "dropdown-multiple", options: tripgroupOptions}},
+    { col: "Customer", cellStyle: () => { return { textAlign: 'left' } } },
+    { col: "Source", defaultSort: 'asc', orderSort: 1, preventNoSort: true, cellStyle: () => { return { textAlign: 'left' } } },
+    { col: "Destination", cellStyle: () => { return { textAlign: 'left' } } },
+    { col: "_tripGroup", alias: "Group", filter: { type: "dropdown-multiple", options: tripgroupOptions } },
     { col: "cementType", alias: "Type" },
 
     { col: "ATW/LO#", alias: "ATW/LO#" },
-    { col: "Plant DR", alias: "PLANT DR"},
+    { col: "Plant DR", alias: "PLANT DR" },
     { col: "SO#", alias: "SO#" },
     { col: "GSDC DR", alias: "GSDC DR" },
     { col: "Planning", alias: "Dispatcher Remarks" },
 
     //Disp to Source
-    { col: "Dispatched to Source", alias: "Dispatched to Source", calculate: (row: any) => formatDate(row[enc("Dispatched to Source")],{mode: "datetime", alreadyLocal: true})  },
-    { col: "Source in", alias: "Source In", calculate: (row: any) => formatDate(row[enc("Source in")],{mode: "datetime", alreadyLocal: true})  },
-    { col: "Source out", alias: "Source Out", calculate: (row: any) => formatDate(row[enc("Source out")],{mode: "datetime", alreadyLocal: true})  },
+    { col: "Dispatched to Source", alias: "Dispatched to Source", calculate: (row: any) => formatDate(row[enc("Dispatched to Source")], { mode: "datetime", alreadyLocal: true }) },
+    { col: "Source in", alias: "Source In", calculate: (row: any) => formatDate(row[enc("Source in")], { mode: "datetime", alreadyLocal: true }) },
+    { col: "Source out", alias: "Source Out", calculate: (row: any) => formatDate(row[enc("Source out")], { mode: "datetime", alreadyLocal: true }) },
     { col: "QTYWithdrawn", alias: "QTY Withdrawn" },
     { col: "Driver Loader", alias: "Driver Loader" },
     { col: "Helper Loader", alias: "Helper Loader" },
 
     //Disp to Destination
-    { col: "Dispatched to Destination", alias: "Dispatched to Destination", calculate: (row: any) => formatDate(row[enc("Dispatched to Destination")],{mode: "datetime", alreadyLocal: true})  }, 
-    { col: "Destination in", alias: "Destination In", calculate: (row: any) => formatDate(row[enc("Destination in")],{mode: "datetime", alreadyLocal: true})  },
-    { col: "Destination out", alias: "Destination Out", calculate: (row: any) => formatDate(row[enc("Destination out")],{mode: "datetime", alreadyLocal: true})  },
+    { col: "Dispatched to Destination", alias: "Dispatched to Destination", calculate: (row: any) => formatDate(row[enc("Dispatched to Destination")], { mode: "datetime", alreadyLocal: true }) },
+    { col: "Destination in", alias: "Destination In", calculate: (row: any) => formatDate(row[enc("Destination in")], { mode: "datetime", alreadyLocal: true }) },
+    { col: "Destination out", alias: "Destination Out", calculate: (row: any) => formatDate(row[enc("Destination out")], { mode: "datetime", alreadyLocal: true }) },
     { col: "QTYDelivered", alias: "QTY Delivered" },
     { col: "Driver Unloader", alias: "Driver Unloader" },
     { col: "Helper Unloader", alias: "Helper Unloader" },
-    { col: 'wew', alias: "Discrepancy", calculate: (row: any) => {
-        const discrepancy = row.QTYDelivered != null && row.QTYWithdrawn != null ?  row.QTYDelivered - row.QTYWithdrawn : 0;
-        const actualDiscrepancy = row.QTYDelivered_Actual != null && row.QTYWithdrawn_Actual != null ?  row.QTYDelivered_Actual - row.QTYWithdrawn_Actual : 0;
+    {
+      col: 'wew', alias: "Discrepancy", calculate: (row: any) => {
+        const discrepancy = row.QTYDelivered != null && row.QTYWithdrawn != null ? row.QTYDelivered - row.QTYWithdrawn : 0;
+        const actualDiscrepancy = row.QTYDelivered_Actual != null && row.QTYWithdrawn_Actual != null ? row.QTYDelivered_Actual - row.QTYWithdrawn_Actual : 0;
         return actualDiscrepancy ? actualDiscrepancy : (discrepancy || 0);
-    }, useCalculatedSort: true },
+      }, useCalculatedSort: true
+    },
 
 
     // Completed
-    { col: "Completed Date", alias: "Served Date", calculate: (row: any) => formatDate(row[enc("Completed Date")],{mode: "datetime", alreadyLocal: true})  },
-    { col: "Tagged Date", alias: "Tagged Date", calculate: (row: any) => formatDate(row[enc("Tagged Date")],{mode: "datetime", alreadyLocal: true})  },
-    
-    
-    { col: "Modified", alias: "Modified", calculate: (row: any) => formatDate(row[enc("Modified")],{mode: "datetime", alreadyLocal: true})  },
+    { col: "Completed Date", alias: "Served Date", calculate: (row: any) => formatDate(row[enc("Completed Date")], { mode: "datetime", alreadyLocal: true }) },
+    { col: "Tagged Date", alias: "Tagged Date", calculate: (row: any) => formatDate(row[enc("Tagged Date")], { mode: "datetime", alreadyLocal: true }) },
+
+
+    { col: "Modified", alias: "Modified", calculate: (row: any) => formatDate(row[enc("Modified")], { mode: "datetime", alreadyLocal: true }) },
     { col: "LastModifiedBy", alias: "Modified By" },
 
     { col: "Verified By", alias: "Verified By" },
-    { col: "Documented Date", alias: "Documented Date", calculate: (row: any) => formatDate(row[enc("Documented Date")],{mode: "datetime", alreadyLocal: true})  },
+    { col: "Documented Date", alias: "Documented Date", calculate: (row: any) => formatDate(row[enc("Documented Date")], { mode: "datetime", alreadyLocal: true }) },
 
-    { col: "ServedDate", alias: "Credited Date", calculate: (row: any) => formatDate(row[enc("Completed Date")],{mode: "date", alreadyLocal: true})  },
+    { col: "ServedDate", alias: "Credited Date", calculate: (row: any) => formatDate(row[enc("Completed Date")], { mode: "date", alreadyLocal: true }) },
 
   ],
 
   rowStyle: (row: any) => ({
     backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-bg-blue) 70%, var(--color-bg) 100%)' : 'var(--color-bg)'
-  }), 
+  }),
 
   searchable_cols: ["OE", "Driver", "Helper", "Vehicle", "BO", "Source", "Destination", "ATW/LO#", "Plant DR", "SO#", "GSDC DR"] as const,
 
@@ -755,57 +758,59 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
 
 const taggedDurationFormatting = {
   ok: 60,
-  notok:60*24
+  notok: 60 * 24
 }
 
 export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
-    { col: "OE", alias: "OE #", sticky: true, cellStyle: () => {return { fontWeight: 'bold' }} },
+    { col: "OE", alias: "OE #", sticky: true, cellStyle: () => { return { fontWeight: 'bold' } } },
     // { col: "Trip Status", alias: "Status", filter: {type: "dropdown-multiple", options: statusOptions}, cellStyle: () => {return { fontWeight: 'bold' }}},
-    // { col: "Loading Sequence", alias: "LS", defaultSort: 'asc', orderSort: 2 },
+    { col: "Loading Sequence", alias: "LS", defaultSort: 'asc', orderSort: 2, hidden: true },
 
-      { col: "Driver", cellStyle: () => {return { textAlign: 'left' }} },
-    { col: "Helper", cellStyle: () => {return { textAlign: 'left' }} },
+    { col: "Driver", cellStyle: () => { return { textAlign: 'left' } } },
+    { col: "Helper", cellStyle: () => { return { textAlign: 'left' } } },
     { col: "Vehicle", alias: "Truck" },
-    { col: "BO", alias: "Trailer" },   
+    { col: "BO", alias: "Trailer" },
 
-    
-    { col: "Customer", cellStyle: () => {return { textAlign: 'left' }} },
-    { col: "Source", defaultSort: 'asc', orderSort: 1, preventNoSort: true, cellStyle: () => {return { textAlign: 'left' }} },
-    { col: "Destination", cellStyle: () => {return { textAlign: 'left' }}},
-    { col: "_tripGroup", alias: "Group", filter: {type: "dropdown-multiple", options: tripgroupOptions}},
+
+    { col: "Customer", cellStyle: () => { return { textAlign: 'left' } } },
+    { col: "Source", defaultSort: 'asc', orderSort: 1, preventNoSort: true, cellStyle: () => { return { textAlign: 'left' } } },
+    { col: "Destination", cellStyle: () => { return { textAlign: 'left' } } },
+    { col: "_tripGroup", alias: "Group", filter: { type: "dropdown-multiple", options: tripgroupOptions } },
     { col: "cementType", alias: "Type" },
 
-    { col: 'HasFuelRequest', alias: 'FR', 
+    {
+      col: 'HasFuelRequest', alias: 'FR',
       render(_val, row, _searchTerm, _addTask, fontSize) {
-        return(renderFuelRequestIcon(row.HasFuelRequest,row.HasFuelPO,row.HasFuelDisapproved, fontSize));
+        return (renderFuelRequestIcon(row.HasFuelRequest, row.HasFuelPO, row.HasFuelDisapproved, fontSize));
       },
     },
 
     { col: "Planning", alias: "ODM Remarks" },
 
-    { col: "Tagged Date", alias: "Plotted Date", calculate: (row: any) => formatDate(row[enc("Tagged Date")], { mode: 'datetime', alreadyLocal: true }), cellStyle: (_row: any) => {return {fontWeight: 'bold'}}  },
-    { col: "", alias: "Age", 
-      calculate: (row: any) => formatDate(row[enc("Tagged Date")], { mode: "duration", alreadyLocal: true  }).replace("from now","ago"),
+    { col: "Tagged Date", alias: "Plotted Date", calculate: (row: any) => formatDate(row[enc("Tagged Date")], { mode: 'datetime', alreadyLocal: true }), cellStyle: (_row: any) => { return { fontWeight: 'bold' } } },
+    {
+      col: "", alias: "Age",
+      calculate: (row: any) => formatDate(row[enc("Tagged Date")], { mode: "duration", alreadyLocal: true }).replace("from now", "ago"),
       cellStyle: (row: any) => {
         let backgroundColor = 'transparent';
         let textColor = 'var(--color-primary-2)';
-        
+
         let modifiedVal = row[enc("Tagged Date")];
         if (modifiedVal) {
           // 1. Normalize trailing 'Z' if treating string as local execution space
           if (typeof modifiedVal === 'string' && modifiedVal.endsWith('Z')) {
             modifiedVal = modifiedVal.slice(0, -1);
           }
-          
+
           const now = Date.now();
           let modifiedTime = new Date(modifiedVal).getTime();
-          
+
           // 2. Append 'Z' fallback if it's an un-offsetted database ISO sequence to force standard parsing alignment
           if (
-            typeof row[enc("Tagged Date")] === 'string' && 
-            !row[enc("Tagged Date")].includes('Z') && 
+            typeof row[enc("Tagged Date")] === 'string' &&
+            !row[enc("Tagged Date")].includes('Z') &&
             !row[enc("Tagged Date")].includes('+')
           ) {
             modifiedTime = new Date(`${modifiedVal}Z`).getTime();
@@ -813,7 +818,7 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
 
           // 3. Complete calculation in minutes
           const diffMins = (now - modifiedTime) / 60000;
-          
+
           // 4. Evaluate aging brackets safely matching your visual tints
           if (diffMins >= 0 && diffMins < taggedDurationFormatting.ok) {
             backgroundColor = 'rgba(76, 175, 80, 0.15)'; // Subtle Green Tint
@@ -826,22 +831,23 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
             textColor = '#e53935'; // Red System Accent
           }
         }
-        
-        return { 
-          backgroundColor, 
-          color: textColor, 
+
+        return {
+          backgroundColor,
+          color: textColor,
           fontWeight: 'bold',
           borderRadius: '4px', /* Gentle design layout preference */
           padding: '4px 8px'
         };
       }
+
     },
 
-    
-    { col: "Modified", alias: "Modified", calculate: (row: any) => formatDate(row[enc("Modified")],{mode: "datetime", alreadyLocal: true})  },
+
+    { col: "Modified", alias: "Modified", calculate: (row: any) => formatDate(row[enc("Modified")], { mode: "datetime", alreadyLocal: true }) },
     { col: "LastModifiedBy", alias: "Modified By" },
 
-    { col: "Buisness Unit", alias: "BU", filter: {type: "dropdown-multiple"}  },
+    { col: "Buisness Unit", alias: "BU", filter: { type: "dropdown-multiple" } },
 
 
 
@@ -849,7 +855,7 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
 
   rowStyle: (row: any) => ({
     backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-bg-blue) 70%, var(--color-bg) 100%)' : 'var(--color-bg)'
-  }), 
+  }),
 
   searchable_cols: ["OE", "Driver", "Helper", "Vehicle", "BO", "Source", "Destination"] as const,
 
@@ -874,53 +880,54 @@ export const orderStatuses = [
 ];
 
 export const cementTypeOptions = [
-    { label: 'Type 1', value: 'Type 1' },
-    { label: 'Type 1L', value: 'Type 1L' },
-    { label: 'Fly-Ash', value: 'Fly-Ash' },
-    { label: 'Slag', value: 'Slag' },
-    { label: 'Type 1T', value: 'Type 1T' },
-    { label: 'Limestone', value: 'Limestone' },
-    { label: 'Type 1P', value: 'Type 1P' }
+  { label: 'Type 1', value: 'Type 1' },
+  { label: 'Type 1L', value: 'Type 1L' },
+  { label: 'Fly-Ash', value: 'Fly-Ash' },
+  { label: 'Slag', value: 'Slag' },
+  { label: 'Type 1T', value: 'Type 1T' },
+  { label: 'Limestone', value: 'Limestone' },
+  { label: 'Type 1P', value: 'Type 1P' }
 ];
 
 export const NEW_TRIPS_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
-  
+
     /*{ col: "OrderedDate", alias: "Order Date", calculate: (row: any) => formatDate(row["OrderedDate"]) },*/
-    { col: "OE Date", alias: "OE Date", portion:1, calculate: (row: any) => formatDate(row[enc("OE Date")]) },
-    { col: "NeededDate", alias: "Need Date", portion:1, calculate: (row: any) => formatDate(row["NeededDate"]) },
-    { col: "OE", alias: "OE #", portion:1},
-    { col: "SourceName", alias: "Source", portion:1.5},
-    { col: "DestiName", alias: "Destination", portion:1.5},
-    { col: "_tripGroup", alias: "Group", portion:1, filter: {type: "dropdown-multiple", options: tripgroupOptions}},
-    { col: "CementTypeName", alias: "Type", portion:1, filter: {type: "dropdown-multiple", options: cementTypeOptions}},
-    { col: "SAPStatus", alias: "Status", portion:1, 
-      filter: {type: "dropdown-multiple", options: orderStatuses, default: ["Approved"]},
+    { col: "OE Date", alias: "OE Date", portion: 1, calculate: (row: any) => formatDate(row[enc("OE Date")]) },
+    { col: "NeededDate", alias: "Need Date", portion: 1, calculate: (row: any) => formatDate(row["NeededDate"]) },
+    { col: "OE", alias: "OE #", portion: 1 },
+    { col: "SourceName", alias: "Source", portion: 1.5 },
+    { col: "DestiName", alias: "Destination", portion: 1.5 },
+    { col: "_tripGroup", alias: "Group", portion: 1, filter: { type: "dropdown-multiple", options: tripgroupOptions } },
+    { col: "CementTypeName", alias: "Type", portion: 1, filter: { type: "dropdown-multiple", options: cementTypeOptions } },
+    {
+      col: "SAPStatus", alias: "Status", portion: 1,
+      filter: { type: "dropdown-multiple", options: orderStatuses, default: ["Approved"] },
       cellStyle: (row: any) => {
-        let style: React.CSSProperties = { color: '#666'};
+        let style: React.CSSProperties = { color: '#666' };
         if (row["SAPStatus"] === "Approved") style = { color: '#2ea107' };
         if (row["SAPStatus"] === "Disapproved") style = { color: '#680000' };
         if (row["SAPStatus"] === "Tagged") style = { color: '#2c02ff' };
         if (row["SAPStatus"] === "Manual") style = { color: '#ff00d9' };
         if (row["SAPStatus"] === "Incomplete") style = { color: '#eaa709' };
         if (row["SAPStatus"] === "Completed") style = { color: '#08d7bc' };
-        
+
         style.fontWeight = 'bold';
-        style.textTransform = 'uppercase'; 
+        style.textTransform = 'uppercase';
         style.letterSpacing = '0.5px';
 
         return style;
       }
     },
 
-    
-    
+
+
   ],
 
   rowStyle: (row: any) => ({
     backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)' : 'var(--color-bg-blue)'
-  }), 
+  }),
 
   searchable_cols: ["OE", "SourceName", "DestiName"] as const,
 
@@ -946,8 +953,8 @@ const vehicleInfoModal = (data: any, vehicle: string): ModalOptions => ({
     return (
       <div style={{ padding: '16px' }}>
         <h5>Unit Information</h5>
-          <p>Truck: {data.TruckFull}</p>
-          <p>Paired Trailer: {data.Trailer}</p>
+        <p>Truck: {data.TruckFull}</p>
+        <p>Paired Trailer: {data.Trailer}</p>
 
       </div>
     );
@@ -959,31 +966,31 @@ const vehicleInfoModal = (data: any, vehicle: string): ModalOptions => ({
 export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
-    { 
-      col: "TruckFull", 
-      alias: "Truck", 
-      portion: 0.5, 
+    {
+      col: "TruckFull",
+      alias: "Truck",
+      portion: 0.5,
       render: (val: any, row: any, searchTerm: string) => {
         if (!val) return '---';
 
         return (
-          <div 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between', 
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
               gap: '8px',
-              width: '100%' 
+              width: '100%'
             }}
           >
-            <p 
+            <p
               title={`View: ${val}`}
               onClick={(e) => { e.stopPropagation(); openFleetModal(vehicleInfoModal(row, 'Truck')); }}
               className='fleetmonpage-redhover stop-propagation'
-              style={{ 
-                margin: 0, 
-                whiteSpace: 'pre-wrap', 
-                wordBreak: 'break-word', 
+              style={{
+                margin: 0,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
                 color: 'var(--color-primary)',
                 fontSize: '13px',
               }}
@@ -995,35 +1002,35 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
             {renderRepairIcon(row, enc("JR_Truck"), 'TractorJRStatus')}
           </div>
         );
-      } 
+      }
     },
-    { 
-      col: "Trailer", 
-      portion: 0.5, 
+    {
+      col: "Trailer",
+      portion: 0.5,
       // We use render instead of just cellStyle to allow for the icon placement
       render: (val: any, row: any, searchTerm: string) => {
         if (!val) return '---';
 
         return (
-          <div 
+          <div
             title={`View: ${val}`}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between', 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
               gap: '2px',
-              width: '100%' 
+              width: '100%'
             }}
           >
-            <span 
+            <span
               onClick={(e) => { e.stopPropagation(); openFleetModal(vehicleInfoModal(row, 'Trailer')); }}
-              style={{ 
+              style={{
                 color: 'var(--color-primary)', // Moved from cellStyle to here
                 textAlign: 'center',
               }}
               className='fleetmonpage-redhover stop-propagation'
-              onMouseEnter={(e) => {e.stopPropagation();}}
-              onMouseLeave={(e) => {e.stopPropagation();}}
+              onMouseEnter={(e) => { e.stopPropagation(); }}
+              onMouseLeave={(e) => { e.stopPropagation(); }}
             >
               <HighlightText text={val} highlight={searchTerm} isSearchable={true} />
             </span>
@@ -1034,9 +1041,9 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
         );
       }
     },
-    { 
-      col: "Driver", portion: 1.5, 
-      render: (val: any, row: any, searchTerm: string, addTask?: any) => { 
+    {
+      col: "Driver", portion: 1.5,
+      render: (val: any, row: any, searchTerm: string, addTask?: any) => {
         return <PersonnelCell
           employeeName={val}
           row={row}
@@ -1061,8 +1068,8 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
         />;
       },
     },
-    { 
-      col: "Helper", portion: 1.5, 
+    {
+      col: "Helper", portion: 1.5,
       render: (val: any, row: any, searchTerm: string, addTask?: any) => {
         return <PersonnelCell
           employeeName={val}
@@ -1088,17 +1095,17 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
         />;
       },
     },
-    { col: "Trip Status", alias: "Status", portion: 0.5, 
-      render: (val: any, row: any, _searchTerm: string, addTask?: any)=>
-      {
+    {
+      col: "Trip Status", alias: "Status", portion: 0.5,
+      render: (val: any, row: any, _searchTerm: string, addTask?: any) => {
 
 
         return row.OE ? (
-          <StatusSelect 
-            val={val} 
-            row={row} 
-            enc={enc} 
-            TRIP_STATUSES={TRIP_STATUSES} 
+          <StatusSelect
+            val={val}
+            row={row}
+            enc={enc}
+            TRIP_STATUSES={TRIP_STATUSES}
             onStatusChange={(newVal, targetRow) => {
               if (addTask) {
                 addTask({
@@ -1119,9 +1126,9 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
         ) : '---';
       },
     },
-    { 
-      col: "OE", 
-      portion: 1, 
+    {
+      col: "OE",
+      portion: 1,
       cellStyle: (row: any) => {
         // Default color
         let color = 'var(--color-primary-2)';
@@ -1139,27 +1146,27 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
             color = 'var(--color-border-danger)';
           }
         }
-        return { color, fontWeight: 'bold'};
+        return { color, fontWeight: 'bold' };
       }
     },
-    { col: "Source", portion: 2, cellStyle: () => ({textAlign: 'left', whiteSpace: 'pre-wrap', wordBreak: 'break-word'})},
-    { col: "Destination", portion: 2, cellStyle: () => ({textAlign: 'left', whiteSpace: 'pre-wrap', wordBreak: 'break-word'})},
-    { 
-      col: "GPS Address", alias: "Location", portion: 1.5, cellStyle: () => ({ whiteSpace: 'pre-wrap', wordBreak: 'break-word'}), 
+    { col: "Source", portion: 2, cellStyle: () => ({ textAlign: 'left', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }) },
+    { col: "Destination", portion: 2, cellStyle: () => ({ textAlign: 'left', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }) },
+    {
+      col: "GPS Address", alias: "Location", portion: 1.5, cellStyle: () => ({ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }),
       render: (val: any, row: any) => {
         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${row.Latitude},${row.Longitude}`;
-        
+
         return (
           <a href={mapUrl} target="_blank" rel="noopener noreferrer" title='View on Google Maps'>{val}</a>
         );
 
       }
     },
-    
-    { 
+
+    {
       col: "", alias: "Arrival", portion: 0.5, calculate: (row: any) => {
-      const arrivalTime = row[enc("Destination in")] || row[enc("Source in")];
-      return formatDate(arrivalTime, { mode: "datetime" });
+        const arrivalTime = row[enc("Destination in")] || row[enc("Source in")];
+        return formatDate(arrivalTime, { mode: "datetime" });
       }
     },
 
@@ -1174,10 +1181,10 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
         }
       }
     },
-    
-    { col: "Remarks", portion: 2, render: (val: any ) => <input type="text" value={val} />},
-    { col: "Modified", alias: "Last Modified", portion: 0.5, calculate: (row: any) => formatDate(row[enc("Modified")], {mode: "datetime"}) },
-    { col: "Modified By", alias: "Modified By", portion: 1,},
+
+    { col: "Remarks", portion: 2, render: (val: any) => <input type="text" value={val} /> },
+    { col: "Modified", alias: "Last Modified", portion: 0.5, calculate: (row: any) => formatDate(row[enc("Modified")], { mode: "datetime" }) },
+    { col: "Modified By", alias: "Modified By", portion: 1, },
   ],
 
   rowStyle: (row: any) => ({
@@ -1195,59 +1202,60 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
 export const cardFields: CardFieldConfig[] = [
   { label: 'OE', key: 'OE', isTitle: true, row: 1, render: (val) => (val && String(val).trim() !== "") ? val : "NO TRIP" },
 
-  
-  { label: 'Driver', key: 'Driver', row: 2},
-  { label: 'Helper', key: 'Helper', row: 2},
+
+  { label: 'Driver', key: 'Driver', row: 2 },
+  { label: 'Helper', key: 'Helper', row: 2 },
   { label: 'Truck', key: 'TruckFull', row: 3 },
   { label: 'Trailer', key: 'Trailer', row: 3 },
   { label: 'Modified', key: "Modified", row: 4, render: (val) => formatDate(val, { mode: 'duration' }) },
-  { label: 'By', key: enc("Modified By"), row: 4},
-  { label: 'Location', key: enc("GPS Address"), row: 5},
+  { label: 'By', key: enc("Modified By"), row: 4 },
+  { label: 'Location', key: enc("GPS Address"), row: 5 },
 
-  { label: 'Status', key: enc("Trip Status"), isStatus: true, 
-    statusElement: (row: any) =>
-      {
-        return row.OE ? (
-          <select 
-            defaultValue={row[enc("Trip Status")]}
-            onChange={e => {
-              console.log("Selected status:", e.target.value, "for row:", row);
-            }}
-          >
-            {TRIP_STATUSES
-              .filter(status =>
-                Array.isArray(status.Progress) &&
-                status.Progress.some(progress => progress && progress.Progress === row[enc("Trip Progress")])
-              )
-              .map(status => (
-                <option key={status.Status} value={status.Status}>
-                  {status.Alias && status.Alias.trim() !== "" ? status.Alias : status.Status}
-                </option>
-              ))}
-          </select>
-        ) : null
-      },
-    
-    filter: {type: "dropdown-multiple", options: statusOptions},},
-  { label: 'Pair', key: "FromList", filter: {type: "dropdown-multiple", options: pairing_type_options} },
+  {
+    label: 'Status', key: enc("Trip Status"), isStatus: true,
+    statusElement: (row: any) => {
+      return row.OE ? (
+        <select
+          defaultValue={row[enc("Trip Status")]}
+          onChange={e => {
+            console.log("Selected status:", e.target.value, "for row:", row);
+          }}
+        >
+          {TRIP_STATUSES
+            .filter(status =>
+              Array.isArray(status.Progress) &&
+              status.Progress.some(progress => progress && progress.Progress === row[enc("Trip Progress")])
+            )
+            .map(status => (
+              <option key={status.Status} value={status.Status}>
+                {status.Alias && status.Alias.trim() !== "" ? status.Alias : status.Status}
+              </option>
+            ))}
+        </select>
+      ) : null
+    },
+
+    filter: { type: "dropdown-multiple", options: statusOptions },
+  },
+  { label: 'Pair', key: "FromList", filter: { type: "dropdown-multiple", options: pairing_type_options } },
 
 ];
 
 export const frStatuses = [
-  { value: 'New', noedit: false, isOpen: false, color: 'var(--progress-newtrip)'},
-  { value: 'FR Unliquidated', noedit: true , isOpen: false},
-  { value: 'Issuance Cancelled', noedit: true, isOpen: false,  color: 'var(--color-border-warning)'  },
-  { value: 'Liquidation Cancelled', noedit: true, isOpen: false  },
-  { value: 'Request', noedit: true, isOpen: true, color: 'var(--progress-newtrip)'  },
-  { value: 'Response', noedit: true, isOpen: false  },
-  { value: 'FR Disapproved', noedit: false, isOpen: true, color: 'var(--color-border-danger)'  },
-  { value: 'Liquidation Disapproved', noedit: true, isOpen: false  },
-  { value: 'Cancelled', noedit: true, isOpen: false  },
-  { value: 'Liquidated', noedit: true, isOpen: false, color: 'var(--color-border-success)'  },
-  { value: 'Issuance', noedit: true, isOpen: false  },
-  { value: 'FR Cancelled', noedit: true, isOpen: false  },
-  { value: 'Unliquidated', noedit: true, isOpen: false  },
-  { value: 'Liquidation', noedit: true, isOpen: true , color: 'var(--color-border-info)' }
+  { value: 'New', noedit: false, isOpen: false, color: 'var(--progress-newtrip)' },
+  { value: 'FR Unliquidated', noedit: true, isOpen: false },
+  { value: 'Issuance Cancelled', noedit: true, isOpen: false, color: 'var(--color-border-warning)' },
+  { value: 'Liquidation Cancelled', noedit: true, isOpen: false },
+  { value: 'Request', noedit: true, isOpen: true, color: 'var(--progress-newtrip)' },
+  { value: 'Response', noedit: true, isOpen: false },
+  { value: 'FR Disapproved', noedit: false, isOpen: true, color: 'var(--color-border-danger)' },
+  { value: 'Liquidation Disapproved', noedit: true, isOpen: false },
+  { value: 'Cancelled', noedit: true, isOpen: false },
+  { value: 'Liquidated', noedit: true, isOpen: false, color: 'var(--color-border-success)' },
+  { value: 'Issuance', noedit: true, isOpen: false },
+  { value: 'FR Cancelled', noedit: true, isOpen: false },
+  { value: 'Unliquidated', noedit: true, isOpen: false },
+  { value: 'Liquidation', noedit: true, isOpen: true, color: 'var(--color-border-info)' }
 ]
 
 
@@ -1258,12 +1266,13 @@ export const FUEL_REQUESTS_TABLE_CONFIG: TableModuleConfig = {
     { col: "OE", alias: "OE #" },
     { col: "fuelrequestID", alias: "Request ID" },
     { col: "Requestedby", alias: "Requested By" },
-    { col: "CreatedDate", alias: "Date Requested", calculate: (row: any) => formatDate(row.CreatedDate, {mode: "datetime"}) },
+    { col: "CreatedDate", alias: "Date Requested", calculate: (row: any) => formatDate(row.CreatedDate, { mode: "datetime" }) },
 
-    { col: "Frstatus", alias: "Status",
+    {
+      col: "Frstatus", alias: "Status",
       filter: { type: "dropdown-multiple", options: frStatuses },
       cellStyle: (row: any) => {
-        let style: React.CSSProperties = { color: 'var(--color-muted)'};
+        let style: React.CSSProperties = { color: 'var(--color-muted)' };
         if (row.Frstatus === "Request") style = { color: 'var(--progress-newtrip)' };
         if (row.Frstatus === "FR Disapproved") style = { color: 'var(--color-border-danger)' };
         if (row.Frstatus === "Issuance Cancelled") style = { color: 'var(--color-border-warning)' };
@@ -1278,18 +1287,21 @@ export const FUEL_REQUESTS_TABLE_CONFIG: TableModuleConfig = {
     { col: "Trailer", alias: "Trailer" },
     { col: "Driversname", alias: "Driver" },
 
-    { col: "Remarksissuance", alias: "Remarks", 
+    {
+      col: "Remarksissuance", alias: "Remarks",
       render(_val, row, _searchTerm, _addTask) {
         switch (row.Frstatus) {
-            case 'FR Disapproved': return row.Frdisapprove;
-            case 'Unliquidated': return row.Unliquidateremarks;
-            default: return row.Remarksissuance;
+          case 'FR Disapproved': return row.Frdisapprove;
+          case 'Unliquidated': return row.Unliquidateremarks;
+          default: return row.Remarksissuance;
         }
-      }, 
+      },
     },
-    { col: "", alias: "Add | Comp", render: (_val: any, row: any) => {
-      return `${row.AddBlue ? 'Yes' : 'No'} | ${row.Compressor ? 'Yes' : 'No'}`;
-    }}
+    {
+      col: "", alias: "Add | Comp", render: (_val: any, row: any) => {
+        return `${row.AddBlue ? 'Yes' : 'No'} | ${row.Compressor ? 'Yes' : 'No'}`;
+      }
+    }
   ],
 
   rowStyle: (row: any) => ({
@@ -1306,18 +1318,18 @@ export const FUEL_REQUESTS_TABLE_CONFIG: TableModuleConfig = {
 // INCIDENT REPORTS PAGE
 
 export const IR_REPORT_TYPES = [
-    { value: 'Short Bags', label: 'Short Bags' },
-    { value: 'Road Accident', label: 'Road Accident' },
-    { value: 'Unauthorized Stop', label: 'Unauthorized Stop' },
-    { value: 'Overspeeding', label: 'Overspeeding' },
-    { value: 'Fuel Issue', label: 'Fuel Issue' },
-    { value: 'Other', label: 'Other / Miscellaneous' }
+  { value: 'Short Bags', label: 'Short Bags' },
+  { value: 'Road Accident', label: 'Road Accident' },
+  { value: 'Unauthorized Stop', label: 'Unauthorized Stop' },
+  { value: 'Overspeeding', label: 'Overspeeding' },
+  { value: 'Fuel Issue', label: 'Fuel Issue' },
+  { value: 'Other', label: 'Other / Miscellaneous' }
 ];
 
 export const IR_ACTION_OPTIONS = [
-    { value: 'Inspection', label: 'Inspection', color: 'var(--color-border-info)' },
-    { value: 'Retrieval', label: 'Retrieval', color: 'var(--color-border-warning)' },
-    { value: 'Proceed Next Trip', label: 'Proceed Next Trip', color: 'var(--color-border-success)' }
+  { value: 'Inspection', label: 'Inspection', color: 'var(--color-border-info)' },
+  { value: 'Retrieval', label: 'Retrieval', color: 'var(--color-border-warning)' },
+  { value: 'Proceed Next Trip', label: 'Proceed Next Trip', color: 'var(--color-border-success)' }
 ];
 
 export const SHORT_BAGS_LIMIT = 0;
@@ -1331,10 +1343,11 @@ const ir_status_option = [
 export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
   table_config: [
     { col: "IRID", alias: "IR ID", sticky: true },
-    { col: "OE_Reference", alias: "Trip OE#"},
-    { col: "IRStatus", alias: "Status", 
+    { col: "OE_Reference", alias: "Trip OE#" },
+    {
+      col: "IRStatus", alias: "Status",
       cellStyle: (row: any) => {
-        let style: React.CSSProperties = { color: 'var(--color-muted)'};
+        let style: React.CSSProperties = { color: 'var(--color-muted)' };
         if (row.IRStatus === "Cancelled") style = { color: 'var(--color-border-warning)' };
         if (row.IRStatus === "Open") style = { color: 'var(--color-border-info)' };
         if (row.IRStatus === "Closed") style = { color: 'var(--color-border-success)' };
@@ -1344,31 +1357,32 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
       filter: { type: "dropdown-multiple", options: ir_status_option }
     },
     { col: "IncidentType", alias: "Type", portion: 0.2, filter: { type: "dropdown-multiple", options: IR_REPORT_TYPES } },
-    { col: "flexValue", alias: "Value", portion: 0.2, 
+    {
+      col: "flexValue", alias: "Value", portion: 0.2,
       render: (val, row) => {
         if (val) {
 
           switch (row.IncidentType) {
 
-              case 'Short Bags': return `${Number(val).toFixed(2)} bags`;
+            case 'Short Bags': return `${Number(val).toFixed(2)} bags`;
 
 
 
-              default: return val;
+            default: return val;
           }
         }
       },
     },
-    { 
-      col: "ActionStatus", 
-      alias: "Action", 
-      filter: { type: "dropdown-multiple", options: IR_ACTION_OPTIONS }, 
+    {
+      col: "ActionStatus",
+      alias: "Action",
+      filter: { type: "dropdown-multiple", options: IR_ACTION_OPTIONS },
       render: (val: any) => {
         const actionOption = IR_ACTION_OPTIONS.find(option => option.value === val);
-        const pillColor = actionOption?.color || 'var(--color-border-info)'; 
+        const pillColor = actionOption?.color || 'var(--color-border-info)';
 
         return (
-          <span style={{ 
+          <span style={{
             display: 'inline-flex',
             alignItems: 'center',
             padding: '3px 12px',
@@ -1390,7 +1404,7 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
       }
     },
     { col: "Remarks", alias: "Quick Remarks", portion: 2 },
-    { col: "ReportedBy", alias: "Reported By", portion: 1.2, filter: { type: "dropdown-multiple"}, },
+    { col: "ReportedBy", alias: "Reported By", portion: 1.2, filter: { type: "dropdown-multiple" }, },
     { col: "CreatedDateTime", alias: "Reported Date", portion: 1, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "datetime" }) },
     { col: "", alias: "Age", portion: 0.5, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "duration" }) },
 
@@ -1406,7 +1420,7 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
       ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)'
       : 'var(--color-bg-blue)'
   }),
-  
+
 
   // Include both references so text highlights perfectly across special character variants
   searchable_cols: ["OE_Reference", "IncidentType", "ReportedBy"]
@@ -1415,27 +1429,27 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
 
 //LOGS
 export const TRIP_CONTEXT_TYPES = [
-    "Attendance",
-    "Pairing - Pair",
-    "Trip - Documents",
-    "Trip - Fuel Request",
-    "Trip - Save",
-    "Attach File - Documents",
-    "General",
-    "Trip - Fuel Request Update",
-    "Dispatch",
-    "Trip - Preload",
-    "Trip - Rejected",
-    "Trip - Assignment",
-    "Trip - Mobilization",
-    "Remarks",
-    "Trip - Reject",
-    "Trip - Divert/Change",
-    "Trip - Status",
-    "Trip - Progressed",
-    "Remarks - Reply",
-    "Trip - Cancelled",
-    "Remarks - Add"
+  "Attendance",
+  "Pairing - Pair",
+  "Trip - Documents",
+  "Trip - Fuel Request",
+  "Trip - Save",
+  "Attach File - Documents",
+  "General",
+  "Trip - Fuel Request Update",
+  "Dispatch",
+  "Trip - Preload",
+  "Trip - Rejected",
+  "Trip - Assignment",
+  "Trip - Mobilization",
+  "Remarks",
+  "Trip - Reject",
+  "Trip - Divert/Change",
+  "Trip - Status",
+  "Trip - Progressed",
+  "Remarks - Reply",
+  "Trip - Cancelled",
+  "Remarks - Add"
 ];
 
 
@@ -1443,41 +1457,42 @@ export const TRIP_CONTEXT_TYPES = [
 export const CIFME_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
-  
+
     /*{ col: "OrderedDate", alias: "Order Date", calculate: (row: any) => formatDate(row["OrderedDate"]) },*/
-    { col: "OE Date", alias: "OE Date", portion:1, calculate: (row: any) => formatDate(row[enc("OE Date")]) },
-    { col: "NeededDate", alias: "Need Date", portion:1, calculate: (row: any) => formatDate(row["NeededDate"]) },
-    { col: "OE", alias: "OE #", portion:1},
-    { col: "SourceName", alias: "Source", portion:1.5},
-    { col: "DestiName", alias: "Destination", portion:1.5},
-    { col: "_tripGroup", alias: "Group", portion:1, filter: {type: "dropdown-multiple", options: tripgroupOptions}},
-    { col: "CementTypeName", alias: "Type", portion:1, filter: {type: "dropdown-multiple", options: cementTypeOptions}},
-    { col: "SAPStatus", alias: "Status", portion:1, 
-      filter: {type: "dropdown-multiple", options: orderStatuses, default: ["Approved"]},
+    { col: "OE Date", alias: "OE Date", portion: 1, calculate: (row: any) => formatDate(row[enc("OE Date")]) },
+    { col: "NeededDate", alias: "Need Date", portion: 1, calculate: (row: any) => formatDate(row["NeededDate"]) },
+    { col: "OE", alias: "OE #", portion: 1 },
+    { col: "SourceName", alias: "Source", portion: 1.5 },
+    { col: "DestiName", alias: "Destination", portion: 1.5 },
+    { col: "_tripGroup", alias: "Group", portion: 1, filter: { type: "dropdown-multiple", options: tripgroupOptions } },
+    { col: "CementTypeName", alias: "Type", portion: 1, filter: { type: "dropdown-multiple", options: cementTypeOptions } },
+    {
+      col: "SAPStatus", alias: "Status", portion: 1,
+      filter: { type: "dropdown-multiple", options: orderStatuses, default: ["Approved"] },
       cellStyle: (row: any) => {
-        let style: React.CSSProperties = { color: '#666'};
+        let style: React.CSSProperties = { color: '#666' };
         if (row["SAPStatus"] === "Approved") style = { color: '#2ea107' };
         if (row["SAPStatus"] === "Disapproved") style = { color: '#680000' };
         if (row["SAPStatus"] === "Tagged") style = { color: '#2c02ff' };
         if (row["SAPStatus"] === "Manual") style = { color: '#ff00d9' };
         if (row["SAPStatus"] === "Incomplete") style = { color: '#eaa709' };
         if (row["SAPStatus"] === "Completed") style = { color: '#08d7bc' };
-        
+
         style.fontWeight = 'bold';
-        style.textTransform = 'uppercase'; 
+        style.textTransform = 'uppercase';
         style.letterSpacing = '0.5px';
 
         return style;
       }
     },
 
-    
-    
+
+
   ],
 
   rowStyle: (row: any) => ({
     backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)' : 'var(--color-bg-blue)'
-  }), 
+  }),
 
   searchable_cols: ["OE", "SourceName", "DestiName"] as const
 
@@ -1507,48 +1522,48 @@ const CONFIG = {
 //   get startDate(): string {
 //     const today = new Date();
 //     const currentDay = today.getDay();
-    
+
 //     // 1. Calculate how many days back the CURRENT cutoff started
 //     // (Translates your designated start day relative to today's day of week)
 //     let daysSinceCutoffStart = currentDay - CONFIG.startDayOfWeek;
 //     if (daysSinceCutoffStart < 0) {
 //       daysSinceCutoffStart += 7; // Wrap-around handling for week boundaries
 //     }
-    
+
 //     // 2. Derive the calendar date where the current cutoff period began
 //     const currentCutoffStartDate = new Date(today);
 //     currentCutoffStartDate.setDate(today.getDate() - daysSinceCutoffStart);
-    
+
 //     // 3. Roll backward further based on how many historical cutoffs you choose to include
 //     // Formula: current_start - (history_multiplier * size_of_cutoff)
 //     const historyOffsetDays = CONFIG.includePrevCutoffs * CONFIG.cutoffDays;
-    
+
 //     const allowedStartDate = new Date(currentCutoffStartDate);
 //     allowedStartDate.setDate(currentCutoffStartDate.getDate() - historyOffsetDays);
-    
+
 //     return formatDateStr(allowedStartDate);
 //   },
-  
+
 //   /**
 //    * Closes the active window right at the end of the current active cutoff
 //    */
 //   get endDate(): string {
 //     const today = new Date();
 //     const currentDay = today.getDay();
-    
+
 //     // Find the current cutoff start point first
 //     let daysSinceCutoffStart = currentDay - CONFIG.startDayOfWeek;
 //     if (daysSinceCutoffStart < 0) {
 //       daysSinceCutoffStart += 7;
 //     }
-    
+
 //     const currentCutoffStartDate = new Date(today);
 //     currentCutoffStartDate.setDate(today.getDate() - daysSinceCutoffStart);
-    
+
 //     // The current cutoff closes exactly (cutoffDays - 1) days after its start point
 //     const allowedEndDate = new Date(currentCutoffStartDate);
 //     allowedEndDate.setDate(currentCutoffStartDate.getDate() + (CONFIG.cutoffDays - 1));
-    
+
 //     return formatDateStr(allowedEndDate);
 //   },
 
@@ -1567,11 +1582,11 @@ export const ALLOWED_DATE_CLICK = {
     // 🔴 SPECIAL CONDITION: Monday (1)
     if (currentDay === 1) {
       allowedStartDate.setDate(today.getDate() - 4);
-    } 
+    }
     // 🔴 SPECIAL CONDITION: Tuesday (2)
     else if (currentDay === 2) {
       allowedStartDate.setDate(today.getDate() - 5);
-    } 
+    }
     // 🟢 DEFAULT: All other days (Wed, Thu, Fri, Sat, Sun)
     else {
       allowedStartDate.setDate(today.getDate() - 6);
@@ -1579,7 +1594,7 @@ export const ALLOWED_DATE_CLICK = {
 
     return formatDateStr(allowedStartDate);
   },
-  
+
   /**
    * Cells are only editable if they are <= today
    */
