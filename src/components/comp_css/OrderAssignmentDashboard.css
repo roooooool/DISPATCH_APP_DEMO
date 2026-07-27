@@ -131,9 +131,9 @@
 }
 
 .bu-header-pending-tag {
-    font-size: var(--font-size-sm, 14px);
-    font-weight: 500;
-    color: var(--color-accent-red, #ef4444);
+    font-size: var(--font-size-base, 14px);
+    font-weight: 600;
+    color: var(--color-border-warning, #ef4444);
     /* Pulls in your sub/accent red */
     animation: fadeInTag 0.2s ease-in-out;
 }

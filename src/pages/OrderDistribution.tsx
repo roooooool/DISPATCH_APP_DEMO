@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import PageTemplate from './template';
 import {
   RefreshCcw,
@@ -114,7 +114,9 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
         <div className="ordr-dist-dashboard-table-frame unique-dashboard-override">
           <OrderAssignmentDashboard
             newOrdersList={newOrders}
+            newOrdersLoading={isLoadingNew}
             tripAssignedList={assignedOrders}
+            tripAssignedLoading={isLoadingAssigned}
             businessUnits={BUSINESS_UNITS}
             displayMapping={tripDisplayConfig}
           />
@@ -367,75 +369,79 @@ const OrderDistribution: React.FC = () => {
     return () => resizeObserver.disconnect();
   }, [activeGroup, TRIP_GROUPS]); // TRIP_GROUPS included in deps in case it loads asynchronously
 
-  const [assignedTableConfig, setAssignedTableConfig] = useState<ColumnConfig[]>(
-    LIVE_DMS_ASSIGNED_TABLE_CONFIG.table_config as ColumnConfig[]
-  );
+  // const [assignedTableConfig, setAssignedTableConfig] = useState<ColumnConfig[]>(
+  //   LIVE_DMS_ASSIGNED_TABLE_CONFIG.table_config as ColumnConfig[]
+  // );
 
-  const [newTripsTableConfig, setNewTripsTableConfig] = useState<ColumnConfig[]>(
-    NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config as ColumnConfig[]
-  );
+  // const [newTripsTableConfig, setNewTripsTableConfig] = useState<ColumnConfig[]>(
+  //   NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config as ColumnConfig[]
+  // );
 
-  const [liveDmsTableConfig, setLiveDmsTableConfig] = useState<ColumnConfig[]>(
-    LIVE_DMS_TABLE_CONFIG.table_config as ColumnConfig[]
-  );
+  // const [liveDmsTableConfig, setLiveDmsTableConfig] = useState<ColumnConfig[]>(
+  //   LIVE_DMS_TABLE_CONFIG.table_config as ColumnConfig[]
+  // );
 
-  useEffect(() => {
-    // 1. Process the string once for both configurations
+  const assignedTableConfig = useMemo(() => {
     let formattedGroup: string[] = [];
-
     if (activeGroup !== 'ALL') {
       const processedString = (activeGroup.charAt(0).toUpperCase() + activeGroup.slice(1).toLowerCase()).replace("_", " - ");
-      console.log("processed string: ", processedString);
       formattedGroup = [processedString];
     }
 
-    // 2. Update Assigned Table Configuration
-    setAssignedTableConfig((prevConfig) =>
-      prevConfig.map((colConfig) => {
-        if (colConfig.col === "_tripGroup") {
-          return {
-            ...colConfig,
-            filter: {
-              ...colConfig.filter,
-              default: formattedGroup,
-            },
-          } as ColumnConfig;
-        }
-        return colConfig;
-      })
-    );
+    return (LIVE_DMS_ASSIGNED_TABLE_CONFIG.table_config as ColumnConfig[]).map((colConfig) => {
+      if (colConfig.col === "_tripGroup") {
+        return {
+          ...colConfig,
+          filter: {
+            ...colConfig.filter,
+            default: formattedGroup,
+          },
+        } as ColumnConfig;
+      }
+      return colConfig;
+    });
+  }, [activeGroup]);
 
-    // 3. Update New Trips Table Configuration
-    setNewTripsTableConfig((prevConfig) =>
-      prevConfig.map((colConfig) => {
-        if (colConfig.col === "_tripGroup") {
-          return {
-            ...colConfig,
-            filter: {
-              ...colConfig.filter,
-              default: formattedGroup,
-            },
-          } as ColumnConfig;
-        }
-        return colConfig;
-      })
-    );
+  const newTripsTableConfig = useMemo(() => {
+    let formattedGroup: string[] = [];
+    if (activeGroup !== 'ALL') {
+      const processedString = (activeGroup.charAt(0).toUpperCase() + activeGroup.slice(1).toLowerCase()).replace("_", " - ");
+      formattedGroup = [processedString];
+    }
 
-    // 4. Update Live DMS Table Configuration
-    setLiveDmsTableConfig((prevConfig) =>
-      prevConfig.map((colConfig) => {
-        if (colConfig.col === "_tripGroup") {
-          return {
-            ...colConfig,
-            filter: {
-              ...colConfig.filter,
-              default: formattedGroup,
-            },
-          } as ColumnConfig;
-        }
-        return colConfig;
-      })
-    );
+    return (NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config as ColumnConfig[]).map((colConfig) => {
+      if (colConfig.col === "_tripGroup") {
+        return {
+          ...colConfig,
+          filter: {
+            ...colConfig.filter,
+            default: formattedGroup,
+          },
+        } as ColumnConfig;
+      }
+      return colConfig;
+    });
+  }, [activeGroup]);
+
+  const liveDmsTableConfig = useMemo(() => {
+    let formattedGroup: string[] = [];
+    if (activeGroup !== 'ALL') {
+      const processedString = (activeGroup.charAt(0).toUpperCase() + activeGroup.slice(1).toLowerCase()).replace("_", " - ");
+      formattedGroup = [processedString];
+    }
+
+    return (LIVE_DMS_TABLE_CONFIG.table_config as ColumnConfig[]).map((colConfig) => {
+      if (colConfig.col === "_tripGroup") {
+        return {
+          ...colConfig,
+          filter: {
+            ...colConfig.filter,
+            default: formattedGroup,
+          },
+        } as ColumnConfig;
+      }
+      return colConfig;
+    });
   }, [activeGroup]);
 
 

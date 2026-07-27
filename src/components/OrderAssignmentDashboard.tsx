@@ -5,7 +5,9 @@ import './comp_css/OrderAssignmentDashboard.css';
 
 interface OrderAssignmentDashboardProps {
     newOrdersList: any[];
+    newOrdersLoading?: boolean;
     tripAssignedList: any[];
+    tripAssignedLoading?: boolean;
     businessUnits: string[]; // List of Business Unit names to generate cards
     displayMapping: CardDisplayMapping;
     cardBodyMaxHeight?: string;
@@ -32,12 +34,14 @@ export interface CardDisplayMapping {
 
 export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> = ({
     newOrdersList,
+    newOrdersLoading,
     tripAssignedList,
+    tripAssignedLoading,
     businessUnits,
     displayMapping,
     cardBodyMaxHeight = '350px',
 }) => {
-
+    console.log(tripAssignedLoading);
     const [collapsedBUs, setCollapsedBUs] = useState<Record<string, boolean>>({});
     const toggleCollapse = (buName: string) => {
         setCollapsedBUs(prev => ({
@@ -165,6 +169,8 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                     rowActionMode='dragndrop'
                     // accordion={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.accordion}
                     showRowCount={100}
+                    // isLoading={newOrdersLoading}
+                    density='tight'
                 />
             </div>
 
@@ -186,7 +192,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                         Business Units
                         {hasLocalDrops && (
                             <span className="bu-header-pending-tag">
-                                (Confirm Changes)
+                                (Unsaved Changes)
                             </span>
                         )}
                     </h2>

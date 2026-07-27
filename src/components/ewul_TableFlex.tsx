@@ -111,6 +111,8 @@ export interface scrollToConfig {
   target_col?: string;
 };
 
+
+
 interface TableViewProps {
   data: any[];
   rowKey?: string;
@@ -153,6 +155,7 @@ interface TableViewProps {
   onConfirmArrangement?: (confirmed: boolean, currentOrder: any[]) => void;
   emptyHint?: EmptyHintConfig;
   rowActionMode?: 'selection' | 'dragndrop';
+  density?: 'tight' | 'normal' | 'relaxed';
 }
 
 export const encodeColumnName = (name: string): string => {
@@ -367,32 +370,46 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
       style={style}
       className={`sortable-header ${currentSort ? 'active-sort' : ''}`}
     >
-      <div className="header-content">
-        {/* DRAG HANDLE: Restored */}
-        <div className="drag-handle" {...attributes} {...listeners}>
+      <div
+        className="header-content"
+        style={{
+          minWidth: 0,
+          overflow: 'hidden',
+          paddingRight: '14px', // <-- Leaves a safe buffer so content doesn't slide under the resizer
+          position: 'relative'
+        }}
+      >
+        {/* DRAG HANDLE */}
+        <div className="drag-handle" style={{ flexShrink: 0 }} {...attributes} {...listeners}>
           <GripVertical size={'var(--font-size-base)'} />
         </div>
 
-        {/* CLICKABLE AREA: Updated with Multi-Sort UI */}
+        {/* CLICKABLE AREA WITH ELLIPSIS */}
         <div
           className="clickable-header-area"
+          style={{ minWidth: 0, overflow: 'hidden', flex: 1, display: 'flex', alignItems: 'center' }}
           onClick={() => onSort(column.col)}
           onContextMenu={(e) => {
-            e.preventDefault(); // Stop default browser right-click menu
+            e.preventDefault();
             onTogglePreventNoSort(column.col);
           }}
         >
-          <span>{column.alias || column.col}</span>
-          <span className="sort-icon-container" style={indicatorStyle}>
+          <span style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'block',
+            flex: 1,
+            minWidth: 0
+          }}>
+            {column.alias || column.col}
+          </span>
+          <span className="sort-icon-container" style={{ ...indicatorStyle, flexShrink: 0 }}>
             {currentSort ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                 {currentSort.dir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
                 {activeSorts.length > 1 && (
-                  <span style={{
-                    fontSize: '10px',
-                    color: 'var(--color-accent)', // Your red accent
-                    fontWeight: 'bold'
-                  }}>
+                  <span style={{ fontSize: '10px', color: 'var(--color-accent)', fontWeight: 'bold' }}>
                     {sortIndex + 1}
                   </span>
                 )}
@@ -403,15 +420,14 @@ const SortableHeader = React.forwardRef<HTMLTableCellElement, {
           </span>
         </div>
 
-        {/* RESIZER: Restored */}
+        {/* RESIZER */}
         <div
-          className="col-resizer"
+          className="table-flex-col-resizer"
+          style={{ flexShrink: 0, touchAction: 'none' }}
           onMouseDown={(e) => {
-            e.stopPropagation(); // Stop dnd-kit from seeing this as a potential drag
+            e.stopPropagation();
             handleResizeStart(e);
           }}
-          // Disable touch/drag defaults
-          style={{ touchAction: 'none' }}
         />
       </div>
     </th>
@@ -598,6 +614,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   onConfirmArrangement,
   emptyHint,
   rowActionMode,
+  density,
 }, ref) => {
 
   // Arrangement state fallbacks if parent does not pass controller values
@@ -908,6 +925,22 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     });
   }, [rawData, rowKey]);
 
+  const paddingMap = {
+    tight: '6px 8px',
+    normal: '14px 16px',
+    relaxed: '20px 24px'
+  };
+
+  const [currentDensity, setCurrentDensity] = useState<keyof typeof paddingMap>(() => {
+    if (storageKey) {
+      const saved = getSavedLayout(storageKey);
+      if (saved && typeof saved.density === 'string') {
+        return saved.density as keyof typeof paddingMap;
+      }
+    }
+    return density || 'tight';
+  });
+
   const dynamicThemeVars = {
     '--table-theme': theme,
     '--table-gradient': themeGradient,
@@ -915,8 +948,10 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     '--table-theme-neon': increaseContrast(getHexFromCssVar(theme), 10),
     '--table-min-height': typeof tableMinHeight === 'number'
       ? `${tableMinHeight}px`
-      : tableMinHeight
+      : tableMinHeight,
+    '--table-cell-padding': paddingMap[currentDensity]
   } as React.CSSProperties;
+
 
   const showBlockingLoading = isLoading && !loadingNoPreventAction;
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -1446,67 +1481,44 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
 
 
   const totalPages = Math.max(1, paginatedGroups.length);
-  const currentGroups = paginatedGroups[currentPage - 1] ?? [];
+
+  // 🏛️ FIX 1: Provide a fallback to a globally stable empty array, not a fresh literal [] every time
+  const EMPTY_ARRAY: any[] = [];
+  const currentGroups = paginatedGroups[currentPage - 1] ?? EMPTY_ARRAY;
+
+  // If paginatedGroups is computed inline upstream, you might also want to serialize or safely map g.rows
   const paginatedData = useMemo(() => {
-
     return currentGroups.flatMap(g => g.rows);
-
   }, [currentGroups]);
-
 
   const [disappearingIds, setDisappearingIds] = useState<string[]>([]);
   const [displayRows, setDisplayRows] = useState(paginatedData);
 
   useEffect(() => {
-    // Find rows that exist in our local state but were removed from the incoming prop data
+    // Find rows that exist locally but were removed from incoming data
     const removedRows = displayRows.filter(
       oldRow => !paginatedData.some(newRow => newRow._rowId === oldRow._rowId) && !disappearingIds.includes(oldRow._rowId)
     );
 
     if (removedRows.length > 0) {
-      // Mark them as disappearing
       const newIds = removedRows.map(r => r._rowId);
       setDisappearingIds(prev => [...prev, ...newIds]);
 
-      // Wait for the CSS transition to finish (e.g., 350ms) before cleanly unmounting
       setTimeout(() => {
         setDisplayRows(paginatedData);
         setDisappearingIds(prev => prev.filter(id => !newIds.includes(id)));
       }, 350);
     } else {
-      setDisplayRows(paginatedData);
-    }
-  }, [paginatedData]);
+      // 🏛️ FIX 2: Guard the state update! Only call it if the data values are actually different.
+      const hasDataChanged =
+        displayRows.length !== paginatedData.length ||
+        displayRows.some((row, index) => row._rowId !== paginatedData[index]?._rowId);
 
-  const displayGroups = useMemo(() => {
-    if (!accordion?.enabled || !accordion.groupByCol) return [];
-
-    const groupKey = encodeColumnName(accordion.groupByCol);
-    const lookup = new Map<string, any>();
-    const groups: { group: string; rows: any[] }[] = [];
-
-    displayRows.forEach(row => {
-      const colConfig = columns.find(c => c.col === groupKey);
-      const value = colConfig?.calculate
-        ? colConfig.calculate(row)
-        : (row[groupKey] ?? row[accordion.groupByCol]);
-
-      const groupName =
-        value !== null && value !== undefined && value !== ''
-          ? String(value)
-          : 'Unassigned';
-
-      if (!lookup.has(groupName)) {
-        const obj = { group: groupName, rows: [] };
-        lookup.set(groupName, obj);
-        groups.push(obj);
+      if (hasDataChanged) {
+        setDisplayRows(paginatedData);
       }
-
-      lookup.get(groupName).rows.push(row);
-    });
-
-    return groups;
-  }, [displayRows, accordion, columns]);
+    }
+  }, [paginatedData, disappearingIds]); // Included disappearingIds to safely manage internal changes
 
 
   // --- PAGE SAFETY SYNC ---
@@ -1551,6 +1563,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     setColumnWidths({});
     setActiveFilters({});
     setFontSizePercent(100);
+    setCurrentDensity(density || 'normal');
     document.documentElement.style.setProperty('--table-font-size', `1rem`);
     // Remove saved config from localStorage if storageKey is set
     if (storageKey) {
@@ -1575,7 +1588,10 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
       widths: columnWidths,
       fontSizePercent,
       multiSort,
-      sortBlanks
+      sortBlanks,
+      density: currentDensity,
+      showNumbering: internalShowNumbering,
+      showNativeDragGrip: showNativeDragGrip,
     };
 
     // 1. Save to LocalStorage if key exists
@@ -1591,6 +1607,22 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     setShowConfig(false);
   };
 
+  const [internalShowNumbering, setInternalShowNumbering] = useState(() => {
+    const saved = storageKey ? getSavedLayout(storageKey) : null;
+    if (saved && typeof saved.showNumbering === 'boolean') {
+      return saved.showNumbering;
+    }
+    return showNumbering; // Fallback to the prop[cite: 1]
+  });
+
+  const [showNativeDragGrip, setShowNativeDragGrip] = useState(() => {
+    const saved = storageKey ? getSavedLayout(storageKey) : null;
+    if (saved && typeof saved.showNativeDragGrip === 'boolean') {
+      return saved.showNativeDragGrip;
+    }
+    return rowActionMode === 'dragndrop'; // Default to true if prop is active
+  });
+
 
   // --- Calculate table width for top scrollbar ---
   const [tableWidth, setTableWidth] = useState<number>(0);
@@ -1599,7 +1631,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     if (table) {
       setTableWidth(table.scrollWidth);
     }
-  }, [columns, columnWidths, paginatedData, isLoading, isArrangement, isSelectionMode, showNumbering]);
+  }, [columns, columnWidths, paginatedData, isLoading, isArrangement, isSelectionMode, internalShowNumbering]);
 
 
   const [repositionedRows, setRepositionedRows] = useState<string[]>([]);
@@ -1702,8 +1734,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
           </td>
         )}
 
-        {rowActionMode === 'dragndrop' && (
-          <td className="native-grip-cell stop-propagation" style={{ width: '40px', minWidth: '40px', textAlign: 'center', cursor: 'grab' }}>
+        {(rowActionMode === 'dragndrop' && showNativeDragGrip) && (
+          <td className="native-grip-cell stop-propagation" style={{ width: '15px', minWidth: '15px', textAlign: 'center', cursor: 'grab', justifySelf: 'center' }}>
             <Move size={14} className="dim-icon" style={{ color: 'var(--table-theme)' }} />
           </td>
         )}
@@ -1719,7 +1751,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
           </td>
         )}
 
-        {showNumbering && (
+        {internalShowNumbering && (
           <td className={`numbering-cell${isScrolledX ? ' numbering-blur' : ''}`} title={`${displayIndex}`}>
             {displayIndex}
           </td>
@@ -2122,6 +2154,53 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                   <div style={{ fontWeight: 600, fontSize: 'var(--font-size-base)', marginBottom: '8px' }}>
                     Show/Hide Columns
                   </div>
+
+                  {/* --- SYSTEM COLUMNS START --- */}
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0', cursor: 'pointer' }}
+                    onClick={() => setInternalShowNumbering(!internalShowNumbering)}
+                  >
+                    <input type="checkbox" checked={internalShowNumbering} readOnly style={{ cursor: 'pointer', accentColor: 'var(--color-primary)' }} />
+                    <span style={{ fontSize: 'var(--font-size-sm)', userSelect: 'none', fontStyle: 'italic' }}>Row Numbers (#)</span>
+                  </div>
+
+                  {/* 2. Arrangement Grip (Syncs with Ribbon Button) */}
+                  {showArrangeToggle && (
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0', cursor: 'pointer' }}
+                      onClick={() => toggleArrangement()}
+                    >
+                      <input type="checkbox" checked={isArrangement} readOnly style={{ cursor: 'pointer', accentColor: 'var(--color-primary)' }} />
+                      <span style={{ fontSize: 'var(--font-size-sm)', userSelect: 'none', fontStyle: 'italic' }}>Arrangement Grip</span>
+                    </div>
+                  )}
+
+                  {/* 3. Native Drag Grip */}
+                  {rowActionMode === 'dragndrop' && (
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0', cursor: 'pointer' }}
+                      onClick={() => setShowNativeDragGrip(!showNativeDragGrip)}
+                    >
+                      <input type="checkbox" checked={showNativeDragGrip} readOnly style={{ cursor: 'pointer', accentColor: 'var(--color-primary)' }} />
+                      <span style={{ fontSize: 'var(--font-size-sm)', userSelect: 'none', fontStyle: 'italic' }}>Native Drag Grip</span>
+                    </div>
+                  )}
+
+                  {/* 4. Selection Checkboxes (Syncs with Ribbon Button) */}
+                  {allowMultipleSelection && (
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0', cursor: 'pointer' }}
+                      onClick={() => {
+                        setIsSelectionMode(!isSelectionMode);
+                        if (isSelectionMode) clearAllSelections(); // Clear if turning off
+                      }}
+                    >
+                      <input type="checkbox" checked={isSelectionMode} readOnly style={{ cursor: 'pointer', accentColor: 'var(--color-primary)' }} />
+                      <span style={{ fontSize: 'var(--font-size-sm)', userSelect: 'none', fontStyle: 'italic' }}>Row Selection</span>
+                    </div>
+                  )}
+                  {/* --- SYSTEM COLUMNS END --- */}
+
                   {columns.map((col) => {
                     if (col.noRender) return null; // <-- Skip noRender columns entirely
 
@@ -2145,7 +2224,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => { }}
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => { e.stopPropagation(); setColumns(prev => prev.map(c => c.col === col.col ? { ...c, hidden: !c.hidden } : c)); }}
                           style={{ cursor: 'pointer', accentColor: 'var(--color-primary)' }}
                         />
                         <span style={{ fontSize: 'var(--font-size-sm)', userSelect: 'none' }}>
@@ -2216,6 +2295,42 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                     </div>
                   );
                 })()}
+
+                {/* NEW: Density Control Section */}
+                <div style={{ padding: '8px 0', borderBottom: '1px solid var(--color-bg)', marginBottom: 8 }}>
+                  <label style={{ fontWeight: 600, fontSize: 'var(--font-size-base)', display: 'block', marginBottom: '8px' }}>
+                    Row Spacing
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {(['tight', 'normal', 'relaxed'] as const).map(d => (
+                      <button
+                        key={d}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentDensity(d);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '6px 8px',
+                          cursor: 'pointer',
+                          fontSize: 'var(--font-size-sm)',
+                          fontWeight: currentDensity === d ? 600 : 400,
+                          backgroundColor: currentDensity === d ? 'var(--color-primary)' : 'transparent',
+                          color: currentDensity === d ? 'var(--color-bg)' : 'var(--color-primary)',
+                          border: '1px solid var(--color-primary)',
+                          borderRadius: '8px',
+                          textTransform: 'capitalize',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center'
+                        }}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
               </div>
             )}
@@ -2318,7 +2433,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
               width: '100%',
               borderCollapse: 'collapse',
               display: 'table', // Ensure it stays as a table
-              minWidth: 'max-content' // This tells the table to expand to fit its children's minWidths
+              minWidth: 'fixed' // This tells the table to expand to fit its children's minWidths
             }}
           >
             <thead>
@@ -2328,18 +2443,18 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                   {isArrangement && (
                     <th
                       style={{
-                        width: '50px',
-                        minWidth: '50px',
+                        width: '15px',
+                        minWidth: '15px',
                       }}
                       className="stop-propagation arrangement-header-blank"
                     />
                   )}
 
-                  {rowActionMode === 'dragndrop' && (
+                  {(rowActionMode === 'dragndrop' && showNativeDragGrip) && (
                     <th
                       style={{
-                        width: '50px',
-                        minWidth: '50px',
+                        width: '15px',
+                        minWidth: '15px',
                       }}
                       className="stop-propagation arrangement-header-blank"
                     />
@@ -2348,7 +2463,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
 
                   {/* SELECTION HEADER */}
                   {isSelectionMode && (
-                    <th className="selection-col-header" style={{ width: '40px', minWidth: '40px' }}>
+                    <th className="selection-col-header" style={{ width: '15px', minWidth: '15px' }}>
                       <div className="header-content justify-center">
                         <input
                           type="checkbox"
@@ -2361,7 +2476,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                   )}
 
                   {/* # HEADER */}
-                  {showNumbering && (
+                  {internalShowNumbering && (
                     <th className="numbering-header"
                       style={{
                         width: `${numberingWidth}px`,
@@ -2415,11 +2530,11 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                   }
 
                   // Calculate absolute column width for the span
-                  const totalCols = visibleColumns.length + (isSelectionMode ? 1 : 0) + (showNumbering ? 1 : 0) + (isArrangement ? 1 : 0);
+                  const totalCols = visibleColumns.length + (isSelectionMode ? 1 : 0) + (internalShowNumbering ? 1 : 0) + (isArrangement ? 1 : 0);
 
                   // 2. ACCORDION MODE: Mapped from displayGroups instead of currentGroups
                   // This guarantees fading rows are still sorted into their proper headers!
-                  return displayGroups.map((groupBlock: any) => {
+                  return currentGroups.map((groupBlock: any) => {
                     const groupName = groupBlock.group ?? 'Unassigned';
                     const isCollapsed = !!collapsedGroups[groupName];
 

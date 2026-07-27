@@ -2977,36 +2977,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <SearchableDropdown disabled={disabledAssGrp} label="Trailer *" options={trailerOptions} value={formData.BO || ''} onChange={val => handleFieldChange('BO', String(val))} />
                   </div>
 
-                  <div className="form-row">
-                    <div className="input-group">
-                      <label>ATW/LO#</label>
-                      <div className="gradient-input-wrapper">
-                        <input disabled={disabledAssGrp} type="text" value={formData.ATW_x002f_LO_x0023_ || ''} onChange={e => handleFieldChange('ATW_x002f_LO_x0023_', e.target.value)} />
-                      </div>
-                    </div>
-                    <div className="input-group">
-                      <label>SO#</label>
-                      <div className="gradient-input-wrapper">
-                        <input disabled={disabledAssGrp} type="text" value={formData.SO_x0023_ || ''} onChange={e => handleFieldChange('SO_x0023_', e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="input-group">
-                      <label>PLANT DR</label>
-                      <div className="gradient-input-wrapper">
-                        <input disabled={disabledAssGrp} type="text" value={formData.Plant_x0020_DR || ''} onChange={e => handleFieldChange('Plant_x0020_DR', e.target.value)} />
-                      </div>
-                    </div>
-                    <div className="input-group">
-                      <label>GSDC DR</label>
-                      <div className="gradient-input-wrapper">
-                        <input disabled={disabledAssGrp} type="text" value={formData.GSDC_x0020_DR || ''} onChange={e => handleFieldChange('GSDC_x0020_DR', e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-
                   {/*<div className="form-row">
 
                 <SearchableDropdown label={`Buisness Unit${TRIP_PROGRESS[1].Progress === formData.TripProgress ? ' *' : ''}`} options={buOptions} value={formData.Buisness_x0020_Unit || ''} onChange={val => handleFieldChange('Buisness_x0020_Unit', String(val))} />
@@ -3055,6 +3025,22 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   {/*(prog_verified || prog_idx < 2 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
 
                   <div className="form-row">
+                    <div className="input-group">
+                      <label>ATW/LO#</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledAssGrp} type="text" value={formData.ATW_x002f_LO_x0023_ || ''} onChange={e => handleFieldChange('ATW_x002f_LO_x0023_', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>SO#</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledAssGrp} type="text" value={formData.SO_x0023_ || ''} onChange={e => handleFieldChange('SO_x0023_', e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div className="form-row">
                     <SearchableDropdown disabled={disabledSrcGrp} label="Loader Driver" options={driverOptions} value={formData.Driver_x0020_Loader || ''} onChange={val => handleFieldChange('Driver_x0020_Loader', String(val))} noClear />
                     <SearchableDropdown disabled={disabledSrcGrp} label="Loader Helper" options={[NAOption, ...(helperOptions ?? [])]} value={formData.Helper_x0020_Loader || ''} onChange={val => handleFieldChange('Helper_x0020_Loader', String(val))} noClear />
                   </div>
@@ -3083,6 +3069,40 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   </div>
 
 
+
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>Fuel Request</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={true} type="text" value={''} />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>FR Status</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={true} type="text" value={''} />
+                      </div>
+                    </div>
+                  </div>
+
+
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Destination Details Group */}
+            <div className="input-group-group" ref={dispatchedToDestinationRef}>
+              <div className="group-header" onClick={() => toggleGroup('destinationDetails')}>
+                <div className="group-header-title">
+                  <span>Dispatched to Destination</span>
+                  {showValidationIcon('dispatchedToDestination')}
+                </div>
+                <span className={`toggle-icon ${collapsed.destinationDetails ? 'is-collapsed' : ''}`}></span>
+              </div>
+              <div className={`group-content-wrapper ${!collapsed.destinationDetails ? 'is-open' : ''}`}>
+                <div className={`group-content-inner`}>
+                  {/*(prog_verified || prog_idx < 3 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
+
                   <div className='form-row'>
                     <div className="input-group">
                       <label>QTY Withdrawn *</label>
@@ -3093,28 +3113,23 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <div className="input-group"></div>
                   </div>
 
-                  <div className='form-row'>
+                  <div className="form-row">
                     <div className="input-group">
-                      <label>Source In *</label>
-                      <CustomDateTimePicker
-                        alreadyLocal={true}
-                        value={formData.Source_x0020_in}
-                        onChange={(newDate: string) => { console.log("selected date:", newDate); handleFieldChange('Source_x0020_in', newDate); }}
-                        columnKey="Source_x0020_in"
-                        disabled={disabledSrcGrp}
-                      />
+                      <label>PLANT DR</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledAssGrp} type="text" value={formData.Plant_x0020_DR || ''} onChange={e => handleFieldChange('Plant_x0020_DR', e.target.value)} />
+                      </div>
                     </div>
                     <div className="input-group">
-                      <label>Source Out *</label>
-                      <CustomDateTimePicker
-                        alreadyLocal={true}
-                        value={formData.Source_x0020_out}
-                        onChange={(newDate: string) => handleFieldChange('Source_x0020_out', newDate)}
-                        columnKey="Source_x0020_out"
-                        disabled={disabledSrcGrp}
-                      />
+                      <label>GSDC DR</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledAssGrp} type="text" value={formData.GSDC_x0020_DR || ''} onChange={e => handleFieldChange('GSDC_x0020_DR', e.target.value)} />
+                      </div>
                     </div>
                   </div>
+
+
+
 
                   <div className='form-row'>
                     <div className="input-group full-width">
@@ -3141,18 +3156,62 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               </div>
             </div>
 
-            {/* 4. Destination Details Group */}
-            <div className="input-group-group" ref={dispatchedToDestinationRef}>
-              <div className="group-header" onClick={() => toggleGroup('destinationDetails')}>
+
+            {/* 4. Done/Verification Group */}
+            <div className="input-group-group" ref={doneRef}>
+              <div className="group-header" onClick={() => toggleGroup('doneVerification')}>
                 <div className="group-header-title">
-                  <span>Dispatched to Destination</span>
-                  {showValidationIcon('dispatchedToDestination')}
+                  <span>Documentation</span>
+                  {showValidationIcon('done')}
                 </div>
-                <span className={`toggle-icon ${collapsed.destinationDetails ? 'is-collapsed' : ''}`}></span>
+                <span className={`toggle-icon ${collapsed.doneVerification ? 'is-collapsed' : ''}`}></span>
               </div>
-              <div className={`group-content-wrapper ${!collapsed.destinationDetails ? 'is-open' : ''}`}>
-                <div className={`group-content-inner`}>
-                  {/*(prog_verified || prog_idx < 3 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
+              <div className={`group-content-wrapper ${!collapsed.doneVerification ? 'is-open' : ''}`}>
+                <div className="group-content-inner">
+                  {/*(prog_verified || prog_idx < 4 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
+
+
+
+                  <div className='form-row'>
+                    <div className="input-group">
+                      <label>QTY Delivered *</label>
+                      <div className="gradient-input-wrapper">
+                        <input disabled={disabledDstGrp} type="number" value={formData.QTYDelivered || 0} onChange={e => handleFieldChange('QTYDelivered', Number(e.target.value))} />
+                      </div>
+                    </div>
+                    <div className="input-group">
+                      <label>Discrepancy</label>
+                      <div className="gradient-input-wrapper">
+                        <input
+                          disabled
+                          type="number"
+                          value={discrepancy}
+                          className={`discrepancy ${discrepancy < 0 ? 'negative' : 'positive'}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+
+
+                  <div className='form-row'>
+                    <div className="input-group full-width">
+                      <CustomFileAttachment
+                        ref={wsAttachmentRef}
+                        files={[
+                          ...attachments.filter(attr => attr.raw?.attachment_type === 'WS'),
+                          ...tempWsAttachments
+                        ]}
+                        onFilesChange={(mergedList: any[]) => {
+                          const onlyNewFiles = mergedList.filter(f => f instanceof File);
+                          setTempWsAttachments(onlyNewFiles);
+                        }}
+                        disabled={disabledDstGrp}
+                        label={`WS Attachments | ID: ${wsAttachmentItemID || 'NONE'}`}
+                      />
+                    </div>
+                  </div>
+
 
                   <div className="form-row">
                     <SearchableDropdown disabled={disabledDstGrp} label="Unloader Driver" options={driverOptions} value={formData.Driver_x0020_Unloader || ''} onChange={val => handleFieldChange('Driver_x0020_Unloader', String(val))} noClear />
@@ -3183,25 +3242,30 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   </div>
 
 
+
                   <div className='form-row'>
                     <div className="input-group">
-                      <label>QTY Delivered *</label>
-                      <div className="gradient-input-wrapper">
-                        <input disabled={disabledDstGrp} type="number" value={formData.QTYDelivered || 0} onChange={e => handleFieldChange('QTYDelivered', Number(e.target.value))} />
-                      </div>
+                      <label>Source In *</label>
+                      <CustomDateTimePicker
+                        alreadyLocal={true}
+                        value={formData.Source_x0020_in}
+                        onChange={(newDate: string) => { console.log("selected date:", newDate); handleFieldChange('Source_x0020_in', newDate); }}
+                        columnKey="Source_x0020_in"
+                        disabled={disabledSrcGrp}
+                      />
                     </div>
                     <div className="input-group">
-                      <label>Discrepancy</label>
-                      <div className="gradient-input-wrapper">
-                        <input
-                          disabled
-                          type="number"
-                          value={discrepancy}
-                          className={`discrepancy ${discrepancy < 0 ? 'negative' : 'positive'}`}
-                        />
-                      </div>
+                      <label>Source Out *</label>
+                      <CustomDateTimePicker
+                        alreadyLocal={true}
+                        value={formData.Source_x0020_out}
+                        onChange={(newDate: string) => handleFieldChange('Source_x0020_out', newDate)}
+                        columnKey="Source_x0020_out"
+                        disabled={disabledSrcGrp}
+                      />
                     </div>
                   </div>
+
 
                   <div className='form-row'>
                     <div className="input-group">
@@ -3226,43 +3290,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     </div>
                   </div>
 
-                  <div className='form-row'>
-                    <div className="input-group full-width">
-                      <CustomFileAttachment
-                        ref={wsAttachmentRef}
-                        files={[
-                          ...attachments.filter(attr => attr.raw?.attachment_type === 'WS'),
-                          ...tempWsAttachments
-                        ]}
-                        onFilesChange={(mergedList: any[]) => {
-                          const onlyNewFiles = mergedList.filter(f => f instanceof File);
-                          setTempWsAttachments(onlyNewFiles);
-                        }}
-                        disabled={disabledDstGrp}
-                        label={`WS Attachments | ID: ${wsAttachmentItemID || 'NONE'}`}
-                      />
-                    </div>
-                  </div>
 
-
-
-                </div>
-              </div>
-            </div>
-
-
-            {/* 4. Done/Verification Group */}
-            <div className="input-group-group" ref={doneRef}>
-              <div className="group-header" onClick={() => toggleGroup('doneVerification')}>
-                <div className="group-header-title">
-                  <span>Documentation</span>
-                  {showValidationIcon('done')}
-                </div>
-                <span className={`toggle-icon ${collapsed.doneVerification ? 'is-collapsed' : ''}`}></span>
-              </div>
-              <div className={`group-content-wrapper ${!collapsed.doneVerification ? 'is-open' : ''}`}>
-                <div className="group-content-inner">
-                  {/*(prog_verified || prog_idx < 4 || !validateOE(formData).isValid) && <div className='stopper'></div>*/}
 
                   <div className="form-row">
 

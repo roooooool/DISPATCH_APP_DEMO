@@ -190,7 +190,7 @@
 }
 
 .gsdc-reusable-table td {
-  padding: 14px 16px;
+  padding: var(--table-cell-padding, 14px 16px);
   border-bottom: 1px solid var(--color-border);
   color: var(--color-darkslategray);
   font-size: var(--table-font-size, var(--font-size-base));
@@ -669,23 +669,45 @@
   width: 100%;
 }
 
-.col-resizer {
+.table-flex-col-resizer {
   position: absolute;
   right: 0;
   top: 0;
   bottom: 0;
-  width: 5px;
+  width: 12px;
+  /* Gives a comfortable, easy-to-grab hit area */
   cursor: col-resize;
   background: transparent;
-  transition: background 0.2s;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
 }
 
-.col-resizer:hover,
-.col-resizer:active {
-  background: var(--table-theme-neon);
-  /* Primary 2nd Blue */
-  width: 5px;
+/* The actual visible handle line */
+.table-flex-col-resizer::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  top: 0%;
+  bottom: 0%;
+  right: 0;
+  background-color: color-mix(in srgb, var(--color-primary-2, rgba(0, 0, 0, 1)), transparent 75%);
+  border-radius: 4px;
+  /* Gentle rounded design */
+  transition: all 0.2s ease;
+}
+
+/* Hover and Active State */
+.table-flex-col-resizer:hover::after,
+.table-flex-col-resizer:active::after {
+  background-color: #3a4efc;
+  /* Your primary 2nd blue */
+  width: 6px;
+  /* Expands slightly when grabbed/hovered */
+  box-shadow: 0 0 8px rgba(58, 78, 252, 0.4);
+  /* Gentle neon glow effect */
 }
 
 /* Ensure table-layout is fixed so widths are respected */
@@ -2226,4 +2248,13 @@ td.cell.cell-blur {
     padding 350ms cubic-bezier(0.4, 0, 0.2, 1),
     font-size 350ms cubic-bezier(0.4, 0, 0.2, 1),
     line-height 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* Add/Update in src/components/comp_css/ewul_TableFlex.css */
+.gsdc-reusable-table .cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
