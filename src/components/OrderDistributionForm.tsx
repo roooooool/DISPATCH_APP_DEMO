@@ -2816,7 +2816,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   </div>
 
                   <div className="form-row">
-                    <SearchableDropdown label="Business Unit" options={mappedBusinessUnits} value={formData.Buisness_x0020_Unit || ''} onChange={val => handleFieldChange('Buisness_x0020_Unit', String(val))} disabled={disabledOEEntGrp} />
+                    <SearchableDropdown label="Business Unit" disabled options={mappedBusinessUnits} value={formData.Buisness_x0020_Unit || ''} onChange={val => handleFieldChange('Buisness_x0020_Unit', String(val))} />
                   </div>
 
                   <div className="form-row">

@@ -1801,7 +1801,7 @@ td.cell.cell-blur {
   background-color: var(--color-bg-blue-2) !important;
   /* Soft backdrop color */
   text-align: left !important;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-muted), transparent 65%);
 
   width: 50px;
 
@@ -1842,12 +1842,98 @@ td.cell.cell-blur {
   font-size: var(--font-size-base);
 }
 
+/* Make the count container a flexbox to handle the pills gracefully */
 .table-group-header-count {
-  font-weight: 600;
-  color: var(--color-accent);
-  /* Accent Red context counter */
-  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+  flex-wrap: wrap;
+  /* Allows pills to wrap to the next line if there are many */
 }
+
+/* Base structural pill (Keep this the same) */
+.tally-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 12px;
+  border-radius: 999px;
+  /* Keeps the gentle rounded design */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid transparent;
+}
+
+.tally-pill .tally-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-right: 6px;
+}
+
+.tally-pill .tally-value {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* --- COLOR VARIANTS (Filled Backgrounds) --- */
+
+/* Default (Navy Blue Background) */
+.tally-pill-default {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.tally-pill-default .tally-label,
+.tally-pill-default .tally-value {
+  color: var(--color-bg);
+  /* Pulls your white theme color */
+}
+
+/* Red Preset */
+.tally-pill-red {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.tally-pill-red .tally-label,
+.tally-pill-red .tally-value {
+  color: var(--color-bg);
+}
+
+/* Blue Preset (Secondary Blue) */
+.tally-pill-blue {
+  background-color: #3a4efc;
+  border-color: #3a4efc;
+}
+
+.tally-pill-blue .tally-label,
+.tally-pill-blue .tally-value {
+  color: var(--color-bg);
+}
+
+/* Green Preset */
+.tally-pill-green {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.tally-pill-green .tally-label,
+.tally-pill-green .tally-value {
+  color: #ffffff;
+}
+
+/* Yellow Preset */
+.tally-pill-yellow {
+  background-color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.tally-pill-yellow .tally-label,
+.tally-pill-yellow .tally-value {
+  color: #ffffff;
+  /* White text looks crispest against this amber-yellow */
+}
+
+
 
 /* Subtle Left Border Accent on grouped items when hovered */
 .table-group-header-row:hover td {
@@ -1865,39 +1951,47 @@ td.cell.cell-blur {
 
 /* Base setup for rows belonging to an accordion group */
 .transitioning-group-row {
-  transition:
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.25s ease,
-    visibility 0.3s ease;
   transform-origin: top center;
 }
 
-/* Expanded State */
+/* Ensure the cells themselves also have a bidirectional transition */
+.transitioning-group-row td {
+  transition:
+    padding 0.3s ease,
+    line-height 0.3s ease,
+    font-size 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* --- EXPANDED STATE --- */
 .transitioning-group-row.group-row-expanded {
   visibility: visible;
   opacity: 1;
   transform: scaleY(1);
+  /* Visibility happens instantly (0s delay) on expand so we can see the fade-in */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, visibility 0s linear 0s;
 }
 
-/* Collapsed State */
+/* --- COLLAPSED STATE --- */
 .transitioning-group-row.group-row-collapsed {
-  visibility: collapse;
-  /* Tells the table layout engine to safely hide the row frame */
   opacity: 0;
   transform: scaleY(0);
+  visibility: collapse;
+  /* MAGIC TRICK: Delay the visibility collapse by 0.3s so the opacity/transform can finish first */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, visibility 0s linear 0.3s;
 }
 
-/* Smooth padding collapse on inner cells to prevent layout snaps */
+/* Smooth padding and content collapse on inner cells to prevent layout snaps */
 .transitioning-group-row.group-row-collapsed td {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  height: 0 !important;
-  border-bottom: none !important;
-  transition: padding 0.3s ease, height 0.3s ease;
-}
 
-.transitioning-group-row.group-row-expanded td {
-  transition: padding 0.3s ease, height 0.3s ease;
+  /* Shrink the inner text so it doesn't hold the cell open */
+  line-height: 0 !important;
+  font-size: 0 !important;
+
+  /* Fade the border to transparent instead of 'none' to prevent a harsh 1px snap */
+  border-bottom-color: transparent !important;
 }
 
 .ribbon-accordion-btn {

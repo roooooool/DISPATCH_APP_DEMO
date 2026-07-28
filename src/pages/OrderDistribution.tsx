@@ -19,6 +19,7 @@ import PenIcon from '@ui/pen-icon';
 //POWER APPS SERVICES
 import { NewTripsView_CEM_unfilteredService } from '../generated/services/NewTripsView_CEM_unfilteredService';
 import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMService';
+import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel'
 // import { LiveVehicleAssignmentLIstViewService } from '../generated/services/LiveVehicleAssignmentLIstViewService';
 // import { LiveDriverDispatchedList_AllService } from '../generated/services/LiveDriverDispatchedList_AllService';
 // import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
@@ -35,7 +36,7 @@ import {
   // frStatuses,
 } from '../truth.config';
 
-const BUSINESS_UNITS = ['1A', '1B'];
+const BUSINESS_UNITS = ['SBUO-1A', 'SBUO-1B'];
 
 //COMPONENTS
 import TableView, { type ColumnConfig, type TableViewRef, type DragDropSignalData, encodeColumnName as enc } from '../components/ewul_TableFlex';
@@ -47,6 +48,21 @@ import OrderAssignmentDashboard from '../components/OrderAssignmentDashboard';
 
 import './css/OrderDistribution.css';
 import './css/OrderManagement.css';
+
+
+// The unified shape your OrderAssignmentDashboard expects
+interface NormalizedOrder {
+  BU: string;
+  OE: string;
+  SAPStatus: string;
+  SourceName: string;
+  DestiName: string;
+  rawData: LiveDMSView_CEM;
+  additionalDetails: {
+    field: string;
+    label: string;
+  }[];
+}
 
 type ViewMode = 'NEW' | 'ASSIGNED' | '1A' | '1B';
 
@@ -95,15 +111,44 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
   };
 
   const tripDisplayConfig = {
+    buField: 'BU',
     titleField: 'OE',
     statusField: 'SAPStatus',
     routeStartField: 'SourceName',
     routeEndField: 'DestiName',
+    rawData: {},
     additionalDetails: [
-      { field: 'DriverName', label: 'Driver' },
-      { field: 'PlateNo', label: 'Truck' }
+      { field: 'Driver', label: 'Driver' },
+      { field: 'Helper', label: 'Helper' },
+      { field: 'Head_Full', label: 'Truck' },
+      { field: 'BO_Full', label: 'Trailer' },
     ]
   };
+
+  const formattedAssignedOrders = useMemo(() => {
+    if (!assignedOrders) return [];
+
+    return assignedOrders.map((trip: LiveDMSView_CEM): NormalizedOrder => ({
+      BU: trip.Buisness_x0020_Unit || '',
+      OE: trip.OE || '',
+      SAPStatus: trip.TripProgress || '',
+      SourceName: trip.Source || '',
+      DestiName: trip.Destination || '',
+      rawData: trip,
+      additionalDetails: [
+        { field: 'Driver', label: 'Driver' },
+        { field: 'Helper', label: 'Helper' },
+        { field: 'Head_Full', label: 'Truck' },
+        { field: 'BO_Full', label: 'Trailer' },
+      ]
+    }));
+  }, [assignedOrders]);
+
+  useEffect(() => {
+    console.log("formattedAssignedOrders", formattedAssignedOrders[0]);
+  }, [formattedAssignedOrders]);
+
+
 
 
   return (
@@ -115,7 +160,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
           <OrderAssignmentDashboard
             newOrdersList={newOrders}
             newOrdersLoading={isLoadingNew}
-            tripAssignedList={assignedOrders}
+            tripAssignedList={formattedAssignedOrders}
             tripAssignedLoading={isLoadingAssigned}
             businessUnits={BUSINESS_UNITS}
             displayMapping={tripDisplayConfig}
@@ -468,6 +513,7 @@ const OrderDistribution: React.FC = () => {
     }
   }, [selectedRangeNewOrders]);
 
+
   // DATA SOURCE 2: Fetching Fleet Assigned Logs
   const fetchAssignedOrders = useCallback(async () => {
     if (!selectedRangeNewOrders?.from || !selectedRangeNewOrders?.to) return;
@@ -489,6 +535,7 @@ const OrderDistribution: React.FC = () => {
           )
         `;
       const result = await ewulFetchAll<any>(LiveDMSView_CEMService, { filter: dateFilter, orderBy: ["OEDateAsInt desc"] }, 10000, 'ID');
+      console.log('awda: ', result[0]);
       setAssignedOrders(result || []);
     } catch (err) {
       console.error(err);
@@ -497,7 +544,6 @@ const OrderDistribution: React.FC = () => {
       setIsLoadingAssigned(false);
     }
   }, [selectedRangeNewOrders]);
-
 
 
   // COMBINED CONTROLLER: Targets active runtime context grid

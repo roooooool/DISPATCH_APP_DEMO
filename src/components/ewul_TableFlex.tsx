@@ -68,9 +68,16 @@ export interface TableModuleConfig {
   accordion?: accordionConfig | null
 };
 
+export interface accordionCountsConfig {
+  label: string;
+  countCondition: (row: any) => boolean;
+  color?: 'green' | 'yellow' | 'red' | 'blue';
+}
+
 export interface accordionConfig {
   enabled: boolean;
   groupByCol: string;
+  counts?: accordionCountsConfig[]; // <--- count config for dynamic counting
 };
 
 export interface FilterOption {
@@ -2560,8 +2567,34 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
                                 <ChevronRight size={16} />
                               </span>
                               <span className="table-group-header-title">{groupName}</span>
-                              {/* Dynamic count reflecting true active data */}
-                              <span className="table-group-header-count">({groupBlock.rows.length})</span>
+
+                              {/* NEW DYNAMIC COUNT LOGIC */}
+                              <span className="table-group-header-count">
+                                {accordion?.counts && accordion.counts.length > 0 ? (
+                                  <>
+                                    {/* Map through your custom tally conditions */}
+                                    {accordion.counts.map((countConfig, idx) => {
+                                      const matchedCount = groupBlock.rows.filter(countConfig.countCondition).length;
+
+                                      // Hide the pill entirely if the count is 0
+                                      // if (matchedCount === 0) return null;
+
+                                      // Generate the dynamic color class or use default
+                                      const colorClass = countConfig.color ? `tally-pill-${countConfig.color}` : 'tally-pill-default';
+
+                                      return (
+                                        <span key={idx} className={`tally-pill ${colorClass}`}>
+                                          <span className="tally-label">{countConfig.label}:</span>
+                                          <span className="tally-value">{matchedCount}</span>
+                                        </span>
+                                      );
+                                    })}
+                                  </>
+                                ) : (
+                                  // Fallback to default behavior if no counts config is provided
+                                  <span className="tally-plain">({groupBlock.rows.length})</span>
+                                )}
+                              </span>
                             </div>
                           </td>
                         </tr>

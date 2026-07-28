@@ -861,7 +861,24 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
 
   accordion: {
     enabled: true,
-    groupByCol: "Source"
+    groupByCol: "Source",
+    counts: [
+      {
+        label: "T",
+        countCondition: (row: any) => row["OE"] !== null,
+        color: 'blue',
+      },
+      {
+        label: "A",
+        countCondition: (row: any) => row["OE"] !== null && row["TripProgress"] !== "Assigned",
+        color: 'green',
+      },
+      {
+        label: "B",
+        countCondition: (row: any) => row["OE"] !== null && row["TripProgress"] === "Assigned",
+        color: 'yellow',
+      }
+    ]
   }
 
 };
