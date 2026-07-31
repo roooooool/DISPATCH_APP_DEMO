@@ -29,6 +29,12 @@ interface OrderAssignmentDashboardProps {
     displayMapping: CardDisplayMapping;
     cardBodyMaxHeight?: string;
     onRefreshTrips?: () => void;
+    onUpdateTripAssignedList?: (result: {
+        success: boolean;
+        added: any[];
+        updated: any[];
+        removed: string[];
+    }) => void;
 }
 
 interface DroppedItemsState {
@@ -60,13 +66,14 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     displayMapping,
     cardBodyMaxHeight = '350px',
     onRefreshTrips,
+    onUpdateTripAssignedList,
 }) => {
     console.log(tripAssignedLoading, newOrdersLoading);
 
     const { user } = useUser();
     const { addTask } = useTaskWorker();
 
-
+    const [isTableVisible, setIsTableVisible] = useState(true);
     const [collapsedBUs, setCollapsedBUs] = useState<Record<string, boolean>>({});
 
     // 💡 Track which collapsed BU is temporarily expanded due to an active drag hover
@@ -259,21 +266,70 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
             }))
         );
 
-        // 2. Orders to Delete / Unassign (Original trips removed but NOT reassigned to another BU)
+        // 1. Gather all dropped keys across all BUs
         const allDroppedIds = new Set<string>();
         Object.values(buDroppedItems).forEach(items => {
             items?.forEach(item => {
-                const key = item.OE !== undefined && item.OE !== null ? item.OE : (item._rowId || item.id);
+                // Fallback checks including the nested rawData object property
+                const key = item.OE !== undefined && item.OE !== null
+                    ? item.OE
+                    : (item.rawData?.OE || item._rowId || item.ID || item.rawData?.ID);
                 if (key !== undefined && key !== null) {
                     allDroppedIds.add(String(key));
                 }
             });
         });
 
-        // If a removed original key is NOT in any dropped items list, it was sent to the trash zone
-        const ordersToDelete = Array.from(removedOriginalKeys).filter(
-            key => !allDroppedIds.has(key)
-        );
+        // 2. Extract full records from tripAssignedList that were moved to the trash zone
+        const ordersToDelete = tripAssignedList
+            .filter(trip => {
+                // Check root first, fallback to the nested rawData structure
+                const tripKey = trip.OE !== undefined && trip.OE !== null
+                    ? trip.OE
+                    : (trip.rawData?.OE || trip._rowId || trip.ID || trip.rawData?.ID);
+
+                // The item must be in removedOriginalKeys, but NOT re-assigned/dropped elsewhere
+                return removedOriginalKeys.has(String(tripKey)) && !allDroppedIds.has(String(tripKey));
+            })
+            .map(trip => trip.rawData?.ID || trip.ID) // Transform the remaining objects down to just the ID
+            .filter(id => id !== undefined && id !== null); // Safety clearing filter
+
+        // =============================================================
+        // PREPARE AND FIRE OPTIMISTIC UPDATE STAGE (Runs instantly)
+        // =============================================================
+        const addedRows: any[] = [];
+        const updatedRows: any[] = [];
+        const removedRows: string[] = ordersToDelete.map(id => id.toString());
+
+        ordersToUpsert.forEach(order => {
+            const optimisticRecord = {
+                ...order,
+                TripProgress: "Assigned",
+                Buisness_x0020_Unit: order[displayMapping.buField]
+            };
+
+            if (order._isLocal) {
+                addedRows.push(optimisticRecord);
+            } else {
+                updatedRows.push(optimisticRecord);
+            }
+        });
+
+        // 🚀 Update the UI state right now before firing any promises
+        if (onUpdateTripAssignedList) {
+            onUpdateTripAssignedList({
+                success: true,
+                added: addedRows,
+                updated: updatedRows,
+                removed: removedRows,
+            });
+        }
+
+        // Capture staging state reference for error rollbacks, then clear immediately to unblock drag UI
+        setBuDroppedItems({});
+        setRemovedOriginalKeys(new Set());
+
+
 
         // --- Ready for API submission ---
         console.log("Orders to Add / Update:", ordersToUpsert);
@@ -289,6 +345,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
             message_failure: "Failed to process order assignments.",
 
             execute: async () => {
+
                 // Create / Update Loop
                 for (const order of ordersToUpsert) {
 
@@ -351,6 +408,8 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                 _tripGroup: order._tripGroup,
                                 cementType: order.cementType,
 
+                                Loading_x0020_Sequence: 999,
+
                                 OE_x0020_Date: additionalOE ? new Date().toDateString() : order.OE_x0020_Date,
                                 //MonitoredBy: formData.MonitoredBy,
                                 DispatchedBy: user?.FullName || 'Unknown User',
@@ -395,38 +454,71 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
                                 UpsertTripTaskTrackerService.UpsertTripTaskTracker(payload as any);
                             }
+
+                            //track added
+                            addedRows.push({
+                                ...order,
+                                TripProgress: "Assigned",
+                                Buisness_x0020_Unit: order.BU
+                            });
+
                         }
                         else {
-                            // Existing Assigned trip moved to another Business Unit
+                            // ✅ FIXED: Safely placed outside the local conditional block
+                            const existingId = order.rawData?.ID || order.ID;
+                            console.log("Updating BU for existing trip record ID:", existingId);
+
                             await DMS_CEMService.update(
-                                order.tripID.toString(),
+                                existingId.toString(),
                                 {
-                                    Buisness_x0020_Unit: order.Buisness_x0020_Unit
+                                    Buisness_x0020_Unit: order[displayMapping.buField]
                                 }
                             );
                         }
                     }
 
-                    // Remove / Unassign Loop
-                    // for (const item of ordersToDelete) {
-                    //     // Implement deletion or unassignment service call if applicable
-                    //     // e.g., await DMS_CEMService.delete(item.tripID.toString());
-                    // }
 
-                    // Trigger UI refresh callbacks
-                    if (onRefreshTrips) onRefreshTrips();
                 }
-                return true;
+
+                console.log("to delete IDs: ", ordersToDelete);
+                // Remove / Unassign Execution Loop
+                for (const id of ordersToDelete) {
+                    console.log("Deleting database ID reference:", id);
+                    await DMS_CEMService.delete(id.toString());
+                }
+
+                // Return the same payload structure for completeness
+                return {
+                    success: true,
+                    added: addedRows,
+                    updated: updatedRows,
+                    removed: removedRows,
+                };
             },
 
-            checkSuccess: result => result === true,
+            checkSuccess: result => result.success === true,
 
             onSuccess: () => {
                 console.log("Finished.");
+                // if (onUpdateTripAssignedList) onUpdateTripAssignedList?.(result);
+                // Trigger UI refresh callbacks
+                if (onRefreshTrips) {
+                    // Background refresh to reconcile with the server
+                    setTimeout(() => {
+                        onRefreshTrips?.();
+                    }, 2000);
+                }
+                setBuDroppedItems({});
+                setRemovedOriginalKeys(new Set());
             },
 
             onFailure: err => {
                 console.error(err);
+
+                if (onRefreshTrips) onRefreshTrips();
+
+                setBuDroppedItems({});
+                setRemovedOriginalKeys(new Set());
             }
         });
 
@@ -488,7 +580,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     return (
         <div className="order-assignment-container">
             {/* Left Side: New Orders Table */}
-            <div className="orders-table-section">
+            <div className={`orders-table-section ${!isTableVisible ? 'is-hidden' : ''}`}>
                 <div className="bu-ass-dash-section-header">
                     <h2>New Orders</h2>
                 </div>
@@ -506,6 +598,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                         density='tight'
                         isLoading={newOrdersLoading}
                         loadingNoPreventAction={true}
+                        accordion={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.accordion}
                     />
                     {/** TRASH ZONE */}
                     {isDraggingItem && (
@@ -525,16 +618,54 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
             </div>
 
             {/* Right Side: Kanban/BU Visual Cards */}
-            <div className="bu-cards-section">
+            <div className={`bu-cards-section ${!isTableVisible ? 'is-expanded' : ''}`}>
                 <div className="bu-ass-dash-section-header">
-                    <h2>
-                        Business Units
-                        {hasLocalDrops && (
-                            <span className="bu-header-pending-tag">
-                                (Unsaved Changes)
-                            </span>
-                        )}
-                    </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <button
+                            onClick={() => setIsTableVisible(!isTableVisible)}
+                            style={{
+                                backgroundColor: '#ffffff',
+                                color: '#000080', // Navy blue
+                                border: '1.5px solid #3a4efc', // Primary 2nd blue
+                                borderRadius: '8px',
+                                padding: '6px 7px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                fontWeight: '600',
+                                fontSize: '0.9rem',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                            }}
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+                                {isTableVisible ? (
+                                    <>
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                                    </>
+                                ) : (
+                                    <>
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                                        <polyline points="13 8 17 12 13 16"></polyline>
+                                    </>
+                                )}
+                            </svg>
+                            {/* {isTableVisible ? 'Hide New Orders' : 'Show New Orders'} */}
+                        </button>
+
+                        {/* Wrap your existing <h2> inside this new flex container */}
+                        <h2>
+                            Business Units
+                            {hasLocalDrops && (
+                                <span className="bu-header-pending-tag">
+                                    (Unsaved Changes)
+                                </span>
+                            )}
+                        </h2>
+                    </div>
 
                     {hasLocalDrops && (
                         <div className="header-actions-container">
@@ -575,22 +706,35 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                         const filteredCardTrips = allCombinedTrips.filter(trip => {
                             const sourceObj = trip.rawData || trip;
                             if (activeFilter === 'new') return trip._isLocal === true;
-                            if (activeFilter === 'assi') return sourceObj.TripProgress === 'Assigned' && isEmptyStr(sourceObj.Driver) && isEmptyStr(sourceObj.Vehicle);
-                            if (activeFilter === 'disp') return sourceObj.TripProgress !== 'Assigned' && sourceObj.TripProgress !== 'New Trip';
+                            if (activeFilter === 'plan') return sourceObj.TripProgress === 'Planned';
+                            // 'bal' handles what used to be 'assi'
+                            if (activeFilter === 'bal') return sourceObj.TripProgress === 'Assigned' && isEmptyStr(sourceObj.Driver) && isEmptyStr(sourceObj.Vehicle);
+                            // 'assi' now handles what used to be 'disp' (dispatched/in-progress trips)
+                            if (activeFilter === 'assi') return sourceObj.TripProgress !== 'Assigned' && sourceObj.TripProgress !== 'New Trip';
                             return true; // 'all'
                         });
 
                         const totalCount = allCombinedTrips.length;
-                        const assiCount = allCombinedTrips.filter(trip => {
+
+                        const planCount = allCombinedTrips.filter(trip => {
+                            const sourceObj = trip.rawData || trip;
+                            return sourceObj.TripProgress === 'Planned';
+                        }).length;
+
+                        // This was assiCount, now renamed to balCount
+                        const balCount = allCombinedTrips.filter(trip => {
                             const sourceObj = trip.rawData || trip;
                             return sourceObj.TripProgress === 'Assigned' &&
                                 isEmptyStr(sourceObj.Driver) &&
                                 isEmptyStr(sourceObj.Vehicle);
                         }).length;
-                        const dispCount = allCombinedTrips.filter(trip => {
+
+                        // This was dispCount, now renamed to assiCount
+                        const assiCount = allCombinedTrips.filter(trip => {
                             const sourceObj = trip.rawData || trip;
                             return sourceObj.TripProgress !== 'Assigned' && sourceObj.TripProgress !== 'New Trip';
                         }).length;
+
                         const maxCapacity = 50;
                         // const loadPercentage = Math.min((totalCount / maxCapacity) * 100, 100);
 
@@ -714,6 +858,40 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                                 <span className="metric-value">{totalCount}</span>
                                             </div>
                                             <div
+                                                className={`metric-box ${activeFilter === 'plan' ? 'active-metric' : ''}`}
+                                                onClick={() => handleMetricClick(bu, 'plan')}
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    opacity: activeFilter === 'all' || activeFilter === 'plan' ? 1 : 0.5,
+                                                    borderBottom: activeFilter === 'plan' ? '2.5px solid #ffffff' : '2.5px solid transparent',
+                                                    paddingBottom: '2px',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                title="Click to filter planned items"
+                                            >
+                                                <span className="metric-label">Plan:</span>
+                                                <span className="metric-value">{planCount}</span>
+                                            </div>
+
+                                            {/* RENAMED FROM ASSI TO BAL */}
+                                            <div
+                                                className={`metric-box ${activeFilter === 'bal' ? 'active-metric' : ''}`}
+                                                onClick={() => handleMetricClick(bu, 'bal')}
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    opacity: activeFilter === 'all' || activeFilter === 'bal' ? 1 : 0.5,
+                                                    borderBottom: activeFilter === 'bal' ? '2.5px solid #ffffff' : '2.5px solid transparent',
+                                                    paddingBottom: '2px',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                title="Click to filter unassigned balance items"
+                                            >
+                                                <span className="metric-label">Bal:</span>
+                                                <span className="metric-value">{balCount}</span>
+                                            </div>
+
+                                            {/* RENAMED FROM DISP TO ASSI */}
+                                            <div
                                                 className={`metric-box ${activeFilter === 'assi' ? 'active-metric' : ''}`}
                                                 onClick={() => handleMetricClick(bu, 'assi')}
                                                 style={{
@@ -723,25 +901,10 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                                     paddingBottom: '2px',
                                                     transition: 'all 0.2s ease'
                                                 }}
-                                                title="Click to filter unassigned/progress-assigned items"
+                                                title="Click to filter active assigned/dispatched items"
                                             >
                                                 <span className="metric-label">Assi:</span>
                                                 <span className="metric-value">{assiCount}</span>
-                                            </div>
-                                            <div
-                                                className={`metric-box ${activeFilter === 'disp' ? 'active-metric' : ''}`}
-                                                onClick={() => handleMetricClick(bu, 'disp')}
-                                                style={{
-                                                    cursor: 'pointer',
-                                                    opacity: activeFilter === 'all' || activeFilter === 'disp' ? 1 : 0.5,
-                                                    borderBottom: activeFilter === 'disp' ? '2.5px solid #ffffff' : '2.5px solid transparent',
-                                                    paddingBottom: '2px',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                                title="Click to filter dispatched items"
-                                            >
-                                                <span className="metric-label">Disp:</span>
-                                                <span className="metric-value">{dispCount}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -881,9 +1044,21 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                                     >
                                                         <div className="order-item-header">
                                                             <span className="order-id">
-                                                                {displayMapping.titleField.toUpperCase()}: {orderId}
+                                                                {/*{displayMapping.titleField.toUpperCase()}:*/} {orderId}
                                                             </span>
-                                                            {status && <span className="order-status">{status}</span>}
+                                                            {/* Conditional Rendering for TripProgress Status Label */}
+                                                            {(() => {
+                                                                const rawProgress = sourceObj.TripProgress;
+                                                                let displayStatus = 'Assigned'; // fallback matching "everything else"
+
+                                                                if (rawProgress === 'Planned') {
+                                                                    displayStatus = 'Planned';
+                                                                } else if (rawProgress === 'Assigned') {
+                                                                    displayStatus = 'Balance';
+                                                                }
+
+                                                                return <span className="order-status">{displayStatus}</span>;
+                                                            })()}
                                                         </div>
                                                         <div className="order-item-route">
                                                             <span>{source} → {destination}</span>

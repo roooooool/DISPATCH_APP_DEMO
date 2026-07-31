@@ -24,14 +24,14 @@ import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel'
 // import { LiveDriverDispatchedList_AllService } from '../generated/services/LiveDriverDispatchedList_AllService';
 // import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
 // import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAdditionalOE_IDService';
-// import { Vw_FCT_RouteNodeListService } from '../generated/services/Vw_FCT_RouteNodeListService';
+import { Vw_FCT_RouteNodeListService } from '../generated/services/Vw_FCT_RouteNodeListService';
 
 import {
   NEW_TRIPS_UNFILTERED_TABLE_CONFIG,
   LIVE_DMS_ASSIGNED_TABLE_CONFIG,
   TRIP_GROUPS,
   LIVE_DMS_TABLE_CONFIG,
-  // FETCH_LOADING_KEYS,
+  FETCH_LOADING_KEYS,
   // cementTypeOptions,
   // frStatuses,
 } from '../truth.config';
@@ -45,6 +45,7 @@ import AutoDismissBanner from '../components/ewul_Banner';
 import OrderAssignmentDashboard from '../components/OrderAssignmentDashboard';
 // import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
 // import Modal from '../components/ewul_Modal';
+import type { DropdownOption } from '@components/SearchableDropdown';
 
 import './css/OrderDistribution.css';
 import './css/OrderManagement.css';
@@ -83,6 +84,13 @@ interface OrdersModuleProps {
   handleRowDragDrop: (signal: any) => void;
   isArrangementMode: boolean;
   onArrangementModeChange: (data: any) => void;
+  onOptimisticUpdate: (result: {
+    success: boolean;
+    added: any[];
+    updated: any[];
+    removed: string[];
+  }) => void;
+  onRefreshTripsAssigned: () => void;
 }
 
 const OrdersModule: React.FC<OrdersModuleProps> = ({
@@ -102,6 +110,8 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
   handleRowDragDrop,
   isArrangementMode,
   onArrangementModeChange,
+  onOptimisticUpdate,
+  onRefreshTripsAssigned
 }) => {
   const { user } = useUser();
 
@@ -164,6 +174,8 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
             tripAssignedLoading={isLoadingAssigned}
             businessUnits={BUSINESS_UNITS}
             displayMapping={tripDisplayConfig}
+            onUpdateTripAssignedList={onOptimisticUpdate}
+            onRefreshTrips={onRefreshTripsAssigned}
           />
         </div>
 
@@ -270,6 +282,17 @@ const OrderDistribution: React.FC = () => {
   // const { user } = useUser();
   const [activeMode, setActiveMode] = useState<ViewMode>('ASSIGNED');
   const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{ from: string, to: string } | null>(null);
+
+  const [stationOptions, setStationOptions] = useState<DropdownOption[]>([]);
+  const [sourceOptions, setSourceOptions] = useState<DropdownOption[]>([]);
+  const [destinationOptions, setDestinationOptions] = useState<DropdownOption[]>([]);
+
+  // Safety fallback helper function if it doesn't already exist globally in your project
+  const canFetch = (key: string, cooldownMs: number): boolean => {
+    // You can customize this to check sessionStorage or custom local state timestamps if desired
+    return true;
+  };
+
 
   const assignedTableRef = useRef<TableViewRef>(null);
   // const formRef = useRef<OrderDistributionFormRef>(null);
@@ -528,10 +551,8 @@ const OrderDistribution: React.FC = () => {
           (
             TripProgress eq 'Assigned' or 
             TripProgress eq 'Dispatched To Source' or 
-            TripProgress eq 'Dispatched To Destination'
-          ) and 
-          (
-            _tripGroup ne 'Preload' and _tripGroup ne 'Mobilization'
+            TripProgress eq 'Dispatched To Destination' or 
+            TripProgress eq 'Planned'
           )
         `;
       const result = await ewulFetchAll<any>(LiveDMSView_CEMService, { filter: dateFilter, orderBy: ["OEDateAsInt desc"] }, 10000, 'ID');
@@ -544,6 +565,58 @@ const OrderDistribution: React.FC = () => {
       setIsLoadingAssigned(false);
     }
   }, [selectedRangeNewOrders]);
+
+
+
+
+
+
+
+
+
+  const handleOptimisticUpdate = useCallback((result: {
+    added: any[];
+    updated: any[];
+    removed: string[];
+  }) => {
+
+    setAssignedOrders(prev => {
+      let next = [...prev];
+
+      // 1. Remove deleted/unassigned trips using database IDs instead of OE strings
+      next = next.filter(row => {
+        const rowId = row.rawData?.ID || row.ID;
+        // Stringify rowId to ensure type alignment with the incoming result strings
+        return rowId === undefined || rowId === null || !result.removed.includes(rowId.toString());
+      });
+
+      // 2. Update existing trips (Stays the same if tracking via OE works here)
+      result.updated.forEach(updatedRow => {
+        const index = next.findIndex(r => r.OE === updatedRow.OE);
+
+        if (index >= 0) {
+          next[index] = {
+            ...next[index],
+            ...updatedRow
+          };
+        }
+      });
+
+      // 3. Add newly created trips
+      result.added.forEach(newRow => {
+        if (!next.some(r => r.OE === newRow.OE)) {
+          next.push(newRow);
+        }
+      });
+
+      return next;
+    });
+
+  }, []);
+
+
+
+
 
 
   // COMBINED CONTROLLER: Targets active runtime context grid
@@ -703,6 +776,9 @@ const OrderDistribution: React.FC = () => {
               <span>1B</span>
             </button>
           </div>
+
+          <button className="header-btn secondary preload" onClick={() => { null }} style={{ minWidth: 90 }}>Preload</button>
+          <button className="header-btn secondary mobilization" onClick={() => { null }} style={{ minWidth: 120 }}>Mobilization</button>
 
 
 
@@ -885,6 +961,8 @@ const OrderDistribution: React.FC = () => {
                   handleRowDragDrop={handleRowDragDrop}
                   isArrangementMode={isArranging}
                   onArrangementModeChange={setIsArranging}
+                  onOptimisticUpdate={handleOptimisticUpdate}
+                  onRefreshTripsAssigned={fetchAssignedOrders}
                 />
                 {bannerMessage &&
                   <AutoDismissBanner

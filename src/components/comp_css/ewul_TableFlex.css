@@ -1933,6 +1933,23 @@ td.cell.cell-blur {
   /* White text looks crispest against this amber-yellow */
 }
 
+/* Alternative: Muted Outlined Preset */
+/* Muted Preset (Darker Gray) */
+.tally-pill-muted {
+  background-color: #4b5563;
+  /* Darker slate/gray */
+  border-color: #4b5563;
+}
+
+.tally-pill-muted .tally-label {
+  color: rgba(255, 255, 255, 0.7);
+  /* Slightly translucent white to keep it feeling "muted" */
+}
+
+.tally-pill-muted .tally-value {
+  color: #ffffff;
+  /* Solid white for the main value */
+}
 
 
 /* Subtle Left Border Accent on grouped items when hovered */

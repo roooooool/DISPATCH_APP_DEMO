@@ -1,6 +1,6 @@
 import React, { useState, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { SaveIcon, Plus, Fuel, Printer, Replace, Ban, CheckCheck, Menu, ArrowRight, AtSign, Loader, Calendar, Loader2, Send, ClipboardList, FileSpreadsheet, Undo2 } from 'lucide-react';
+import { SaveIcon, Plus, Milestone, Fuel, Printer, Replace, Ban, CheckCheck, Menu, ArrowRight, AtSign, Loader, Calendar, Loader2, Send, ClipboardList, FileSpreadsheet, Undo2 } from 'lucide-react';
 import Modal from './ewul_Modal';
 
 // POWER APPS SERVICES
@@ -200,6 +200,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       personnelID: string | number;
       personnelType: string;
       tripOE?: string | null;
+      enablePlanTrip?: boolean;
     } | null>(null);
     const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
     const [showCannotChangeTripModal, setShowCannotChangeTripModal] = useState<{
@@ -379,6 +380,26 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (!loadingSeqValidation.isValid) return loadingSeqValidation;
 
 
+      // Helper function to keep the logic clean
+      const isAssetAvailable = (assetValue: any, optionsArray: DropdownOption[] | undefined) => {
+        if (!assetValue) return false;
+
+        const record = optionsArray?.find(opt => opt.value === assetValue)?.record;
+        if (!record) return false;
+
+        // Returns true as long as there is no active OE
+        return !record.OE;
+      };
+
+      const canTripPlanProceed =
+        isAssetAvailable(data.Driver, driverOptions) &&
+        isAssetAvailable(data.Helper, helperOptions);
+
+      if ((data.TripProgress == 'Planned') && !canTripPlanProceed) {
+        return { isValid: false, message: "This is a Planned Trip. Make sure the assigned Driver | Helper | Truck | Trailer doesn't have an on going trip." };
+      }
+
+
       if (!data.Driver) {
         return { isValid: false, message: 'Driver must be assigned.' };
       }
@@ -410,10 +431,18 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       // For CIFME
       // if (!data.CIFME_OE && editingUser?.Position === 'Developer') {return { isValid: false, message: 'Please select a CIFME order before proceeding with this trip.' };}
 
-
       if ((data._tripGroup === 'Preload') && (TRIP_PROGRESS.find(p => p.Progress === data.TripProgress)?.idx ?? 0) >= 2) {
         return { isValid: false, message: 'Preload must be divert to an actual trip before proceeding.' };
       }
+
+      if (!data.ATW_x002f_LO_x0023_) {
+        return { isValid: false, message: 'please input ATW.' };
+      }
+
+      if (!data.SO_x0023_) {
+        return { isValid: false, message: 'please input SO.' };
+      }
+
 
       if (!data.Driver_x0020_Loader) {
         return { isValid: false, message: 'Driver Loader must be specified or N/A if none.' };
@@ -432,32 +461,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-      if (!data.QTYWithdrawn || data.QTYWithdrawn < 1) {
-        return { isValid: false, message: 'QTY Withdrawn must be greater than 0.' };
-      }
-
-      const sourceIn = data.Source_x0020_in ? new Date(convNaive(data.Source_x0020_in)) : null;
-      const sourceOut = data.Source_x0020_out ? new Date(convNaive(data.Source_x0020_out)) : null;
-
-      if (!sourceIn || isNaN(sourceIn.getTime())) {
-        return { isValid: false, message: 'Source In time is not valid.' };
-      }
-
-      if (!sourceOut || isNaN(sourceOut.getTime())) {
-        return { isValid: false, message: 'Source Out time is not valid.' };
-      }
-
-      if (sourceIn >= sourceOut) {
-        return { isValid: false, message: 'Source Out must be after Source In.' };
-      }
-
-      if (sourceIn.getTime() > Date.now()) {
-        return { isValid: false, message: 'Source In cannot be in the future.' };
-      }
-
-      if (sourceOut.getTime() > Date.now()) {
-        return { isValid: false, message: 'Source Out cannot be in the future.' };
-      }
 
       // Add 'Dispatched To Source' specific validations here in the future
 
@@ -511,6 +514,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
+      if (!data.QTYWithdrawn || data.QTYWithdrawn < 1) {
+        return { isValid: false, message: 'QTY Withdrawn must be greater than 0.' };
+      }
+
       if (!data.Driver_x0020_Unloader) {
         return { isValid: false, message: 'Driver Unloader must be specified or N/A if none.' };
       }
@@ -519,15 +526,73 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         return { isValid: false, message: 'Helper Unloader must be specified or N/A if none.' };
       }
 
+      const hasPlantDrAttachments =
+        attachments.some(attr => attr.raw?.attachment_type === 'PLANT DR') ||
+        tempPlantDrAttachments.length > 0;
+
+      if (!hasPlantDrAttachments) {
+        return { isValid: false, message: 'Plant DR attachment is needed.' };
+      }
+
+
+
+
+
+      /*if (!data.Driver_x0020_Loader && data.Driver_x0020_Unloader) {
+        return { isValid: false, message: 'Test' };
+      }*/
+
+
+      // Add 'Dispatched To Destination' specific validations here in the future
+
+      return { isValid: true, message: 'Destination details are valid.' };
+    };
+
+    const validateDone = (data: LiveDMSView_CEM) => {
+      const destinationValidation = validateDispatchedToDestination(data);
+      if (!destinationValidation.isValid) return destinationValidation;
 
 
       if (!data.QTYDelivered || data.QTYDelivered < 1) {
         return { isValid: false, message: 'QTY Delivered must be greater than 0.' };
       }
 
+      const hasWSAttachments =
+        attachments.some(attr => attr.raw?.attachment_type === 'WS') ||
+        tempWsAttachments.length > 0;
+
+      if (!hasWSAttachments) {
+        return { isValid: false, message: 'Weight Scale attachment is needed.' };
+      }
+
+
+
+
+      const sourceIn = data.Source_x0020_in ? new Date(convNaive(data.Source_x0020_in)) : null;
       const sourceOut = data.Source_x0020_out ? new Date(convNaive(data.Source_x0020_out)) : null;
       const destIn = data.Destination_x0020_in ? new Date(convNaive(data.Destination_x0020_in)) : null;
       const destOut = data.Destination_x0020_out ? new Date(convNaive(data.Destination_x0020_out)) : null;
+
+      if (!sourceIn || isNaN(sourceIn.getTime())) {
+        return { isValid: false, message: 'Source In time is not valid.' };
+      }
+
+      if (!sourceOut || isNaN(sourceOut.getTime())) {
+        return { isValid: false, message: 'Source Out time is not valid.' };
+      }
+
+      if (sourceIn >= sourceOut) {
+        return { isValid: false, message: 'Source Out must be after Source In.' };
+      }
+
+      if (sourceIn.getTime() > Date.now()) {
+        return { isValid: false, message: 'Source In cannot be in the future.' };
+      }
+
+      if (sourceOut.getTime() > Date.now()) {
+        return { isValid: false, message: 'Source Out cannot be in the future.' };
+      }
+
 
       if (!destIn || isNaN(destIn.getTime())) {
         return { isValid: false, message: 'Destination In time is not valid.' };
@@ -550,21 +615,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-      /*if (!data.Driver_x0020_Loader && data.Driver_x0020_Unloader) {
-        return { isValid: false, message: 'Test' };
-      }*/
 
 
-      // Add 'Dispatched To Destination' specific validations here in the future
 
-      return { isValid: true, message: 'Destination details are valid.' };
-    };
-
-    const validateDone = (data: LiveDMSView_CEM) => {
-      const destinationValidation = validateDispatchedToDestination(data);
-      if (!destinationValidation.isValid) return destinationValidation;
-
-      const destOut = data.Destination_x0020_out ? new Date(convNaive(data.Destination_x0020_out)) : null;
       //const dateDocumented = data.Documented_x0020_Date ? new Date(convNaive(data.Documented_x0020_Date)) : null;
       const dateReceived = data.Receive_x0020_Date ? new Date(convNaive(data.Receive_x0020_Date)) : null;
       const dateTransmitted = data.Transimtted_x0020_Date ? new Date(convNaive(data.Transimtted_x0020_Date)) : null;
@@ -622,6 +675,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
+    const handlePersonnelValidationModalClose = () => {
+      if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(false);
+      setPersonnelValidationModal(null);
+      setPendingPersonnelValidationResolve(null);
+    };
 
 
     useEffect(() => {
@@ -660,13 +718,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       runValidation: (data: LiveDMSView_CEM) => runValidation(data),
     }), [formData, hasUnsavedChanges, runValidation]);
 
-    const [pendingPersonnelValidationResolve, setPendingPersonnelValidationResolve] = useState<((val: boolean) => void) | null>(null);
+    const [pendingPersonnelValidationResolve, setPendingPersonnelValidationResolve] = useState<((val: boolean | 'planTrip') => void) | null>(null);
     const showPersonnelValidationModal = (modalProps: any) => {
       setPersonnelValidationModal({
         ...modalProps,
         isOpen: true,
       });
-      return new Promise<boolean>((resolve) => {
+      return new Promise<boolean | 'planTrip'>((resolve) => {
         setPendingPersonnelValidationResolve(() => resolve);
       });
     };
@@ -705,36 +763,82 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       return data;
     };
 
+
+
+    // Helper function to check the specific "Planned" condition
+    const checkNeedsPlannedTag = (personnelValue: any, optionsArray: DropdownOption[] | undefined) => {
+      if (!personnelValue) return false;
+      const record = optionsArray?.find(opt => opt.value === personnelValue)?.record;
+
+      // Returns true if they have an OE but plannedTrip is null (or undefined)
+      return !!record?.OE && record?.plannedTrip == null;
+    };
+
+    // This variable will be true if EITHER the driver or helper meets the condition
+    const shouldTagAsPlanned =
+      (
+        checkNeedsPlannedTag(formData?.Driver, driverOptions) ||
+        checkNeedsPlannedTag(formData?.Helper, helperOptions)
+      ) && formData.TripProgress == 'Assigned';
+
     const handleFieldChange = async (key: keyof LiveDMSView_CEM, value: any) => {
       if (!formData || !formData.OE) {
         onOEInputClick?.(); // Prompt user to select an OE
         return; // Stop the field change
-      };
+      }
 
       const selectedOption = (key === 'Driver' ? driverOptions : helperOptions)?.find(opt => opt.value === value);
       const record = selectedOption?.record;
-      const attendance_to_warn = ATTENDANCE_STATUSES.filter(status => !status.onduty).map(status => status.Status); // Statuses that should trigger the modal
+      const attendance_to_warn = ATTENDANCE_STATUSES.filter(status => !status.onduty).map(status => status.Status);
 
-      if ((key === 'Driver' || key === 'Helper') && record) {
-        if (record.OE) {
-          await showPersonnelValidationModal({
-            type: 'trip',
-            personnelName: record.FullName || 'the selected person',
-            personnelID: record.Id,
-            personnelType: key === 'Driver' ? 'Driver' : 'Helper',
-            tripOE: record.OE,
-          });
-          return; // Stop the update no matter what
-        }
-        if (attendance_to_warn.some(status => status === record.DMS_Attendance)) {
-          const userResponse = await showPersonnelValidationModal({
-            type: 'attendance',
-            personnelName: record.FullName || 'the selected person',
-            personnelID: record.Id,
-            personnelType: key === 'Driver' ? 'Driver' : 'Helper',
-          });
-          console.log('User response from attendance modal:', userResponse, ' input: ', value, ' key:', key);
-          return;
+      if (key === 'Driver' || key === 'Helper') {
+        if (record) {
+
+          // Regular OE conflict where plannedTrip is already set
+          if (record.OE && record.plannedTrip != null) {
+            await showPersonnelValidationModal({
+              type: 'trip',
+              personnelName: record.FullName || 'the selected person',
+              personnelID: record.Id,
+              personnelType: key === 'Driver' ? 'Driver' : 'Helper',
+              tripOE: record.OE,
+            });
+            return; // Stop the update no matter what
+          }
+
+          // Check if person has an OE but the plannedTrip is null
+          if (record.OE && record.plannedTrip == null) {
+            const userResponse = await showPersonnelValidationModal({
+              type: 'trip',
+              personnelName: record.FullName || 'the selected person',
+              personnelID: record.Id,
+              personnelType: key === 'Driver' ? 'Driver' : 'Helper',
+              tripOE: record.OE,
+              enablePlanTrip: true,
+            });
+
+            // If the user cancels or does not explicitly click Plan Trip, stop the update
+            if (userResponse !== true && (userResponse as any) !== 'planTrip') {
+              return;
+            }
+            // If they proceed, do nothing here and let the function continue to the state update
+          }
+
+          // Attendance warnings check
+          if (attendance_to_warn.some(status => status === record.DMS_Attendance)) {
+            const userResponse = await showPersonnelValidationModal({
+              type: 'attendance',
+              personnelName: record.FullName || 'the selected person',
+              personnelID: record.Id,
+              personnelType: key === 'Driver' ? 'Driver' : 'Helper',
+            });
+            console.log('User response from attendance modal:', userResponse, ' input: ', value, ' key:', key);
+
+            // If they cancel out of the attendance modal, stop the update
+            if (!userResponse) {
+              return;
+            }
+          }
         }
       }
 
@@ -1055,24 +1159,46 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       <DispDst_icon size={32} color='var(--color-text-2)' />,
       <Done_icon color='var(--color-text-2)' />,
     ];
-    const trip_progress = TRIP_PROGRESS.filter(item => !item.exclude).map((item, idx) => ({
+    const trip_progress = TRIP_PROGRESS.filter(item => !item.exclude).map(item => ({
       ...item,
-      ref: refs[idx],
-      icon: icons[idx]
+      ref: refs[item.idx],   // Uses your logical idx (0-4) instead of array position
+      icon: icons[item.idx]
     }));
     const maxprogress = Math.max(...TRIP_PROGRESS.map(item => item.idx));
 
     const progress_idx = () => TRIP_PROGRESS.find(item => item.Progress === formData.TripProgress)?.idx ?? 0;
 
-    const prog_completed = 'Done'
+    // const prog_completed = 'Done'
+    // let prog_idx = progress_idx();
+    // let prog_next = trip_progress[0].Progress;
+    // let prog_icon = trip_progress[0]?.icon;
+    // if (prog_idx !== undefined) {
+    //   let next = trip_progress[prog_idx < maxprogress - 1 ? prog_idx + 1 : prog_idx];
+    //   prog_next = prog_idx < maxprogress - 1 ? next?.Progress : prog_completed;
+    //   prog_icon = prog_idx < maxprogress - 1 ? next?.icon || null : <CheckCheck />;
+    // }
+    // const prog_verified = prog_idx === maxprogress && !!formData.Verified_x0020_By && !!formData.Documented_x0020_Date;
+
+    const prog_completed = 'Done';
     let prog_idx = progress_idx();
-    let prog_next = trip_progress[0].Progress;
+    let prog_next = trip_progress[0]?.Progress;
     let prog_icon = trip_progress[0]?.icon;
+
     if (prog_idx !== undefined) {
-      let next = trip_progress[prog_idx < maxprogress - 1 ? prog_idx + 1 : prog_idx];
-      prog_next = prog_idx < maxprogress - 1 ? next?.Progress : prog_completed;
-      prog_icon = prog_idx < maxprogress - 1 ? next?.icon || null : <CheckCheck />;
+      // Find the first progress object with a logical idx greater than the current one
+      const next = trip_progress.find((step) => step.idx > prog_idx);
+
+      if (next) {
+        // If a next step exists (e.g., jumping from idx 1 straight to idx 2)
+        prog_next = next.Progress;
+        prog_icon = next.icon || null;
+      } else {
+        // If no higher idx is found, we've reached the end
+        prog_next = prog_completed;
+        prog_icon = <CheckCheck />;
+      }
     }
+
     const prog_verified = prog_idx === maxprogress && !!formData.Verified_x0020_By && !!formData.Documented_x0020_Date;
 
     useEffect(() => {
@@ -1080,6 +1206,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       const progress = initialData?.TripProgress;
       if (!progress) return;
       trip_progress.find(item => item.Progress === progress)?.ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      console.log('NEXT TRIP PROGRESS: ', prog_next);
 
     }, [initialData?.TripProgress, orderId]);
 
@@ -1372,7 +1500,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             console.log(`Proceeding trip to ${progress_next}...`);
             const additionalOE = formData._tripGroup === 'Preload' || formData._tripGroup === 'Mobilization' ? await generateAdditionalOE(formData._tripGroup) : undefined;
             const tripTicketID = await generateTripTicketID(formData.OE);
-            let attendanceStatus: string;
+            let attendanceStatus: string | undefined;
             let tripStatus: string | null | undefined;
             let driverLoader: string | undefined;
             let driverUnloader: string | undefined;
@@ -1388,6 +1516,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 helperUnloader = formData.Helper
                 fulltrip = "Full Trip"
                 attendanceStatus = 'ON TRIP';
+                tripStatus = undefined;
+                break;
+              case 'Planned':
+                driverLoader = undefined
+                driverUnloader = undefined
+                helperLoader = undefined
+                helperUnloader = undefined
+                fulltrip = undefined
+                attendanceStatus = undefined;
                 tripStatus = undefined;
                 break;
               case 'Dispatched To Source':
@@ -1528,7 +1665,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
             if (progress_next === 'Assigned' && result.data.ID) await DMS_CEMService.update(result.data.ID.toString(), { tripID: result.data.ID });
 
-            if (formData.TripProgress !== 'Done') { // dont update attendance when trip is already done
+            if (formData.TripProgress !== 'Done' || !attendanceStatus) { // dont update attendance when trip is already done or no attendance status inputted
               handleUpdateAttendance(formData.Driver || '', driverOptions?.find(option => option.label === formData.Driver)?.record.Id, 'Driver', attendanceStatus || 'ON TRIP', false, confirmedAttDate);
               handleUpdateAttendance(formData.Helper || '', helperOptions?.find(option => option.label === formData.Helper)?.record.Id, 'Helper', attendanceStatus || 'ON TRIP', false, confirmedAttDate);
             }
@@ -3453,11 +3590,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   className="btn-proceed"
                   onClick={() => {
                     if (isSubmitting) return;
-                    handleTripProceed(prog_next);
+                    handleTripProceed(shouldTagAsPlanned ? 'Planned' : prog_next);
                   }}
                   disabled={!validation.isValid || isSubmitting || prog_verified}
                 >
-                  {prog_icon} {prog_verified ? 'Verified' : prog_next.replace('ed', '')}
+                  {shouldTagAsPlanned ? <Milestone size={16} /> : prog_icon}
+                  {shouldTagAsPlanned ? 'Plan Trip' : prog_verified ? 'Verified' : prog_next.replace('ed', '')}
                 </button>
               </>
             )
@@ -3468,7 +3606,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
           {personnelValidationModal?.isOpen && createPortal(
-            <Modal onClose={() => setPersonnelValidationModal(null)} width={'35%'} height={'30%'}>
+            <Modal onClose={handlePersonnelValidationModalClose} width={'35%'} height={'30%'}>
               <div className="personnel-validation-modal">
                 <h3>Validation Issue</h3>
                 {personnelValidationModal.type === 'attendance' ? (
@@ -3483,10 +3621,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       <button className="btn-proceed" onClick={() => {
                         if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(true);
                         handleUpdateAttendance(personnelValidationModal.personnelName, personnelValidationModal.personnelID.toString(), personnelValidationModal.personnelType, 'PRESENT', false);
-
                         setPersonnelValidationModal(null);
                         setPendingPersonnelValidationResolve(null);
-
                       }}>TAGGED AS PRESENT</button>
                     </div>
                   </>
@@ -3499,16 +3635,24 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         setPersonnelValidationModal(null);
                         setPendingPersonnelValidationResolve(null);
                       }}>Cancel</button>
+
+                      {/* Conditionally render Plan Trip action */}
+
                       <button className="btn-proceed" onClick={() => {
                         if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve(false);
-
                         if (onNavigateToTrip && personnelValidationModal.tripOE) {
                           onNavigateToTrip(personnelValidationModal.tripOE);
                         }
-
                         setPersonnelValidationModal(null);
                         setPendingPersonnelValidationResolve(null);
                       }}>Go to Trip</button>
+
+                      <button disabled={!personnelValidationModal.enablePlanTrip} className="btn-save" onClick={() => {
+                        if (pendingPersonnelValidationResolve) pendingPersonnelValidationResolve('planTrip');
+                        setPersonnelValidationModal(null);
+                        setPendingPersonnelValidationResolve(null);
+                      }}>Proceed as Planned Trip</button>
+
                     </div>
                   </>
                 )}

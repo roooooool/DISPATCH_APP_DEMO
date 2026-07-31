@@ -71,7 +71,7 @@ export interface TableModuleConfig {
 export interface accordionCountsConfig {
   label: string;
   countCondition: (row: any) => boolean;
-  color?: 'green' | 'yellow' | 'red' | 'blue';
+  color?: 'green' | 'yellow' | 'red' | 'blue' | 'muted';
 }
 
 export interface accordionConfig {

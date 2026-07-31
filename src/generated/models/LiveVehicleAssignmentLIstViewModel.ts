@@ -4,7 +4,7 @@
  */
 
 export interface LiveVehicleAssignmentLIstView {
-  Id: string;
+  Id?: string;
   Head_Full?: string;
   Head?: string;
   Assignment?: string;
@@ -50,8 +50,8 @@ export interface LiveVehicleAssignmentLIstView {
   TractorJO_Activity?: string;
   TrailerJO_Activity?: string;
   isPaired: number;
-  TractorIRID?: string;
-  TrailerIRID?: string;
+  TractorIRID?: number;
+  TrailerIRID?: number;
   rn?: number;
   _TractorDivertJR?: string;
   _TrailerDivertJR?: string;

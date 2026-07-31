@@ -1215,11 +1215,11 @@ const OrderManagement: React.FC = () => {
                 <span>Export CSV</span>
             </button>
             <button
-                className={`header-btn primary ${cooldown > 0 ? 'spinning' : ''}`}
+                className={`header-btn primary`}
                 onClick={handleRefreshWithCooldown}
             // disabled={cooldown > 0}
             >
-                <RefreshCcw size={16} />
+                <RefreshCcw size={16} className={`${cooldown > 0 ? 'spinning' : ''}`} />
                 <span>
                     {cooldown > 0 ? `Wait ${cooldown}s...` : 'Refresh'}
                 </span>

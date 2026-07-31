@@ -283,8 +283,8 @@ export const BUSINESS_UNITS = [
 // TRIP PROGRESS
 export const TRIP_PROGRESS = [
   { idx: 0, Progress: "New Trip", label: "", color: 'var(--progress-newtrip)', selected: true, exclude: false },
-  // {idx: 1, Progress: "Plotted", label: "", color: 'var(--progress-newtrip)', selected: true},
   { idx: 1, Progress: "Assigned", label: "Assigned", color: 'var(--progress-assigned)', selected: true },
+  { idx: 1, Progress: "Planned", label: "", color: 'var(--color-muted)', selected: true },
   { idx: 2, Progress: "Dispatched To Source", label: "To Source", color: 'var(--progress-source)', selected: true },
   { idx: 3, Progress: "Dispatched To Destination", label: "To Destination", color: 'var(--progress-destination)', selected: true },
   { idx: 4, Progress: "Done", label: "Done", color: 'var(--progress-done)', selected: false },
@@ -765,7 +765,26 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
     { col: "OE", alias: "OE #", sticky: true, cellStyle: () => { return { fontWeight: 'bold' } } },
-    // { col: "Trip Status", alias: "Status", filter: {type: "dropdown-multiple", options: statusOptions}, cellStyle: () => {return { fontWeight: 'bold' }}},
+    {
+      col: "TripProgress",
+      alias: "Progress",
+      filter: {
+        type: "dropdown-multiple",
+        options: [...TRIP_PROGRESS.map(item => ({ value: item.Progress, label: item.label })), { value: 'Verified', label: 'Verified' }],
+        default: TRIP_PROGRESS.filter(item => item.selected).map(item => item.Progress),
+        useCalculatedValue: true
+      },
+      cellStyle: (row: any) => {
+        let font_color: React.CSSProperties = { color: '#666' };
+        font_color = TRIP_PROGRESS.find(item => item.Progress === row["TripProgress"])?.color ? { color: TRIP_PROGRESS.find(item => item.Progress === row["TripProgress"])!.color } : font_color;
+        if (row.TripProgress === 'Done' && !!row.Verified_x0020_By && !!row.Documented_x0020_Date) font_color = { color: 'var(--progress-newtrip)' };
+        return { textAlign: 'left', fontWeight: 'bold', ...font_color }
+      },
+      calculate(row) {
+        if (row.TripProgress === 'Done' && !!row.Verified_x0020_By && !!row.Documented_x0020_Date) return 'Verified'
+        return row.TripProgress
+      },
+    },
     { col: "Loading Sequence", alias: "LS", defaultSort: 'asc', orderSort: 2, hidden: true },
 
     { col: "Driver", cellStyle: () => { return { textAlign: 'left' } } },
@@ -877,6 +896,12 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
         label: "B",
         countCondition: (row: any) => row["OE"] !== null && row["TripProgress"] === "Assigned",
         color: 'yellow',
+      }
+      ,
+      {
+        label: 'P',
+        countCondition: (row: any) => row["OE"] !== null && row["TripProgress"] === "Planned",
+        color: 'muted',
       }
     ]
   }
@@ -1587,27 +1612,52 @@ const CONFIG = {
 //   startDayOfWeek: CONFIG.startDayOfWeek,
 // };
 
+// export const ALLOWED_DATE_CLICK = {
+//   /**
+//    * Calculates the trailing edge of the allowed edit window
+//    */
+//   get startDate(): string {
+//     const today = new Date();
+//     const currentDay = today.getDay(); // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, etc.
+//     const allowedStartDate = new Date(today);
+
+//     // 🔴 SPECIAL CONDITION: Monday (1)
+//     if (currentDay === 1) {
+//       allowedStartDate.setDate(today.getDate() - 4);
+//     }
+//     // 🔴 SPECIAL CONDITION: Tuesday (2)
+//     else if (currentDay === 2) {
+//       allowedStartDate.setDate(today.getDate() - 5);
+//     }
+//     // 🟢 DEFAULT: All other days (Wed, Thu, Fri, Sat, Sun)
+//     else {
+//       allowedStartDate.setDate(today.getDate() - 6);
+//     }
+
+//     return formatDateStr(allowedStartDate);
+//   },
+
+//   /**
+//    * Cells are only editable if they are <= today
+//    */
+//   get endDate(): string {
+//     const today = new Date();
+//     return formatDateStr(today);
+//   },
+
+//   startDayOfWeek: CONFIG.startDayOfWeek,
+// };
+
 export const ALLOWED_DATE_CLICK = {
   /**
-   * Calculates the trailing edge of the allowed edit window
+   * Calculates the trailing edge of the allowed edit window (2 days ago)
    */
   get startDate(): string {
     const today = new Date();
-    const currentDay = today.getDay(); // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, etc.
     const allowedStartDate = new Date(today);
 
-    // 🔴 SPECIAL CONDITION: Monday (1)
-    if (currentDay === 1) {
-      allowedStartDate.setDate(today.getDate() - 4);
-    }
-    // 🔴 SPECIAL CONDITION: Tuesday (2)
-    else if (currentDay === 2) {
-      allowedStartDate.setDate(today.getDate() - 5);
-    }
-    // 🟢 DEFAULT: All other days (Wed, Thu, Fri, Sat, Sun)
-    else {
-      allowedStartDate.setDate(today.getDate() - 6);
-    }
+    // Go back 1 day to include yesterday (making a 2-day window including today)
+    allowedStartDate.setDate(today.getDate() - 1);
 
     return formatDateStr(allowedStartDate);
   },

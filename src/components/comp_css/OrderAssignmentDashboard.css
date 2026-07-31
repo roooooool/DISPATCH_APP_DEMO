@@ -18,6 +18,16 @@
     border: 1px solid var(--color-border);
     overflow: hidden;
     position: relative;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.orders-table-section.is-hidden {
+    flex: 0;
+    max-width: 0px;
+    opacity: 0;
+    border-width: 0px;
+    padding: 0px;
+    margin: 0px;
 }
 
 /* Right Section - 5 Parts Ratio */
@@ -29,6 +39,11 @@
     border-radius: var(--radius);
     border: 1px solid var(--color-border);
     overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.bu-cards-section.is-expanded {
+    flex: 1 1 100%;
 }
 
 /* Card Header Dashboard Matrix */
