@@ -10,6 +10,10 @@ import {
   ewulFetchAll,
   ISOtoInt,
   useAntiSpam,
+
+  // ewul_canFetch as canFetch,
+  ewul_setLoadingFor as setLoadingFor,
+
 } from '../utils/Ewul_GSDC_Utils';
 
 //itshover icons
@@ -22,8 +26,8 @@ import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMSer
 import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel'
 // import { LiveVehicleAssignmentLIstViewService } from '../generated/services/LiveVehicleAssignmentLIstViewService';
 // import { LiveDriverDispatchedList_AllService } from '../generated/services/LiveDriverDispatchedList_AllService';
-// import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
-// import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAdditionalOE_IDService';
+import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
+import { GenerateAdditionalOE_ID2Service } from '../generated/services/GenerateAdditionalOE_ID2Service';
 import { Vw_FCT_RouteNodeListService } from '../generated/services/Vw_FCT_RouteNodeListService';
 
 import {
@@ -32,8 +36,9 @@ import {
   TRIP_GROUPS,
   LIVE_DMS_TABLE_CONFIG,
   FETCH_LOADING_KEYS,
-  // cementTypeOptions,
+  cementTypeOptions,
   // frStatuses,
+  TRIP_PROGRESS,
 } from '../truth.config';
 
 const BUSINESS_UNITS = ['SBUO-1A', 'SBUO-1B'];
@@ -44,12 +49,22 @@ import DateRangePicker from '../components/ewul_DateRangePicker';
 import AutoDismissBanner from '../components/ewul_Banner';
 import OrderAssignmentDashboard from '../components/OrderAssignmentDashboard';
 // import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
-// import Modal from '../components/ewul_Modal';
+import Modal from '../components/ewul_Modal';
 import type { DropdownOption } from '@components/SearchableDropdown';
 
 import './css/OrderDistribution.css';
 import './css/OrderManagement.css';
 
+
+interface BulkTaskRow {
+  id: string;
+  type: 'Preload' | 'Mobilization';
+  oe: string;
+  businessUnit?: string; // Appended configuration tracker
+  source: string;
+  cementType: string;
+  isLoadingOE: boolean;
+}
 
 // The unified shape your OrderAssignmentDashboard expects
 interface NormalizedOrder {
@@ -176,6 +191,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
             displayMapping={tripDisplayConfig}
             onUpdateTripAssignedList={onOptimisticUpdate}
             onRefreshTrips={onRefreshTripsAssigned}
+            newTripsTableConfig={newTripsTableConfig}
           />
         </div>
 
@@ -290,6 +306,7 @@ const OrderDistribution: React.FC = () => {
   // Safety fallback helper function if it doesn't already exist globally in your project
   const canFetch = (key: string, cooldownMs: number): boolean => {
     // You can customize this to check sessionStorage or custom local state timestamps if desired
+    console.log(key, cooldownMs);
     return true;
   };
 
@@ -514,6 +531,215 @@ const OrderDistribution: React.FC = () => {
 
 
 
+  //MANUAL OE
+  // Track active modal mode
+  const [activeModalType, setActiveModalType] = useState<'Preload' | 'Mobilization' | null>(null);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState<boolean>(false);
+  const [bulkRows, setBulkRows] = useState<BulkTaskRow[]>([]);
+
+  // Form Fields
+  const [modalOE, setModalOE] = useState<string>('');
+  const [modalSource, setModalSource] = useState<string>('');
+  const [modalCementType, setModalCementType] = useState<string>('');
+  const [modalBatch, setModalBatch] = useState<number>(1);
+
+  // Helper to reset fields when modal closes
+  const resetModalForm = () => {
+    setActiveModalType(null);
+    setModalOE('');
+    setModalSource('');
+    setModalCementType('');
+    setModalBatch(1);
+    setActiveModalType(null);
+    setBulkRows([]);
+    setModalBatch(1);
+    setIsBulkModalOpen(false);
+  };
+
+  const handleModalConfirm = (bulkRows: any[]) => {
+    if (!modalOE || !modalSource) return;
+
+    console.log("Submitting payload:", {
+      actionType: activeModalType,
+      OE: modalOE,
+      Source: modalSource,
+      Type: modalCementType,
+      batch: modalBatch,
+      bulkRows: bulkRows
+    });
+
+    // Run your native allocation tracking configurations
+    handleAdditionalOEGeneration(activeModalType!);
+    console.log(previewTrip);
+
+
+    // Place your Power Apps sequence / service trigger logic here...
+
+    resetModalForm();
+  };
+
+  const [previewTrip, setPreviewTrip] = useState<any>({});
+  const [preview_preloadOE, setPreviewPreloadOE] = useState<any>({});
+  const [preview_mobilizationOE, setPreviewMobilizationOE] = useState<any>({});
+  const [previewTripTicketID, setPreviewTripTicketID] = useState<any>(null);
+  const generateTripTicketID = async (OE?: string | undefined) => {
+    setLoadingFor(FETCH_LOADING_KEYS.generatedTripID, true);
+
+    try {
+      const res = await GenerateNewTripTicketService.GenerateNewTripTicket({
+        OE: OE,
+      } as any);
+
+
+      const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+      console.log("Response from GenerateNewTripTicketService:", res);
+      if (table1 && table1.length > 0) {
+        setPreviewTripTicketID(table1[0].TripTicketID + ' (Preview)' || null);
+      } else {
+        setPreviewTripTicketID(null);
+      }
+
+
+    } catch (error) {
+      console.error("Error generating trip ticket ID:", error);
+      setPreviewTripTicketID(null);
+    } finally {
+      setLoadingFor(FETCH_LOADING_KEYS.generatedTripID, false);
+    }
+
+  };
+
+  const generateAdditionalOE = async (type: 'Preload' | 'Mobilization') => {
+    //if (selectedOrder && ['Preload', 'Mobilization'].some(t => t === selectedOrder._tripGroup) ) return;
+
+
+    setLoadingFor(FETCH_LOADING_KEYS.generateAddOE, true);
+
+    try {
+      const res = await GenerateAdditionalOE_ID2Service.GenerateAdditionalOE_ID2({
+        Type: type,
+      } as any);
+
+
+      const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+      if (!table1 || table1.length === 0) {
+        console.error("No data returned for new OE generation.");
+        return;
+      }
+
+      if (type === 'Preload') setPreviewPreloadOE(table1[0].NewID);
+      if (type === 'Mobilization') setPreviewMobilizationOE(table1[0].NewID);
+
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoadingFor(FETCH_LOADING_KEYS.generateAddOE, false);
+    }
+  };
+
+  const getAdditionalOEForType = (type: 'Preload' | 'Mobilization') => {
+    if (type === 'Preload') return preview_preloadOE;
+    if (type === 'Mobilization') return preview_mobilizationOE;
+    return '';
+  }
+
+  const handleAdditionalOEGeneration = (type: 'Preload' | 'Mobilization') => {
+    const record = {
+      OE: getAdditionalOEForType(type),
+      Source: "",
+      Destination: "",
+      cementType: "",
+      [enc("Buisness Unit")]: 'SBUO-1A',
+      TripProgress: TRIP_PROGRESS[0].Progress,
+      _tripGroup: type,
+      TripTicketID: previewTripTicketID || '',
+    };
+
+    setPreviewTrip(record);
+    // setSelectedOrder(record);
+
+
+    //refresh
+    generateTripTicketID();
+    generateAdditionalOE('Preload');
+    generateAdditionalOE('Mobilization');
+  };
+
+
+
+  useEffect(() => {
+    if (!activeModalType) return;
+
+    const initializeModalData = async () => {
+      // 1. Fire API call to generate the raw text sequence
+      await generateAdditionalOE(activeModalType);
+    };
+
+    initializeModalData();
+  }, [activeModalType]);
+
+  // Watch for the specific preview string changes to instantly populate the form state
+  useEffect(() => {
+    if (!activeModalType) return;
+
+    const currentGeneratedOE = getAdditionalOEForType(activeModalType);
+    if (currentGeneratedOE) {
+      setModalOE(currentGeneratedOE);
+
+      // Optional: Chain generateTripTicketID automatically here if you want to preview the ticket code ahead of time
+      generateTripTicketID(currentGeneratedOE);
+    }
+  }, [preview_preloadOE, preview_mobilizationOE, activeModalType]);
+
+
+  // Helper to generate a unique ID for a specific row and trigger its API fetch
+  const addNewRow = async (taskType: 'Preload' | 'Mobilization') => {
+    if (bulkRows.length >= 10) return; // Enforce the 10-batch upper limit safely
+
+    const rowId = Math.random().toString(36).substring(2, 9);
+
+    const newSkeleton: BulkTaskRow = {
+      id: rowId,
+      type: taskType,
+      oe: '',
+      source: '',
+      cementType: '',
+      isLoadingOE: true
+    };
+
+    setBulkRows(prev => [...prev, newSkeleton]);
+
+    try {
+      const res = await GenerateAdditionalOE_ID2Service.GenerateAdditionalOE_ID2({
+        Type: taskType, // Automatically uses correct type for endpoint routing
+      } as any);
+
+      const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+      const generatedId = (table1 && table1.length > 0) ? table1[0].NewID : 'ERR-GEN';
+
+      setBulkRows(prev => prev.map(row =>
+        row.id === rowId ? { ...row, oe: generatedId, isLoadingOE: false } : row
+      ));
+    } catch (error) {
+      console.error(`Failed to generate ${taskType} OE:`, error);
+      setBulkRows(prev => prev.map(row =>
+        row.id === rowId ? { ...row, oe: 'ERROR', isLoadingOE: false } : row
+      ));
+    }
+  };
+
+  const handleRemoveRow = (idToRemove: string) => {
+    setBulkRows(prev => prev.filter(row => row.id !== idToRemove));
+  };
+
+
+  useEffect(() => {
+    if (isBulkModalOpen && bulkRows.length === 0) {
+      addNewRow('Preload');
+    }
+  }, [isBulkModalOpen]);
+
+
 
   // DATA SOURCE 1: Fetching Unassigned Requests
   const fetchNewOrders = useCallback(async () => {
@@ -567,7 +793,67 @@ const OrderDistribution: React.FC = () => {
   }, [selectedRangeNewOrders]);
 
 
+  const fetchFCTRoutes = useCallback(async () => {
+    if (stationOptions.length > 0 && sourceOptions.length > 0 && destinationOptions.length > 0) {
+      if (!canFetch(FETCH_LOADING_KEYS.sourceList, 1000 * 60 * 60)) return;
+    }
 
+    try {
+      const result = await ewulFetchAll<any>(
+        Vw_FCT_RouteNodeListService,
+        { filter: '' },
+        2000,
+        'Route'
+      );
+
+      if (result && result.length > 0) {
+        const station_options: DropdownOption[] = result
+          .filter((item: any) => item.Type === 'Station')
+          .map((item: any) => ({
+            value: item.Route ?? '',
+            label: item.Route ?? '',
+            subtext: item.Type,
+            type: 'multi',
+            record: item
+          }));
+
+        const source_options: DropdownOption[] = result
+          .filter((item: any) => item.Type === 'Source')
+          .filter((item: any) => item.Route && item.Route.startsWith('CLZ'))
+          .map((item: any) => ({
+            value: item.Route ?? '',
+            label: item.Route ?? '',
+            subtext: item.U_DeliveryType ?? 'OTHERS',
+            type: 'multi',
+            record: item
+          }));
+
+        const destination_options: DropdownOption[] = result
+          .filter((item: any) => item.Type === 'Destination')
+          .filter((item: any) => item.Route && item.Route.startsWith('CLZ'))
+          .map((item: any) => ({
+            value: item.Route ?? '',
+            label: item.Route ?? '',
+            subtext: item.U_DeliveryType ?? 'OTHERS',
+            type: 'multi',
+            record: item
+          }));
+
+        setSourceOptions(source_options || []);
+        setDestinationOptions(destination_options || []);
+        setStationOptions(station_options || []);
+      } else {
+        throw new Error("No route data found");
+      }
+    } catch (err) {
+      console.error("Fetch Error during FCT Route fetching:", err);
+    }
+  }, [stationOptions.length, sourceOptions.length, destinationOptions.length]);
+
+  // --- AUTO-RUN TRIGGERS ON COMPONENT MOUNT ---
+  useEffect(() => {
+    fetchFCTRoutes();
+  }, [fetchFCTRoutes]);
 
 
 
@@ -777,8 +1063,10 @@ const OrderDistribution: React.FC = () => {
             </button>
           </div>
 
-          <button className="header-btn secondary preload" onClick={() => { null }} style={{ minWidth: 90 }}>Preload</button>
-          <button className="header-btn secondary mobilization" onClick={() => { null }} style={{ minWidth: 120 }}>Mobilization</button>
+
+          <button className="header-btn secondary mobilization" onClick={() => setIsBulkModalOpen(true)} style={{ minWidth: 180, textAlign: 'center' }}>
+            Create Manual Trip
+          </button>
 
 
 
@@ -986,6 +1274,202 @@ const OrderDistribution: React.FC = () => {
                 </div>
             </Modal>
         )} */}
+
+        {isBulkModalOpen && (
+          <Modal onClose={resetModalForm} width={'75%'} height={'auto'}> {/* Bumped width to 75% to comfortably fit the 4th input column */}
+            <div className="ordr-dist-modal-wrapper">
+
+              <div className="ordr-dist-modal-header-block">
+                <h3>Manual Trips Planner</h3>
+                <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#64748b' }}>
+                  Batch Allocation: {bulkRows.length} / 10
+                </span>
+              </div>
+
+              <div className="ordr-dist-table-container">
+                <table className="ordr-dist-bulk-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '28%' }}>OE Number & Task Type</th>
+                      <th style={{ width: '22%' }}>Business Unit</th>
+                      <th style={{ width: '22%' }}>Source Node</th>
+                      <th style={{ width: '20%' }}>Cement Type</th>
+                      <th style={{ width: '8%', textAlign: 'center' }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bulkRows.map((row) => {
+                      const isMobilization = row.type === 'Mobilization';
+
+                      return (
+                        <tr key={row.id}>
+
+                          {/* OE Column with Row Workflow Variant Badge Indicator */}
+                          <td>
+                            <div className="ordr-dist-gradient-input-container">
+                              <input
+                                type="text"
+                                value={row.isLoadingOE ? "Generating ID..." : row.oe}
+                                readOnly
+                                style={{ background: '#f8fafc', color: '#475569', fontWeight: 500 }}
+                              />
+                            </div>
+                            <span className={`ordr-dist-type-badge ${row.type === 'Preload' ? 'preload-badge' : 'mobilization-badge'}`}>
+                              {row.type}
+                            </span>
+                          </td>
+
+                          {/* Business Unit Selection Dropdown */}
+                          <td>
+                            <div className="ordr-dist-gradient-input-container">
+                              <select
+                                value={row.businessUnit || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setBulkRows(prev => prev.map(r => r.id === row.id ? { ...r, businessUnit: val } : r));
+                                }}
+                              >
+                                <option value="">-- Select BU --</option>
+                                {BUSINESS_UNITS.map((bu) => (
+                                  <option key={bu} value={bu}>
+                                    {bu}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </td>
+
+                          {/* Source Selection Dropdown */}
+                          <td>
+                            <div className={isMobilization ? "" : "ordr-dist-gradient-input-container"}>
+                              <select
+                                value={isMobilization ? "" : row.source}
+                                disabled={isMobilization}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setBulkRows(prev => prev.map(r => r.id === row.id ? { ...r, source: val } : r));
+                                }}
+                                style={isMobilization ? {
+                                  background: '#e2e8f0',
+                                  color: '#94a3b8',
+                                  borderColor: '#cbd5e1',
+                                  cursor: 'not-allowed'
+                                } : undefined}
+                              >
+                                <option value="">{isMobilization ? "Not Required" : "-- Select Source --"}</option>
+                                {!isMobilization && sourceOptions.map((opt) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </td>
+
+                          {/* Cement Type Selection Dropdown */}
+                          <td>
+                            <div className={isMobilization ? "" : "ordr-dist-gradient-input-container"}>
+                              <select
+                                value={isMobilization ? "" : row.cementType}
+                                disabled={isMobilization}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setBulkRows(prev => prev.map(r => r.id === row.id ? { ...r, cementType: val } : r));
+                                }}
+                                style={isMobilization ? {
+                                  background: '#e2e8f0',
+                                  color: '#94a3b8',
+                                  borderColor: '#cbd5e1',
+                                  cursor: 'not-allowed'
+                                } : undefined}
+                              >
+                                <option value="">{isMobilization ? "Not Required" : "-- Select Type --"}</option>
+                                {!isMobilization && cementTypeOptions.map((opt) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </td>
+
+                          {/* Delete row inline handler */}
+                          <td style={{ textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              className="ordr-dist-row-del-btn"
+                              onClick={() => handleRemoveRow(row.id)}
+                              disabled={bulkRows.length <= 1}
+                              style={{ opacity: bulkRows.length <= 1 ? 0.3 : 1 }}
+                            >
+                              ✕
+                            </button>
+                          </td>
+
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Dual Row Entry Append Control Bar */}
+              <div className="ordr-dist-action-bar-row">
+                <button
+                  type="button"
+                  className="ordr-dist-add-row-btn preload-btn"
+                  onClick={() => addNewRow('Preload')}
+                  disabled={bulkRows.length >= 10}
+                  style={{ opacity: bulkRows.length >= 10 ? 0.5 : 1 }}
+                >
+                  + Add Preload
+                </button>
+
+                <button
+                  type="button"
+                  className="ordr-dist-add-row-btn mobilization-btn"
+                  onClick={() => addNewRow('Mobilization')}
+                  disabled={bulkRows.length >= 10}
+                  style={{ opacity: bulkRows.length >= 10 ? 0.5 : 1 }}
+                >
+                  + Add Mobilization
+                </button>
+              </div>
+
+              {/* Footer System Dialog Submissions */}
+              <div className="ordr-dist-modal-footer-actions">
+                <button
+                  type="button"
+                  className="ordr-dist-modal-btn-cancel"
+                  onClick={resetModalForm}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  className="ordr-dist-modal-btn-confirm"
+                  onClick={() => {
+                    console.log("Processing structured unified batch submission:", bulkRows);
+                    resetModalForm();
+                  }}
+                  disabled={bulkRows.some(row => {
+                    // General Validation: OE must exist, loading must be done, and a Business Unit must be chosen
+                    if (!row.oe || row.isLoadingOE || !row.businessUnit) return true;
+
+                    // Contextual Validation: Preloads additionally require Source and Cement Type definitions
+                    if (row.type === 'Preload' && (!row.source || !row.cementType)) return true;
+
+                    return false;
+                  })}
+                >
+                  Confirm Trip Creation
+                </button>
+              </div>
+
+            </div>
+          </Modal>
+        )}
 
 
       </div>

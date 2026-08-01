@@ -1097,6 +1097,18 @@ export const dataSourcesInfo = {
           }
         ]
       },
+      "GenerateAdditionalOE_ID2": {
+        "path": "/dbo.GenerateAdditionalOE_ID2",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "Type",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
       "GenerateIRID": {
         "path": "/dbo.GenerateIRID",
         "method": "POST",

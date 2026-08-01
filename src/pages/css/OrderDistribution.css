@@ -641,3 +641,197 @@
   padding: 0;
   overflow: hidden;
 }
+
+
+
+.ordr-dist-modal-wrapper {
+  padding: 16px;
+  color: var(--color-navy, #092162);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.ordr-dist-modal-header-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.ordr-dist-modal-header-block h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.ordr-dist-batch-multiplier-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* Bulk Grid Table Style */
+.ordr-dist-table-container {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.ordr-dist-bulk-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.ordr-dist-bulk-table th {
+  background-color: #f8fafc;
+  color: var(--color-navy, #092162);
+  padding: 10px 12px;
+  font-weight: 600;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.ordr-dist-bulk-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #edf2f7;
+  vertical-align: middle;
+}
+
+/* Row Action Buttons */
+.ordr-dist-add-row-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px dashed var(--color-primary, #092162);
+  color: var(--color-primary, #092162);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  align-self: flex-start;
+  transition: all 0.2s ease;
+}
+
+.ordr-dist-add-row-btn:hover {
+  background: rgba(9, 33, 98, 0.05);
+}
+
+.ordr-dist-row-del-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+
+.ordr-dist-action-bar-row {
+  display: flex;
+  gap: 12px;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.ordr-dist-add-row-btn.preload-btn {
+  border: 1px dashed var(--color-primary, #092162);
+  color: var(--color-primary, #092162);
+}
+
+.ordr-dist-add-row-btn.mobilization-btn {
+  border: 1px dashed var(--color-accent, #ff0000);
+  color: var(--color-accent, #ff0000);
+}
+
+.ordr-dist-type-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.ordr-dist-type-badge.preload-badge {
+  background-color: rgba(9, 33, 98, 0.1);
+  color: var(--color-primary, #092162);
+}
+
+.ordr-dist-type-badge.mobilization-badge {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: var(--color-accent, #ff0000);
+}
+
+
+/* Footer Container */
+.ordr-dist-modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #edf2f7;
+  width: 100%;
+}
+
+/* Base button defaults for gentle rounded design */
+.ordr-dist-modal-footer-actions button {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  /* Gentle design rounded corners */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+/* Cancel Button - Sub/Accent Red Style */
+.ordr-dist-modal-btn-cancel {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #ef4444;
+  /* Red accent/sub token */
+}
+
+.ordr-dist-modal-btn-cancel:hover:not(:disabled) {
+  background-color: #fff5f5;
+  border-color: #fca5a5;
+}
+
+/* Confirm Button - Primary Navy Blue Style */
+.ordr-dist-modal-btn-confirm {
+  background-color: #092162;
+  /* Navy Blue primary */
+  border: 1px solid #092162;
+  color: #ffffff;
+  /* White text background contrast */
+  box-shadow: 0 2px 4px rgba(9, 33, 98, 0.15);
+}
+
+.ordr-dist-modal-btn-confirm:hover:not(:disabled) {
+  background-color: #061645;
+  border-color: #061645;
+  box-shadow: 0 4px 6px rgba(9, 33, 98, 0.25);
+}
+
+/* Global Disabled States */
+.ordr-dist-modal-footer-actions button:disabled {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  opacity: 0.7;
+}

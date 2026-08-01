@@ -658,7 +658,7 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
   table_config: [
     { col: "OE", alias: "OE #", sticky: true, cellStyle: () => { return { fontWeight: 'bold' } } },
     { col: "Trip Status", alias: "Status", filter: { type: "dropdown-multiple", options: statusOptions }, cellStyle: () => { return { fontWeight: 'bold' } } },
-    { col: "Loading Sequence", defaultSort: 'asc', orderSort: 2, alias: "LS", hidden: true },
+    { col: "Loading Sequence", defaultSort: 'asc', orderSort: 3, alias: "LS", hidden: true },
     { col: "OE Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("OE Date")]) },
     { col: "Buisness Unit", alias: "BU", filter: { type: "dropdown-multiple" } },
     { col: "Driver", cellStyle: () => { return { textAlign: 'left' } } },
@@ -740,7 +740,31 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
 
     { col: "ServedDate", alias: "Credited Date", calculate: (row: any) => formatDate(row[enc("Completed Date")], { mode: "date", alreadyLocal: true }) },
 
+    {
+      col: "_tp_count",
+      alias: "_tp_count",
+      useCalculatedSort: true,
+      calculate: (row: any) => {
+        const value = row["TripProgress"];
+        const sortMapping: Record<string, number> = {
+          'Planned': 0,
+          'Assigned': 0,
+          'Dispatched To Source': 2,
+          'Dispatched To Destination': 3,
+          'Done': 4,
+          'Verified': 5,
+        };
+
+        // Return the numerical weight (or a fallback weight if the value is missing)
+        return value in sortMapping ? sortMapping[value] : -1;
+      },
+      defaultSort: 'asc', orderSort: 2, hidden: true,
+    },
+
   ],
+
+
+
 
   rowStyle: (row: any) => ({
     backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-bg-blue) 70%, var(--color-bg) 100%)' : 'var(--color-bg)'
@@ -780,12 +804,32 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
         if (row.TripProgress === 'Done' && !!row.Verified_x0020_By && !!row.Documented_x0020_Date) font_color = { color: 'var(--progress-newtrip)' };
         return { textAlign: 'left', fontWeight: 'bold', ...font_color }
       },
-      calculate(row) {
+      calculate: (row: any) => {
         if (row.TripProgress === 'Done' && !!row.Verified_x0020_By && !!row.Documented_x0020_Date) return 'Verified'
         return row.TripProgress
       },
     },
-    { col: "Loading Sequence", alias: "LS", defaultSort: 'asc', orderSort: 2, hidden: true },
+    {
+      col: "_tp_count",
+      alias: "_tp_count",
+      useCalculatedSort: true,
+      calculate: (row: any) => {
+        const value = row["TripProgress"];
+        const sortMapping: Record<string, number> = {
+          'Planned': 0,
+          'Assigned': 1,
+          'Dispatched To Source': 2,
+          'Dispatched To Destination': 3,
+          'Done': 4,
+          'Verified': 5,
+        };
+
+        // Return the numerical weight (or a fallback weight if the value is missing)
+        return value in sortMapping ? sortMapping[value] : -1;
+      },
+      defaultSort: 'asc', orderSort: 2, hidden: true,
+    },
+    { col: "Loading Sequence", alias: "LS", defaultSort: 'asc', orderSort: 3, hidden: true },
 
     { col: "Driver", cellStyle: () => { return { textAlign: 'left' } } },
     { col: "Helper", cellStyle: () => { return { textAlign: 'left' } } },
@@ -883,26 +927,26 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
     groupByCol: "Source",
     counts: [
       {
-        label: "T",
-        countCondition: (row: any) => row["OE"] !== null,
-        color: 'blue',
+        label: "BAL",
+        countCondition: (row: any) => row["OE"] !== null && row["TripProgress"] === "Assigned",
+        color: 'yellow',
       },
       {
-        label: "A",
+        label: 'PLA',
+        countCondition: (row: any) => row["OE"] !== null && row["TripProgress"] === "Planned",
+        color: 'muted',
+      },
+      {
+        label: "ASS",
         countCondition: (row: any) => row["OE"] !== null && row["TripProgress"] !== "Assigned",
         color: 'green',
       },
+
       {
-        label: "B",
-        countCondition: (row: any) => row["OE"] !== null && row["TripProgress"] === "Assigned",
-        color: 'yellow',
-      }
-      ,
-      {
-        label: 'P',
-        countCondition: (row: any) => row["OE"] !== null && row["TripProgress"] === "Planned",
-        color: 'muted',
-      }
+        label: "TOT",
+        countCondition: (row: any) => row["OE"] !== null,
+        color: 'blue',
+      },
     ]
   }
 

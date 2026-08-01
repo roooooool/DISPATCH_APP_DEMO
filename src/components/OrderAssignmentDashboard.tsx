@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import TableView from './ewul_TableFlex';
+import TableView, { type ColumnConfig } from './ewul_TableFlex';
 import { NEW_TRIPS_UNFILTERED_TABLE_CONFIG } from '../truth.config'; // Adjust path if needed
 import './comp_css/OrderAssignmentDashboard.css';
 import { AlertTriangle, Ban, Sparkles, ThumbsUp } from 'lucide-react';
@@ -35,6 +35,7 @@ interface OrderAssignmentDashboardProps {
         updated: any[];
         removed: string[];
     }) => void;
+    newTripsTableConfig: ColumnConfig[];
 }
 
 interface DroppedItemsState {
@@ -67,6 +68,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     cardBodyMaxHeight = '350px',
     onRefreshTrips,
     onUpdateTripAssignedList,
+    newTripsTableConfig,
 }) => {
     console.log(tripAssignedLoading, newOrdersLoading);
 
@@ -587,7 +589,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                 <>
                     <TableView
                         data={filteredNewOrdersList}
-                        config={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config}
+                        config={newTripsTableConfig}
                         rowStyle={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.rowStyle}
                         searchCol={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.searchable_cols as any}
                         overflowX

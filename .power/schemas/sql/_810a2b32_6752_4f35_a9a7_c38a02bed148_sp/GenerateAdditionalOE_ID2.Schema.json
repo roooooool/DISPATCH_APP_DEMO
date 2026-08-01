@@ -1,0 +1,33 @@
+{
+  "name": "[dbo].[GenerateAdditionalOE_ID2]",
+  "title": "[dbo].[GenerateAdditionalOE_ID2]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "title": "Type",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}
