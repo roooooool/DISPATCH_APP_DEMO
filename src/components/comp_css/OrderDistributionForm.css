@@ -1,8 +1,9 @@
 /* Make the order-dist-body scrollable and footer sticky */
 .scrollable-body {
-  max-height: 60vh;
+  max-height: 100%;
   overflow-y: auto;
-  padding-bottom: 24px; /* Ensure content is not hidden behind sticky footer */
+  padding-bottom: 24px;
+  /* Ensure content is not hidden behind sticky footer */
 }
 
 .sticky-footer {
@@ -14,6 +15,7 @@
   padding-top: 12px;
   border-top: 1px solid var(--color-border);
 }
+
 /* Collapsible input group styling */
 /* Tighter input group and header spacing */
 .input-group-group {
@@ -24,9 +26,11 @@
   box-shadow: 0 2px 8px rgba(60, 60, 120, 0.04);
   transition: box-shadow 0.2s;
 }
+
 .input-group-group:hover {
   box-shadow: 0 4px 16px rgba(60, 60, 120, 0.08);
 }
+
 .group-header {
   display: flex;
   align-items: center;
@@ -44,13 +48,16 @@
   transition: background 0.2s;
   margin-bottom: 0;
 }
+
 .group-header:hover {
   background: color-mix(in srgb, var(--color-primary) 80%, black 20%);
   color: var(--color-primary-light);
 }
+
 .input-group-group .form-row {
   padding: 6px 14px 8px 14px;
 }
+
 .input-group-group .form-row:last-child {
   padding-bottom: 2px;
 }
@@ -79,7 +86,8 @@
 }
 
 .order-dist-header h3 {
-  color: var(--color-primary); /* Navy */
+  color: var(--color-primary);
+  /* Navy */
   margin: 0;
   font-weight: 800;
 }
@@ -87,11 +95,13 @@
 .order-dist-header p {
   color: var(--color-darkslategray);
   font-size: 13px;
-  margin: 4px 0 12px 0; /* Reduced bottom margin */
+  margin: 4px 0 12px 0;
+  /* Reduced bottom margin */
 }
 
 .order-dist-header {
-  padding: 8px 16px 0 16px; /* Reduced vertical padding */
+  padding: 8px 16px 0 16px;
+  /* Reduced vertical padding */
   z-index: 11;
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 8px 12px -5px rgba(0, 0, 0, 0.08);
@@ -121,23 +131,29 @@
 
 /* Input field styling when invalid */
 .gradient-input-wrapper.invalid-input {
-  border: 2px solid var(--color-accent-light); /* Your theme's red color */
-  box-shadow: 0 0 8px rgba(255, 82, 82, 0.4); /* Optional: add a red glow */
+  border: 2px solid var(--color-accent-light);
+  /* Your theme's red color */
+  box-shadow: 0 0 8px rgba(255, 82, 82, 0.4);
+  /* Optional: add a red glow */
 }
 
 /* Footer Buttons */
 .order-dist-footer {
   display: flex;
   justify-content: flex-end;
-  align-items: center; /* Align items vertically */
+  align-items: center;
+  /* Align items vertically */
   gap: 12px;
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -8px 12px -5px rgba(0, 0, 0, 0.08);
-  padding: 8px 16px; /* Reduced vertical padding */
+  padding: 8px 16px;
+  /* Reduced vertical padding */
+  margin-top: auto;
 }
 
 .footer-validation-message {
-  margin-right: auto; /* Pushes this element to the far left */
+  margin-right: auto;
+  /* Pushes this element to the far left */
   font-size: 0.8rem;
   font-weight: 600;
   transition: color 0.3s;
@@ -156,15 +172,22 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 8px 18px; /* Standardized padding */
-  font-size: 0.9rem; /* Standardized font size */
-  font-weight: 700; /* Standardized font weight */
-  border-radius: 8px; /* Standardized border radius */
-  border: none; /* Remove default borders */
+  padding: 8px 18px;
+  /* Standardized padding */
+  font-size: 0.9rem;
+  /* Standardized font size */
+  font-weight: 700;
+  /* Standardized font weight */
+  border-radius: 8px;
+  /* Standardized border radius */
+  border: none;
+  /* Remove default borders */
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
-  height: 40px; /* Explicit height */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  height: 40px;
+  /* Explicit height */
+  box-sizing: border-box;
+  /* Include padding and border in the element's total width and height */
 }
 
 .order-dist-footer button:hover {
@@ -172,7 +195,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.btn-proceed, .btn-cancel, .btn-save {
+.btn-proceed,
+.btn-cancel,
+.btn-save {
   font-size: var(--font-size-base) !important;
 }
 
@@ -205,7 +230,8 @@
 .btn-save {
   background: var(--color-green);
   color: var(--color-text-2);
-  position: relative; /* Needed for positioning the indicator */
+  position: relative;
+  /* Needed for positioning the indicator */
 }
 
 .btn-save:hover {
@@ -213,7 +239,8 @@
 }
 
 .btn-proceed {
-  background: var(--color-primary); /* Navy */
+  background: var(--color-primary);
+  /* Navy */
   color: var(--color-text-2);
 }
 
@@ -232,7 +259,8 @@
 
 .btn-proceed:disabled:hover,
 .btn-save:disabled:hover {
-  background: var(--color-muted); /* Keep the same disabled background on hover */
+  background: var(--color-muted);
+  /* Keep the same disabled background on hover */
   transform: none;
   box-shadow: none;
 }
@@ -240,70 +268,77 @@
 
 /* Optional: Soften the label color for disabled groups to match */
 .input-group:has(input:disabled) label {
-    color: var(--color-primary);
-    opacity: 0.7;
+  color: var(--color-primary);
+  opacity: 0.7;
 }
 
 
 .header-sub-row {
-    display: flex;
-    justify-content: space-between; /* Pushes controls to the far right */
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  /* Pushes controls to the far right */
+  align-items: center;
+  width: 100%;
 }
 
 .header-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .control-btn {
-    background: transparent;
-    border: none;
-    color: var(--color-primary); /* Navy blue */
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    opacity: 0.7;
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  /* Navy blue */
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
 
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
 }
 
 .control-btn svg {
   margin-left: 4px;
-  flex-shrink: 0; /* Prevents the icon from getting squashed */
+  flex-shrink: 0;
+  /* Prevents the icon from getting squashed */
 }
 
 .control-btn:hover {
-    opacity: 1;
-    background: rgba(58, 78, 252, 0.05); /* Very faint navy tint */
-    color: var(--color-accent-light); /* Red accent on hover */
+  opacity: 1;
+  background: rgba(58, 78, 252, 0.05);
+  /* Very faint navy tint */
+  color: var(--color-accent-light);
+  /* Red accent on hover */
 }
 
 .control-separator {
-    color: var(--color-muted);
-    font-size: 0.8rem;
-    user-select: none;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  user-select: none;
 }
 
 
 .group-content-wrapper.open {
-    grid-template-rows: 1fr;
-    overflow: visible; /* Allows dropdowns to pop out of the container */
+  grid-template-rows: 1fr;
+  overflow: visible;
+  /* Allows dropdowns to pop out of the container */
 }
 
 /* Container for the folding animation */
 .group-content-wrapper {
   display: grid;
-  grid-template-rows: 0fr; /* Start collapsed */
+  grid-template-rows: 0fr;
+  /* Start collapsed */
   transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
   overflow: hidden;
 
@@ -312,16 +347,18 @@
 }
 
 .group-content-wrapper.is-open {
-  grid-template-rows: 1fr; /* Expand to fit content exactly */
+  grid-template-rows: 1fr;
+  /* Expand to fit content exactly */
   background-color: transparent;
-  
+
 }
 
 /* Necessary inner div for grid-row animation stability */
 .group-content-inner {
   position: relative;
   min-height: 0;
-  padding: 0 5px 15px 5px; /* Bottom padding for separation */
+  padding: 0 5px 15px 5px;
+  /* Bottom padding for separation */
 
   opacity: 0;
   visibility: hidden;
@@ -341,7 +378,7 @@
   width: 14px;
   height: 14px;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--color-text-2); 
+  color: var(--color-text-2);
 }
 
 /* The Horizontal Bar (Always visible) */
@@ -366,28 +403,31 @@
   width: 2px;
   height: 100%;
   background-color: currentColor;
-  transform: translateX(-50%) scaleY(0); /* Hidden by default */
+  transform: translateX(-50%) scaleY(0);
+  /* Hidden by default */
   transition: transform 0.3s ease;
   border-radius: 2px;
 }
 
 /* Hover effect from your theme */
 .group-header:hover .toggle-icon {
-  color:  var(--color-primary-light);
+  color: var(--color-primary-light);
 }
 
 /* Collapsed State: Spin and Show Vertical Bar */
 .toggle-icon.is-collapsed {
-  transform: rotate(180deg); /* Full spin */
+  transform: rotate(180deg);
+  /* Full spin */
 }
 
 .toggle-icon.is-collapsed::after {
-  transform: translateX(-50%) scaleY(1); /* Becomes a Plus sign */
+  transform: translateX(-50%) scaleY(1);
+  /* Becomes a Plus sign */
 }
 
 /* Ensure SearchableDropdown isn't cut off when open */
 .group-content-wrapper.is-open {
-    overflow: visible;
+  overflow: visible;
 }
 
 
@@ -395,29 +435,32 @@
 
 
 .shadow-gentle {
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 
 
 .standard-select {
-    flex: 1;
-    height: 100%;
-    border: none; /* Hide default border to show the gradient wrapper */
-    border-radius: 7px; /* Slightly smaller than wrapper to fit perfectly */
-    padding: 8px 30px 8px 12px;
-    font-size: 13px;
-    outline: none;
-    cursor: pointer;
-    appearance: none; /* Required to use custom arrow */
-    width: 100%;
+  flex: 1;
+  height: 100%;
+  border: none;
+  /* Hide default border to show the gradient wrapper */
+  border-radius: 7px;
+  /* Slightly smaller than wrapper to fit perfectly */
+  padding: 8px 30px 8px 12px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  /* Required to use custom arrow */
+  width: 100%;
 
 }
 
 /* Ensure the white background persists on focus and hover */
-.standard-select:focus, 
+.standard-select:focus,
 .standard-select:active {
-    background-color: white;
+  background-color: white;
 }
 
 /* --- RESPONSIVE MEDIA QUERIES --- */
@@ -425,7 +468,8 @@
 /* For tablets and smaller desktops */
 @media (max-width: 1024px) {
   .form-row {
-    gap: 12px; /* Slightly reduce gap */
+    gap: 12px;
+    /* Slightly reduce gap */
   }
 
   .order-dist-header p {
@@ -442,26 +486,30 @@
 @media (max-width: 768px) {
   .order-dist-body {
     /* On mobile, allow body to take more height if needed */
-    max-height: none; 
+    max-height: none;
   }
 
   .form-row {
-    flex-direction: column; /* Stack inputs vertically */
-    gap: 0; /* Remove horizontal gap */
-    margin-bottom: 0; /* Remove bottom margin as it's handled by input-group */
+    flex-direction: column;
+    /* Stack inputs vertically */
+    gap: 0;
+    /* Remove horizontal gap */
+    margin-bottom: 0;
+    /* Remove bottom margin as it's handled by input-group */
   }
 
   .input-group {
-    margin-bottom: 20px; /* Ensure consistent spacing between stacked inputs */
+    margin-bottom: 20px;
+    /* Ensure consistent spacing between stacked inputs */
   }
 
   /* When stacked, we don't want the last input group in a "row" to have extra margin */
   .form-row .input-group:last-child {
     margin-bottom: 20px;
   }
-  
+
   /* Remove margin for the very last input group in a section */
-  .group-content-inner > .form-row:last-child .input-group:last-child {
+  .group-content-inner>.form-row:last-child .input-group:last-child {
     margin-bottom: 0;
   }
 
@@ -472,17 +520,21 @@
   }
 
   .order-dist-footer {
-    flex-direction: column; /* Stack buttons vertically */
-    align-items: stretch; /* Make buttons full-width */
+    flex-direction: column;
+    /* Stack buttons vertically */
+    align-items: stretch;
+    /* Make buttons full-width */
   }
 
   .order-dist-footer button {
     width: 100%;
-    justify-content: center; /* Center text and icon */
+    justify-content: center;
+    /* Center text and icon */
   }
 
   .btn-cancel {
-    order: 3; /* Move cancel button to the bottom */
+    order: 3;
+    /* Move cancel button to the bottom */
   }
 }
 
@@ -530,20 +582,23 @@
 .confirmation-modal {
   /*max-width: 420px; /* Smaller max-width */
   width: 90%;
-  padding: 24px !important; /* Override default padding */
+  padding: 24px !important;
+  /* Override default padding */
   border-radius: 12px !important;
 }
 
 .confirmation-content {
   display: flex;
-  align-items: flex-start; /* Align icon to the top of the text */
+  align-items: flex-start;
+  /* Align icon to the top of the text */
   gap: 16px;
 }
 
 .confirmation-icon {
   font-size: 2rem;
   line-height: 1.2;
-  margin-top: -4px; /* Fine-tune vertical alignment */
+  margin-top: -4px;
+  /* Fine-tune vertical alignment */
 }
 
 .confirmation-text h4 {
@@ -575,17 +630,20 @@
 }
 
 .btn-save {
-  position: relative; /* Needed for positioning the indicator */
+  position: relative;
+  /* Needed for positioning the indicator */
 }
 
 .unsaved-indicator {
   position: absolute;
-  top: -5px;    /* Tweak these values to fit your design */
-  right: -5px;   
+  top: -5px;
+  /* Tweak these values to fit your design */
+  right: -5px;
   background-color: red;
   color: white;
   border-radius: 50%;
-  width: 16px;  /* Slightly smaller for a cleaner look */
+  width: 16px;
+  /* Slightly smaller for a cleaner look */
   height: 16px;
   display: flex;
   justify-content: center;
@@ -621,10 +679,12 @@
     transform: scale(1);
     box-shadow: 0 0 3px rgba(255, 0, 0, 1);
   }
+
   50% {
     transform: scale(1.25);
     box-shadow: 0 0 10px rgba(255, 0, 0, 1);
   }
+
   100% {
     transform: scale(1);
     box-shadow: 0 0 3px rgba(255, 0, 0, 1);
@@ -653,10 +713,13 @@
 }
 
 .more-options-dropdown a {
-  position: relative; /* This creates the boundary for the absolute indicator */
-  display: flex;      /* Helps with alignment of icons and text */
+  position: relative;
+  /* This creates the boundary for the absolute indicator */
+  display: flex;
+  /* Helps with alignment of icons and text */
   align-items: center;
-  gap: 8px;           /* Space between icon and text */
+  gap: 8px;
+  /* Space between icon and text */
   text-decoration: none;
   padding: 8px 12px;
 }
@@ -683,7 +746,7 @@
   right: 0;
   background-color: var(--color-bg);
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
   border-radius: 4px;
 }
@@ -747,7 +810,8 @@
 
 .assignment-changes-preview {
   padding: 1rem;
-  color: #000080; /* Navy Primary */
+  color: #000080;
+  /* Navy Primary */
   font-family: inherit;
 }
 
@@ -798,8 +862,9 @@
   appearance: none;
   background-color: white;
   border: 2px solid transparent;
-  background-image: linear-gradient(white, white), 
-                    linear-gradient(to right, #000080, #cc0000); /* Navy to Red Gradient */
+  background-image: linear-gradient(white, white),
+    linear-gradient(to right, #000080, #cc0000);
+  /* Navy to Red Gradient */
   background-origin: border-box;
   background-clip: padding-box, border-box;
   border-radius: 6px;
@@ -820,7 +885,8 @@
   border-top: 1px solid #eee;
 }
 
-.assignment-changes-button-primary, .button-secondary {
+.assignment-changes-button-primary,
+.button-secondary {
   padding: 8px 20px;
   border-radius: 8px;
   font-weight: 600;
@@ -832,7 +898,7 @@
 .assignment-changes-button-primary {
   background: linear-gradient(135deg, #000080 0%, #cc0000 100%);
   color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .assignment-changes-button-primary:hover {
@@ -904,7 +970,8 @@
   color: var(--color-border-danger) !important;
 }
 
-.assignment-label-new, .assignment-label-old {
+.assignment-label-new,
+.assignment-label-old {
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.025em;
@@ -935,11 +1002,14 @@
 select.status-new {
   background-color: var(--color-primary);
   color: var(--color-text-2);
-  border: none; /* Optional: to better see the background color */
-  padding: 4px 8px; /* Adjust padding as needed */
+  border: none;
+  /* Optional: to better see the background color */
+  padding: 4px 8px;
+  /* Adjust padding as needed */
 }
 
-.status-change .status-old + span { /* The arrow */
+.status-change .status-old+span {
+  /* The arrow */
   color: var(--color-text-2);
   font-weight: bold;
 }
@@ -951,119 +1021,131 @@ select.status-new {
 .assignment-label-old strong {
   color: var(--color-text-danger);
 }
+
 .assignment-change-item {
-    display: flex !important;
-    align-items: center !important; /* Vertically center the text and icon */
-    gap: 8px;            /* Consistent spacing between elements */
-    list-style: none;    /* Optional: removes default bullet if needed */
-    white-space: nowrap; /* Prevents the row from breaking on small screens */
+  display: flex !important;
+  align-items: center !important;
+  /* Vertically center the text and icon */
+  gap: 8px;
+  /* Consistent spacing between elements */
+  list-style: none;
+  /* Optional: removes default bullet if needed */
+  white-space: nowrap;
+  /* Prevents the row from breaking on small screens */
 }
 
 .payload-table-wrapper {
-    margin-top: 10px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: hidden;
+  margin-top: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .payload-mini-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
 }
 
 .payload-mini-table th {
-    background: #f8fafc;
-    color: #000080;
-    text-align: left;
-    padding: 8px;
-    border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #000080;
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .payload-mini-table td {
-    padding: 8px;
-    border-bottom: 1px solid #f1f5f9;
+  padding: 8px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .payload-mini-table tr:last-child td {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 
 
 .served-date-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-bottom: 16px;
 }
 
 .served-date-label {
-    color: var(--color-primary); /* Navy Blue */
-    font-weight: 600;
-    font-size: var(--font-size-base);
-    white-space: nowrap;
+  color: var(--color-primary);
+  /* Navy Blue */
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  white-space: nowrap;
 }
 
 .served-date-input-inner-container {
-    background: var(--color-bg); /* White bg */
-    border-radius: 7px;
-    padding: 4px 8px;
-    display: flex;
-    align-items: center;
+  background: var(--color-bg);
+  /* White bg */
+  border-radius: 7px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
 }
 
 .served-date-custom-date-input {
-    border: none;
-    outline: none;
-    width: 100%;
-    color: var(--color-primary); /* Navy Text */
-    font-size: var(--font-size-base);
-    cursor: pointer;
-    background-color: transparent;
-      font-family: inherit;
-  }
+  border: none;
+  outline: none;
+  width: 100%;
+  color: var(--color-primary);
+  /* Navy Text */
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  background-color: transparent;
+  font-family: inherit;
+}
 
 /* The Gradient Border Imitation */
 .served-date-gradient-input-wrapper {
-    padding: 1px;
-    background: var(--input-gradient); /* Navy to Red Gradient */
-    border-radius: 8px; /* Gentle rounded corners */
-    width: 100%;
-    max-width: 180px;
+  padding: 1px;
+  background: var(--input-gradient);
+  /* Navy to Red Gradient */
+  border-radius: 8px;
+  /* Gentle rounded corners */
+  width: 100%;
+  max-width: 180px;
 }
 
 
 /* Imitates your gradient outline pattern */
 .share-gradient-wrapper {
-    background: linear-gradient(to right, #000080, #ff0000); /* Navy to Red */
-    padding: 2px;
-    border-radius: 8px; /* Gentle rounded corners */
+  background: linear-gradient(to right, #000080, #ff0000);
+  /* Navy to Red */
+  padding: 2px;
+  border-radius: 8px;
+  /* Gentle rounded corners */
 }
 
 .share-textarea {
-    width: 100%;
-    border: none;
-    background: white;
-    border-radius: 6px;
-    padding: 12px;
-    display: block;
-    outline: none;
-    font-family: inherit;
-    resize: none;
+  width: 100%;
+  border: none;
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  display: block;
+  outline: none;
+  font-family: inherit;
+  resize: none;
 }
 
 /* Matching your existing modal heading style */
 .personnel-validation-modal h4 {
-    color: var(--color-primary);
-    border-bottom: 2px solid var(--color-muted);
-    padding-bottom: 8px;
-    margin-bottom: 15px;
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-right: auto;
-    text-align: left;
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-muted);
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-right: auto;
+  text-align: left;
 }
 
 .personnel-validation-modal p {
@@ -1073,7 +1155,8 @@ select.status-new {
 
 .payload-label {
   font-weight: 600;
-  color: var(--color-primary, #1e3a8a); /* Navy blue primary */
+  color: var(--color-primary, #1e3a8a);
+  /* Navy blue primary */
   text-align: left;
 }
 
@@ -1088,7 +1171,8 @@ select.status-new {
   gap: 0px 10px;
   background: color-mix(in srgb, var(--color-bg, #ffffff), transparent 80%);
   padding: 8px;
-  border-radius: 8px; /* Matches the gentle design preference */
+  border-radius: 8px;
+  /* Matches the gentle design preference */
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -1096,107 +1180,110 @@ select.status-new {
 
 
 .odform-create-ir-modal-header {
-    /* Theme Colors: Navy Blue primary */
-    color: var(--color-primary); 
-    
-    /* Typography: Bold and clean */
-    font-size: 1.5rem;
-    font-weight: 700;
-    
-    /* Spacing & Layout */
-    padding-bottom: 12px;
-    margin-bottom: 20px;
-    text-align: left;
-    
-    /* Gentle Design: Subtle bottom border to separate from inputs */
-    border-bottom: 2px solid var(--color-muted); 
-    
-    /* Ensures it spans the width of the modal body */
-    width: 100%;
-    display: flex;
-    align-items: center;
+  /* Theme Colors: Navy Blue primary */
+  color: var(--color-primary);
+
+  /* Typography: Bold and clean */
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  /* Spacing & Layout */
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  text-align: left;
+
+  /* Gentle Design: Subtle bottom border to separate from inputs */
+  border-bottom: 2px solid var(--color-muted);
+
+  /* Ensures it spans the width of the modal body */
+  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .wew {
   display: flex;
   flex-direction: column;
-  height: 100%; /* Important: Tells the form to fill the Modal's inner height */
+  height: 100%;
+  /* Important: Tells the form to fill the Modal's inner height */
   width: 100%;
 }
 
 .incident-report-prompt-modal {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    justify-content: space-between;
-    padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  padding: 10px;
 }
 
 .incident-report-prompt-modal h3 {
-    color: var(--color-primary, #000080);
-    margin: 0 0 10px 0;
-    font-size: 1.2rem;
-    font-weight: 700;
-    text-align: center;
+  color: var(--color-primary, #000080);
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
 }
 
 .incident-report-prompt-modal p {
-    color: #475569;
-    font-size: 0.95rem;
-    line-height: 1.4;
-    margin: 0 0 20px 0;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin: 0 0 20px 0;
 }
 
 .incident-report-prompt-modal-actions {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 /* Clear Now - Accent/Action button */
 .btn-create-now {
-    background: var(--color-primary, #000080);
-    color: #ffffff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.2s ease;
+  background: var(--color-primary, #000080);
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .btn-create-now:hover {
-    background: #e53e3e; /* Transitions cleanly to your red accent on hover */
+  background: #e53e3e;
+  /* Transitions cleanly to your red accent on hover */
 }
 
 /* Later - Neutral secondary button */
 .btn-later {
-    background: #f1f5f9;
-    color: #64748b;
-    border: 1px solid #cbd5e1;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn-later:hover {
-    background: #e2e8f0;
-    color: #334155;
+  background: #e2e8f0;
+  color: #334155;
 }
 
 /* Gentle Microcopy styling */
 .modal-hint-text {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--color-green); /* Muted slate gray */
-    font-style: italic;
-    text-align: center;
-    margin-bottom: auto;
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-green);
+  /* Muted slate gray */
+  font-style: italic;
+  text-align: center;
+  margin-bottom: auto;
 }
 
 
@@ -1214,7 +1301,8 @@ select.status-new {
   height: 100%;
   min-height: 300px;
   background-color: #ffffff;
-  border-radius: 12px; /* Gentle rounded corners */
+  border-radius: 12px;
+  /* Gentle rounded corners */
   padding: 24px;
   box-sizing: border-box;
 }
@@ -1224,15 +1312,15 @@ select.status-new {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  
+
   /* Apply your theme's primary navy to red accent gradient directly */
   background: var(--bg-gradient-main, linear-gradient(135deg, #0b132b 0%, #3a4efc 25%, #ef4444 100%));
-  
+
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   /* Fire your rotating keyframe loop */
   animation: ir-spin 1s linear infinite;
 }
@@ -1241,21 +1329,23 @@ select.status-new {
 .ir-modal-loading-spinner::before {
   content: "";
   position: absolute;
-  
+
   /* Calculates the hollow core surface space offsets (5px rim sizes on all edges) */
   top: 5px;
   left: 5px;
   right: 5px;
   bottom: 5px;
-  
-  background-color: #ffffff; /* Must match your loading container's background color */
+
+  background-color: #ffffff;
+  /* Must match your loading container's background color */
   border-radius: 50%;
 }
 
 /* Informational message text block */
 .ir-modal-loading-text {
   margin-top: 16px;
-  color: #0b132b; /* Deep navy text */
+  color: #0b132b;
+  /* Deep navy text */
   font-weight: 600;
   font-family: sans-serif;
 }
@@ -1274,6 +1364,7 @@ select.status-new {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -1286,7 +1377,8 @@ select.status-new {
 .ir-confirm-prompt-box {
   background-color: #ffffff;
   padding: 28px;
-  border-radius: 12px; /* Gentle design rounded corners */
+  border-radius: 12px;
+  /* Gentle design rounded corners */
   width: 100%;
   box-sizing: border-box;
   text-align: center;
@@ -1294,7 +1386,8 @@ select.status-new {
 
 .ir-confirm-title {
   margin: 0 0 12px 0;
-  color: #0b132b; /* Theme Deep Navy blue */
+  color: #0b132b;
+  /* Theme Deep Navy blue */
   font-size: 18px;
   font-weight: 700;
   font-family: sans-serif;
@@ -1320,7 +1413,8 @@ select.status-new {
   padding: 10px 20px;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 6px; /* Smooth responsive curves */
+  border-radius: 6px;
+  /* Smooth responsive curves */
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   border: none;
@@ -1328,23 +1422,28 @@ select.status-new {
 
 /* "Continue Editing" Primary Action Button */
 .ir-confirm-btn.btn-keep {
-  background-color: #3a4efc; /* Theme primary 2nd blue */
+  background-color: #3a4efc;
+  /* Theme primary 2nd blue */
   color: #ffffff;
 }
+
 .ir-confirm-btn.btn-keep:hover {
   background-color: #2839d8;
 }
 
 /* "Discard Changes" Warning Button */
 .ir-confirm-btn.btn-discard {
-  background-color: var(--color-bg-success); /* Subdued lighter text background */
-  color: var(--color-border-success); /* Theme accent sub red */
+  background-color: var(--color-bg-success);
+  /* Subdued lighter text background */
+  color: var(--color-border-success);
+  /* Theme accent sub red */
   border: 1px solid var(--color-border-success);
 }
+
 .ir-confirm-btn.btn-discard:hover {
   background-color: var(--color-border-success);
   color: var(--color-text-2);
-  border-color:var(--color-border-success);
+  border-color: var(--color-border-success);
 }
 
 .ir-confirm-body-hint {
@@ -1370,10 +1469,10 @@ select.status-new {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  
+
   /* Blends directly into your theme's Navy blue + Red gradient identity profile */
   background: linear-gradient(135deg, #0b132b 0%, #3a4efc 40%, #ef4444 100%);
-  
+
   position: relative;
   animation: cell-spin 0.8s linear infinite;
 }
@@ -1386,7 +1485,8 @@ select.status-new {
   left: 2px;
   right: 2px;
   bottom: 2px;
-  background-color: #ffffff; /* Matches the fallback canvas of the table row background */
+  background-color: #ffffff;
+  /* Matches the fallback canvas of the table row background */
   border-radius: 50%;
 }
 
@@ -1395,6 +1495,7 @@ select.status-new {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -1444,7 +1545,8 @@ select.status-new {
 .gradient-input-wrapper {
   background: linear-gradient(135deg, var(--navy-blue, #001f3f), red);
   padding: 1px;
-  border-radius: 8px; /* Soft layout accent */
+  border-radius: 8px;
+  /* Soft layout accent */
   width: 100%;
   box-sizing: border-box;
 }
@@ -1457,7 +1559,8 @@ select.status-new {
   outline: none;
   padding: 10px;
   background-color: #ffffff;
-  border-radius: 7px; /* Marginally downscaled to keep outline concentric */
+  border-radius: 7px;
+  /* Marginally downscaled to keep outline concentric */
   resize: none;
   font-size: 0.9rem;
   font-family: inherit;
@@ -1528,7 +1631,8 @@ select.status-new {
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-family-secondary); /* Inter for scannable interface UI controls */
+  font-family: var(--font-family-secondary);
+  /* Inter for scannable interface UI controls */
 }
 
 /* Base control button properties */
@@ -1537,17 +1641,20 @@ select.status-new {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  border-radius: var(--radius); /* Uses your centralized 10px rounded corners template */
+  border-radius: var(--radius);
+  /* Uses your centralized 10px rounded corners template */
   font-size: var(--font-size-base);
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition); /* Matches theme 0.2s ease-in-out curve */
+  transition: var(--transition);
+  /* Matches theme 0.2s ease-in-out curve */
 }
 
 /* 1. EDIT BUTTON: Uses standard Deep Navy Primary */
 .btn-sequence-edit {
   background-color: var(--color-primary);
-  color: var(--color-text-2); /* Solid white text */
+  color: var(--color-text-2);
+  /* Solid white text */
   border: 1px solid var(--color-primary);
 }
 
@@ -1560,8 +1667,10 @@ select.status-new {
 /* 2. CONFIRM BUTTON: Positive confirmation action utilizing your Secondary Blue #3a4efc */
 /* 2. CONFIRM BUTTON: Common sense green confirmation utilizing your theme color */
 .btn-sequence-confirm {
-  background-color: var(--color-green); /* Professional Green #28a745 */
-  color: var(--color-text-2); /* Solid white text */
+  background-color: var(--color-green);
+  /* Professional Green #28a745 */
+  color: var(--color-text-2);
+  /* Solid white text */
   border: 1px solid var(--color-green);
   box-shadow: 0 2px 8px rgba(40, 167, 69, 0.25);
 }
@@ -1576,13 +1685,16 @@ select.status-new {
 
 /* 3. CANCEL BUTTON: Warns user using an outline of your Core Red Accent color */
 .btn-sequence-cancel {
-  background-color: var(--color-bg); /* Clean solid white background surface */
-  color: var(--color-accent); /* Accent Red #da1613 */
+  background-color: var(--color-bg);
+  /* Clean solid white background surface */
+  color: var(--color-accent);
+  /* Accent Red #da1613 */
   border: 1px solid var(--color-accent);
 }
 
 .btn-sequence-cancel:hover:not(:disabled) {
-  background-color: rgba(218, 22, 19, 0.06); /* Soft, lightweight tint of your core red */
+  background-color: rgba(218, 22, 19, 0.06);
+  /* Soft, lightweight tint of your core red */
   transform: translateY(-1px);
 }
 

@@ -36,7 +36,8 @@
         "gsdc_gitpat",
         "triptickets",
         "op_incidentreports",
-        "cifmetripsview_cem_unfiltered"
+        "cifmetripsview_cem_unfiltered",
+        "late_attendance_requests"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -109,6 +110,9 @@
             },
             "cifmetripsview_cem_unfiltered": {
               "tableName": "[dbo].[CIFMETripsView_CEM_unfiltered]"
+            },
+            "late_attendance_requests": {
+              "tableName": "[dbo].[Late_Attendance_Requests]"
             }
           }
         }

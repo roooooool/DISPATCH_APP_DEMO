@@ -1722,6 +1722,54 @@ export const NOT_ALLOWED_STAT_EDIT = [
 ];
 
 
+export const attendanceRequestStatus = [
+  { value: "Approved" },
+  { value: "Rejected" },
+  { value: "Pending" },
+];
+
+
+
+export const LATE_ATTENDANCE_REQUESTS: TableModuleConfig = {
+
+  table_config: [
+
+    /*{ col: "OrderedDate", alias: "Order Date", calculate: (row: any) => formatDate(row["OrderedDate"]) },*/
+    { col: "created_at", alias: "Created Date", portion: 1, calculate: (row: any) => formatDate(row[enc("created_at")]) },
+    { col: "OE", alias: "Trip", portion: 1 },
+    { col: "employee_name", alias: "Employee", portion: 1.5 },
+    { col: "cutoff_start", alias: "Window Start", portion: 1, calculate: (row: any) => formatDate(row[enc("cutoff_start")]) },
+    { col: "cutoff_end", alias: "Window End", portion: 1, calculate: (row: any) => formatDate(row[enc("cutoff_end")]) },
+    {
+      col: "request_status", alias: "Status", portion: 1,
+      filter: { type: "dropdown-multiple", options: attendanceRequestStatus },
+      cellStyle: (row: any) => {
+        let style: React.CSSProperties = { color: '#666' };
+        if (row["request_status"] === "Approved") style = { color: '#2ea107' };
+        if (row["request_status"] === "Rejected") style = { color: '#680000' };
+        if (row["request_status"] === "Pending") style = { color: '#eaa709' };
+
+        style.fontWeight = 'bold';
+        style.textTransform = 'uppercase';
+        style.letterSpacing = '0.5px';
+
+        return style;
+      }
+    },
+    { col: "remarks", alias: "Remarks", portion: 1 },
+
+
+
+  ],
+
+  rowStyle: (row: any) => ({
+    backgroundColor: row._idx % 2 === 0 ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)' : 'var(--color-bg-blue)'
+  }),
+
+  searchable_cols: ["OE", "employee_name"] as const
+
+}
+
 
 
 

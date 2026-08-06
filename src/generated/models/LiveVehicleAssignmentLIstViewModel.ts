@@ -52,6 +52,7 @@ export interface LiveVehicleAssignmentLIstView {
   isPaired: number;
   TractorIRID?: number;
   TrailerIRID?: number;
+  plannedTrip?: string;
   rn?: number;
   _TractorDivertJR?: string;
   _TrailerDivertJR?: string;

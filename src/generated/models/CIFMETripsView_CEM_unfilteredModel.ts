@@ -28,4 +28,5 @@ export interface CIFMETripsView_CEM_unfiltered {
   Approved_x0020_Date?: string;
   OE_x0020_Date?: string;
   OEDateAsInt?: number;
+  U_CIFMESO?: string;
 }

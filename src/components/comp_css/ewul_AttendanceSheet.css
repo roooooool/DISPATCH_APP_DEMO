@@ -1482,3 +1482,31 @@ td.today-column-cell {
     transform: rotate(360deg);
   }
 }
+
+/* --- Attendance Requests Modal --- */
+.attendance-requests-modal-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-bg, #ffffff);
+}
+
+.attendance-requests-modal-header {
+  color: var(--color-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.attendance-requests-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}

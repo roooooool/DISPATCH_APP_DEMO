@@ -114,6 +114,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
   assignedOrders,
   isLoadingNew,
   isLoadingAssigned,
+  // @ts-ignore 
   fetchNewOrders,
   fetchAssignedOrders,
   assignedTableRef,
@@ -556,6 +557,7 @@ const OrderDistribution: React.FC = () => {
     setIsBulkModalOpen(false);
   };
 
+  // @ts-ignore 
   const handleModalConfirm = (bulkRows: any[]) => {
     if (!modalOE || !modalSource) return;
 

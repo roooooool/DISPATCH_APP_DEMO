@@ -269,32 +269,28 @@ const OrderManagement: React.FC = () => {
 
     // 1. Data Fetching Logic
     const [CIFMEOrders, setCIFMEOrders] = useState<any[]>([]);
-    const fetchCIFMEOrders = useCallback(async () => {
-        if (!selectedRangeNewOrders) return;
-        if (!canFetch(FETCH_LOADING_KEYS.cifmeOrders)) return;
+    const fetchCIFMEOrders = useCallback(async (cifmeso: string) => {
+        // if (!selectedRangeNewOrders) return;
+        // if (!canFetch(FETCH_LOADING_KEYS.cifmeOrders)) return;
 
         console.log("Fetching new orders with date range:", selectedRangeNewOrders);
 
-        // Convert "2026-03-26" to 20260326 for your SQL OEDateAsInt column
-        const fromInt = ISOtoInt(selectedRangeNewOrders.from);
-        const toInt = ISOtoInt(selectedRangeNewOrders.to);
-
-        const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt}`;
+        const dateFilter = `U_CIFMESO eq '${cifmeso}'`;
 
         const options = {
             filter: dateFilter, // Pass the filter here!
             orderBy: ["OEDateAsInt desc"]
         }
 
-        setLoadingFor(FETCH_LOADING_KEYS.cifmeOrders, true);
+        // setLoadingFor(FETCH_LOADING_KEYS.cifmeOrders, true);
         try {
             const result = await ewulFetchAll<any>(
                 CIFMETripsView_CEM_unfilteredService,
                 options,
-                2000
+                500
             );
 
-            // console.log("Fetched new orders:", result);
+            console.log("Fetched cifme orders:", result);
 
 
             // 'result' is the actual Array now!
@@ -308,12 +304,12 @@ const OrderManagement: React.FC = () => {
             console.error("Fetch Error during batching:", err);
             setCIFMEOrders([]);
         } finally {
-            setLoadingFor(FETCH_LOADING_KEYS.cifmeOrders, false);
+            // setLoadingFor(FETCH_LOADING_KEYS.cifmeOrders, false);
             console.log("Fetch new orders completed with count:", CIFMEOrders.length);
         }
 
     }, [selectedRangeNewOrders]);
-    fetchCIFMEOrders(); // Call it once on component mount to load initial data
+    // fetchCIFMEOrders(); // Call it once on component mount to load initial data
 
 
     const handleGlobalRefresh = async () => {
@@ -1141,13 +1137,13 @@ const OrderManagement: React.FC = () => {
 
         return (
             <TableView
-                data={CIFMEOrders.filter(order => order.OE === 'CIF26-07-0162')}
+                data={CIFMEOrders}
                 config={changeConfig}
                 searchCol={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.searchable_cols as string[]}
                 storageKey={`order_page_sap_new_orders${user?.id}`}
                 isLoading={loadingList[FETCH_LOADING_KEYS.cifmeOrders] || false}
                 showRowCount={500}
-                onRefresh={(signal) => signal && fetchNewOrders()}
+                onRefresh={(signal) => signal && fetchCIFMEOrders(showCIFMETable || '')}
                 overflowY={true}
                 maxHeight={600}
                 colMinWidth={120}
@@ -1391,7 +1387,7 @@ const OrderManagement: React.FC = () => {
             onRequestChangeTrip={(tripData, action) => {
                 handleRequestChangeTrip(tripData, action); /*handle change trip*/
             }}
-            onCIFMESelect={(son) => setShowCIFMETable(son)}
+            onCIFMESelect={(son) => { fetchCIFMEOrders(son); setShowCIFMETable(son); }}
 
             truckOptions={truckOptions}
             trailerOptions={trailerOptions}
@@ -1626,7 +1622,8 @@ const OrderManagement: React.FC = () => {
         <PageTemplate
             title="Trip Dispatch"
             actions={actions}
-            overflowY={true}
+            // overflowY={true}
+            contentHeight='100%'
         >
             <div className="order-management-page">
                 {/* Sidebar Toggle Tab */}
@@ -2078,7 +2075,7 @@ const OrderManagement: React.FC = () => {
                         <Modal onClose={() => setShowCIFMETable(null)}>
                             <div className="new-order-modal-header">
                                 <div>
-                                    <h2>Select a CIFME order for {currentOrderData.OE}</h2>
+                                    <h2>Select a CIFME order for {currentOrderData.OE} | {showCIFMETable}</h2>
                                 </div>
 
                                 <DateRangePicker

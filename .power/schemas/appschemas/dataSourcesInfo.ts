@@ -884,6 +884,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "late_attendance_requests": {
+    "tableId": "Late_Attendance_Requests",
+    "version": "v2",
+    "primaryKey": "request_id",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "liveactionlogsview": {
     "tableId": "LiveActionLogsView",
     "version": "v2",

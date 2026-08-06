@@ -50,6 +50,7 @@ import { MapPin } from 'lucide-react';
 import IncidentReportForm, { type IncidentFormHandle, type CreateIR_EmployeeDetails } from '../components/CreateIncidentReportForm';
 import TripTimeline from './TripTimeline';
 import { type IR_ShortBags_Form_Model, IR_ShortBags_Form } from './IR_ShortBags_Form';
+import AutoDismissBanner from '../components/ewul_Banner';
 
 
 //Utils
@@ -925,6 +926,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       const conflicts: string[] = [];
 
+      // console.log("1")
+
       // Validation checks
       if (item.OE != null) {
         conflicts.push(`Is already assigned to trip: ${item.OE}.`);
@@ -933,10 +936,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         conflicts.push('Does not have a paired trailer.');
       }
       if (item.TractorJrNumber != null || item.JR_Truck_approve != null || item._TractorDivertJR != null || item._TractorRescueJR != null) {
-        conflicts.push('The tractor has an active job request (Repair, Divert, or Rescue).');
+        conflicts.push(`The tractor has an active job request [${item.TractorJrNumber}].`);
       }
       if (item.TrailerJrNumber != null || item.JR_Trailer_approve != null || item._TrailerDivertJR != null || item._TrailerRescueJR != null) {
-        conflicts.push('The paired trailer has an active job request (Repair, Divert, or Rescue).');
+        conflicts.push(`The paired trailer has an active job request [${item.TrailerJrNumber}].`);
       }
 
       if (item.TractorIRID != null) {
@@ -1126,6 +1129,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
 
+    const [bannerMessage, setBannerMessage] = useState<string | null>(null);
 
 
 
@@ -2639,8 +2643,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               istrading: formData._tripGroup === 'Trading',
               ishauling: formData._tripGroup === 'Hauling',
               isothers: !['Trading', 'Hauling'].includes(formData._tripGroup || ''),
-              driver_loader: formData.Driver_x0020_Loader || null,
-              helper_loader: formData.Helper_x0020_Loader || null,
+              driver_loader: formData.Driver_x0020_Loader?.trim() || null,
+              helper_loader: formData.Helper_x0020_Loader?.trim() || null,
               dispsrc_date: formData.Dispatched_x0020_to_x0020_Source ? new Date(formData.Dispatched_x0020_to_x0020_Source.slice(0, -1)).toISOString().split('T')[0] : '',
               dispsrc_time: formData.Dispatched_x0020_to_x0020_Source ? new Date(formData.Dispatched_x0020_to_x0020_Source.slice(0, -1)).toLocaleTimeString() : '',
               dispsrc_arrival_date: formData.Source_x0020_in ? new Date(formData.Source_x0020_in.slice(0, -1)).toISOString().split('T')[0] : null,
@@ -2648,8 +2652,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               dispsrc_departure_date: formData.Source_x0020_out ? new Date(formData.Source_x0020_out.slice(0, -1)).toISOString().split('T')[0] : null,
               dispsrc_departure_time: formData.Source_x0020_out ? new Date(formData.Source_x0020_out.slice(0, -1)).toLocaleTimeString() : null,
               qty_withdrawn: actualWithdrawn ? actualWithdrawn : withdrawn,
-              driver_unloader: formData.Driver_x0020_Unloader || null,
-              helper_unloader: formData.Helper_x0020_Unloader || null,
+              driver_unloader: formData.Driver_x0020_Unloader?.trim() || null,
+              helper_unloader: formData.Helper_x0020_Unloader?.trim() || null,
               dispdst_date: formData.Dispatched_x0020_to_x0020_Destination ? new Date(formData.Dispatched_x0020_to_x0020_Destination.slice(0, -1)).toISOString().split('T')[0] : null,
               dispdst_time: formData.Dispatched_x0020_to_x0020_Destination ? new Date(formData.Dispatched_x0020_to_x0020_Destination.slice(0, -1)).toLocaleTimeString() : null,
               dispdst_arrival_date: formData.Destination_x0020_in ? new Date(formData.Destination_x0020_in.slice(0, -1)).toISOString().split('T')[0] : null,
@@ -3013,7 +3017,26 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <div className="input-group">
                       <label>CIFME</label>
                       <div className="gradient-input-wrapper">
-                        <input type="text" value={formData.CIFME_OE || ''} /*disabled*/ placeholder="Select CIF trip" onClick={() => { if (onCIFMESelect) { onCIFMESelect(formData.SO_x0023_?.toString() || '') } }} />
+                        <input type="text" value={formData.CIFME_OE || ''} /*disabled*/ placeholder="Select CIF trip"
+                          onClick={
+                            () => {
+                              if (!onCIFMESelect) return;
+
+                              if (!formData.SO_x0023_ || formData.SO_x0023_ == 'N/A') {
+                                setBannerMessage('Please input SO first.');
+                                return;
+                              }
+
+                              if (!/^\d+$/.test(String(formData.SO_x0023_).trim())) {
+                                setBannerMessage('SO number must be a valid integer.');
+                                return;
+                              }
+
+                              onCIFMESelect(formData.SO_x0023_?.toString() || '')
+
+                            }
+                          }
+                        />
                       </div>
                     </div>
                     <div className="input-group">
@@ -4284,6 +4307,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 </button>
               </div>
             </Modal>
+          )}
+
+          {bannerMessage && (
+            <AutoDismissBanner
+              message={bannerMessage}
+              onClose={() => setBannerMessage(null)}
+            />
           )}
 
 
