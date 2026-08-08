@@ -1,385 +1,448 @@
 .attendance-container {
-    width: 100%;
-    height: 100%;
-    background: white;
-    border-radius: 12px; /* Gentle design */
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 12px;
+  /* Gentle design */
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .attendance-scroll-area {
-    overflow: auto;
-    height: 100%;
-    width: 100%;
+  overflow: auto;
+  height: 100%;
+  width: 100%;
 }
 
 .attendance-table {
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
 }
 
 /* STICKY HEADER (Top) */
 .sticky-header {
-    position: sticky !important;
-    top: 0;
-    z-index: 10;
-    background: var(--color-primary); /* Navy Blue Primary */
-    color: var(--color-bg);
-    padding: 12px 15px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-align: center;
-    border-bottom: 2px solid var(--color-accent); /* Red Accent line */
-    white-space: nowrap;
+  position: sticky !important;
+  top: 0;
+  z-index: 10;
+  background: var(--color-primary);
+  /* Navy Blue Primary */
+  color: var(--color-bg);
+  padding: 12px 15px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 2px solid var(--color-accent);
+  /* Red Accent line */
+  white-space: nowrap;
 }
 
 /* STICKY COLUMN (Left) */
 .sticky-col {
-    position: sticky !important;
-    left: 0;
-    z-index: 5;
-    background: white;
-    border-right: 2px solid #e2e8f0;
-    min-width: 280px;
+  position: sticky !important;
+  left: 0;
+  z-index: 5;
+  background: white;
+  border-right: 2px solid #e2e8f0;
+  min-width: 280px;
 }
 
 /* INTERSECTION (Name cell at top-left) */
 .sticky-col.sticky-header {
-    z-index: 20; /* Higher than both */
-    background: var(--color-primary);
+  z-index: 20;
+  /* Higher than both */
+  background: var(--color-primary);
 }
 
 /* ROWS & CELLS */
 .emp-name {
-    font-weight: 700;
-    color: #1e293b;
-    padding: 10px 20px;
-    
-    /* ADD THIS LINE BELOW */
-    border-bottom: 1px solid #e2e8f0; 
-    
-    /* Ensure the sticky column width is respected */
-    min-width: 250px; 
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    z-index: 1 !important; 
+  font-weight: 700;
+  color: #1e293b;
+  padding: 10px 20px;
+
+  /* ADD THIS LINE BELOW */
+  border-bottom: 1px solid #e2e8f0;
+
+  /* Ensure the sticky column width is respected */
+  min-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 1 !important;
 }
 
 .attendance-table tr:hover .emp-name {
-    color: #ff0000; /* Red hover for focus */
+  color: #ff0000;
+  /* Red hover for focus */
 }
 
 /* 1. Target the background of the even rows */
 .attendance-table tbody tr:nth-child(even) {
-    background-color: #f8fafc; /* Very light grayish-blue */
+  background-color: #f8fafc;
+  /* Very light grayish-blue */
 }
 
 /* 2. CRITICAL: Target the sticky name cell specifically for even rows */
 /* Without this, the name column will stay white while the rest of the row is colored */
 .attendance-table tbody tr:nth-child(even) .emp-name {
-    background-color: #f8fafc;
+  background-color: #f8fafc;
 }
 
 /* 3. Optional: Subtle contrast for the "N/A" (empty) status cells on even rows */
 .attendance-table tbody tr:nth-child(even) .n-a .status-inner {
-    background-color: #f1f5f9; 
+  background-color: #f1f5f9;
 }
 
 /* 4. Hover Effect - Keep it consistent */
 .attendance-table tbody tr:hover,
 .attendance-table tbody tr:hover .emp-name {
-    background-color: #f0f4ff !important; /* GSDC Light Navy Tint */
+  background-color: #f0f4ff !important;
+  /* GSDC Light Navy Tint */
 }
 
 .status-cell {
-    /*padding: 2px !important; /* Tight padding for stacked statuses */
-    vertical-align: top;
-    min-width: 100px; /* Adjust based on your column width */
+  /*padding: 2px !important; /* Tight padding for stacked statuses */
+  vertical-align: top;
+  min-width: 100px;
+  /* Adjust based on your column width */
 
-    transition: background-color 0.5s ease;
+  transition: background-color 0.5s ease;
 }
 
 .status-stack {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    /*gap: 1px; /* Creates a thin separator line between multiple statuses */
-    justify-content: center; /* Centers a single status vertically */
-    grid-template-rows: 0fr;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  /*gap: 1px; /* Creates a thin separator line between multiple statuses */
+  justify-content: center;
+  /* Centers a single status vertically */
+  grid-template-rows: 0fr;
 }
 
-.status-stack.expanded, 
-.status-stack:not(.collapsed) { 
-    grid-template-rows: 1fr; 
+.status-stack.expanded,
+.status-stack:not(.collapsed) {
+  grid-template-rows: 1fr;
 }
 
 
 tr {
-    transition: height 0.5s ease;
+  transition: height 0.5s ease;
 }
 
 /* GSDC STATUS COLORS - Refined Specificity */
 
 /* 1. Base style for all status indicators */
 .status-inner {
-    display: flex;           /* 1. Enable Flexbox */
-    align-items: center;     /* 2. Center vertically */
-    justify-content: center; /* 3. Center horizontally */
-    
-    height: 100%;
-    width: 100%;
-    padding: 4px 8px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    transition: all 0.2s ease;
-    border: 1px solid white;
-    box-sizing: border-box;  /* 4. Ensures padding/border don't grow the 100% height */
+  display: flex;
+  /* 1. Enable Flexbox */
+  align-items: center;
+  /* 2. Center vertically */
+  justify-content: center;
+  /* 3. Center horizontally */
+
+  height: 100%;
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  border: 1px solid white;
+  box-sizing: border-box;
+  /* 4. Ensures padding/border don't grow the 100% height */
 }
 
 .status-inner-wrapper {
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 2. Specific Status Mappings (No spaces between classes) */
-.status-inner.served { 
-    background: var(--color-primary); /* GSDC Navy */
-    color: white; 
+.status-inner.served {
+  background: var(--color-primary);
+  /* GSDC Navy */
+  color: white;
+
 }
 
-.status-inner.on-trip { 
-    background: #3a4efc; /* Your primary 2nd blue */
-    color: white;
+
+.status-inner.on-trip {
+  background: #3a4efc;
+  /* Your primary 2nd blue */
+  color: white;
 }
 
-.status-inner.rest-day { 
-    background: #f1f5f9; 
-    color: #94a3b8;
-    border: 1px solid #e2e8f0;
+.status-inner.rest-day {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
 }
 
-.status-inner.present { 
-    background: #10b981; /* Green */
-    color: white; 
+.status-inner.present {
+  background: #10b981;
+  /* Green */
+  color: white;
 }
 
-.status-inner.absent { 
-    background: var(--color-accent); /* Red Accent */
-    color: white; 
+.status-inner.absent {
+  background: var(--color-accent);
+  /* Red Accent */
+  color: white;
 }
 
 .status-inner.in-transit {
-    background: #f59e0b; /* Amber/Orange */
-    color: white;
+  background: #f59e0b;
+  /* Amber/Orange */
+  color: white;
 }
 
 .status-inner.tukod {
-    background: #f50b0b; /* Amber/Orange */
-    color: rgb(255, 255, 255);
+  background: #f50b0b;
+  /* Amber/Orange */
+  color: rgb(255, 255, 255);
 }
 
 .status-inner.leave {
-    background: #6366f1; /* Indigo */
-    color: white;
+  background: #6366f1;
+  /* Indigo */
+  color: white;
 }
 
 .status-inner.awol {
-    background: #1f1f1f; /* Amber/Orange */
-    color: rgb(255, 255, 255);
+  background: #1f1f1f;
+  /* Amber/Orange */
+  color: rgb(255, 255, 255);
 }
 
 /* Fallback for N/A or empty slots */
 .status-inner.n-a {
-    background: transparent;
-    color: #cbd5e1;
-    border: 1px dashed #e2e8f0;
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px dashed #e2e8f0;
 }
 
 /* Hover effect to highlight the current day/row intersection */
 .status-cell:hover .status-inner {
-    filter: brightness(1.1);
-    cursor: default;
+  filter: brightness(1.1);
+  cursor: default;
 }
 
 /* Header Date Formatting */
 .header-date-box {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
 }
 
 .day-name {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    opacity: 0.8;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
 .day-num {
-    font-size: 1rem;
+  font-size: 1rem;
 }
 
 /* Row Hovering (Navy tint) */
 .attendance-table tbody tr:hover td {
-    background-color: #f0f4ff; /* Very light navy */
+  background-color: #f0f4ff;
+  /* Very light navy */
 }
 
 /* Ensure the sticky name column doesn't lose its color on row hover */
 .attendance-table tbody tr:hover .sticky-col {
-    background-color: #f0f4ff;
-    color: #ff0000; /* GSDC Red on hover */
+  background-color: #f0f4ff;
+  color: #ff0000;
+  /* GSDC Red on hover */
 }
 
 .attendance-table td.status-cell {
-    padding: 0 !important; /* Remove cell padding */
-    vertical-align: stretch; /* Ensure content can fill height */
-    height: 1px; /* Hack to make children 100% height in some browsers */
+  padding: 0 !important;
+  /* Remove cell padding */
+  vertical-align: stretch;
+  /* Ensure content can fill height */
+  height: 1px;
+  /* Hack to make children 100% height in some browsers */
 }
 
 /* Loader Styling */
 .attendance-loader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 200px;
-    font-weight: 700;
-    color: #000080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  font-weight: 700;
+  color: #000080;
 }
 
-.status-inner.wtu { background: #64748b; color: white; } 
-.status-inner.served { background: #000080; color: white; }
-.status-inner.on-trip { background: #3a4efc; color: white; }
-.status-inner.present { background: #10b981; color: white; }
-.status-inner.absent { background: #ef4444; color: white; }
+.status-inner.wtu {
+  background: #64748b;
+  color: white;
+}
+
+.status-inner.served {
+  background: #000080;
+  color: white;
+}
+
+.status-inner.on-trip {
+  background: #3a4efc;
+  color: white;
+}
+
+.status-inner.present {
+  background: #10b981;
+  color: white;
+}
+
+.status-inner.absent {
+  background: #ef4444;
+  color: white;
+}
 
 /* Handle the N/A state */
 
 
 .attendance-control-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    background: white;
-    border-bottom: 2px solid #f1f5f9;
-    height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: white;
+  border-bottom: 2px solid #f1f5f9;
+  height: 60px;
 }
+
 .nav-group {
-    display: flex;
-    gap: 4px;
+  display: flex;
+  gap: 4px;
 }
 
 .nav-group button {
-    background: white;
-    border: 1px solid #e2e8f0; /* Soft gray border */
-    color: var(--color-primary); /* GSDC Navy Blue */
-    width: 36px;
-    height: 36px;
-    border-radius: 8px; /* Gentle rounded corners */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    outline: none;
-    padding: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  /* Soft gray border */
+  color: var(--color-primary);
+  /* GSDC Navy Blue */
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  /* Gentle rounded corners */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  padding: 0;
 }
 
 .nav-group button:hover {
-    color: var(--color-accent); /* GSDC Red */
-    border-color: var(--color-accent);
-    background-color: #fff5f5; /* Very light red tint */
-    transform: translateY(-1px); /* Subtle lift */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  color: var(--color-accent);
+  /* GSDC Red */
+  border-color: var(--color-accent);
+  background-color: #fff5f5;
+  /* Very light red tint */
+  transform: translateY(-1px);
+  /* Subtle lift */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .nav-group button:active {
-    transform: translateY(0px);
-    background-color: #f1f5f9;
+  transform: translateY(0px);
+  background-color: #f1f5f9;
 }
 
 .nav-group button.gradient-variant {
-    position: relative;
-    background: linear-gradient(white, white) padding-box,
-                var(--bg-gradient-main-eq);
-    border: 1px solid transparent;
+  position: relative;
+  background: linear-gradient(white, white) padding-box,
+    var(--bg-gradient-main-eq);
+  border: 1px solid transparent;
 }
 
 .nav-group button.gradient-variant:hover {
-    background: linear-gradient(#fff5f5, #fff5f5) padding-box,
-                var(--bg-gradient-main-eq);
+  background: linear-gradient(#fff5f5, #fff5f5) padding-box,
+    var(--bg-gradient-main-eq);
 }
 
 /* Disabled State (if you reach min/max dates) */
 .nav-group button:disabled {
-    cursor: not-allowed;
-    opacity: 0.3;
-    color: #94a3b8;
-    border-color: #e2e8f0;
+  cursor: not-allowed;
+  opacity: 0.3;
+  color: #94a3b8;
+  border-color: #e2e8f0;
 }
 
 /* Icon Sizing inside buttons */
 .nav-group button svg {
-    display: block;
-    transition: transform 0.2s ease;
+  display: block;
+  transition: transform 0.2s ease;
 }
 
 .nav-group button:hover svg {
-    transform: scale(1.1); /* Slight pop on hover */
+  transform: scale(1.1);
+  /* Slight pop on hover */
 }
 
 .date-display {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    color: var(--color-primary);
-    cursor: pointer;
-    padding: 6px 16px;
-    border-radius: 20px;
-    background: #f8fafc;
-    border: 1px solid transparent;
-    transition: all 0.2s;
-    position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: #f8fafc;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  position: relative;
 }
 
 .date-display:hover {
-    border-color: var(--color-accent); /* Red Accent on hover */
-    background: white;
+  border-color: var(--color-accent);
+  /* Red Accent on hover */
+  background: white;
 }
 
 .cal-icon {
-    color: var(--color-accent); /* Red accent for the calendar icon */
+  color: var(--color-accent);
+  /* Red accent for the calendar icon */
 }
 
 /* Hidden input that gets triggered by clicking the text */
 .hidden-date-picker {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    pointer-events: none;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }
 
 .attendance-loader {
-    padding: 40px;
-    text-align: center;
-    color: #64748b;
-    font-weight: 600;
+  padding: 40px;
+  text-align: center;
+  color: #64748b;
+  font-weight: 600;
 }
 
 /* Skeleton Shimmer Animation */
 @keyframes shimmer {
-  0% { background-position: -468px 0; }
-  100% { background-position: 468px 0; }
+  0% {
+    background-position: -468px 0;
+  }
+
+  100% {
+    background-position: 468px 0;
+  }
 }
 
-.skeleton-text, .skeleton-box {
+.skeleton-text,
+.skeleton-box {
   background: #f6f7f8;
   background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
   background-repeat: no-repeat;
@@ -404,349 +467,384 @@ tr {
 }
 
 .attendance-search-wrapper {
-    width: 300px;
+  width: 300px;
 }
 
 /* Gradient Outline (Imitated by overlapping boxes) */
 .attendance-search-wrapper .gsdc-gradient-outline-wrapper {
-    padding: 1px;
-    background: var(--bg-gradient-main-eq);
-    border-radius: 8px; /* Matching your "gentle" rounded corner preference */
+  padding: 1px;
+  background: var(--bg-gradient-main-eq);
+  border-radius: 8px;
+  /* Matching your "gentle" rounded corner preference */
 }
 
 .search-input-container {
-    background: white;
-    border-radius: 7px;
-    display: flex;
-    align-items: center;
-    padding: 2px 10px;
-    width: 100%;
+  background: white;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  padding: 2px 10px;
+  width: 100%;
 }
 
 .search-input-container input {
-    border: none;
-    outline: none;
-    padding: 6px;
-    width: 100%;
-    font-size: 0.85rem;
-    color: var(--color-primary);
+  border: none;
+  outline: none;
+  padding: 6px;
+  width: 100%;
+  font-size: 0.85rem;
+  color: var(--color-primary);
 }
 
 .search-icon {
-    color: #94a3b8;
-    flex-shrink: 0;
+  color: #94a3b8;
+  flex-shrink: 0;
 }
 
 /* Focus effect */
 .search-input-container:focus-within {
-    background: #f8fafc;
+  background: #f8fafc;
 }
 
 .search-input-container:focus-within .search-icon {
-    color: #3a4efc; /* Your 2nd primary blue */
+  color: #3a4efc;
+  /* Your 2nd primary blue */
 }
 
 .header-section {
-    display: flex;
-    align-items: center;
-    flex: 1; /* Each takes equal space */
+  display: flex;
+  align-items: center;
+  flex: 1;
+  /* Each takes equal space */
 }
 
 .header-section.left {
-    justify-content: flex-start;
+  justify-content: flex-start;
 }
 
 .header-section.center {
-    justify-content: center;
-    gap: 15px; /* Gap between nav buttons and date display */
-    flex: 0 0 auto; /* Center doesn't grow, stays compact */
-    min-width: 400px;
+  justify-content: center;
+  gap: 15px;
+  /* Gap between nav buttons and date display */
+  flex: 0 0 auto;
+  /* Center doesn't grow, stays compact */
+  min-width: 400px;
 }
 
 .header-section.right {
-    justify-content: flex-end;
-    padding-right: 50px;
-    gap: 5px;
+  justify-content: flex-end;
+  padding-right: 50px;
+  gap: 5px;
 }
 
 .attendance-filters-group {
-    display: flex;
-    align-items: center;
-    gap: 12px; /* Space between search and dropdown */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Space between search and dropdown */
 }
 
 /* Dropdown specific styling */
 .attendance-dropdown-wrapper {
-    width: 140px;
+  width: 140px;
 }
 
 .attendance-dropdown-wrapper .gsdc-gradient-outline-wrapper {
-    padding: 1.5px;
-    border-radius: 8px;
-    background: rgb(204, 198, 250);
+  padding: 1.5px;
+  border-radius: 8px;
+  background: rgb(204, 198, 250);
 }
 
 .gsdc-filter-select {
-    width: 100%;
-    border: none;
-    background: white;
-    border-radius: 7px;
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-primary);
-    outline: none;
-    cursor: pointer;
-    appearance: none;
-    /* Custom chevron for the dropdown */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23000080' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
+  width: 100%;
+  border: none;
+  background: white;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  /* Custom chevron for the dropdown */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23000080' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
 }
 
 .gsdc-filter-select:hover {
-    background-color: #f8fafc;
+  background-color: #f8fafc;
 }
 
 /* Ensure the left section expands to fit both inputs */
 .header-section.left {
-    flex: 1.5; /* Slightly more space for the filters */
+  flex: 1.5;
+  /* Slightly more space for the filters */
 }
 
 /* Update the name cell to handle stacking */
 .emp-name {
-    padding: 8px 15px;
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
-    height: 60px; /* Increased height for two rows */
+  padding: 8px 15px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  height: 60px;
+  /* Increased height for two rows */
 }
 
 .name-cell-content {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
 }
 
 /* Position Indicators (D/H) */
 .position-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 24px;
-    font-weight: 900;
-    font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  font-weight: 900;
+  font-size: 1.1rem;
 }
 
 .indicator-d {
-    color: var(--color-primary); /* Navy */
+  color: var(--color-primary);
+  /* Navy */
 }
 
 .indicator-h {
-    color: var(--color-orange); /* Orange */
+  color: var(--color-orange);
+  /* Orange */
 }
 
 /* Name and OE Stack */
 .name-details-stack {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    line-height: 1.3;
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.3;
+  overflow: hidden;
 }
 
 .primary-name-row {
-    font-weight: 700;
-    color: var(--color-text);
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-weight: 700;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .secondary-oe-row {
-    font-size: 0.72rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Pushes status to the right */
-    margin-top: 2px;
-    width: 100%;
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Pushes status to the right */
+  margin-top: 2px;
+  width: 100%;
 }
 
 .oe-left-group {
-    display: flex;
-    gap: 4px;
+  display: flex;
+  gap: 4px;
 }
 
 .oe-label {
-    color: var(--color-muted);
-    font-weight: 600;
+  color: var(--color-muted);
+  font-weight: 600;
 }
 
 .oe-value {
-    color: var(--color-primary-2);
-    font-weight: 500;
+  color: var(--color-primary-2);
+  font-weight: 500;
 }
 
 /* Status Tag on the right */
 .oe-status-tag {
-    font-weight: 700;
-    color: var(--color-accent); /* Uses your Red accent */
-    text-transform: uppercase;
-    font-size: 0.65rem;
-    padding: 0 4px;
-    background: rgba(218, 22, 19, 0.1); /* Very light red bg */
-    border-radius: 4px;
-    letter-spacing: 0.02em;
+  font-weight: 700;
+  color: var(--color-accent);
+  /* Uses your Red accent */
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  padding: 0 4px;
+  background: rgba(218, 22, 19, 0.1);
+  /* Very light red bg */
+  border-radius: 4px;
+  letter-spacing: 0.02em;
 }
 
 /* Adjusting the stack to ensure it fills the available width next to D/H */
 .name-details-stack {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0; /* Prevents overflow issues */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* Prevents overflow issues */
 }
 
 /* Ensure the status cells also match the new height */
 .status-cell {
-    height: 60px;
-    padding: 0 !important;
+  height: 60px;
+  padding: 0 !important;
 }
 
 
 /* GSDC Toggle Button Styling */
 .gsdc-toggle-btn {
-    position: relative; /* Required for the overlay */
-    background: var(--color-primary); /* Solid Navy */
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    cursor: pointer;
-    overflow: hidden; /* Keeps the gradient inside the rounded corners */
-    z-index: 1;
-    border: none;
-    transition: color 0.3s ease;
+  position: relative;
+  /* Required for the overlay */
+  background: var(--color-primary);
+  /* Solid Navy */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  overflow: hidden;
+  /* Keeps the gradient inside the rounded corners */
+  z-index: 1;
+  border: none;
+  transition: color 0.3s ease;
 }
 
 /* The Gradient Layer */
 .gsdc-toggle-btn::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--bg-gradient-main-eq); /* Your Navy + Red gradient */
-    opacity: 0; /* Hidden by default */
-    transition: opacity 0.3s ease; /* This is what animates smoothly */
-    z-index: -1; /* Sits behind the text but above the solid bg */
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-gradient-main-eq);
+  /* Your Navy + Red gradient */
+  opacity: 0;
+  /* Hidden by default */
+  transition: opacity 0.3s ease;
+  /* This is what animates smoothly */
+  z-index: -1;
+  /* Sits behind the text but above the solid bg */
 }
 
 .gsdc-toggle-btn:hover::before {
-    opacity: 1; /* Smoothly reveals the gradient */
+  opacity: 1;
+  /* Smoothly reveals the gradient */
 }
 
 .gsdc-toggle-btn.active {
-    background: var(--color-accent); /* Solid Red */
+  background: var(--color-accent);
+  /* Solid Red */
 }
 
 /* Ensure active state also has a smooth gradient hover if desired */
 .gsdc-toggle-btn.active:hover::before {
-    opacity: 1;
+  opacity: 1;
 }
-.status-inner {
-    display: flex;
-    flex-direction: column; /* Allows stacking status + OE if needed */
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    
-    /* Typography */
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    
-    /* GSDC Design Language */
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    /*border: 0.5px solid rgba(255, 255, 255, 0.2);*/
-    box-sizing: border-box;
-    cursor: help; /* Indicates there is a tooltip/info on hover */
-    position: relative;
-    overflow: hidden;
 
-    position: relative;
-    border-color: rgba(255, 255, 255, 0.3);
+.status-inner {
+  display: flex;
+  flex-direction: column;
+  /* Allows stacking status + OE if needed */
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+
+  /* Typography */
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+
+  /* GSDC Design Language */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /*border: 0.5px solid rgba(255, 255, 255, 0.2);*/
+  box-sizing: border-box;
+  cursor: help;
+  /* Indicates there is a tooltip/info on hover */
+  position: relative;
+  overflow: hidden;
+
+  position: relative;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Subtle Gradient overlay on hover */
 .status-inner::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
-    pointer-events: none;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
 }
 
 /* Hover State: Slight Lift and Glow */
 .status-inner:hover {
-    filter: brightness(1.15);
-    z-index: 2;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-    transform: scale(1.02); /* Very gentle pop */
+  filter: brightness(1.15);
+  z-index: 2;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+  /* Very gentle pop */
 }
 
 /* Active/Pressed State */
 .status-inner:active {
-    transform: scale(0.96);
-    filter: brightness(0.9);
+  transform: scale(0.96);
+  filter: brightness(0.9);
 }
 
 .oe-hover-label {
-    position: absolute;
-    top: 4px;
-    font-size: 0.55rem;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0; /* Invisible */
-    transform: translateY(-5px); /* Slight offset for animation */
-    transition: all 0.2s ease-in-out;
-    pointer-events: none;
-    color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(30px); /* The Blur Effect */
-    -webkit-backdrop-filter: blur(30px); /* Safari Support */
+  position: absolute;
+  top: 4px;
+  font-size: 0.55rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  /* Invisible */
+  transform: translateY(-5px);
+  /* Slight offset for animation */
+  transition: all 0.2s ease-in-out;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(30px);
+  /* The Blur Effect */
+  -webkit-backdrop-filter: blur(30px);
+  /* Safari Support */
 }
 
 
 
 .status-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
 }
 
 .status-label-mini {
-    font-size: 0.55rem;
-    opacity: 0.8;
-    font-weight: 400;
+  font-size: 0.55rem;
+  opacity: 0.8;
+  font-weight: 400;
 }
 
 .status-main-value {
-    font-size: 0.72rem;
-    font-weight: 700;
-    transition: transform 0.2s ease-in-out;
+  font-size: 0.72rem;
+  font-weight: 700;
+  transition: transform 0.2s ease-in-out;
 }
 
 /* --- HOVER EFFECTS --- */
 
 .status-inner:hover .oe-hover-label {
-    opacity: 1;
-    transform: translateY(0); /* Slides into view */
+  opacity: 1;
+  transform: translateY(0);
+  /* Slides into view */
 
 }
 
@@ -755,34 +853,35 @@ tr {
 /* Original Hover Logic + New Search Match Logic */
 .status-inner:hover .oe-hover-label,
 .status-inner.force-reveal .oe-hover-label {
-    opacity: 1;
-    transform: translateY(0);
-    /* Adding a slight glow or border to make search results pop */
-    z-index: 10; 
+  opacity: 1;
+  transform: translateY(0);
+  /* Adding a slight glow or border to make search results pop */
+  z-index: 10;
 }
 
 
 
 /* Ensure the mark tag inside the OE label is visible */
 .oe-hover-label .gsdc-highlight {
-    background-color: #ffd900; /* Yellow highlight */
-    color: #000;
-    padding: 0 1px;
-    border-radius: 2px;
+  background-color: #ffd900;
+  /* Yellow highlight */
+  color: #000;
+  padding: 0 1px;
+  border-radius: 2px;
 }
 
 .status-inner:hover .status-main-value {
-    /* Gently push the main status down to make room for the label */
-    transform: translateY(6px); 
+  /* Gently push the main status down to make room for the label */
+  transform: translateY(6px);
 }
 
 /* Add a subtle dark overlay on hover to make the small white text readable */
 .status-inner:hover::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.1);
-    z-index: 0;
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 0;
 }
 
 /* The Button */
@@ -810,7 +909,8 @@ tr {
 /* today format */
 .attendance-table th.today-column {
   background: var(--color-primary) !important;
-  border-bottom: 3px solid var(--color-yellow, #ff0000) !important; /* Red accent baseline flag */
+  border-bottom: 3px solid var(--color-yellow, #ff0000) !important;
+  /* Red accent baseline flag */
 }
 
 .attendance-table th.today-column .day-name,
@@ -818,7 +918,8 @@ tr {
   color: white !important;
   font-weight: 700;
 }
-.attendance-table th.today-column .header-date-box{
+
+.attendance-table th.today-column .header-date-box {
   color: white !important;
   font-weight: 700;
   /* background-color: var(--color-yellow); */
@@ -827,11 +928,12 @@ tr {
 
 /* The Highlighted Column */
 th.today-column .header-date-box {
-  background: var(--color-primary); /* Navy Blue */
+  background: var(--color-primary);
+  /* Navy Blue */
   color: white;
   border-radius: 6px;
   transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Optional: faint vertical line for today */
@@ -843,7 +945,8 @@ td.today-column-cell {
 
 /* --- TODAY HIGHLIGHT --- */
 .today-column .header-date-box {
-  background: var(--color-primary); /* Navy Blue */
+  background: var(--color-primary);
+  /* Navy Blue */
   color: white;
   border: 1px solid #3a4efc;
   box-shadow: 0 4px 10px rgba(58, 78, 252, 0.3);
@@ -851,14 +954,15 @@ td.today-column-cell {
 }
 
 .today-cell {
-  background-color: rgba(58, 78, 252, 0.05); /* Very faint navy tint */
+  background-color: rgba(58, 78, 252, 0.05);
+  /* Very faint navy tint */
   border-left: 1px dashed rgba(58, 78, 252, 0.2);
   border-right: 1px dashed rgba(58, 78, 252, 0.2);
 }
 
 .attendance-table td.today-cell {
   background-color: rgba(58, 78, 252, 0.05) !important;
-  
+
   /* Dashed side borders frame the current day clearly without being overly heavy */
   border-left: 1px dashed rgba(58, 78, 252, 0.25) !important;
   border-right: 1px dashed rgba(58, 78, 252, 0.25) !important;
@@ -870,7 +974,7 @@ td.today-column-cell {
 }
 
 .today-label-flag {
-    color: var(--color-yellow);
+  color: var(--color-yellow);
 }
 
 /* --- WEEKEND STYLING --- */
@@ -879,12 +983,14 @@ td.today-column-cell {
 }
 
 .weekend-column .day-name {
-  color: color-mix(in srgb, var(--color-accent), white 50%); /* Red accent for SAT/SUN labels */
+  color: color-mix(in srgb, var(--color-accent), white 50%);
+  /* Red accent for SAT/SUN labels */
   font-weight: 700;
 }
 
 .weekend-cell {
-  background-color: #f1f5f9; /* Slightly darker gray for the whole column */
+  background-color: #f1f5f9;
+  /* Slightly darker gray for the whole column */
   opacity: 0.9;
 }
 
@@ -904,158 +1010,170 @@ td.today-column-cell {
 }
 
 .emp-header-with-pagination {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 8px 12px !important;
-    min-width: 250px; /* Match your existing sticky offset */
-    height: 60px; /* Adjust based on your date box height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 12px !important;
+  min-width: 250px;
+  /* Match your existing sticky offset */
+  height: 60px;
+  /* Adjust based on your date box height */
 }
 
 .header-top-row {
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
 }
 
 .header-pagination-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
 }
 
 .mini-nav-group {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.15); /* Subtle contrast against navy */
-    border-radius: 4px;
-    padding: 2px;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  /* Subtle contrast against navy */
+  border-radius: 4px;
+  padding: 2px;
 }
 
 .mini-nav-group button {
-    background: transparent;
-    border: none;
-    color: white;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 2px;
-    transition: opacity 0.2s;
+  background: transparent;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 2px;
+  transition: opacity 0.2s;
 }
 
 .mini-nav-group button:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
 }
 
 .mini-nav-group button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .mini-page-info {
-    font-size: 0.7rem;
-    font-weight: 600;
-    min-width: 35px;
-    text-align: center;
-    border-left: 1px solid rgba(255, 255, 255, 0.2);
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
-    margin: 0 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 35px;
+  text-align: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 0 4px;
 }
 
 .mini-count {
-    font-size: 0.7rem;
-    opacity: 0.8;
-    font-weight: 400;
+  font-size: 0.7rem;
+  opacity: 0.8;
+  font-weight: 400;
 }
 
 .emp-header-with-pagination {
-    /* Critical for vertical centering */
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    justify-content: center;
-    padding: 10px 5px !important;
-    min-width: 250px;
-    background: var(--color-primary) !important; /* Navy Blue */
-    color: white;
+  /* Critical for vertical centering */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 5px !important;
+  min-width: 250px;
+  background: var(--color-primary) !important;
+  /* Navy Blue */
+  color: white;
 }
 
 .header-top-row {
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 6px;
-    opacity: 0.9;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+  opacity: 0.9;
 }
 
 /* Container to handle the centering */
 .header-pagination-container {
-    width: 100%;
-    display: flex;
-    justify-content: center; /* Horizontal Center */
-    align-items: center;     /* Vertical Center */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  /* Horizontal Center */
+  align-items: center;
+  /* Vertical Center */
 }
 
 .pagination-centered-group {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.1); /* Subtle Navy-White blend */
-    border-radius: 20px; /* Rounded pill shape for "gentle" design */
-    padding: 2px 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  /* Subtle Navy-White blend */
+  border-radius: 20px;
+  /* Rounded pill shape for "gentle" design */
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .pager-btn {
-    background: transparent;
-    border: none;
-    color: white;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .pager-btn:hover:not(:disabled) {
-    color: var(--color-accent); /* Red highlight on hover */
-    transform: scale(1.1);
+  color: var(--color-accent);
+  /* Red highlight on hover */
+  transform: scale(1.1);
 }
 
 .pager-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .pager-info {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    padding: 0 8px;
-    font-family: monospace; /* Keeps numbers from jumping */
-    font-size: 0.75rem;
-    font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 8px;
+  font-family: monospace;
+  /* Keeps numbers from jumping */
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .pager-info .separator {
-    opacity: 0.5;
-    font-weight: 400;
+  opacity: 0.5;
+  font-weight: 400;
 }
 
 .pager-info .total {
-    opacity: 0.7;
+  opacity: 0.7;
 }
 
 .gsdc-highlight {
-    background-color: #fef08a; /* Soft yellow */
-    color: #1e293b; /* Dark slate for contrast */
-    padding: 0 2px;
-    border-radius: 2px;
-    /*font-weight: 800; */
+  background-color: #fef08a;
+  /* Soft yellow */
+  color: #1e293b;
+  /* Dark slate for contrast */
+  padding: 0 2px;
+  border-radius: 2px;
+  /*font-weight: 800; */
 }
 
 .gsdc-dropdown-backdrop {
@@ -1071,8 +1189,10 @@ td.today-column-cell {
   position: fixed;
   z-index: 1000;
   background: #ffffff;
-  border: 1px solid rgba(0, 43, 91, 0.2); /* Soft Navy boundary */
-  border-radius: 8px; /* Gentle design rounded corner */
+  border: 1px solid rgba(0, 43, 91, 0.2);
+  /* Soft Navy boundary */
+  border-radius: 8px;
+  /* Gentle design rounded corner */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 6px;
   min-width: 160px;
@@ -1088,7 +1208,8 @@ td.today-column-cell {
 
 .context-menu-header strong {
   font-size: 13px;
-  color: #002b5b; /* Navy Blue */
+  color: #002b5b;
+  /* Navy Blue */
 }
 
 .context-menu-header span {
@@ -1123,36 +1244,44 @@ td.today-column-cell {
 
 /* Accent your theme states on item hovers */
 .context-option-btn:hover {
-  background: linear-gradient(135deg, #002b5b, #3a4efc); /* Navy Blue + 2nd Blue Gradient */
+  background: linear-gradient(135deg, #002b5b, #3a4efc);
+  /* Navy Blue + 2nd Blue Gradient */
   color: #ffffff;
 }
 
 .context-option-btn.on-duty {
-  border-left: 3px solid #3a4efc; /* Primary Blue Indicator */
+  border-left: 3px solid #3a4efc;
+  /* Primary Blue Indicator */
 }
 
 .context-option-btn.off-duty {
-  border-left: 3px solid #ff4d4d; /* Red Accent Sub Indicator */
+  border-left: 3px solid #ff4d4d;
+  /* Red Accent Sub Indicator */
 }
 
 /* Custom class for the active cell */
 .status-cell.menu-active-cell {
   position: relative;
-  z-index: 2; /* Keeps outline above neighboring borders */
-  background-color: #f0f4ff; /* Slightly tinted backdrop */
-  
+  z-index: 2;
+  /* Keeps outline above neighboring borders */
+  background-color: #f0f4ff;
+  /* Slightly tinted backdrop */
+
   /* Soft gradient outline style */
   box-shadow: 0 0 0 3px #fcc23a, 0 0 32px rgba(252, 226, 58, 0.4);
-  border-radius: 8px; /* Gentle design rounded corner preference */
+  border-radius: 8px;
+  /* Gentle design rounded corner preference */
   transition: box-shadow 0.15s ease-in-out;
 }
 
 /* Highlighted active choice inside the popover layout context menu */
 .context-option-btn.active-status-highlight {
-  background-color: #3a4efc !important; /* Primary 2nd Blue */
+  background-color: #3a4efc !important;
+  /* Primary 2nd Blue */
   color: #ffffff !important;
   font-weight: 600;
-  box-shadow: inset 3px 0 0 var(--color-red, #ff0000); /* Red indicator flag line on left edge */
+  box-shadow: inset 3px 0 0 var(--color-red, #ff0000);
+  /* Red indicator flag line on left edge */
 }
 
 .context-option-btn .active-dot {
@@ -1178,13 +1307,15 @@ td.today-column-cell {
 
 /* Timeline Action Button Styles */
 .gsdc-attendance-context-menu .context-timeline-btn {
-  background: rgba(58, 78, 252, 0.08); /* 8% #3a4efc Second Blue Tint */
+  background: rgba(58, 78, 252, 0.08);
+  /* 8% #3a4efc Second Blue Tint */
   color: #3a4efc;
   border: 1px solid rgba(58, 78, 252, 0.2);
   padding: 4px 10px;
   font-size: 11px;
   font-weight: 600;
-  border-radius: 6px; /* Gentle design profile rounded corner */
+  border-radius: 6px;
+  /* Gentle design profile rounded corner */
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease-in-out;
@@ -1192,7 +1323,8 @@ td.today-column-cell {
 
 /* Interactive States */
 .gsdc-attendance-context-menu .context-timeline-btn:hover {
-  background: #3a4efc; /* Primary 2nd Blue */
+  background: #3a4efc;
+  /* Primary 2nd Blue */
   color: #ffffff;
   border-color: #3a4efc;
   box-shadow: 0 2px 6px rgba(58, 78, 252, 0.3);
@@ -1207,26 +1339,19 @@ td.today-column-cell {
 .attendance-table th.lock-boundary-edge,
 .attendance-table td.lock-boundary-edge {
   /* Draws a prominent red division wall right on the left edge of the allowed zone */
-  border-left: 3px solid #ff4d4d !important;
+  border-left: 1px solid var(--color-primary);
   position: relative;
+
 }
 
-/* Subtle label hint for the table header to explicitly call out the division */
-.attendance-table th.lock-boundary-edge::before {
-  /* content: '🔒'; */
-  position: absolute;
-  left: -14px;
-  top: 4px;
-  font-size: 10px;
-  opacity: 0.75;
-  z-index: 3;
-}
+
 
 /* Editable Range Closing Wall (Right Side Border) */
 .attendance-table th.lock-end-boundary,
 .attendance-table td.lock-end-boundary {
   /* Green division wall separating the editable window from the future/locked window */
-  border-right: 3px solid #2ecc71 !important;
+  border-right: 1px solid var(--color-primary);
+  position: relative;
 }
 
 /* 🟢 Apply the disabled visual treatment directly to the status badge */
@@ -1242,28 +1367,30 @@ td.today-column-cell {
 }
 
 .status-inner.entry-locked-na {
-    cursor: not-allowed !important;
-    border-color: rgba(11, 4, 71, 0.276);
-    background-color: rgba(11, 4, 71, 0.276);
-    opacity: 1;
+  cursor: not-allowed !important;
+  border-color: rgba(11, 4, 71, 0.276);
+  background-color: rgba(11, 4, 71, 0.276);
+  opacity: 1;
 }
 
 
 
 .today-star-icon {
-    flex-shrink: 0;
-    /* Optional: fill the star with color or keep it as an elegant outline */
-    fill: currentColor; 
+  flex-shrink: 0;
+  /* Optional: fill the star with color or keep it as an elegant outline */
+  fill: currentColor;
 }
 
 
 /* 🟢 Cutoff Group Super Header Styles */
 .attendance-table th.cutoff-super-header {
-  background-color: var(--color-primary, #002060) !important; /* Navy Blue base */
+  background-color: var(--color-primary, #002060) !important;
+  /* Navy Blue base */
   border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
   padding: 6px 4px !important;
   font-size: 0.7rem;
-  z-index: 99 !important; /* Higher stacking context over regular sub-headers */
+  z-index: 99 !important;
+  /* Higher stacking context over regular sub-headers */
 }
 
 /* Fix sticky positioning offsets for the multi-tiered header layout */
@@ -1275,24 +1402,33 @@ td.today-column-cell {
 }
 
 .attendance-table thead tr:nth-child(2) th {
-  top: 2rem; /* Set this height value based on your actual top row padding */
+  top: 2rem;
+  /* Set this height value based on your actual top row padding */
   z-index: 3;
 }
 
 .attendance-table th.sticky-col.cutoff-super-header {
   position: sticky !important;
-  left: 0 !important;   /* Locks to the left side during horizontal scroll */
-  top: 0 !important;    /* Locks to the top side during vertical scroll */
-  z-index: 6 !important; /* Ultimate priority stacking index to avoid column clipping */
-  background-color: #0c1a30 !important; /* Keep a solid background color so data lines don't bleed through */
+  left: 0 !important;
+  /* Locks to the left side during horizontal scroll */
+  top: 0 !important;
+  /* Locks to the top side during vertical scroll */
+  z-index: 6 !important;
+  /* Ultimate priority stacking index to avoid column clipping */
+  background-color: #0c1a30 !important;
+  /* Keep a solid background color so data lines don't bleed through */
 }
 
 .attendance-table th.sticky-col.sticky-header.employee-name-header {
   position: sticky !important;
-  left: 0 !important;    /* Absolute left lock for horizontal tracking */
-  top: 2rem !important;  /* ⚠️ MUST match the exact height of the row above it */
-  z-index: 5 !important;  /* Keeps it above passing table cell data */
-  background-color: var(--color-primary, #0c1a30) !important; /* Prevents text bleeding transparency */
+  left: 0 !important;
+  /* Absolute left lock for horizontal tracking */
+  top: 2rem !important;
+  /* ⚠️ MUST match the exact height of the row above it */
+  z-index: 5 !important;
+  /* Keeps it above passing table cell data */
+  background-color: var(--color-primary, #0c1a30) !important;
+  /* Prevents text bleeding transparency */
 }
 
 /* Also ensure your standard employee name column (Row 2, Column 1) stays anchored below it */
@@ -1320,7 +1456,8 @@ td.today-column-cell {
   font-weight: 600;
   background: rgba(255, 255, 255, 0.08);
   padding: 2px 10px;
-  border-radius: 4px; /* Gentle corner */
+  border-radius: 4px;
+  /* Gentle corner */
   border: 1px solid rgba(255, 255, 255, 0.12);
   white-space: nowrap;
 }
@@ -1347,7 +1484,7 @@ td.today-column-cell {
 
 /* Base default cutoff fallback (Navy Blue baseline) */
 .attendance-table th.cutoff-super-header {
-  background-color: #0c1a30 !important; 
+  background-color: #0c1a30 !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   padding: 6px 4px !important;
   font-size: 0.7rem;
@@ -1356,12 +1493,13 @@ td.today-column-cell {
 
 /* 🔵 Odd Cutoffs: Pure Navy Blue Tint */
 .attendance-table th.cutoff-super-header.odd-cutoff {
-  background-color: var(--color-primary) !important; 
+  background-color: var(--color-primary) !important;
 }
 
 /* 🔴 Even Cutoffs: Muted Dark Wine Gradient variant to blend with your Red accent */
 .attendance-table th.cutoff-super-header.even-cutoff {
-  background-color: color-mix(in srgb, var(--color-primary), #24121b 30%)  !important; /* Subtle wine-dark tone */
+  background-color: color-mix(in srgb, var(--color-primary), #24121b 30%) !important;
+  /* Subtle wine-dark tone */
 }
 
 /* ⚪ Last Month Tail Block: Muted Charcoal Neutral */
@@ -1388,7 +1526,7 @@ td.today-column-cell {
 
 /* 🔵 Odd Cutoffs: Pure Navy Blue Tint Context */
 .attendance-table th.even-cutoff {
-  background-color: var(--color-primary) !important; 
+  background-color: var(--color-primary) !important;
 }
 
 /* 🔴 Even Cutoffs: Muted Dark Wine Tone Context */
@@ -1413,13 +1551,14 @@ td.today-column-cell {
 /* --- Keep visual exceptions distinct --- */
 /* If a weekend date happens to sit in an even or odd block, let it subtly shade over it */
 .attendance-table th.date-sub-header.weekend-column .day-name {
-  color: color-mix(in srgb, var(--color-accent), white 60%); 
+  color: color-mix(in srgb, var(--color-accent), white 60%);
 }
 
 /* Keep the absolute highlight visibility on Today unaffected */
 .attendance-table th.today-column {
   background: var(--color-primary) !important;
-  box-shadow: inset 0 -4px 0 0 #ff0000 !important; /* Prominent red bottom bar */
+  box-shadow: inset 0 -4px 0 0 #ff0000 !important;
+  /* Prominent red bottom bar */
 }
 
 
@@ -1449,7 +1588,8 @@ td.today-column-cell {
 
 /* 1. Make the status stack the relative boundary anchor */
 .status-stack {
-  position: relative; /* Hooks the absolute loader exactly inside this boundary container */
+  position: relative;
+  /* Hooks the absolute loader exactly inside this boundary container */
 }
 
 /* 2. Position the loader cleanly as a tiny floating element inside the stack */
@@ -1459,20 +1599,24 @@ td.today-column-cell {
   right: 4px;
   width: 12px;
   height: 12px;
-  background: transparent; /* No blocking background mask */
+  background: transparent;
+  /* No blocking background mask */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 5;
-  pointer-events: none; /* Mouse clicks pass right through to the status text */
+  pointer-events: none;
+  /* Mouse clicks pass right through to the status text */
 }
 
 /* 3. Small, crisp interactive theme spinner */
 .mini-spinner {
   width: 10px;
   height: 10px;
-  border: 1.5px solid #b0b3b8; /* Navy Blue Theme Primary */
-  border-top-color: #355ee5;   /* Accent Red Theme Sub */
+  border: 1.5px solid #b0b3b8;
+  /* Navy Blue Theme Primary */
+  border-top-color: #355ee5;
+  /* Accent Red Theme Sub */
   border-radius: 50%;
   animation: cellSpin 0.6s linear infinite;
 }
@@ -1509,4 +1653,233 @@ td.today-column-cell {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.served-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  line-height: 1.1;
+  gap: 1px;
+}
+
+.served-oe {
+  /* font-weight: 600; */
+  font-size: var(--font-size-sm);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.served-meta {
+  font-size: var(--font-size-base);
+  opacity: 0.85;
+  color: var(--color-border-warning);
+}
+
+
+/* cutoff metrics summary */
+/* Container spacing for 3 tiers */
+.name-details-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.primary-name-row {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.secondary-oe-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+}
+
+/* Tier 3: Metrics Bar */
+.cutoff-metrics-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1px;
+}
+
+.metric-pill {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* Served Trips Badge (Soft Green) */
+.metric-pill.served {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Trip Score Points Badge (Primary Theme #3a4efc) */
+.metric-pill.score {
+  background-color: rgba(58, 78, 252, 0.1);
+  color: #3a4efc;
+  border: 1px solid rgba(58, 78, 252, 0.25);
+}
+
+.metric-pill b {
+  font-weight: 700;
+}
+
+.primary-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+}
+
+.primary-name-text {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Subtle Summary Icon Button */
+.summary-icon-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease-in-out;
+}
+
+.summary-icon-btn:hover {
+  color: #3a4efc;
+  background-color: rgba(58, 78, 252, 0.1);
+}
+
+
+
+
+.sticky-header.cutoff-super-header.active-cutoff-header {
+  background: #3a4efc;
+  color: #ffd54f;
+
+
+  font-weight: 700;
+  letter-spacing: .3px;
+
+  border-top: 3px solid #3a4efc;
+
+  box-shadow:
+    0 3px 10px rgba(58, 78, 252, .25),
+    inset 0 -2px 0 rgba(255, 255, 255, .18);
+
+  position: relative;
+  z-index: 10;
+
+  transition: all .18s ease;
+}
+
+.sticky-header.cutoff-super-header.active-cutoff-header span {
+  color: #ffd54f !important;
+}
+
+.sticky-header.cutoff-super-header.active-cutoff-header::after {
+  content: "✓";
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* Selected Column Background Tint */
+:root {
+  --cutoff-color: #3a4efc;
+  --cutoff-bg: rgba(58, 78, 252, 0.08);
+}
+
+.date-sub-header,
+.status-cell {
+  transition:
+    background-color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease;
+}
+
+/* Highlighted area */
+.date-sub-header.selected-cutoff-col,
+.status-cell.selected-cutoff-cell {
+  background: var(--cutoff-bg);
+}
+
+/* Header */
+.date-sub-header.selected-cutoff-col {
+  background: rgba(58, 78, 252, 0.14);
+  border-top: 0px solid var(--cutoff-color);
+  font-weight: 600;
+}
+
+.sticky-header.cutoff-super-header.active-cutoff-header {
+  z-index: 10 !important;
+  background-color: #3a4efc !important;
+  color: #ffffff !important;
+  /* box-shadow: inset 0 -3px 0 0 #ff3b30 !important; */
+  border-left: 5px solid #ff4d4d !important;
+  border-right: 5px solid #2ecc71 !important;
+}
+
+/* Left boundary */
+.selected-cutoff-boundary-start {
+  border-left: 5px solid #ff4d4d !important;
+
+}
+
+/* Right boundary */
+.selected-cutoff-boundary-end {
+  border-right: 5px solid #2ecc71 !important;
+}
+
+/* Bottom boundary */
+tbody tr:last-child .status-cell.selected-cutoff-cell {
+  border-bottom: 2px solid var(--cutoff-color);
+}
+
+/* Rounded corners */
+thead .selected-cutoff-boundary-start {
+  border-top-left-radius: 6px;
+}
+
+thead .selected-cutoff-boundary-end {
+  border-top-right-radius: 6px;
+}
+
+tbody tr:last-child .selected-cutoff-boundary-start {
+  border-bottom-left-radius: 6px;
+}
+
+tbody tr:last-child .selected-cutoff-boundary-end {
+  border-bottom-right-radius: 6px;
 }

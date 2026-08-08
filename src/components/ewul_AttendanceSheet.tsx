@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import LoadingOverlay from '../components/LoadingOverlay_navblue';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon, Star, Mail } from 'lucide-react';
+import { EmployeeSummaryModal } from './EmployeeSummaryModal';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon, Star, Mail, FileText } from 'lucide-react';
 import '../components/comp_css/ewul_AttendanceSheet.css';
 import AutoDismissBanner from '../components/ewul_Banner';
 import Modal from '../components/ewul_Modal';
@@ -29,7 +30,7 @@ import {
 
 } from '../utils/Ewul_GSDC_Utils';
 
-interface AttendanceRecord {
+export interface AttendanceRecord {
   EmployeeName: string;
   EmployeeID: number;
   AttendanceDate: string;
@@ -37,6 +38,26 @@ interface AttendanceRecord {
   OE: string | null;
   Position: string;
   ModifiedAt: string | null;
+  tripIndex?: number | null;
+  DMS_OE?: string | null;          // <-- Added
+  DMS_TripStatus?: string | null;  // <-- Added
+
+  BU?: string | null;
+  Position1?: string;
+  SD?: string | null;
+  TCVC?: string | null;
+  TransactionType?: string | null;
+  secondTrip?: string | null;
+  tripKM?: number | null;
+}
+
+interface CutoffGroup {
+  label: string;
+  count: number;
+  isLastMonth: boolean;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  dates: string[];   // Array of YYYY-MM-DD date strings in this cutoff
 }
 
 const AttendanceCell = React.memo(({
@@ -55,6 +76,9 @@ const AttendanceCell = React.memo(({
   isEndBoundaryCell,
   onBannerMsg,
   isCellLoading,
+  isSelectedCutoff,
+  isCutoffStart,
+  isCutoffEnd,
 }: {
   dateStr: string;
   dayOfWeek: number;
@@ -71,6 +95,9 @@ const AttendanceCell = React.memo(({
   isEndBoundaryCell?: boolean;
   onBannerMsg?: (msg: string) => void;
   isCellLoading?: boolean;
+  isSelectedCutoff?: boolean;
+  isCutoffStart?: boolean;
+  isCutoffEnd?: boolean;
 }) => {
 
   const lastEntry = displayEntries.length > 0 ? displayEntries[displayEntries.length - 1] : null;
@@ -103,6 +130,9 @@ const AttendanceCell = React.memo(({
         ${isBoundaryCell ? 'lock-boundary-edge' : ''}
         ${isEndBoundaryCell ? 'lock-end-boundary' : ''}
         ${isCellLoading ? 'cell-is-updating' : ''}
+        ${isSelectedCutoff ? 'selected-cutoff-cell' : ''}
+        ${isCutoffStart ? 'selected-cutoff-boundary-start' : ''}
+        ${isCutoffEnd ? 'selected-cutoff-boundary-end' : ''}
       `}
     >
       <div className={`status-stack ${displayEntries.length > 1 ? 'expanded' : 'collapsed'}`}>
@@ -138,15 +168,28 @@ const AttendanceCell = React.memo(({
 
                   // LAZY EVALUATION: parse date when user interacts or requests a native tooltip fallback safely
                   onMouseEnter={(e) => {
-                    if (entry.ModifiedAt && !e.currentTarget.getAttribute('title')) {
+                    const isServed = entry.AttendanceStatus?.toUpperCase() === 'SERVED';
+                    if (!isServed && entry.ModifiedAt && !e.currentTarget.getAttribute('title')) {
                       e.currentTarget.setAttribute('title', `Modified: ${new Date(entry.ModifiedAt).toLocaleString()}`);
                     }
                   }}
                 >
-                  <span className="status-main-value">
+                  {/* <span className="status-main-value">
                     {entry.AttendanceStatus || '---'}
+                  </span> */}
+                  <span className="status-main-value">
+                    {entry.AttendanceStatus?.toUpperCase() === 'SERVED' ? (
+                      <div className="served-details">
+                        <span className="served-oe">{entry.OE || 'NO OE'}</span>
+                        <span className="served-meta">
+                          {/* {(entry.tripKM ?? 0)} KM |  */} {entry.tripIndex ?? 0}
+                        </span>
+                      </div>
+                    ) : (
+                      entry.AttendanceStatus || '---'
+                    )}
                   </span>
-                  <span className="oe-hover-label">{entry.OE || ''}</span>
+                  {entry.AttendanceStatus?.toUpperCase() !== 'SERVED' && (<span className="oe-hover-label">{entry.OE || ''}</span>)}
                 </div>
               );
             })
@@ -185,6 +228,7 @@ interface AttendanceSheetProps {
 
 const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, colOE, colStatus, BU = 'SBUO-1A' }) => {
   const [data, setData] = useState<AttendanceRecord[]>([]);
+  const [rawAttendanceData, setRawAttendanceData] = useState<AttendanceRecord[]>([]);
   const [showAllStatuses, setShowAllStatuses] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
@@ -207,7 +251,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   const { addTask } = useTaskWorker();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, _setPageSize] = useState(11);
+  const [pageSize, _setPageSize] = useState(25); //11
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPosition, setFilterPosition] = useState('All');
@@ -230,27 +274,64 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   const todayRef = useRef<HTMLTableCellElement>(null);
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const [selectedCutoff, setSelectedCutoff] = useState<CutoffGroup | null>(null);
+  const [activeSummaryEmp, setActiveSummaryEmp] = useState<string | null>(null);
 
-  const scrollToDate = (targetRef?: React.RefObject<HTMLTableCellElement>, targetDate?: Date) => {
-    const date = targetDate || new Date();
-    if (currentDate.getMonth() !== date.getMonth() || currentDate.getFullYear() !== date.getFullYear()) {
-      setCurrentDate(new Date(date.getFullYear(), date.getMonth(), 1));
-    }
+
+  const scrollToDateStr = useCallback((targetDateStr?: string) => {
     setTimeout(() => {
-      const ref = targetRef || todayRef;
-      if (ref.current && scrollContainerRef.current) {
+      if (!scrollContainerRef.current) return;
+
+      let dateStr = targetDateStr;
+
+      // Default to the latest date in the active month <= Today
+      if (!dateStr) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (daysInMonth && daysInMonth.length > 0) {
+          // Filter out any dates that are strictly in the future
+          const validPastOrTodayDates = daysInMonth.filter(date => {
+            const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            return checkDate <= today;
+          });
+
+          if (validPastOrTodayDates.length > 0) {
+            // Latest valid date (Today if current month, or month's end if past month)
+            const targetDate = validPastOrTodayDates[validPastOrTodayDates.length - 1];
+            const y = targetDate.getFullYear();
+            const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const d = String(targetDate.getDate()).padStart(2, '0');
+            dateStr = `${y}-${m}-${d}`;
+          } else {
+            // If viewing a future month, default to the 1st of that month
+            const firstDate = daysInMonth[0];
+            const y = firstDate.getFullYear();
+            const m = String(firstDate.getMonth() + 1).padStart(2, '0');
+            const d = String(firstDate.getDate()).padStart(2, '0');
+            dateStr = `${y}-${m}-${d}`;
+          }
+        }
+      }
+
+      if (!dateStr) return;
+
+      // Locate the header cell with the matching data-date attribute
+      const targetEl = scrollContainerRef.current.querySelector<HTMLElement>(`[data-date="${dateStr}"]`);
+
+      if (targetEl) {
         const container = scrollContainerRef.current;
-        const target = ref.current;
         const containerWidth = container.clientWidth;
-        const targetWidth = target.offsetWidth;
-        const scrollPos = target.offsetLeft - (containerWidth / 2) + (targetWidth / 2);
+        const targetWidth = targetEl.offsetWidth;
+        const scrollPos = targetEl.offsetLeft - (containerWidth / 2) + (targetWidth / 2);
+
         container.scrollTo({
           left: scrollPos,
           behavior: 'smooth'
         });
       }
-    }, 100);
-  };
+    }, 150);
+  }, [currentDate]);
 
 
   const year = currentDate.getFullYear();
@@ -489,6 +570,12 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   }, [year, month, lateAttendanceRequests.length]);
 
 
+  // Trigger scroll to latest date after data load completes
+  useEffect(() => {
+    if (!loading && selectedCutoff?.endDate) {
+      scrollToDateStr(selectedCutoff.endDate);
+    }
+  }, [loading, selectedCutoff, scrollToDateStr]);
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -500,11 +587,40 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           Month: month,
           BU: BU
         } as any);
-        setData((res.data?.ResultSets?.Table1 || []) as any);
+        const rawData = (res.data?.ResultSets?.Table1 || []) as any;
+        console.log('wutdahell: ', rawData[0]);
+        setData(rawData as any);
+
+        const formattedRecords: AttendanceRecord[] = rawData.map((item: any) => ({
+          // Base Fields
+          EmployeeName: item.EmployeeName ?? '',
+          EmployeeID: item.EmployeeID ?? 0,
+          AttendanceDate: item.AttendanceDate ?? '',
+          AttendanceStatus: item.AttendanceStatus ?? 'ABSENT',
+          OE: item.OE ?? null,
+          Position: item.Position ?? 'Driver',
+          ModifiedAt: item.ModifiedAt ?? null,
+          tripIndex: item.tripIndex !== undefined && item.tripIndex !== null ? Number(item.tripIndex) : null,
+          DMS_OE: item.DMS_OE ?? null,
+          DMS_TripStatus: item.DMS_TripStatus ?? null,
+
+          // Newly Added Fields
+          BU: item.BU ?? null,
+          Position1: item.Position1 ?? item.Position ?? 'Driver',
+          SD: item.SD ?? null,
+          TCVC: item.TCVC ?? null,
+          TransactionType: item.TransactionType ?? null,
+          secondTrip: item.secondTrip ?? 'N',
+          tripKM: item.tripKM !== undefined && item.tripKM !== null ? Number(item.tripKM) : null,
+        }));
+
+        setRawAttendanceData(formattedRecords);
+
+
         // Only scroll to today if viewing the current month and year
         const now = new Date();
         if (year === now.getFullYear() && month === now.getMonth() + 1) {
-          scrollToDate();
+          scrollToDateStr();
         }
       } catch (error) {
         console.error("Fetch error:", error);
@@ -598,7 +714,20 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           entries = entries.filter(e => e.AttendanceStatus !== null && e.AttendanceStatus !== "");
         }
 
-        entries.sort((a, b) => a.modifiedAt - b.modifiedAt);
+        entries.sort((a, b) => {
+          // 1. Prioritize SERVED only when "Latest Only" (!showAllStatuses) is active
+          if (!showAllStatuses) {
+            const aServed = a.AttendanceStatus?.toUpperCase() === 'SERVED' ? 1 : 0;
+            const bServed = b.AttendanceStatus?.toUpperCase() === 'SERVED' ? 1 : 0;
+
+            if (aServed !== bServed) {
+              return aServed - bServed; // Pushes SERVED to the end so lastEntry picks SERVED
+            }
+          }
+
+          // 2. Default / Original Sort: Chronological by timestamp
+          return a.modifiedAt - b.modifiedAt;
+        });
 
         if (entries.length > 1) {
           entries = entries.filter((entry, index) => {
@@ -613,7 +742,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     });
 
     return map;
-  }, [filteredData, paginatedEmployeeNames]);
+  }, [filteredData, paginatedEmployeeNames, showAllStatuses]);
 
 
   const boundaryDateStr = useMemo(() => {
@@ -648,6 +777,84 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     const d = String(match.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
   }, [daysInMonth]);
+
+  // 1. Compute cutoff groups with exact start/end dates
+  const cutoffGroups = useMemo(() => {
+    const getFirstCutoffAnchor = (startDay: number, current: Date): Date => {
+      const yr = current.getFullYear();
+      const mo = current.getMonth();
+      const target = new Date(yr, mo, 1);
+      while (target.getDay() !== startDay) {
+        target.setDate(target.getDate() + 1);
+      }
+      return target;
+    };
+
+    const groups: CutoffGroup[] = [];
+    const firstTrueAnchor = getFirstCutoffAnchor(ALLOWED_DATE_CLICK.startDayOfWeek, currentDate);
+
+    daysInMonth.forEach((date) => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
+
+      let label = '';
+      let isLastMonth = false;
+
+      if (date < firstTrueAnchor) {
+        label = "LAST MONTH CUT OFF";
+        isLastMonth = true;
+      } else {
+        const diffTime = date.getTime() - firstTrueAnchor.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const cutoffIndex = Math.floor(diffDays / 7) + 1;
+
+        let ordinal = 'th';
+        if (cutoffIndex === 1) ordinal = 'st';
+        else if (cutoffIndex === 2) ordinal = 'nd';
+        else if (cutoffIndex === 3) ordinal = 'rd';
+
+        label = `${cutoffIndex}${ordinal} CUT OFF`;
+      }
+
+      const lastGroup = groups[groups.length - 1];
+      if (lastGroup && lastGroup.label === label) {
+        lastGroup.count++;
+        lastGroup.endDate = dateStr;
+        lastGroup.dates.push(dateStr);
+      } else {
+        groups.push({
+          label,
+          count: 1,
+          isLastMonth,
+          startDate: dateStr,
+          endDate: dateStr,
+          dates: [dateStr],
+        });
+      }
+    });
+
+    return groups;
+  }, [daysInMonth, currentDate]);
+
+  // 2. Automatically pick the latest cutoff when month/year changes
+  useEffect(() => {
+    if (cutoffGroups.length === 0) return;
+
+    // 1. Try to find the cutoff group that contains TODAY
+    const todayCutoff = cutoffGroups.find(group => group.dates.includes(todayStr));
+
+    // 2. Fall back to finding the cutoff group matching your active truth config cutoff start date
+    const configCutoff = cutoffGroups.find(group => group.dates.includes(ALLOWED_DATE_CLICK.startDate));
+
+    // 3. Fall back to the latest cutoff group of the viewed month
+    const defaultCutoff = todayCutoff || configCutoff || cutoffGroups[cutoffGroups.length - 1];
+
+    setSelectedCutoff(defaultCutoff);
+  }, [cutoffGroups]); // Fires on mount when cutoffGroups initializes
+
+
 
   const AttendanceSkeleton = ({ days }: { days: any[] }) => (
     <>
@@ -700,11 +907,11 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
       }
     });
 
-    if (map['Pama, Elebert Palma']) {
-      console.log('Target Driver Trip Data Found:', map['Pama, Elebert Palma']);
-    } else {
-      console.log('Target Driver NOT found in liveTripsMap keys:', Object.keys(map));
-    }
+    // if (map['Pama, Elebert Palma']) {
+    //   console.log('Target Driver Trip Data Found:', map['Pama, Elebert Palma']);
+    // } else {
+    //   console.log('Target Driver NOT found in liveTripsMap keys:', Object.keys(map));
+    // }
 
 
     return map;
@@ -712,14 +919,65 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
 
   const employeeMetaMap = useMemo(() => {
-    const map: Record<string, { id: number; position: string }> = {};
+    const map: Record<string, { id: number; position: string; dmsOE?: string; dmsStatus?: string }> = {};
+
     filteredData.forEach(item => {
       if (!map[item.EmployeeName]) {
-        map[item.EmployeeName] = { id: item.EmployeeID, position: item.Position };
+        map[item.EmployeeName] = {
+          id: item.EmployeeID,
+          position: item.Position,
+          dmsOE: item.DMS_OE || undefined,
+          dmsStatus: item.DMS_TripStatus || undefined,
+        };
+      } else if (!map[item.EmployeeName].dmsOE && item.DMS_OE) {
+        // Pick up DMS_OE if a subsequent row has it populated
+        map[item.EmployeeName].dmsOE = item.DMS_OE;
+        map[item.EmployeeName].dmsStatus = item.DMS_TripStatus || undefined;
       }
     });
+
     return map;
   }, [filteredData]);
+
+
+  const employeeCutoffMetricsMap = useMemo(() => {
+    const result: Record<string, { score: number; servedCount: number }> = {};
+
+    // Early return empty result object if no cutoff is selected
+    if (!selectedCutoff) return result;
+
+    const map: Record<string, { totalScore: number; servedOEs: Set<string> }> = {};
+    const { startDate, endDate } = selectedCutoff;
+
+    filteredData.forEach(item => {
+      const dateStr = item.AttendanceDate ? item.AttendanceDate.split('T')[0] : '';
+
+      if (dateStr >= startDate && dateStr <= endDate) {
+        if (!map[item.EmployeeName]) {
+          map[item.EmployeeName] = { totalScore: 0, servedOEs: new Set() };
+        }
+
+        const score = Number(item.tripIndex) || 0;
+        map[item.EmployeeName].totalScore += score;
+
+        const status = item.AttendanceStatus?.toUpperCase();
+        const oe = item.OE?.trim();
+
+        if (status === 'SERVED' && oe && oe !== '---') {
+          map[item.EmployeeName].servedOEs.add(oe);
+        }
+      }
+    });
+
+    Object.keys(map).forEach(name => {
+      result[name] = {
+        score: map[name].totalScore,
+        servedCount: map[name].servedOEs.size
+      };
+    });
+
+    return result;
+  }, [filteredData, selectedCutoff]);
 
   // @ts-ignore 
   const formatDateStr = (date: Date): string => {
@@ -739,20 +997,25 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     liveOE: string,
     isEditable: boolean
   ) => {
+    // Prevent menu from opening for future dates
+    if (dateStr > todayStr) {
+      handleBannerMessage("Cannot log or modify attendance for future dates.");
+      return;
+    };
 
-
-    // Convert target dateStr back into standard date configuration safely[cite: 4]
+    // Convert target dateStr back into standard date configuration safely
     const [y, m, d] = dateStr.split('-').map(Number);
     const targetDateObject = new Date(y, m - 1, d);
 
     const clickY = e.clientY;
     const windowHeight = window.innerHeight;
 
-    // Estimate your context menu height (e.g., ~220px to 300px depending on status counts)
+    // Estimate context menu height (~250px)
     const estimatedMenuHeight = 250;
 
     // Check if opening downwards would push the menu past the bottom edge
     const shouldFlipUp = (clickY + estimatedMenuHeight) > windowHeight;
+
     setActiveMenu({
       empName,
       empId,
@@ -766,7 +1029,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
       liveOE: liveOE === '---' ? '' : liveOE,
       isEditable
     });
-  }, []);
+  }, [todayStr]); // Added todayStr to dependencies
 
   useEffect(() => {
     if (!activeMenu) return;
@@ -855,7 +1118,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
             <button onClick={() => changeYear(1)} title="Next Year"><ChevronsRight size={18} /></button>
           </div>
 
-          <button className="gsdc-today-btn" onClick={() => scrollToDate()}>
+          <button className="gsdc-today-btn" onClick={() => scrollToDateStr()}>
             <PinIcon size={14} />
             Today
           </button>
@@ -908,55 +1171,11 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
               <th className="sticky-col sticky-header cutoff-super-header">
                 <div className="super-header-title">Cutoff Groups</div>
               </th>
+              {/* Cutoff Super-Headers */}
               {(() => {
-                /**
-                 * Finds the first occurrence of startDayOfWeek within the given month/year
-                 */
-                const getFirstCutoffAnchor = (startDay: number, current: Date): Date => {
-                  const year = current.getFullYear();
-                  const month = current.getMonth();
-                  const target = new Date(year, month, 1);
-
-                  while (target.getDay() !== startDay) {
-                    target.setDate(target.getDate() + 1);
-                  }
-                  return target;
-                };
-
-                const groupings: { label: string; count: number; isLastMonth: boolean }[] = [];
-                const firstTrueAnchor = getFirstCutoffAnchor(ALLOWED_DATE_CLICK.startDayOfWeek, currentDate);
-
-                daysInMonth.forEach((date) => {
-                  let label = '';
-                  let isLastMonth = false;
-
-                  if (date < firstTrueAnchor) {
-                    label = "LAST MONTH CUT OFF";
-                    isLastMonth = true;
-                  } else {
-                    const diffTime = date.getTime() - firstTrueAnchor.getTime();
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    const cutoffIndex = Math.floor(diffDays / 7) + 1;
-
-                    let ordinal = 'th';
-                    if (cutoffIndex === 1) ordinal = 'st';
-                    else if (cutoffIndex === 2) ordinal = 'nd';
-                    else if (cutoffIndex === 3) ordinal = 'rd';
-
-                    label = `${cutoffIndex}${ordinal} CUT OFF`;
-                  }
-
-                  if (groupings.length > 0 && groupings[groupings.length - 1].label === label) {
-                    groupings[groupings.length - 1].count++;
-                  } else {
-                    groupings.push({ label, count: 1, isLastMonth });
-                  }
-                });
-
-                // Track regular cutoff blocks separately to cleanly alternate colors even if a "Last Month" block exists
                 let regularCutoffCounter = 0;
 
-                return groupings.map((group, idx) => {
+                return cutoffGroups.map((group, idx) => {
                   let alternatingClass = 'last-month-bg';
 
                   if (!group.isLastMonth) {
@@ -964,14 +1183,19 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
                     regularCutoffCounter++;
                   }
 
+                  const isSelected = selectedCutoff?.startDate === group.startDate && selectedCutoff?.endDate === group.endDate;
+
                   return (
                     <th
                       key={idx}
                       colSpan={group.count}
-                      className={`sticky-header cutoff-super-header group-span-cell ${alternatingClass}`}
+                      onClick={() => setSelectedCutoff(group)}
+                      className={`sticky-header cutoff-super-header group-span-cell ${alternatingClass} ${isSelected ? 'active-cutoff-header' : ''}`}
+                      style={{ cursor: 'pointer' }}
+                      title={`Click to focus ${group.label} (${group.startDate} to ${group.endDate})`}
                     >
                       <span className="cutoff-text-header">
-                        {group.label}
+                        {group.label} {isSelected ? '(SELECTED)' : ''}
                       </span>
                     </th>
                   );
@@ -1069,18 +1293,26 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
                     matchingColorClass = regularCutoffCounter % 2 === 0 ? 'odd-cutoff' : 'even-cutoff';
                   }
 
+                  const isCellInSelectedCutoff = selectedCutoff ? (dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate) : false;
+                  const isCutoffStart = selectedCutoff?.startDate === dateStr;
+                  const isCutoffEnd = selectedCutoff?.endDate === dateStr;
+
                   return (
                     <th
                       key={dateStr}
+                      data-date={dateStr}
                       ref={isToday ? todayRef : null}
                       className={`sticky-header date-sub-header ${matchingColorClass}
-                        ${isToday ? 'today-column' : ''} 
-                        ${isWeekend ? 'weekend-column' : ''}
-                        ${dayOfWeek === 0 ? 'sunday' : ''}
-                        ${isBoundary ? 'lock-boundary-edge' : ''}
-                        ${isEndBoundary ? 'lock-end-boundary' : ''}
-                        ${isFirstDayOfCutoff ? 'cutoff-start-column' : ''} 
-                      `}
+                      ${isToday ? 'today-column' : ''} 
+                      ${isWeekend ? 'weekend-column' : ''}
+                      ${dayOfWeek === 0 ? 'sunday' : ''}
+                      ${isBoundary ? 'lock-boundary-edge' : ''}
+                      ${isEndBoundary ? 'lock-end-boundary' : ''}
+                      ${isFirstDayOfCutoff ? 'cutoff-start-column' : ''} 
+                      ${isCellInSelectedCutoff ? 'selected-cutoff-col' : ''}
+                      ${isCutoffStart ? 'selected-cutoff-boundary-start' : ''}
+                      ${isCutoffEnd ? 'selected-cutoff-boundary-end' : ''}
+                    `}
                     >
                       {isToday &&
                         <span className="today-label-flag">
@@ -1103,17 +1335,28 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
               <AttendanceSkeleton days={daysInMonth} />
             ) : (
               paginatedEmployeeNames.map(name => {
-                // Find trip info for the current employee from liveTrips table
-                const tripInfo = liveTripsMap[name];
-                const oeValue = tripInfo ? tripInfo[colOE] : '---';
-                const tripStatus = tripInfo ? tripInfo[colStatus] : null;
                 const meta = employeeMetaMap[name];
+                // Find trip info for the current employee from liveTrips table
 
+                // 1. Read directly from API data first, then fall back to liveTripsMap, then '---'
+                const tripInfo = liveTripsMap[name];
+                const oeValue = meta?.dmsOE || (tripInfo ? tripInfo[colOE] : null) || '---';
+                const tripStatus = meta?.dmsStatus || (tripInfo ? tripInfo[colStatus] : null);
+
+                // Retrieve cutoff summary metrics
+                const metrics = employeeCutoffMetricsMap[name] || { score: 0, servedCount: 0 };
                 const employeeData = pageGroupedData[name] || { positions: '', dates: {} };
 
                 return (
                   <tr key={name}>
-                    <td className="sticky-col emp-name" title={`${name} - ${employeeData.positions || ''}`}>
+                    <td
+                      className="sticky-col emp-name"
+                      title={`${name} - ${employeeData.positions || ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveSummaryEmp(name);
+                      }}
+                    >
                       <div className="name-cell-content">
                         {/* 1. Position Indicator */}
                         <div className="position-indicator">
@@ -1126,22 +1369,63 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
                         {/* 2. Text Stack (Name + Trip Info) */}
                         <div className="name-details-stack">
+
+                          {/* Primary Employee Name + Summary Icon */}
                           <div className="primary-name-row">
-                            <HighlightText text={name} highlight={searchTerm} />
+                            <span
+                              className="primary-name-text clickable-name"
+                              title="Click to view employee summary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveSummaryEmp(name);
+                              }}
+                            >
+                              <HighlightText text={name} highlight={searchTerm} />
+                            </span>
+
+                            <button
+                              className="summary-icon-btn"
+                              title="View Employee Summary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveSummaryEmp(name);
+                              }}
+                            >
+                              <FileText size={13} />
+                            </button>
                           </div>
+
+                          {/* Tier 2: Current Live Trip Status */}
                           <div className="secondary-oe-row">
                             <div className="oe-left-group">
                               <span className="oe-label">Trip:</span>
                               <span className="oe-value">{oeValue}</span>
                             </div>
 
-                            {/* Trip Status on the right, no labels */}
                             {tripStatus && (
                               <div className="oe-status-tag">
                                 {tripStatus}
                               </div>
                             )}
                           </div>
+
+                          {/* Tier 3: Cutoff Summary Metrics Bar */}
+                          <div className="cutoff-metrics-row">
+                            <span
+                              className="metric-pill served"
+                              title={`Unique Served Trips in current cutoff (${ALLOWED_DATE_CLICK.startDate} to ${ALLOWED_DATE_CLICK.endDate})`}
+                            >
+                              <b>{metrics.servedCount}</b> Served
+                            </span>
+
+                            <span
+                              className="metric-pill score"
+                              title={`Accumulated Trip Score in current cutoff (${ALLOWED_DATE_CLICK.startDate} to ${ALLOWED_DATE_CLICK.endDate})`}
+                            >
+                              <b>{metrics.score > 0 ? metrics.score.toFixed(2) : '0'}</b> pts
+                            </span>
+                          </div>
+
                         </div>
                       </div>
                     </td>
@@ -1171,6 +1455,10 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
                       const cellKey = `${meta?.id || '0'}-${dateStr}`;
                       const isCellLoading = !!cellLoadingStates[cellKey];
 
+                      const isCellInSelectedCutoff = selectedCutoff ? (dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate) : false;
+                      const isCutoffStart = selectedCutoff?.startDate === dateStr;
+                      const isCutoffEnd = selectedCutoff?.endDate === dateStr;
+
                       return (
                         <AttendanceCell
                           key={dateStr}
@@ -1189,6 +1477,10 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
                           isEndBoundaryCell={isEndBoundary}
                           onBannerMsg={handleBannerMessage}
                           isCellLoading={isCellLoading}
+                          // Add cutoff selection flags below:
+                          isSelectedCutoff={isCellInSelectedCutoff}
+                          isCutoffStart={isCutoffStart}
+                          isCutoffEnd={isCutoffEnd}
                         />
                       );
                     })}
@@ -1297,6 +1589,16 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
         <AutoDismissBanner
           message={bannerMessage}
           onClose={() => setBannerMessage(null)}
+        />
+      )}
+
+      {/* Employee Summary Modal */}
+      {activeSummaryEmp && (
+        <EmployeeSummaryModal
+          employeeName={activeSummaryEmp}
+          selectedCutoff={selectedCutoff}
+          allRecords={rawAttendanceData}
+          onClose={() => setActiveSummaryEmp(null)}
         />
       )}
 

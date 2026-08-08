@@ -1,0 +1,281 @@
+/* Modal Backdrop with Blur */
+.emp-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Modal Card Box */
+.emp-modal-container {
+    background: #ffffff;
+    width: 100%;
+    max-width: 920px;
+    max-height: 85vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Header Styling */
+.emp-modal-header {
+    background: linear-gradient(135deg, #011033 0%, #4f0303 100%);
+    color: #ffffff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid #ff3b30;
+    /* Red accent border */
+}
+
+.emp-header-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.emp-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: rgba(58, 78, 252, 0.2);
+    border: 1px solid var(--color-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary-light);
+}
+
+.emp-modal-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text-2);
+}
+
+.emp-modal-subtitle {
+    margin: 2px 0 0 0;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.emp-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cutoff-badge-pill {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #e2e8f0;
+}
+
+.emp-modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.emp-modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+/* Modal Body */
+.emp-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* KPI Cards Grid */
+.emp-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.kpi-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.kpi-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kpi-card.score .kpi-icon {
+    background: rgba(58, 78, 252, 0.1);
+    color: #3a4efc;
+}
+
+.kpi-card.served .kpi-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #047857;
+}
+
+.kpi-card.km .kpi-icon {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.kpi-card.days .kpi-icon {
+    background: rgba(100, 116, 139, 0.1);
+    color: #475569;
+}
+
+.kpi-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-label {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.kpi-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Table Styling */
+.section-title {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.emp-table-wrapper {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.emp-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.emp-history-table th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.emp-history-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.emp-history-table tr:hover {
+    background-color: #f8fafc;
+}
+
+.font-mono {
+    font-family: monospace;
+}
+
+.font-bold {
+    font-weight: 600;
+}
+
+.text-primary {
+    color: #3a4efc;
+}
+
+.text-muted {
+    color: #94a3b8;
+}
+
+.route-cell {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.inline-icon {
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.clickable-name {
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.clickable-name:hover {
+    color: #3a4efc;
+    text-decoration: underline;
+}
+
+.empty-history-cell {
+    text-align: center;
+    padding: 24px;
+    color: #94a3b8;
+}
+
+.emp-modal-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #ff4d4d;
+    /* Red accent */
+    background-color: rgba(255, 77, 77, 0.12);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+}
