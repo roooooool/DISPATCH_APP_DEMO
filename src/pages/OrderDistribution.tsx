@@ -1073,9 +1073,9 @@ const OrderDistribution: React.FC = () => {
         Approved_x0020_Date: currentDate,
         OE_x0020_Date: currentDate,
         MonitoredBy: user?.FullName,
-        Driver_x0020_Loader: "Full Trip",
+        DriverLoaderType: "Full Trip",
         DriverUnloaderType: "Full Trip",
-        Helper_x0020_Loader: "Full Trip",
+        HelperLoaderType: "Full Trip",
         HelperUnloaderType: "Full Trip"
       };
 

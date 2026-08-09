@@ -410,11 +410,16 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                 _tripGroup: order._tripGroup,
                                 cementType: order.cementType,
 
-                                Loading_x0020_Sequence: 999,
+                                Loading_x0020_Sequence: 9999,
 
                                 OE_x0020_Date: additionalOE ? new Date().toDateString() : order.OE_x0020_Date,
                                 //MonitoredBy: formData.MonitoredBy,
                                 DispatchedBy: user?.FullName || 'Unknown User',
+
+                                DriverLoaderType: "Full Trip",
+                                DriverUnloaderType: "Full Trip",
+                                HelperLoaderType: "Full Trip",
+                                HelperUnloaderType: "Full Trip"
                             };
 
                             // 5. DMS_CEMService.create(...)
@@ -596,7 +601,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                         overflowY
                         tableMinHeight="calc(100% - 50px)"
                         rowActionMode='dragndrop'
-                        showRowCount={100}
+                        showRowCount={500}
                         density='tight'
                         isLoading={newOrdersLoading}
                         loadingNoPreventAction={true}

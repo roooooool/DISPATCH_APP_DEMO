@@ -43,6 +43,7 @@ import FuelRequestManager from '../components/FuelRequestManager';
 // import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
 import { TripTicketsService } from '../generated/services/TripTicketsService';
 import { Usp_ChangeTripTaskTrackerOEService } from '../generated/services/Usp_ChangeTripTaskTrackerOEService';
+import { OnFCTDivertService } from '../generated/services/OnFCTDivertService';
 import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFMETripsView_CEM_unfilteredService';
 
 
@@ -326,7 +327,8 @@ const OrderManagement: React.FC = () => {
         console.log("Fetching fuel requests with parameters - nocd:", nocd, "vehicle:", vehicle, "oe:", oe);
         if (!vehicle || !oe) return;
         if (!nocd && fuelRequests.length > 0 && !canFetch(`${FETCH_LOADING_KEYS.fuelRequests}-${vehicle}-${oe}`)) return;
-        setLoadingFor(`${FETCH_LOADING_KEYS.fuelRequests}`, true);
+        setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, true);
+
 
 
 
@@ -364,13 +366,13 @@ const OrderManagement: React.FC = () => {
             console.log("Last odometer reading from fuel requests:", lastOdometer || null, 'results: ', lastOdometer);
 
             console.log("Fetched and combined unique fuel requests:", requestsResults);
-
+            setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, false);
 
         } catch (err) {
             console.error("Fetch Error during fuel request batching:", err);
             setFuelRequests([]);
         } finally {
-            setLoadingFor(`${FETCH_LOADING_KEYS.fuelRequests}-${vehicle}-${oe}`, false);
+            setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, false);
         }
     }, []);
 
@@ -522,7 +524,7 @@ const OrderManagement: React.FC = () => {
     // State for Change Trip Modal
     const [showChangeTripModal, setShowChangeTripModal] = useState<{
         show: boolean;
-        record: any;
+        record: LiveDMSView_CEM;
         action: 'Divert' | 'Change';
         configChange: any[];
     } | null>(null);
@@ -1108,14 +1110,26 @@ const OrderManagement: React.FC = () => {
         return LIVE_DMS_TABLE_CONFIG.table_config.map((column: ColumnConfig) => {
             const encodedKey = encodeColumnName(column.col);
 
+            // 1. Priority: Apply filter selections coming from tableFilters (e.g., chart selections)
             if (tableFilters[encodedKey]) {
                 return {
                     ...column,
                     filter: {
                         ...column.filter,
                         type: column.filter?.type || "dropdown-multiple",
-                        // Force inject the dynamic selections as default rules
                         default: tableFilters[encodedKey]
+                    }
+                };
+            }
+
+            // 2. Fallback: Default "Buisness Unit" filter to user's BusinessUnit only if user is a Coordinator ('Coor')
+            if (column.col === "Buisness Unit" && user?.BusinessUnit && user?.Position === 'Coor') {
+                return {
+                    ...column,
+                    filter: {
+                        ...column.filter,
+                        type: column.filter?.type || "dropdown-multiple",
+                        default: [user.BusinessUnit]
                     }
                 };
             }
@@ -1123,7 +1137,7 @@ const OrderManagement: React.FC = () => {
             // Return a clean structural copy to ensure the component recognizes the reference change
             return { ...column };
         });
-    }, [tableFilters]); // Listens intently to chart selections
+    }, [tableFilters, user?.BusinessUnit, user?.Position]); // Added user?.Position to dependencies
 
 
     const handleExport = () => {
@@ -1495,7 +1509,7 @@ const OrderManagement: React.FC = () => {
         }
         else if (
             raw_record._tripGroup !== original._tripGroup &&
-            !['Preload', 'Mobilization'].includes(original._tripGroup)
+            !['Preload', 'Mobilization'].includes(original?._tripGroup || '')
         ) {
             errorMessage = isDev ? null : "Trip group does not match. Please select a trip with the same trip group.";
         }
@@ -1916,6 +1930,11 @@ const OrderManagement: React.FC = () => {
                                                         Usp_ChangeTripTaskTrackerOEService.Usp_ChangeTripTaskTrackerOE({
                                                             OldOE: showChangeTripModal.record.OE || '',
                                                             NewOE: selectedChangeTripOE.OE || '',
+                                                        } as any);
+
+                                                        OnFCTDivertService.OnFCTDivert({
+                                                            prevOE: showChangeTripModal.record.OE || '',
+                                                            newOE: selectedChangeTripOE.OE || ''
                                                         } as any);
 
                                                         // const result3 = await TripTaskTrackerService.update(

@@ -1,0 +1,37 @@
+{
+  "name": "[dbo].[OnFCTDivert]",
+  "title": "[dbo].[OnFCTDivert]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "prevOE": {
+          "title": "prevOE",
+          "type": "string"
+        },
+        "newOE": {
+          "title": "newOE",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

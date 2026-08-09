@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.14.8"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.14.8"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -660,7 +660,16 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     { col: "Trip Status", alias: "Status", filter: { type: "dropdown-multiple", options: statusOptions }, cellStyle: () => { return { fontWeight: 'bold' } } },
     { col: "Loading Sequence", defaultSort: 'asc', orderSort: 3, alias: "LS", hidden: true },
     { col: "OE Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("OE Date")]) },
-    { col: "Buisness Unit", alias: "BU", filter: { type: "dropdown-multiple" } },
+    {
+      col: "Buisness Unit", alias: "BU",
+      filter: {
+        type: "dropdown-multiple",
+        options: [
+          { value: 'SBUO-1A' },
+          { value: 'SBUO-1B' },
+        ]
+      }
+    },
     { col: "Driver", cellStyle: () => { return { textAlign: 'left' } } },
     { col: "Helper", cellStyle: () => { return { textAlign: 'left' } } },
     { col: "Vehicle", alias: "Truck" },

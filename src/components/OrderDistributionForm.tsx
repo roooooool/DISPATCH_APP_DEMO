@@ -1533,6 +1533,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 tripStatus = undefined;
                 break;
               case 'Dispatched To Source':
+                driverLoader = formData.Driver
+                driverUnloader = formData.Driver
+                helperLoader = formData.Helper
+                helperUnloader = formData.Helper
+                fulltrip = "Full Trip"
                 attendanceStatus = 'ON TRIP';
                 tripStatus = 'ITS';
                 break;
@@ -1609,8 +1614,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               DriverUnloaderType: fulltrip || formData.DriverUnloaderType,
               HelperUnloaderType: fulltrip || formData.HelperUnloaderType,
 
+              CIFME_OE: formData.CIFME_OE,
+              CIFME_DESTINATION: formData.CIFME_DESTINATION
 
             } as Partial<LiveDMSView_CEM>;
+
+            console.log('awdwadawd: ', updatedData);
 
             // Set to true if you want to deselect the trip after verification
             if (formData.Completed_x0020_Date) {
@@ -3176,13 +3185,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
                   <div className="form-row">
                     <div className="input-group">
-                      <label>ATW/LO#</label>
+                      <label>ATW/LO# *</label>
                       <div className="gradient-input-wrapper">
                         <input disabled={disabledAssGrp} type="text" value={formData.ATW_x002f_LO_x0023_ || ''} onChange={e => handleFieldChange('ATW_x002f_LO_x0023_', e.target.value)} />
                       </div>
                     </div>
                     <div className="input-group">
-                      <label>SO#</label>
+                      <label>SO# *</label>
                       <div className="gradient-input-wrapper">
                         <input disabled={disabledAssGrp} type="text" value={formData.SO_x0023_ || ''} onChange={e => handleFieldChange('SO_x0023_', e.target.value)} />
                       </div>
@@ -3191,13 +3200,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
                   <div className="form-row">
                     <div className="input-group">
-                      <label>PLANT DR</label>
+                      <label>PLANT DR *</label>
                       <div className="gradient-input-wrapper">
                         <input disabled={disabledAssGrp} type="text" value={formData.Plant_x0020_DR || ''} onChange={e => handleFieldChange('Plant_x0020_DR', e.target.value)} />
                       </div>
                     </div>
                     <div className="input-group">
-                      <label>GSDC DR</label>
+                      <label>GSDC DR *</label>
                       <div className="gradient-input-wrapper">
                         <input disabled={disabledAssGrp} type="text" value={formData.GSDC_x0020_DR || ''} onChange={e => handleFieldChange('GSDC_x0020_DR', e.target.value)} />
                       </div>

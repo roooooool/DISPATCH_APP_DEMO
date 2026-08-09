@@ -1182,6 +1182,24 @@ export const dataSourcesInfo = {
           }
         ]
       },
+      "OnFCTDivert": {
+        "path": "/dbo.OnFCTDivert",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "prevOE",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "newOE",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
       "sp_fetchAttendanceCalendar": {
         "path": "/dbo.sp_fetchAttendanceCalendar",
         "method": "POST",
