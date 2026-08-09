@@ -691,6 +691,26 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
         return row.TripProgress
       },
     },
+    {
+      col: "_tp_count",
+      alias: "_tp_count",
+      useCalculatedSort: true,
+      calculate: (row: any) => {
+        const value = row["TripProgress"];
+        const sortMapping: Record<string, number> = {
+          'Planned': 0,
+          'Assigned': 1,
+          'Dispatched To Source': 2,
+          'Dispatched To Destination': 3,
+          'Done': 4,
+          'Verified': 5,
+        };
+
+        // Return the numerical weight (or a fallback weight if the value is missing)
+        return value in sortMapping ? sortMapping[value] : -1;
+      },
+      defaultSort: 'asc', orderSort: 2, hidden: true,
+    },
     { col: "Customer", cellStyle: () => { return { textAlign: 'left' } } },
     { col: "Source", defaultSort: 'asc', orderSort: 1, preventNoSort: true, cellStyle: () => { return { textAlign: 'left' } } },
     { col: "Destination", cellStyle: () => { return { textAlign: 'left' } } },

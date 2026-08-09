@@ -120,6 +120,11 @@ const AttendanceCell = React.memo(({
     if (onBannerMsg) onBannerMsg(msg);
   };
 
+  // Pre-calculate precedence
+  const hasCutoffBoundary = isCutoffStart || isCutoffEnd;
+  const showBoundaryEdge = isBoundaryCell && !hasCutoffBoundary;
+  const showEndBoundary = isEndBoundaryCell && !hasCutoffBoundary;
+
   return (
     <td
       className={`status-cell 
@@ -127,8 +132,8 @@ const AttendanceCell = React.memo(({
         ${isWeekend ? 'weekend-cell' : ''}
         ${dayOfWeek === 0 ? 'sunday-cell' : ''}
         ${isActiveMenuCell ? 'menu-active-cell' : ''}
-        ${isBoundaryCell ? 'lock-boundary-edge' : ''}
-        ${isEndBoundaryCell ? 'lock-end-boundary' : ''}
+        ${showBoundaryEdge ? 'lock-boundary-edge' : ''}
+        ${showEndBoundary ? 'lock-end-boundary' : ''}
         ${isCellLoading ? 'cell-is-updating' : ''}
         ${isSelectedCutoff ? 'selected-cutoff-cell' : ''}
         ${isCutoffStart ? 'selected-cutoff-boundary-start' : ''}
@@ -568,6 +573,11 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     }
 
   }, [year, month, lateAttendanceRequests.length]);
+
+  useEffect(() => {
+    fetchLateAttendanceRequests();
+  }, []);
+
 
 
   // Trigger scroll to latest date after data load completes
@@ -1168,7 +1178,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
         <table className="attendance-table">
           <thead>
             <tr>
-              <th className="sticky-col sticky-header cutoff-super-header">
+              <th className="sticky-col sticky-header cutoff-super-header-fortitle">
                 <div className="super-header-title">Cutoff Groups</div>
               </th>
               {/* Cutoff Super-Headers */}

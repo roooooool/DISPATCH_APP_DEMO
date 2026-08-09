@@ -18,7 +18,7 @@ export interface DropdownOption {
   subtext?: string; //legacy
   cardConfig?: CardRow[][];
   record?: any; // To hold the original record for later use when an option is selected
-} 
+}
 
 interface SearchableDropdownProps {
   options?: DropdownOption[];
@@ -63,9 +63,9 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         {config.map((row, rowIndex) => (
           <div key={rowIndex} className="card-row">
             {row.map((cell, cellIndex) => (
-              <div 
-                key={cellIndex} 
-                className="card-cell" 
+              <div
+                key={cellIndex}
+                className="card-cell"
                 style={{ flex: cell.proportion || 1 }}
               >
                 <span className="cell-label">{cell.label}</span>
@@ -93,42 +93,42 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const computedOptions = React.useMemo((): DropdownOption[] => {
     // 1. Create a local variable for the base options
     // If the passed options are empty, use the hardcoded defaults
-      const baseOptions = (options && options.length > 0) ? options : [
-          { value: 'Apple', label: 'Apple', type: 'multi', subtext: 'ID: F-001 | Available (12)' },
-          { value: 'Banana', label: 'Banana', type: 'multi', subtext: 'ID: F-002 | Available (23)' },
-          { value: 'Cherry', label: 'Cherry', type: 'multi', subtext: 'ID: F-003 | Out of Stock' },
-      ] as DropdownOption[];
+    const baseOptions = (options && options.length > 0) ? options : [
+      { value: 'Apple', label: 'Apple', type: 'multi', subtext: 'ID: F-001 | Available (12)' },
+      { value: 'Banana', label: 'Banana', type: 'multi', subtext: 'ID: F-002 | Available (23)' },
+      { value: 'Cherry', label: 'Cherry', type: 'multi', subtext: 'ID: F-003 | Out of Stock' },
+    ] as DropdownOption[];
 
-      // 2. Use baseOptions instead of 'options' in the rest of the function
-      if (value === undefined || value === null || value === '') return baseOptions;
+    // 2. Use baseOptions instead of 'options' in the rest of the function
+    if (value === undefined || value === null || value === '') return baseOptions;
 
-      if (allowMultiple && Array.isArray(value)) {
-          const missingValues = value.filter(v => !baseOptions.find(opt => opt.value === v));
-          if (missingValues.length === 0) return baseOptions;
-          
-          const tempOptions: DropdownOption[] = missingValues.map(v => ({
-              value: v,
-              label: v,
-              subtext: '(Historical Record)', 
-              type: 'multi'
-          }));
-          return [...baseOptions, ...tempOptions];
+    if (allowMultiple && Array.isArray(value)) {
+      const missingValues = value.filter(v => !baseOptions.find(opt => opt.value === v));
+      if (missingValues.length === 0) return baseOptions;
+
+      const tempOptions: DropdownOption[] = missingValues.map(v => ({
+        value: v,
+        label: v,
+        subtext: '(Historical Record)',
+        type: 'multi'
+      }));
+      return [...baseOptions, ...tempOptions];
+    }
+
+    if (typeof value === 'string' && value !== '') {
+      const exists = baseOptions.find(opt => opt.value === value);
+      if (!exists) {
+        const tempOption: DropdownOption = {
+          value: value,
+          label: value,
+          subtext: 'NOT ON LIST',
+          type: 'multi'
+        };
+        return [...baseOptions, tempOption];
       }
+    }
 
-      if (typeof value === 'string' && value !== '') {
-          const exists = baseOptions.find(opt => opt.value === value);
-          if (!exists) {
-              const tempOption: DropdownOption = { 
-                  value: value, 
-                  label: value, 
-                  subtext: 'NOT ON LIST', 
-                  type: 'multi'
-              };
-              return [...baseOptions, tempOption];
-          }
-      }
-
-      return baseOptions;
+    return baseOptions;
   }, [options, value, allowMultiple]);
 
   const filteredOptions = allowSearch && search
@@ -155,13 +155,13 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   let displayValue = '';
   if (allowMultiple && Array.isArray(value)) {
-      displayValue = value.length > 0 
-          ? computedOptions.filter(opt => value.includes(opt.value)).map(opt => opt.label).join(', ')
-          : '';
+    displayValue = value.length > 0
+      ? computedOptions.filter(opt => value.includes(opt.value)).map(opt => opt.label).join(', ')
+      : '';
   } else if (typeof value === 'string') {
-      displayValue = computedOptions.find(opt => opt.value === value)?.label || '';
+    displayValue = computedOptions.find(opt => opt.value === value)?.label || '';
   } else if (value === undefined) {
-      displayValue = ''; // Explicitly handle undefined for the display
+    displayValue = ''; // Explicitly handle undefined for the display
   }
 
 
@@ -169,7 +169,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   return (
     <div className={`searchable-dropdown-wrapper ${className}`} ref={wrapperRef}>
       {label && <label className="dropdown-label">{label}</label>}
-      
+
       {/* Gradient Border Wrapper */}
       <div className={`gradient-input-wrapper ${isOpen ? 'active' : ''}`}>
         <div
@@ -210,14 +210,14 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               {search && <X size={14} className="clear-search" onClick={() => setSearch('')} />}
             </div>
           )}
-          
+
           <div className="dropdown-options-list">
             {filteredOptions.length === 0 ? (
               <div className="dropdown-no-options">No results found</div>
             ) : (
               filteredOptions.map(opt => (
-                <div 
-                  key={opt.value} 
+                <div
+                  key={opt.value}
                   className={`dropdown-option-row ${isSelected(opt.value) ? 'selected' : ''}`}
                   onClick={() => handleSelect(opt.value)}
                   style={styleOverrides.optionRow}
@@ -231,9 +231,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                     />
                   )}
                   <span
-                    className={`option-label ${
-                      (opt.type === 'multi' || opt.type === 'card') ? 'option-label-multiline' : ''
-                    }`}
+                    className={`option-label ${(opt.type === 'multi' || opt.type === 'card') ? 'option-label-multiline' : ''
+                      }`}
                     style={styleOverrides.optionTextColor ? { color: styleOverrides.optionTextColor } : {}}
                   >
 
@@ -255,6 +254,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           </div>
 
           {!noClear && (<button
+            type="button"
             className="dropdown-clear-btn"
             onClick={e => {
               e.stopPropagation();

@@ -1004,6 +1004,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                                 const isLocal = trip._isLocal === true;
 
                                                 const orderId = trip[displayMapping.titleField] || `New #${idx + 1}`;
+                                                //@ts-ignore
                                                 const status = displayMapping.statusField ? trip[displayMapping.statusField] : undefined;
                                                 const source = trip[displayMapping.routeStartField] || '—';
                                                 const destination = trip[displayMapping.routeEndField] || '—';

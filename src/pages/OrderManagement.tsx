@@ -888,7 +888,7 @@ const OrderManagement: React.FC = () => {
         if (type === 'Mobilization') return preview_mobilizationOE;
         return '';
     }
-
+    //@ts-ignore
     const handleAdditionalOEGeneration = (type: 'Preload' | 'Mobilization') => {
         const record = {
             OE: getAdditionalOEForType(type),
@@ -1192,8 +1192,8 @@ const OrderManagement: React.FC = () => {
             >
                 + New Trip
             </button> */}
-            <button className="header-btn secondary preload" onClick={() => { handleAdditionalOEGeneration("Preload"); setActiveView('form'); setSidebarVisible(true); }} style={{ minWidth: 90 }}>Preload</button>
-            <button className="header-btn secondary mobilization" onClick={() => { handleAdditionalOEGeneration("Mobilization"); setActiveView('form'); setSidebarVisible(true); }} style={{ minWidth: 120 }}>Mobilization</button>
+            {/* <button className="header-btn secondary preload" onClick={() => { handleAdditionalOEGeneration("Preload"); setActiveView('form'); setSidebarVisible(true); }} style={{ minWidth: 90 }}>Preload</button>
+            <button className="header-btn secondary mobilization" onClick={() => { handleAdditionalOEGeneration("Mobilization"); setActiveView('form'); setSidebarVisible(true); }} style={{ minWidth: 120 }}>Mobilization</button> */}
             {/*<button className="header-btn secondary" onClick={() => {setShowFuelRequestModal(true); fetchFuelRequests(true);}}>
                 <Fuel size={16} />
                 <span>Fuel Requests</span>
@@ -1638,8 +1638,8 @@ const OrderManagement: React.FC = () => {
 
 
                 <div className='chart-stretch-wrapper' hidden={!showCharts}>
-                    <div className="mini-dashboard-stack" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        <div className="chart-container-card" style={{ flex: 1, minWidth: 280 }}>
+                    <div className="mini-dashboard-stack" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', minHeight: '130px' }}>
+                        <div className="chart-container-card">
                             {/* <h4 className="chart-title">Trip Distribution</h4> */}
                             <TripGroup_DonutChart
                                 ref={donutChartRef}

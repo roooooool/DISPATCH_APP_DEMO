@@ -8,6 +8,7 @@ import CustomFileAttachment, { type CustomFileAttachmentRef } from './DropFile';
 import TableView, { type ColumnConfig } from './ewul_TableFlex';
 import { Truck, MapPin, ClipboardList, PlusCircle, List, FilePlus, Fuel, Loader2 } from 'lucide-react';
 import './comp_css/FuelRequestManager.css';
+import AutoDismissBanner from './ewul_Banner';
 
 import GradientRadioGroup, { type GradientRadioOption } from './GradientRadioOption';
 
@@ -21,7 +22,7 @@ import {
     GPS_STATUS_COLOR,
 } from '../truth.config';
 
-import { ewulFetchAll, fetchSharepointAttachments, formatDate, formatToLocalISO } from '../utils/Ewul_GSDC_Utils';
+import { ewulFetchAll, fetchSharepointAttachments, formatDate, formatToLocalISO, ISOtoInt } from '../utils/Ewul_GSDC_Utils';
 import type { LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
 
 
@@ -120,6 +121,8 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
 }) => {
     const [activeTab, setActiveTab] = useState<'list' | 'form'>(defaultTab);
     const [formData, setFormData] = useState<Partial<FctFinal>>(initialFormData || {});
+
+    const [bannerMessage, setBannerMessage] = useState<string | null>(null);
 
     const [tempFiles, setTempFiles] = useState<File[]>([]);
     const [attachments, setAttachments] = useState<any[]>([]);
@@ -522,17 +525,30 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
         });
 
         try {
+            const uploadTimestamp = ISOtoInt(new Date(Date.now()).toISOString(), true);
+
             const fileContents = await Promise.all(
-                files.map(async (file) => ({
-                    name: file.name,
-                    contentBytes: await toBase64(file),
-                }))
+                files.map(async (file, index) => {
+                    // Extract file extension and base name
+                    const lastDotIdx = file.name.lastIndexOf('.');
+                    const ext = lastDotIdx !== -1 ? file.name.substring(lastDotIdx) : '';
+                    const baseName = lastDotIdx !== -1 ? file.name.substring(0, lastDotIdx) : file.name;
+
+                    // Clean special characters and append timestamp + index for uniqueness
+                    const cleanBaseName = baseName.replace(/[^a-zA-Z0-0_-]/g, '_');
+                    const uniqueFileName = `${cleanBaseName}_${uploadTimestamp}_${index}${ext}`;
+
+                    return {
+                        name: uniqueFileName,
+                        contentBytes: await toBase64(file),
+                    };
+                })
             );
 
             const body = {
                 siteAddress: "https://gsdcph.sharepoint.com",
                 ListName: "fct2",
-                ListItemID: itemID || null, // This should be the ID of an existing attachment item if updating, or empty for new
+                ListItemID: itemID || null,
                 itemRecord: {
                     orderEntryRef: formData.Orderentryref || '',
                 },
@@ -551,7 +567,6 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
             console.log(`Response for fuelrequest upload:`, responseData);
 
             if (response.ok && responseData.statusCode === "200") {
-                console.log(`Upload successful for fuelrequest attachments:`, responseData);
                 return { success: true, data: responseData };
             } else {
                 const errorText = responseData.body || `HTTP error! status: ${response.status}`;
@@ -962,6 +977,7 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                                                                             handleInputChange(fieldName, currentSelectedRoute || null); // Clear if new, otherwise reset to original trip value
                                                                         }}
                                                                         disabled={noedit}
+                                                                        noClear
                                                                     />
                                                                 </div>
                                                                 <div style={{ flex: 3 }}>
@@ -1126,10 +1142,35 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                                                         ...tempFiles
                                                     ]}
                                                     onFilesChange={(mergedList: any[]) => {
-                                                        const onlyNewFiles = mergedList.filter(f => f instanceof File);
-                                                        setTempFiles(onlyNewFiles);
-                                                        console.log('Updated attachments list:', mergedList);
-                                                        const message = validateForm(formData, [...attachments, ...onlyNewFiles]); // Re-run validation when attachments change
+                                                        const onlyNewFiles = mergedList.filter(f => f instanceof File) as File[];
+
+                                                        const existingAttachmentNames = attachments.map(
+                                                            att => att.name || att.FileName || att.ServerRelativeUrl?.split('/').pop() || ''
+                                                        );
+
+                                                        let duplicateFound = false;
+
+                                                        const uniqueNewFiles = onlyNewFiles.filter((file, idx, self) => {
+                                                            const isDuplicateInSelf = self.findIndex(f => f.name === file.name && f.size === file.size) !== idx;
+                                                            const isDuplicateInExisting = existingAttachmentNames.includes(file.name);
+
+                                                            if (isDuplicateInSelf || isDuplicateInExisting) {
+                                                                duplicateFound = true;
+                                                                return false;
+                                                            }
+                                                            return true;
+                                                        });
+
+                                                        // Trigger the warning banner if a duplicate was detected
+                                                        if (duplicateFound) {
+                                                            setBannerMessage(`Duplicate file detected "${onlyNewFiles.find(f => !uniqueNewFiles.includes(f))?.name || 'attachment'}". Duplicate ignored.`);
+                                                        } else {
+                                                            setBannerMessage(''); // Clear message if no duplicates
+                                                        }
+
+                                                        setTempFiles(uniqueNewFiles);
+
+                                                        const message = validateForm(formData, [...attachments, ...uniqueNewFiles]);
                                                         setValidationMessage(message.message);
                                                     }}
                                                 />
@@ -1274,6 +1315,14 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                         </div>
                     )}
                 </div>
+
+                {bannerMessage && (
+                    <AutoDismissBanner
+                        message={bannerMessage}
+                        onClose={() => setBannerMessage(null)}
+                    />
+                )}
+
             </div>
 
         </>

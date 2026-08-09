@@ -83,6 +83,8 @@
   /* 3. Contain the overflow */
   overflow: hidden;
   /* Keeps the parent container strictly locked */
+
+  gap: 5px;
 }
 
 
@@ -747,8 +749,8 @@
 }
 
 .chart-container-card {
-  flex: 0 1 auto;
-  min-width: 280px;
+  flex: 1;
+  min-width: 300px;
   width: fit-content;
   height: fit-content !important;
   min-height: 0 !important;

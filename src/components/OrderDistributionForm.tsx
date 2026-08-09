@@ -174,6 +174,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     trailerOptions,
     sourceOptions,
     allTrips: _wew = [],
+    // @ts-ignore
     lsList = [],
     editingUser,
     canChangeTrip = false,
@@ -332,33 +333,33 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     }
 
     const validateLoadingSequence = (data: LiveDMSView_CEM) => {
-      const seq = data.Loading_x0020_Sequence;
-      const currentSource = data.Source;
+      // const seq = data.Loading_x0020_Sequence;
+      // const currentSource = data.Source;
 
       const oeValidation = validateOE(data);
       if (!oeValidation.isValid) return oeValidation;
 
-      if (seq === undefined || seq === null) {
-        return { isValid: false, message: 'Loading Sequence is required.' };
-      }
+      // if (seq === undefined || seq === null) {
+      //   return { isValid: false, message: 'Loading Sequence is required.' };
+      // }
 
-      if (seq < 1 || seq > 999.99) {
-        return { isValid: false, message: 'Sequence must be between 1 and 999.99.' };
-      }
+      // if (seq < 1 || seq > 999.99) {
+      //   return { isValid: false, message: 'Sequence must be between 1 and 999.99.' };
+      // }
 
-      const isDuplicate = (lsList || []).some(trip =>
-        trip.OE !== data.OE && // Exclude the current order from the check
-        trip.Source === currentSource && // Only check within the same source
-        Number(trip.Loading_x0020_Sequence) === Number(seq)
-      );
+      // const isDuplicate = (lsList || []).some(trip =>
+      //   trip.OE !== data.OE && // Exclude the current order from the check
+      //   trip.Source === currentSource && // Only check within the same source
+      //   Number(trip.Loading_x0020_Sequence) === Number(seq)
+      // );
 
-      if (isDuplicate) {
-        const duplicateTrips = (lsList || []).filter(trip =>
-          trip.OE !== data.OE && // Exclude the current order from the check
-          Number(trip.Loading_x0020_Sequence) === Number(seq)
-        ).map(trip => trip.OE).join(', ');
-        return { isValid: false, message: `Duplicate sequence ${seq} detected! Used by [${duplicateTrips}]` };
-      }
+      // if (isDuplicate) {
+      //   const duplicateTrips = (lsList || []).filter(trip =>
+      //     trip.OE !== data.OE && // Exclude the current order from the check
+      //     Number(trip.Loading_x0020_Sequence) === Number(seq)
+      //   ).map(trip => trip.OE).join(', ');
+      //   return { isValid: false, message: `Duplicate sequence ${seq} detected! Used by [${duplicateTrips}]` };
+      // }
 
       if ((data._tripGroup === 'Preload') && !data.Source) {
         return { isValid: false, message: 'Please select a source.' };
@@ -368,7 +369,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         return { isValid: false, message: 'Please select a cement type.' };
       }
 
-      return { isValid: true, message: 'Loading sequence is valid.' };
+      return { isValid: true, message: 'Trip details are valid.' };
     };
 
     // =================================================================================
@@ -2947,9 +2948,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         />
                       </div>
                     </div>
-                    <div className="input-group" style={{ flex: 1 }}>
+                    {/* <div className="input-group" style={{ flex: 1 }}>
                       <label>Loading Sequence *</label>
-                      <div className={`gradient-input-wrapper ${/*!validation.isValid ? 'invalid-input' : */''}`}>
+                      <div className={`gradient-input-wrapper `}>
                         <input
                           type="number"
                           step="1"
@@ -2964,7 +2965,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                           disabled={disabledOEEntGrp}
                         />
                       </div>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="form-row">

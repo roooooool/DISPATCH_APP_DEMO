@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import PageTemplate from './template';
 import {
   RefreshCcw,
-  Pencil, Check, X
+  Pencil, Check, X,
 } from 'lucide-react';
 
 import { useUser } from '../utils/useUser';
@@ -10,6 +10,8 @@ import {
   ewulFetchAll,
   ISOtoInt,
   useAntiSpam,
+
+  logDmsUpdate,
 
   // ewul_canFetch as canFetch,
   ewul_setLoadingFor as setLoadingFor,
@@ -24,6 +26,7 @@ import PenIcon from '@ui/pen-icon';
 import { NewTripsView_CEM_unfilteredService } from '../generated/services/NewTripsView_CEM_unfilteredService';
 import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMService';
 import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel'
+import { type DMS_CEM } from '../generated/models/DMS_CEMModel'
 // import { LiveVehicleAssignmentLIstViewService } from '../generated/services/LiveVehicleAssignmentLIstViewService';
 // import { LiveDriverDispatchedList_AllService } from '../generated/services/LiveDriverDispatchedList_AllService';
 import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
@@ -54,6 +57,10 @@ import type { DropdownOption } from '@components/SearchableDropdown';
 
 import './css/OrderDistribution.css';
 import './css/OrderManagement.css';
+
+
+import { useTaskWorker } from '../utils/TaskWorkerContext';
+import { DMS_CEMService } from '@/generated';
 
 
 interface BulkTaskRow {
@@ -296,7 +303,9 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
 };
 
 const OrderDistribution: React.FC = () => {
-  // const { user } = useUser();
+  const { user } = useUser();
+  const { addTask } = useTaskWorker();
+
   const [activeMode, setActiveMode] = useState<ViewMode>('ASSIGNED');
   const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{ from: string, to: string } | null>(null);
 
@@ -735,11 +744,26 @@ const OrderDistribution: React.FC = () => {
   };
 
 
-  useEffect(() => {
-    if (isBulkModalOpen && bulkRows.length === 0) {
-      addNewRow('Preload');
+  const openBulkModal = (type: string) => {
+    setIsBulkModalOpen(true);
+
+    switch (type) {
+      case 'Mobilization':
+        addNewRow('Mobilization');
+        break;
+      default:
+        addNewRow('Preload');
+        break;
     }
-  }, [isBulkModalOpen]);
+
+  }
+
+
+  // useEffect(() => {
+  //   if (isBulkModalOpen && bulkRows.length === 0) {
+  //     addNewRow('Preload');
+  //   }
+  // }, [isBulkModalOpen]);
 
 
 
@@ -1010,6 +1034,95 @@ const OrderDistribution: React.FC = () => {
   };
 
 
+  const handleConfirmCreateManualOE = async (data: BulkTaskRow[]) => {
+    // Loop through each row in the bulk task array
+    for (const row of data) {
+      if (!row.oe || row.isLoadingOE || !row.businessUnit) continue;
+
+      // Generate a unique trip ticket ID for each row's OE
+      let tripTicketID = '';
+      try {
+        const res = await GenerateNewTripTicketService.GenerateNewTripTicket({ OE: row.oe } as any);
+        const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+        if (table1 && table1.length > 0) {
+          tripTicketID = table1[0].TripTicketID;
+        }
+      } catch (error) {
+        console.error(`Error generating trip ticket ID for ${row.oe}:`, error);
+      }
+
+      const currentDate = new Date().toISOString().slice(0, 10) + ' 00:00:00.000';
+      const currentTimestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+      // Build dynamic payload for the current row
+      const payload: Partial<DMS_CEM> = {
+        Ordered_x0020_Date: new Date().toDateString(),
+        Needed_x0020_Date: new Date().toDateString(),
+        Tagged_x0020_Date: new Date().toDateString(),
+        OE: row.oe,
+        Source: row.type === 'Preload' ? row.source : '',
+        Buisness_x0020_Unit: row.businessUnit,
+        Loading_x0020_Sequence: 9999,
+        _tripGroup: row.type,
+        cementType: row.type === 'Preload' ? row.cementType : '',
+        Status: "Assigned",
+        TripProgress: "Assigned",
+        tripID: Number(tripTicketID),
+        Modified: currentTimestamp,
+        LastModifiedBy: user?.FullName,
+        Approved_x0020_Date: currentDate,
+        OE_x0020_Date: currentDate,
+        MonitoredBy: user?.FullName,
+        Driver_x0020_Loader: "Full Trip",
+        DriverUnloaderType: "Full Trip",
+        Helper_x0020_Loader: "Full Trip",
+        HelperUnloaderType: "Full Trip"
+      };
+
+      // Enqueue task via task worker utility for parallel/background tracking
+      addTask({
+        id: `ordrdist-manualassignment-${row.oe}`,
+        name: `Creating ${row.type} ${row.oe}`,
+        execute: async () => {
+          try {
+            const result = await DMS_CEMService.create(payload as DMS_CEM);
+            if (result.error) {
+              throw new Error(result.error.message);
+            }
+            console.log('Trip created successfully:', result.data);
+            return { success: true, data: result.data };
+          } catch (error) {
+            console.error('Failed to create trip:', error);
+            return { success: false, error };
+          }
+        },
+        checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
+          return result.success;
+        },
+        onSuccess: async (result) => {
+          logDmsUpdate({
+            userName: user?.FullName || '',
+            userID: Number(user?.id) || 0,
+            inputOE: result.data.OE || '',
+            action: `Trip assigned to [${result.data.Buisness_x0020_Unit}]`,
+            value: result.data.tripID,
+            isRecordJSON: true,
+            context: `Trip - Created`,
+            role: user?.Position || '',
+          });
+          fetchAssignedOrders(); // Refresh table list upon successful creation
+        },
+        onFailure: (result) => {
+          console.log('handle failure', result);
+        },
+        message: `Creating trip ${row.oe} to DMS..`,
+        message_success: `Trip ${row.oe} created successfully!`,
+        message_failure: (result) => `Trip ${row.oe} failed to be created. Reason: ${result.error?.message || 'Unknown error'}`
+      });
+    }
+  };
+
+
 
   const isSyncing = isLoadingNew || isLoadingAssigned;
 
@@ -1066,9 +1179,11 @@ const OrderDistribution: React.FC = () => {
           </div>
 
 
-          <button className="header-btn secondary mobilization" onClick={() => setIsBulkModalOpen(true)} style={{ minWidth: 180, textAlign: 'center' }}>
-            Create Manual Trip
-          </button>
+
+
+
+          <button className="header-btn secondary preload" onClick={() => { openBulkModal("Preload"); }} style={{ minWidth: 90 }}>Preload</button>
+          <button className="header-btn secondary mobilization" onClick={() => { openBulkModal("Mobilization"); }} style={{ minWidth: 120 }}>Mobilization</button>
 
 
 
@@ -1341,12 +1456,15 @@ const OrderDistribution: React.FC = () => {
                             </div>
                           </td>
 
-                          {/* Source Selection Dropdown */}
+                          {/* Source Selection Dropdown with Search */}
                           <td>
                             <div className={isMobilization ? "" : "ordr-dist-gradient-input-container"}>
-                              <select
+                              <input
+                                type="text"
+                                list={`source-list-${row.id}`}
                                 value={isMobilization ? "" : row.source}
                                 disabled={isMobilization}
+                                placeholder={isMobilization ? "Not Required" : "-- Select or Type Source --"}
                                 onChange={(e) => {
                                   const val = e.target.value;
                                   setBulkRows(prev => prev.map(r => r.id === row.id ? { ...r, source: val } : r));
@@ -1357,14 +1475,16 @@ const OrderDistribution: React.FC = () => {
                                   borderColor: '#cbd5e1',
                                   cursor: 'not-allowed'
                                 } : undefined}
-                              >
-                                <option value="">{isMobilization ? "Not Required" : "-- Select Source --"}</option>
-                                {!isMobilization && sourceOptions.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </select>
+                              />
+                              {!isMobilization && (
+                                <datalist id={`source-list-${row.id}`}>
+                                  {sourceOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </datalist>
+                              )}
                             </div>
                           </td>
 
@@ -1452,16 +1572,12 @@ const OrderDistribution: React.FC = () => {
                   type="button"
                   className="ordr-dist-modal-btn-confirm"
                   onClick={() => {
-                    console.log("Processing structured unified batch submission:", bulkRows);
+                    handleConfirmCreateManualOE(bulkRows);
                     resetModalForm();
                   }}
                   disabled={bulkRows.some(row => {
-                    // General Validation: OE must exist, loading must be done, and a Business Unit must be chosen
                     if (!row.oe || row.isLoadingOE || !row.businessUnit) return true;
-
-                    // Contextual Validation: Preloads additionally require Source and Cement Type definitions
                     if (row.type === 'Preload' && (!row.source || !row.cementType)) return true;
-
                     return false;
                   })}
                 >
