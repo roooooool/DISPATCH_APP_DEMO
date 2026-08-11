@@ -1111,6 +1111,8 @@ const OrderDistribution: React.FC = () => {
             role: user?.Position || '',
           });
           fetchAssignedOrders(); // Refresh table list upon successful creation
+          // console.log('succ: ', result.data);
+          DMS_CEMService.update(result.data.ID, { tripID: result.data.ID });
         },
         onFailure: (result) => {
           console.log('handle failure', result);

@@ -298,12 +298,108 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       record: { Id: 'na', FullName: 'N/A', DMS_Attendance: 'N/A' }
     };
 
+    useEffect(() => {
+      const isNewTrip = !initialData || !initialData.ID;
+      const newInitialData = {
+        ...initialFormData,
+        ...initialData,
+      };
+
+      if (isNewTrip) {
+        newInitialData.DispatchedBy = editingUser?.FullName || '';
+      }
+
+      setFormData(newInitialData);
+      setOriginalFormData(newInitialData);
+      setTempPlantDrAttachments([]);
+      setTempWsAttachments([]);
+      fetchAttachments(initialData?.tripID || 0, initialData); // Fetch attachments for the current trip
+      // Initial validation run
+      const initialValidation = runValidation(newInitialData);
+      setValidation(initialValidation);
+    }, [orderId, initialData, editingUser]);
+
+    const validateAfterAttachmentFetch = (initialData?: any) => {
+
+      console.log('wada :', initialData);
+      const validation = runValidation(initialData);
+      setValidation(validation)
+
+
+    };
+
+
+    //@ts-ignore
+    const [attachmentsLoading, setAttachmentsLoading] = useState(false);
+    const [attachments, setAttachments] = useState<any[]>([]);
+    //@ts-ignore
+    const fetchAttachments = async (tripID: number, initialData?: any) => {
+
+      try {
+        const records = await ewulFetchAll<any>(
+          DMS_AttachmentsService,
+          {
+            filter: `dmsID eq ${tripID}`,
+            orderBy: ['Created desc'],
+          },
+          50
+        );
+
+        await fetchSharepointAttachments({
+          metadataRecords: records,
+          listName: 'DMS_Attachments',
+          siteAddress: "https://gsdcph.sharepoint.com/sites/ProjectsDevelopments",
+          onUpdate: setAttachments,
+          onStatusChange: setAttachmentsLoading,
+          // onFinish: () => validateAfterAttachmentFetch(initialData),
+        });
+
+        console.log(records);
+
+        if (records) {
+          setWsAttachmentItemID(
+            records.find(
+              (item: any) => item.attachment_type === 'WS'
+            )?.ID?.toString()
+          );
+
+          setPlantDrAttachmentItemID(
+            records.find(
+              (item: any) => item.attachment_type === 'PLANT DR'
+            )?.ID?.toString()
+          );
+
+
+        }
+
+        // validateAfterAttachmentFetch();
+
+      } catch (error) {
+        console.error('Error fetching attachments:', error);
+      }
+    };
+
+    useEffect(() => {
+      validateAfterAttachmentFetch(formData);
+    }, [attachments]);
+
+    const hasPlantDrAttachments =
+      attachments.some(attr => attr.attachment_type === 'PLANT DR' || attr.raw?.attachment_type === 'PLANT DR') ||
+      tempPlantDrAttachments.length > 0;
+
+    const hasWSAttachments =
+      attachments.some(attr => attr.attachment_type === 'WS' || attr.raw?.attachment_type === 'WS') ||
+      tempWsAttachments.length > 0;
+
+
+
+
+
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     useEffect(() => {
       const hasPendingFiles = tempPlantDrAttachments.length > 0 || tempWsAttachments.length > 0;
       const formDataChanged = originalFormData ? JSON.stringify(formData) !== JSON.stringify(originalFormData) : false;
       setHasUnsavedChanges(formDataChanged || hasPendingFiles);
-
 
       const currentProgressIndex = TRIP_PROGRESS.find(p => p.Progress === formData.TripProgress)?.idx ?? 0;
       console.log("curr prog: ", currentProgressIndex, "validation prog: ", getProgIdxByProgress("New Trip"));
@@ -315,7 +411,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         done: currentProgressIndex >= getProgIdxByProgress("Done") ? validateDone(formData).isValid : undefined,
       });
 
-    }, [formData, originalFormData, tempPlantDrAttachments, tempWsAttachments]);
+    }, [formData, originalFormData, tempPlantDrAttachments, tempWsAttachments, attachmentsLoading]);
 
 
     const convNaive = (datetime: string | undefined) => {
@@ -504,7 +600,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
 
-
     const validateDispatchedToDestination = (data: LiveDMSView_CEM) => {
       const sourceValidation = validateDispatchedToSource(data);
       if (!sourceValidation.isValid) return sourceValidation;
@@ -528,24 +623,32 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         return { isValid: false, message: 'Helper Unloader must be specified or N/A if none.' };
       }
 
-      const hasPlantDrAttachments =
-        attachments.some(attr => attr.raw?.attachment_type === 'PLANT DR') ||
-        tempPlantDrAttachments.length > 0;
+
+      console.log('wew :', attachments);
+      console.log('wew2 :', tempPlantDrAttachments);
+      console.log('wew3 :', attachments.filter(attr => attr.attachment_type === 'PLANT DR' || attr.raw?.attachment_type === 'PLANT DR'));
+      console.log('attachmentsLoading :', attachmentsLoading);
+
+      // if (!attachmentsLoading) {
+      //   return {
+      //     isValid: false,
+      //     message: 'Checking attachments...'
+      //   };
+      // }
 
       if (!hasPlantDrAttachments) {
-        return { isValid: false, message: 'Plant DR attachment is needed.' };
+        return {
+          isValid: false,
+          message: 'Plant DR attachment is needed.'
+        };
       }
-
-
-
-
 
       /*if (!data.Driver_x0020_Loader && data.Driver_x0020_Unloader) {
         return { isValid: false, message: 'Test' };
       }*/
 
 
-      // Add 'Dispatched To Destination' specific validations here in the future
+      // Add 'Dispatched To Destination' specific validations here in the future    
 
       return { isValid: true, message: 'Destination details are valid.' };
     };
@@ -559,9 +662,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         return { isValid: false, message: 'QTY Delivered must be greater than 0.' };
       }
 
-      const hasWSAttachments =
-        attachments.some(attr => attr.raw?.attachment_type === 'WS') ||
-        tempWsAttachments.length > 0;
+      // if (!attachmentsLoading) {
+      //   return {
+      //     isValid: false,
+      //     message: 'Checking attachments...'
+      //   };
+      // }
+
 
       if (!hasWSAttachments) {
         return { isValid: false, message: 'Weight Scale attachment is needed.' };
@@ -684,26 +791,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
 
-    useEffect(() => {
-      const isNewTrip = !initialData || !initialData.ID;
-      const newInitialData = {
-        ...initialFormData,
-        ...initialData,
-      };
-
-      if (isNewTrip) {
-        newInitialData.DispatchedBy = editingUser?.FullName || '';
-      }
-
-      setFormData(newInitialData);
-      setOriginalFormData(newInitialData);
-      setTempPlantDrAttachments([]);
-      setTempWsAttachments([]);
-      fetchAttachments(initialData?.tripID || 0); // Fetch attachments for the current trip
-      // Initial validation run
-      const initialValidation = runValidation(newInitialData);
-      setValidation(initialValidation);
-    }, [orderId, initialData, editingUser]);
 
     useImperativeHandle(ref, () => ({
       getFormData: () => formData,
@@ -1094,40 +1181,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-    const [attachments, setAttachments] = useState<any[]>([]);
-    const fetchAttachments = async (tripID: number) => {
-      //setAttachments([]);
-      const records = await ewulFetchAll<any>(
 
-        DMS_AttachmentsService,
-
-        {
-
-          filter: `dmsID eq ${tripID}`,
-
-          orderBy: ['Created desc'],
-
-        },
-
-        50
-
-      );
-
-
-      await fetchSharepointAttachments({
-        metadataRecords: records,
-        listName: 'DMS_Attachments',
-        siteAddress: "https://gsdcph.sharepoint.com/sites/ProjectsDevelopments",
-        onUpdate: setAttachments // Passing the state setter directly
-      });
-
-      console.log(records);
-      // Handle your specific ID captures here instead of inside the reusable function
-      if (records) {
-        setWsAttachmentItemID(records.find((item: any) => item.attachment_type === 'WS')?.ID?.toString());
-        setPlantDrAttachmentItemID(records.find((item: any) => item.attachment_type === 'PLANT DR')?.ID?.toString());
-      }
-    };
 
 
     const [bannerMessage, setBannerMessage] = useState<string | null>(null);
@@ -2312,7 +2366,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           return result.data?.every(res => res.success) ?? false;
         },
         onSuccess: () => {
-          fetchAttachments(formData.tripID || 0); // Refresh attachments on success
+          fetchAttachments(formData.tripID || 0, formData); // Refresh attachments on success
         },
         message: `Uploading attachments for trip ${formData.OE}...`,
         message_success: `Attachments for ${formData.OE} uploaded successfully!`,
@@ -3624,7 +3678,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           <div className="order-dist-footer sticky-footer">
             <div className={`footer-validation-message ${!validation.isValid ? 'invalid' : 'valid'}`}>
-              {prog_verified ? 'This trip has been concluded.' : validation.message}
+              {prog_verified ? 'This trip has been concluded.' : `${validation.message}`}
             </div>
             <button className="btn-cancel" onClick={() => { handleOnClose() /*setShowIncidentPrompt(true)*/ }}>Close</button>
             {(prog_verified || (['Developer', 'IT SUPPORT'].includes(editingUser?.Position || '') && formData.TripProgress === 'Done')) ?

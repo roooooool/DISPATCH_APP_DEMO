@@ -1886,3 +1886,13 @@ tbody tr:last-child .selected-cutoff-boundary-start {
 tbody tr:last-child .selected-cutoff-boundary-end {
   border-bottom-right-radius: 6px;
 }
+
+.approved-lock-icon {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  color: var(--color-yellow, #e7d03c);
+  pointer-events: none;
+  z-index: 3;
+  /* fill: currentColor; */
+}

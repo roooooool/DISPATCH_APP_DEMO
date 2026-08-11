@@ -18,7 +18,7 @@
 .emp-modal-container {
     background: #ffffff;
     width: 100%;
-    max-width: 920px;
+    max-width: 100vh;
     max-height: 85vh;
     border-radius: 12px;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
@@ -278,4 +278,95 @@
     padding: 2px 8px;
     border-radius: 4px;
     margin-bottom: 3px;
+}
+
+
+
+/* Status Pill Styles */
+.emp-summ-status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+    background-color: #e2e8f0;
+    color: #334155;
+    white-space: nowrap;
+}
+
+/* Dynamic Status Variant Colors */
+.emp-summ-status-pill.served,
+.emp-summ-status-pill.present {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #047857;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.emp-summ-status-pill.absent {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #b91c1c;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.emp-summ-status-pill.leave,
+.emp-summ-status-pill.on-leave {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.emp-summ-status-pill.rest-day,
+.emp-summ-status-pill.off {
+    background-color: rgba(100, 116, 139, 0.15);
+    color: #475569;
+    border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* Approved Column Toggle Button */
+.emp-summ-approve-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+/* Base styles for approved state */
+.emp-summ-approve-btn.emp-summ-approved {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.emp-summ-approve-btn.emp-summ-approved:hover:not(:disabled) {
+    background-color: rgba(16, 185, 129, 0.25);
+}
+
+/* Base styles for non-approved state */
+.emp-summ-approve-btn.emp-summ-not-approved {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #b91c1c;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.emp-summ-approve-btn.emp-summ-not-approved:hover:not(:disabled) {
+    background-color: rgba(239, 68, 68, 0.25);
+}
+
+/* Disabled State Rules */
+.emp-summ-approve-btn:disabled,
+.emp-summ-approve-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
 }

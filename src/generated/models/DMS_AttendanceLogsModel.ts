@@ -11,4 +11,12 @@ export interface DMS_AttendanceLogs {
   EmployeeID: string;
   OE?: string;
   ModifiedAt: string;
+  tripKM?: number;
+  SD?: string;
+  secondTrip?: string;
+  tripIndex?: number;
+  TransactionType?: string;
+  Position?: string;
+  TCVC?: string;
+  Approved?: string;
 }

@@ -49,7 +49,7 @@ import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFM
 
 
 // Custom Components
-import TableView, { type ColumnConfig, type scrollToConfig, encodeColumnName as enc } from '../components/ewul_TableFlex';
+import TableView, { type ColumnConfig, type scrollToConfig } from '../components/ewul_TableFlex';
 import DateRangePicker from '../components/ewul_DateRangePicker';
 import TripGroup_DonutChart, { type TripGroupDonutChartRef } from '../components/tripGroup_DonutChart';
 import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
@@ -73,6 +73,8 @@ import {
     logDmsUpdate,
 
     formatToLocalISO,
+
+    encodeColumnName as enc
 
 
 } from '../utils/Ewul_GSDC_Utils';
@@ -449,7 +451,7 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, true);
         let isCreate = formData.Frstatus === 'New' || formData.Frstatus === 'Pre-New';
         let isFRDisapproveUpdate = formData.Frstatus === 'FR Disapproved';
-        let createData: FctFinal = { ...formData, Id: Number(attachmentSPID) || 0, Frstatus: isCreate ? formData.Frstatus === 'Pre-New' ? 'Pre-Request' : 'Request' : formData.Frstatus }; // Ensure the status is set to 'Request' for new submissions
+        let createData: FctFinal = { ...formData, Id: Number(attachmentSPID) || 0, Frstatus: isCreate ? formData.Frstatus === 'Pre-New' ? 'Pre-Request' : 'Request' : formData.Frstatus, Businessunit: user?.BusinessUnit }; // Ensure the status is set to 'Request' for new submissions
         let updateData: FctFinal = { ...formData, Frstatus: 'Request', SQLID: undefined }; // For updates, only change status if it's a disapproval update
 
 
@@ -471,7 +473,7 @@ const OrderManagement: React.FC = () => {
                             RequestedBy: user?.FullName || 'Unknown',
                             userID: Number(user?.id) || undefined,
                             fctID: tripID ? Number(tripID) : undefined,
-                            CreatedDate: new Date().toISOString(),
+                            CreatedDate: new Date().toISOString()
                         });
                         logDmsUpdate({ // record transaction in log
                             userName: user?.FullName || 'Unknown User',
@@ -538,7 +540,9 @@ const OrderManagement: React.FC = () => {
         fetchNewOrders(); // Refresh orders to get the latest OEs for selection
     };
 
-
+    const buFilter = (col: string) => {
+        return ['Coor'].includes(user?.Position || '') ? `and ${enc(col)} eq '${user?.BusinessUnit}'` : ''
+    };
 
     const fetchTrips = useCallback(async (nocd: boolean = false) => {
         if (!selectedRange) return;
@@ -548,7 +552,7 @@ const OrderManagement: React.FC = () => {
 
         const fromInt = ISOtoInt(selectedRange.from);
         const toInt = ISOtoInt(selectedRange.to);
-        const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt} and TripProgress ne 'PLD Done'`;
+        const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt} and TripProgress ne 'PLD Done' ${buFilter('Buisness Unit')}`;
 
         setLoadingFor(FETCH_LOADING_KEYS.trips, true);
         try {
@@ -595,7 +599,7 @@ const OrderManagement: React.FC = () => {
         try {
             const result = await ewulFetchAll<any>(
                 LiveVehicleAssignmentLIstViewService,
-                { filter: `Assignment eq 'VASQUEZ' or Assignment eq 'INTERCITY'` },
+                { filter: `(Assignment eq 'VASQUEZ' or Assignment eq 'INTERCITY') ${buFilter('Bu')}` },
                 3000
             ) || [];
 
@@ -815,7 +819,7 @@ const OrderManagement: React.FC = () => {
             setLoadingFor(FETCH_LOADING_KEYS.driverHelperList, true);
             const result = await ewulFetchAll<any>(
                 LiveDriverDispatchedList_AllService,
-                { filter: `contains(Deploystatus, 'Deployed') and (contains(EmploymentStatus, 'Regular') or contains(EmploymentStatus, 'Probationary'))` },
+                { filter: `(contains(Deploystatus, 'Deployed') and (contains(EmploymentStatus, 'Regular') or contains(EmploymentStatus, 'Probationary'))) ${buFilter('BU')}` },
                 3000,
                 'Id'
             );

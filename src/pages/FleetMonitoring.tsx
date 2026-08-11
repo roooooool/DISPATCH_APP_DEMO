@@ -56,7 +56,7 @@ const FleetMonitoring: React.FC = () => {
         }
         return BUSINESS_UNITS[0].Title;
     });*/
-    const [selectedBU, setSelectedBU] = useState(BUSINESS_UNITS[0].Title);
+    const [selectedBU, setSelectedBU] = useState(['Coor'].includes(user?.Position || '') ? user?.BusinessUnit : null);
     const [viewMode, _setViewMode] = useState<'table' | 'gallery'>('table');
 
     const mapRef = useRef<GSDCMapHandle>(null);
@@ -464,7 +464,7 @@ const FleetMonitoring: React.FC = () => {
                     <div className="fleet-actions-bar">
                         <select
                             className="fleet-bu-selector"
-                            value={selectedBU}
+                            value={selectedBU || ''}
                             onChange={e => setSelectedBU(e.target.value)}
                             style={{ minWidth: 120, marginRight: 12, borderRadius: 8, padding: '6px 12px', border: '1px solid #e2e8f0' }}
                         >

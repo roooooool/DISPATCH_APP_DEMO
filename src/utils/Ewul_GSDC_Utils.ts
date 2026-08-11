@@ -94,7 +94,7 @@ export interface FormatDateOptions {
 
 export const formatDate = (dateString: string | Date | number, options: FormatDateOptions = {}) => {
   if (!dateString) return "---";
-  
+
   const { mode = 'date', compareTo = new Date(), format, alreadyLocal = false } = options;
 
   let processedDateString = dateString;
@@ -105,7 +105,7 @@ export const formatDate = (dateString: string | Date | number, options: FormatDa
   const date = new Date(processedDateString);
 
   if (isNaN(date.getTime())) return "Invalid Date";
-  
+
   // 1. DURATION MODE: Calculate time elapsed (e.g., "2h 15m ago")
   if (mode === 'duration') {
     const start = date.getTime();
@@ -139,25 +139,25 @@ export const formatDate = (dateString: string | Date | number, options: FormatDa
   }
 
   const defaultOptions: Intl.DateTimeFormatOptions = mode === ('datetime' as string)
-  ? { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit', 
-      hour12: true 
+    ? {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
     }
-  : { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    : {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     };
 
   // 3. DEFAULT DATE MODE: "Feb 8, 2023"
-  return new Intl.DateTimeFormat('en-US', { 
-    ...(format || defaultOptions), 
-    timeZone: alreadyLocal ? undefined : 'UTC' 
+  return new Intl.DateTimeFormat('en-US', {
+    ...(format || defaultOptions),
+    timeZone: alreadyLocal ? undefined : 'UTC'
   }).format(date);
 };
 
@@ -171,13 +171,13 @@ export const formatDate = (dateString: string | Date | number, options: FormatDa
  * @returns A number in the requested format, or 0 if the input is invalid.
  */
 export const ISOtoInt = (
-  dateStr: string | null | undefined, 
+  dateStr: string | null | undefined,
   includeTime: boolean = false
 ): number => {
   if (!dateStr) return 0;
 
   const d = new Date(dateStr);
-  
+
   if (isNaN(d.getTime())) return 0;
 
   const year = d.getUTCFullYear();
@@ -197,9 +197,9 @@ export const ISOtoInt = (
   // Calculation:
   // (YYYYMMDD * 1000000) + (HH * 10000) + (MM * 100) + SS
   return (
-    ((year * 10000 + month * 100 + day) * 1000000) + 
-    (hours * 10000) + 
-    (minutes * 100) + 
+    ((year * 10000 + month * 100 + day) * 1000000) +
+    (hours * 10000) +
+    (minutes * 100) +
     seconds
   );
 };
@@ -233,16 +233,16 @@ export const ewul_loadingList: { [key: string]: boolean } = {};
  * }
  */
 export const ewul_canFetch = (fetchName: string, cooldown: number = 5000): boolean => {
-    const now = Date.now();
-    const lastFetch = ewul_lastFetchTimestamps[fetchName] || 0;
-    
-    if (now - lastFetch < cooldown) {
-        console.log(`Fetch for ${fetchName} is on cooldown.`);
-        return false;
-    }
-    
-    ewul_lastFetchTimestamps[fetchName] = now;
-    return true;
+  const now = Date.now();
+  const lastFetch = ewul_lastFetchTimestamps[fetchName] || 0;
+
+  if (now - lastFetch < cooldown) {
+    console.log(`Fetch for ${fetchName} is on cooldown.`);
+    return false;
+  }
+
+  ewul_lastFetchTimestamps[fetchName] = now;
+  return true;
 };
 
 /**
@@ -252,7 +252,7 @@ export const ewul_canFetch = (fetchName: string, cooldown: number = 5000): boole
  * @returns {boolean} - True if at least one item in the list is 'true'.
  */
 export const ewul_isAnythingLoading = (): boolean => {
-    return Object.values(ewul_loadingList).some(value => value === true);
+  return Object.values(ewul_loadingList).some(value => value === true);
 };
 
 /**
@@ -265,13 +265,13 @@ export const ewul_isAnythingLoading = (): boolean => {
  * @param value - The loading state (true = loading, false = idle).
  */
 export const ewul_setLoadingFor = (fetchName: string, value: boolean): void => {
-    if (value === false) {
-        setTimeout(() => {
-            ewul_loadingList[fetchName] = false;
-        }, 500); // Jitter reduction delay
-    } else {
-        ewul_loadingList[fetchName] = true;
-    }
+  if (value === false) {
+    setTimeout(() => {
+      ewul_loadingList[fetchName] = false;
+    }, 500); // Jitter reduction delay
+  } else {
+    ewul_loadingList[fetchName] = true;
+  }
 };
 
 
@@ -327,59 +327,92 @@ export const logDmsUpdate = async (params: {
 
 
 
+
 /**
  * Reusable utility to fetch SharePoint attachment metadata and 
  * then stream the actual file contents from Power Automate.
+ * @description
+ * fetches the attachment metadata and file contents from Power Automate.
+ * @param metadataRecords - Array of SharePoint attachment metadata records.
+ * @param listName - The name of the SharePoint list.
+ * @param siteAddress - The address of the SharePoint site.
+ * @param onUpdate - Callback function to update the attachments state.
+ * @param onStatusChange - Callback function to update the loading status.
+ * @param onFinish - Callback function to update the final attachments state.
  */
 export const fetchSharepointAttachments = async ({
   metadataRecords,
   listName,
   siteAddress,
   onUpdate,
+  onStatusChange,
+  //@ts-ignore
+  onFinish,
 }: {
   metadataRecords: any[];
   listName: string;
   siteAddress: string;
   onUpdate: (updater: (prev: any[]) => any[]) => void;
+  onStatusChange?: (isLoading: boolean) => void;
+  //@ts-ignore
+  onFinish?: () => void;
 }) => {
   try {
-    
-    // 1. Fetch metadata from SharePoint via ewulFetchAll
-    const recordMetadata = metadataRecords;
+    onStatusChange?.(true);
 
+    const recordMetadata = Array.isArray(metadataRecords) ? metadataRecords : [];
     console.log("Fetched %d metadata records", recordMetadata.length);
 
-    if (recordMetadata && Array.isArray(recordMetadata)) {
-      console.log("Record metadata fetched:", recordMetadata);
+    // 🛑 Exit early and skip onFinish if there are no records
+    if (recordMetadata.length === 0) {
+      onUpdate(() => []);
+      return [];
+    }
 
-      // 2. Map metadata to initial "loading" objects
-      const initialFiles = recordMetadata.map(item => {
-        const fName = item.Filename || item['{FilenameWithExtension}'] || "Untitled File";
-        const isPdf = fName.toLowerCase().endsWith('.pdf');
-        return {
-          id: item.ID,
-          name: fName,
-          type: isPdf ? 'application/pdf' : 'image/jpeg',
-          isRemote: true,
-          isImage: !isPdf,
-          previewUrl: null, // Content hasn't arrived yet
-          raw: item
-        };
-      });
+    // Helper function to extract attachment_type safely from any SP column format
+    const resolveAttachmentType = (item: any): string => {
+      return (
+        item?.attachment_type ||
+        item?.AttachmentType ||
+        item?.Attachment_x0020_Type ||
+        item?.Attachment_Type ||
+        ''
+      );
+    };
 
-      // Set the initial list (placeholders)
-      onUpdate(() => initialFiles);
+    // 1. Map metadata to initial placeholder objects
+    const initialFiles = recordMetadata.map(item => {
+      const fName = item.Filename || item['{FilenameWithExtension}'] || "Untitled File";
+      const isPdf = fName.toLowerCase().endsWith('.pdf');
+      return {
+        id: item.ID,
+        name: fName,
+        type: isPdf ? 'application/pdf' : 'image/jpeg',
+        attachment_type: resolveAttachmentType(item),
+        isRemote: true,
+        isImage: !isPdf,
+        previewUrl: null,
+        raw: item
+      };
+    });
 
-      // 3. Process each record individually to get Base64 data from Flow
-      initialFiles.forEach(async (file) => {
+    // Track running state locally
+    let currentAttachments = [...initialFiles];
+
+    // Seed state with initial placeholders
+    onUpdate(() => currentAttachments);
+
+    // 2. Fetch Base64 data concurrently
+    await Promise.allSettled(
+      initialFiles.map(async (file) => {
         try {
           const response = await fetch(DMS_ATTACHMENTS_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                itemID: file.id, 
-                listName: listName, 
-                siteAddress: siteAddress 
+            body: JSON.stringify({
+              itemID: file.id,
+              listName: listName,
+              siteAddress: siteAddress
             }),
           });
 
@@ -392,11 +425,12 @@ export const fetchSharepointAttachments = async ({
               const fName = fileData.fileName || `${file.name} (${index + 1})`;
               const isPdf = fName.toLowerCase().endsWith('.pdf');
               const mimeType = isPdf ? 'application/pdf' : 'image/jpeg';
-              
+
               return {
                 id: `${file.id}-${index}`,
                 name: fName,
                 type: mimeType,
+                attachment_type: file.attachment_type,
                 isRemote: true,
                 isImage: !isPdf,
                 previewUrl: `data:${mimeType};base64,${fileData.base64data}`,
@@ -405,25 +439,37 @@ export const fetchSharepointAttachments = async ({
               };
             });
 
-            // 4. Use the callback to update the caller's state
-            onUpdate(prev => [
-              ...prev.filter(attr => attr.id !== file.id), // Remove placeholder
-              ...newAttachmentsFromFlow // Add detailed files
-            ]);
+            // Synchronously update tracking array
+            currentAttachments = [
+              ...currentAttachments.filter(attr => attr.id !== file.id),
+              ...newAttachmentsFromFlow
+            ];
+
+            // Update React state
+            onUpdate(() => currentAttachments);
           }
         } catch (error) {
           console.error(`Flow fetch failed for Record ${file.id}:`, error);
         }
-      });
-      
-      return recordMetadata; // Return metadata in case caller needs it for other IDs
-    }
+      })
+    );
+
+    // // 3. Fire onFinish ONLY if attachments were found and processed
+    // if (currentAttachments.length > 0) {
+    //   onFinish?.(currentAttachments);
+    // }
+    onFinish?.()
+
+    return currentAttachments;
+
   } catch (error) {
     console.error("Attachment processing error:", error);
     throw error;
+  } finally {
+    onStatusChange?.(false);
+    // onFinish?.()
   }
 };
-
 
 
 export const handleNavigateError = (error: string, location: any, navigate: any) => {
@@ -476,17 +522,17 @@ export const convertFormDataToHtmlTable = (data: Record<string, any>): string =>
 
 export const formatToLocalISO = (utcString: string): string => {
   if (!utcString) return "";
-  
+
   const date = new Date(utcString); // Automatically converts UTC to your local time (GMT+8)
-  
+
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
-  
+
   const hh = String(date.getHours()).padStart(2, '0');
   const min = String(date.getMinutes()).padStart(2, '0');
   const ss = String(date.getSeconds()).padStart(2, '0');
-  
+
   // Combines them with the "T" separator
   return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
 };
@@ -618,3 +664,10 @@ export const useAntiSpam = (
   };
 };
 
+
+export const encodeColumnName = (name: string): string => {
+  return name.replace(/[^a-zA-Z0-9_]|_(?=[xX])/g, (char) => {
+    const hex = char.charCodeAt(0).toString(16).padStart(4, '0');
+    return `_x${hex}_`;
+  });
+};

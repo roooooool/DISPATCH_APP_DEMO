@@ -465,6 +465,7 @@ const SortableRow = ({
   onMouseUp?: (e: React.MouseEvent) => void;   // <-- Add this
   rowRef?: (node: HTMLTableRowElement | null) => void;
 }) => {
+  //@ts-ignore
   const isSortDisabled = isArrangementMode || rowActionMode === 'dragndrop';
   const {
     attributes, listeners, setNodeRef,
@@ -619,6 +620,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   onArrangementModeChange,
   showArrangeToggle,
   onConfirmArrangement,
+  //@ts-ignore
   emptyHint,
   rowActionMode,
   density,

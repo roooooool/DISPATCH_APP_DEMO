@@ -1,7 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { X, Calendar, Route, Award, MapPin, CheckCircle2, User, ClipboardList } from 'lucide-react';
 
 import { type AttendanceRecord } from './ewul_AttendanceSheet';
+
+import {
+    type UserInfo
+} from '../truth.config';
 
 import './comp_css/EmployeeSummaryModal.css';
 
@@ -16,6 +20,7 @@ interface EmployeeSummaryModalProps {
     selectedCutoff: CutoffGroup | null;
     allRecords: AttendanceRecord[];
     onClose: () => void;
+    user?: UserInfo;
 }
 
 export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
@@ -23,17 +28,30 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     selectedCutoff,
     allRecords,
     onClose,
+    user,
 }) => {
+    // 1. Local state for optimistic updates
+    const [localRecords, setLocalRecords] = useState<AttendanceRecord[]>(allRecords);
+
+    // Keep local records in sync if parent prop updates
+    useEffect(() => {
+        setLocalRecords(allRecords);
+    }, [allRecords]);
+
+
     // 1. Filter records strictly for this employee & active cutoff date range
     const filteredRecords = useMemo(() => {
         if (!selectedCutoff) return [];
 
-        return allRecords.filter((item) => {
+        return localRecords.filter((item) => {
             if (item.EmployeeName !== employeeName) return false;
             const dateStr = item.AttendanceDate ? item.AttendanceDate.split('T')[0] : '';
             return dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate;
         }).sort((a, b) => new Date(a.AttendanceDate).getTime() - new Date(b.AttendanceDate).getTime());
-    }, [allRecords, employeeName, selectedCutoff]);
+    }, [localRecords, employeeName, selectedCutoff]);
+
+
+    console.log("awdaw: ", filteredRecords)
 
     // 2. Compute KPI Metrics for the Modal
     const metrics = useMemo(() => {
@@ -68,6 +86,43 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             totalDays: filteredRecords.length,
         };
     }, [filteredRecords]);
+
+
+
+    const handleToggleApproval = async (targetRecord: AttendanceRecord) => {
+        const previousStatus = targetRecord.Approved;
+        const newStatus = previousStatus === 'Approved' ? 'Not Approved' : 'Approved';
+
+        // Step A: Instant Optimistic UI Update
+        setLocalRecords((prev) =>
+            prev.map((rec) =>
+                rec === targetRecord || (rec.AttendanceDate === targetRecord.AttendanceDate && rec.OE === targetRecord.OE)
+                    ? { ...rec, Approved: newStatus }
+                    : rec
+            )
+        );
+
+        try {
+            // Step B: API call placeholder
+            console.log(`[API CALL PLACEHOLDER] Updating Approval status for ${targetRecord.EmployeeName}: ${newStatus}`);
+
+            // await api.updateApprovalStatus({ id: targetRecord.id, status: newStatus });
+        } catch (error) {
+            console.error('Failed to update approval status:', error);
+
+            // Step C: Rollback on API Error
+            setLocalRecords((prev) =>
+                prev.map((rec) =>
+                    rec === targetRecord || (rec.AttendanceDate === targetRecord.AttendanceDate && rec.OE === targetRecord.OE)
+                        ? { ...rec, Approved: previousStatus }
+                        : rec
+                )
+            );
+            alert('Failed to update approval status. Changes reverted.');
+        }
+    };
+
+    const canEditApproval = ["Supervisor", "Developer", "Manager"].includes(user?.Position || '');
 
     return (
         <div className="emp-modal-backdrop" onClick={onClose}>
@@ -158,31 +213,47 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                         <th>Distance</th>
                                         <th>Score</th>
                                         <th>BU</th>
+                                        <th>Approval</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredRecords.length > 0 ? (
-                                        filteredRecords.map((rec, idx) => (
-                                            <tr key={idx}>
-                                                <td className="font-mono">{rec.AttendanceDate?.split('T')[0]}</td>
-                                                <td>
-                                                    <span className={`status-pill ${rec.AttendanceStatus?.toLowerCase().replace(/\s+/g, '-')}`}>
-                                                        {rec.AttendanceStatus || '---'}
-                                                    </span>
-                                                </td>
-                                                <td className="font-mono font-bold">{rec.OE || '---'}</td>
-                                                <td className="font-mono text-muted">{rec.DMS_OE || '---'}</td>
-                                                <td className="route-cell" title={rec.SD || ''}>
-                                                    <MapPin size={11} className="inline-icon" />
-                                                    <span>{rec.SD || '---'}</span>
-                                                </td>
-                                                <td>{rec.tripKM ? `${rec.tripKM} km` : '---'}</td>
-                                                <td className="font-bold text-primary">
-                                                    {rec.tripIndex !== null && rec.tripIndex !== undefined ? rec.tripIndex : '---'}
-                                                </td>
-                                                <td>{rec.BU || '---'}</td>
-                                            </tr>
-                                        ))
+                                        filteredRecords.map((rec, idx) => {
+                                            const isApproved = rec.Approved === 'Approved';
+
+                                            return (
+
+                                                <tr key={idx}>
+                                                    <td className="font-mono">{rec.AttendanceDate?.split('T')[0]}</td>
+                                                    <td>
+                                                        <span className={`emp-summ-status-pill ${rec.AttendanceStatus?.toLowerCase().replace(/\s+/g, '-')}`}>
+                                                            {rec.AttendanceStatus || '---'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="font-mono font-bold">{rec.OE || '---'}</td>
+                                                    <td className="font-mono text-muted">{rec.DMS_OE || '---'}</td>
+                                                    <td className="route-cell" title={rec.SD || ''}>
+                                                        <MapPin size={11} className="inline-icon" />
+                                                        <span>{rec.SD || '---'}</span>
+                                                    </td>
+                                                    <td>{rec.tripKM ? `${rec.tripKM} km` : '---'}</td>
+                                                    <td className="font-bold text-primary">
+                                                        {rec.tripIndex !== null && rec.tripIndex !== undefined ? rec.tripIndex : '---'}
+                                                    </td>
+                                                    <td>{rec.BU || '---'}</td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            disabled={!canEditApproval}
+                                                            className={`emp-summ-approve-btn ${isApproved ? 'emp-summ-approved' : 'emp-summ-not-approved'} `}
+                                                            onClick={() => handleToggleApproval(rec)}
+                                                        >
+                                                            {isApproved ? 'Approved' : 'Not Approved'}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })
                                     ) : (
                                         <tr>
                                             <td colSpan={8} className="empty-history-cell">

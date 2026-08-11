@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import LoadingOverlay from '../components/LoadingOverlay_navblue';
 import { EmployeeSummaryModal } from './EmployeeSummaryModal';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon, Star, Mail, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon, Star, Mail, FileText, Lock, } from 'lucide-react';
 import '../components/comp_css/ewul_AttendanceSheet.css';
 import AutoDismissBanner from '../components/ewul_Banner';
 import Modal from '../components/ewul_Modal';
 import TableView from './ewul_TableFlex';
 
 import { useTaskWorker } from '../utils/TaskWorkerContext';
+import { useUser } from '../utils/useUser';
 
 //POWER APPS
 import { Sp_fetchAttendanceCalendar2Service } from '../generated/services/Sp_fetchAttendanceCalendar2Service';
@@ -25,7 +26,8 @@ import {
 
   ewulFetchAll,
   ISOtoInt,
-
+  //@ts-ignore
+  encodeColumnName as enc
 
 
 } from '../utils/Ewul_GSDC_Utils';
@@ -42,13 +44,14 @@ export interface AttendanceRecord {
   DMS_OE?: string | null;          // <-- Added
   DMS_TripStatus?: string | null;  // <-- Added
 
-  BU?: string | null;
+  BU?: string | null | undefined;
   Position1?: string;
   SD?: string | null;
   TCVC?: string | null;
   TransactionType?: string | null;
   secondTrip?: string | null;
   tripKM?: number | null;
+  Approved?: string;
 }
 
 interface CutoffGroup {
@@ -107,8 +110,9 @@ const AttendanceCell = React.memo(({
     dateStr >= ALLOWED_DATE_CLICK.startDate &&
     dateStr <= ALLOWED_DATE_CLICK.endDate;
 
+  const isLastEntryApproved = lastEntry?.Approved === 'Approved';
   const isStatusAllowed = !NOT_ALLOWED_STAT_EDIT.includes(currentStatus.toUpperCase());
-  const isEditable = isDateAllowed && isStatusAllowed;
+  const isEditable = isDateAllowed && isStatusAllowed && !isLastEntryApproved;
 
   // @ts-ignore 
   const buildBannerMsg = (status_allow: boolean, date_allow: boolean) => {
@@ -150,8 +154,9 @@ const AttendanceCell = React.memo(({
           {displayEntries.length > 0 ? (
             displayEntries.map((entry, idx) => {
               const statusClass = (entry.status || '').replace(/\s+/g, '-').toLowerCase();
+              const isApproved = entry.Approved === 'Approved';
               const isIndividualStatusAllowed = !NOT_ALLOWED_STAT_EDIT.includes((entry.AttendanceStatus || '').toUpperCase());
-              const isEntryEditable = isDateAllowed && isIndividualStatusAllowed;
+              const isEntryEditable = isDateAllowed && isIndividualStatusAllowed && !isApproved;
               return (
                 <div
                   key={idx}
@@ -166,7 +171,7 @@ const AttendanceCell = React.memo(({
                     const empId = entry.EmployeeID || empMetaId || '0';
                     const currentOE = entry.OE || entry.DMS_OE || '';
                     const currentStatus = entry.AttendanceStatus || 'ABSENT';
-
+                    console.log(lastEntry);
                     // Fires with the exact OE + Status linked to this specific text block!
                     onCellClick(e, empName, String(empId), currentOE, dateStr, currentStatus, oeValue, isEntryEditable);
                   }}
@@ -179,9 +184,14 @@ const AttendanceCell = React.memo(({
                     }
                   }}
                 >
-                  {/* <span className="status-main-value">
-                    {entry.AttendanceStatus || '---'}
-                  </span> */}
+                  {isApproved && (
+                    <Lock
+                      size={12}
+                      strokeWidth={3}
+                      className="approved-lock-icon"
+                    // title="Approved record — status cannot be changed"
+                    />
+                  )}
                   <span className="status-main-value">
                     {entry.AttendanceStatus?.toUpperCase() === 'SERVED' ? (
                       <div className="served-details">
@@ -228,7 +238,7 @@ interface AttendanceSheetProps {
   colName: string[]; // e.g., "EmployeeName"
   colOE: string;    // e.g., "OE_Number"
   colStatus: string; // e.g., "Trip_Status"
-  BU: string;
+  BU?: string | null | undefined;
 }
 
 const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, colOE, colStatus, BU = 'SBUO-1A' }) => {
@@ -254,6 +264,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   } | null>(null);
 
   const { addTask } = useTaskWorker();
+  const { user } = useUser();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, _setPageSize] = useState(25); //11
@@ -487,6 +498,8 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
     });
   };
 
+
+
   const bannerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleBannerMessage = (msg: string) => {
     // 1. Clear any pending timeout to prevent premature erasure if a new message arrives
@@ -622,6 +635,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           TransactionType: item.TransactionType ?? null,
           secondTrip: item.secondTrip ?? 'N',
           tripKM: item.tripKM !== undefined && item.tripKM !== null ? Number(item.tripKM) : null,
+          Approved: item.Approved ?? null,
         }));
 
         setRawAttendanceData(formattedRecords);
@@ -1609,6 +1623,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           selectedCutoff={selectedCutoff}
           allRecords={rawAttendanceData}
           onClose={() => setActiveSummaryEmp(null)}
+          user={user || undefined}
         />
       )}
 
