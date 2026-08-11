@@ -18,6 +18,8 @@ import { CheckIfOEExistsService } from '../generated/services/CheckIfOEExistsSer
 //
 import { useUser } from '../utils/useUser';
 import { useTaskWorker } from '../utils/TaskWorkerContext';
+import AutoDismissBanner from './ewul_Banner';
+
 
 
 interface OrderAssignmentDashboardProps {
@@ -105,6 +107,9 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     const [isDraggingItem, setIsDraggingItem] = useState(false);
     const [draggedSourceBu, setDraggedSourceBu] = useState<string | null>(null);
 
+    // Banner state for feedback messages
+    const [bannerMsg, setBannerMsg] = useState<string | null>(null);
+
     const flashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Group assigned trips by Business Unit for the card bodies, accounting for moved items
@@ -139,6 +144,11 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                 const record = isBUItem ? parsedPayload.data : parsedPayload;
                 const sourceBu = isBUItem ? parsedPayload.sourceBu : null;
 
+                // 🛑 RESTRICTION: Reject drop if a New Order record's SAPStatus is not 'Approved'
+                if (!isBUItem && record?.SAPStatus !== 'Approved') {
+                    setBannerMsg('Only Approved order can be assigned.')
+                    return;
+                }
 
                 if (isBUItem && sourceBu === targetBu) return;
 
@@ -1098,6 +1108,13 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                     })}
                 </div>
             </div>
+            {bannerMsg && (
+                <AutoDismissBanner
+                    message={bannerMsg}
+                    onClose={() => setBannerMsg(null)}
+                    duration={2000}
+                />
+            )}
         </div>
     );
 };

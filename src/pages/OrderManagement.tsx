@@ -232,7 +232,7 @@ const OrderManagement: React.FC = () => {
         const fromInt = ISOtoInt(selectedRangeNewOrders.from);
         const toInt = ISOtoInt(selectedRangeNewOrders.to);
 
-        const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt}`;
+        const dateFilter = `(OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt}) and ( SAPStatus ne 'Tagged' or TaggedBU eq '${user?.BusinessUnit}')`;
 
         const options = {
             filter: dateFilter, // Pass the filter here!
@@ -1431,7 +1431,7 @@ const OrderManagement: React.FC = () => {
 
         let changeTripConfig = [
             {
-                col: "SourceName", alias: "Source", portion: 1.5,
+                col: "Source", alias: "Source", portion: 1.5,
                 filter: {
                     type: "dropdown-multiple",
                     options: [{ label: originalOESource, value: originalOESource }],
@@ -1439,17 +1439,38 @@ const OrderManagement: React.FC = () => {
                 }
             },
             {
-                col: "CementTypeName", alias: "Type", portion: 1,
+                col: "cementType", alias: "Type", portion: 1,
                 filter: {
                     type: "dropdown-multiple",
                     options: cementTypeOptions,
                     default: currentOrderData.cementType ? [currentOrderData.cementType] : [],
                 }
-            }
+            },
+            {
+                col: "TripProgress",
+                alias: "Progress",
+                filter: {
+                    type: "dropdown-multiple",
+                    options: [...TRIP_PROGRESS.map(item => ({ value: item.Progress, label: item.label })), { value: 'Verified', label: 'Verified' }],
+                    default: ['Assigned'],
+                    useCalculatedValue: true
+                },
+                cellStyle: (row: any) => {
+                    let font_color: React.CSSProperties = { color: '#666' };
+                    font_color = TRIP_PROGRESS.find(item => item.Progress === row["TripProgress"])?.color ? { color: TRIP_PROGRESS.find(item => item.Progress === row["TripProgress"])!.color } : font_color;
+                    if (row.TripProgress === 'Done' && !!row.Verified_x0020_By && !!row.Documented_x0020_Date) font_color = { color: 'var(--progress-newtrip)' };
+                    return { textAlign: 'left', fontWeight: 'bold', ...font_color }
+                },
+                calculate(row) {
+                    if (row.TripProgress === 'Done' && !!row.Verified_x0020_By && !!row.Documented_x0020_Date) return 'Verified'
+                    return row.TripProgress
+                },
+            },
         ] as ColumnConfig[];
 
         // Merge logic: replace by col if exists, else add
-        const base = NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config;
+        //const base = NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config;
+        const base = LIVE_DMS_TABLE_CONFIG.table_config;
         const overrides = changeTripConfig || [];
         const overrideMap = Object.fromEntries(overrides.map((col: ColumnConfig) => [col.col, col]));
         const merged = base.map(col => overrideMap[col.col] ? overrideMap[col.col] : col);
@@ -1466,25 +1487,47 @@ const OrderManagement: React.FC = () => {
 
 
         return (
+            // <TableView
+            //     data={orders}
+            //     config={changeConfig}
+            //     searchCol={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.searchable_cols as string[]}
+            //     storageKey={`order_page_sap_new_orders${user?.id}`}
+            //     isLoading={loadingList[FETCH_LOADING_KEYS.newOrders] || false}
+            //     showRowCount={500}
+            //     onRefresh={(signal) => signal && fetchNewOrders()}
+            //     overflowY={true}
+            //     maxHeight={600}
+            //     colMinWidth={120}
+            //     onRowClick={onRowClickLogic}
+            //     theme="var(--color-primary)"
+            //     allowMultipleSelection={false}
+            //     rowStyle={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.rowStyle}
+            //     loadingNoPreventAction={true}
+            //     showNumbering={true}
+            //     highlightSelected={true}
+            //     scrollTo={scrollToNewTrips}
+            // />
             <TableView
-                data={orders}
+                data={displayData.filter((item: any) => ["Assigned", "Planned"].includes(item.TripProgress) && !["Preload", "Mobilization"].includes(item._tripGroup))}
                 config={changeConfig}
-                searchCol={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.searchable_cols as string[]}
-                storageKey={`order_page_sap_new_orders${user?.id}`}
-                isLoading={loadingList[FETCH_LOADING_KEYS.newOrders] || false}
-                showRowCount={500}
-                onRefresh={(signal) => signal && fetchNewOrders()}
+                storageKey={`order_page_live_trips${user?.id}`}
+                searchCol={LIVE_DMS_TABLE_CONFIG.searchable_cols as string[]}
+                isLoading={loadingList[FETCH_LOADING_KEYS.trips] || false}
+                showRowCount={50}
+                onRefresh={(signal) => signal && fetchTrips()}
                 overflowY={true}
-                maxHeight={600}
-                colMinWidth={120}
-                onRowClick={onRowClickLogic}
-                theme="var(--color-primary)"
-                allowMultipleSelection={false}
-                rowStyle={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.rowStyle}
+                overflowX={true}
+                /* maxHeight={sidebarHeight} REMOVED - This was causing the height issue */
+                colMinWidth={60}
+                // You can add row click or other handlers as needed
+                rowStyle={LIVE_DMS_TABLE_CONFIG.rowStyle}
                 loadingNoPreventAction={true}
                 showNumbering={true}
+                scrollTo={scrollTo}
                 highlightSelected={true}
-                scrollTo={scrollToNewTrips}
+                theme="var(--color-primary)"
+                onRowClick={onRowClickLogic}
+                accordion={LIVE_DMS_TABLE_CONFIG.accordion}
             />
         );
     };
@@ -1505,10 +1548,10 @@ const OrderManagement: React.FC = () => {
         if (["Tagged", "Completed"].includes(raw_record.SAPStatus)) {
             errorMessage = isDev ? null : `This Trip is already ${raw_record.SAPStatus.toLowerCase()}.`;
         }
-        else if (raw_record.SAPStatus !== "Approved" && !(raw_record._tripGroup == 'Preload' && raw_record.SAPStatus === 'Manual' && original._tripGroup === 'Preload')) {
-            errorMessage = "Only approved trips can be selected.";
+        else if (!["Assigned", 'Planned'].includes(raw_record.TripProgress) && !(raw_record._tripGroup == 'Preload' && raw_record.SAPStatus === 'Manual' && original._tripGroup === 'Preload')) {
+            errorMessage = "Only ASSIGNED trips can be selected.";
         }
-        else if (raw_record.SourceName !== original.Source) {
+        else if (raw_record.Source !== original.Source) {
             errorMessage = isDev ? null : "Source does not match the original trip. Please select a trip with the same source.";
         }
         else if (
@@ -2063,14 +2106,14 @@ const OrderManagement: React.FC = () => {
                                                 generateTripTicketID();
                                                 const record = {
                                                     ...raw_record,
-                                                    Source: raw_record.SourceName,
-                                                    Destination: raw_record.DestiName,
-                                                    cementType: raw_record.CementTypeName,
-                                                    [enc("Buisness Unit")]: 'SBUO-1A',
+                                                    Source: raw_record.Source,
+                                                    Destination: raw_record.Destination,
+                                                    cementType: raw_record.cementType,
+                                                    [enc("Buisness Unit")]: user?.BusinessUnit,
                                                     TripProgress: TRIP_PROGRESS[0].Progress,
                                                     TripTicketID: previewTripTicketID || '',
-                                                    Ordered_x0020_Date: raw_record.OrderedDate,
-                                                    Needed_x0020_Date: raw_record.NeededDate
+                                                    Ordered_x0020_Date: raw_record.Ordered_x0020_Date,
+                                                    Needed_x0020_Date: raw_record.Needed_x0020_Date
                                                 };
                                                 setSelectedOrder(record);
                                                 console.log("Selected order for new trip:", record);

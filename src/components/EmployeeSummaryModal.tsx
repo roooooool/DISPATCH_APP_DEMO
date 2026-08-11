@@ -4,7 +4,8 @@ import { X, Calendar, Route, Award, MapPin, CheckCircle2, User, ClipboardList, S
 import { type AttendanceRecord } from './ewul_AttendanceSheet';
 
 import {
-    type UserInfo
+    type UserInfo,
+    ATTENDANCE_STATUSES
 } from '../truth.config';
 
 import './comp_css/EmployeeSummaryModal.css';
@@ -32,6 +33,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 }) => {
     // 1. Local state for optimistic updates
     const [localRecords, setLocalRecords] = useState<AttendanceRecord[]>(allRecords);
+    const [calcMode, setCalcMode] = useState<'Approved' | 'Theoretical'>('Approved');
 
     // Keep local records in sync if parent prop updates
     useEffect(() => {
@@ -43,49 +45,84 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     const filteredRecords = useMemo(() => {
         if (!selectedCutoff) return [];
 
-        return localRecords.filter((item) => {
-            if (item.EmployeeName !== employeeName) return false;
-            const dateStr = item.AttendanceDate ? item.AttendanceDate.split('T')[0] : '';
-            return dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate;
-        }).sort((a, b) => new Date(a.AttendanceDate).getTime() - new Date(b.AttendanceDate).getTime());
+        // Helper to safely convert nullable dates to timestamps
+        const getTime = (val: string | number | Date | null | undefined): number => {
+            return val ? new Date(val).getTime() : 0;
+        };
+
+        return localRecords
+            .filter((item) => {
+                if (item.EmployeeName !== employeeName) return false;
+                const dateStr = item.AttendanceDate ? item.AttendanceDate.split('T')[0] : '';
+                return dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate;
+            })
+            .sort((a, b) => {
+                // Primary sort: AttendanceDate DESC
+                const dateDiff = getTime(b.AttendanceDate) - getTime(a.AttendanceDate);
+                if (dateDiff !== 0) return dateDiff;
+
+                // Secondary sort: ModifiedAt DESC (if AttendanceDate is equal)
+                return getTime(b.ModifiedAt) - getTime(a.ModifiedAt);
+            });
     }, [localRecords, employeeName, selectedCutoff]);
 
 
-    console.log("awdaw: ", filteredRecords)
+    // console.log("awdaw: ", filteredRecords)
+
+    // 1. Dynamic set of statuses where onduty === true (defined outside component or at top level)
+    const ON_DUTY_STATUSES = new Set(
+        ATTENDANCE_STATUSES
+            .filter((item) => item.onduty)
+            .map((item) => item.Status.toUpperCase())
+    );
 
     // 2. Compute KPI Metrics for the Modal
+    // 2. Compute KPI Metrics based on calcMode
     const metrics = useMemo(() => {
         let totalScore = 0;
         let totalKM = 0;
         let eligibleBigasCount = 0;
         const servedOEs = new Set<string>();
+        const onDutyDays = new Set<string>();
+
         let empId = '---';
         let position = '---';
+        let BU = '---';
 
         filteredRecords.forEach((rec) => {
             if (rec.EmployeeID) empId = String(rec.EmployeeID);
             if (rec.Position) position = rec.Position;
+            if (rec.BU) BU = rec.BU;
 
-            // Accumulate score & distance
-            totalScore += Number(rec.tripIndex) || 0;
-            totalKM += Number(rec.tripKM) || 0;
-
-            // Count served trips
-            const status = rec.AttendanceStatus?.toUpperCase();
+            const status = rec.AttendanceStatus?.trim().toUpperCase() || '';
             const isApproved = rec.Approved === 'Approved';
             const oe = rec.OE?.trim();
+            const dateStr = rec.AttendanceDate ? rec.AttendanceDate.split('T')[0] : '';
 
-            if (status === 'SERVED' && oe && oe !== '---') {
-                servedOEs.add(oe);
+            // Unique days with onduty == true (Independent of mode/approval)
+            if (ON_DUTY_STATUSES.has(status) && dateStr) {
+                onDutyDays.add(dateStr);
             }
 
-            // Count records eligible for Bigas metric
-            if (status === 'SERVED' && isApproved) {
-                eligibleBigasCount++;
+            // In 'Approved' mode, strictly enforce approval. In 'Theoretical', bypass approval check.
+            const shouldIncludeInMetrics = calcMode === 'Theoretical' || isApproved;
+
+            if (shouldIncludeInMetrics) {
+                // Score & Distance
+                totalScore += Number(rec.tripIndex) || 0;
+                totalKM += Number(rec.tripKM) || 0;
+
+                // Served Trips & Bigas Count
+                if (status === 'SERVED') {
+                    if (oe && oe !== '---') {
+                        servedOEs.add(oe);
+                    }
+                    eligibleBigasCount++;
+                }
             }
         });
 
-        // Determine Bigas metric in kilos based on eligible count
+        // Determine Bigas metric in kilos
         let bigasKilos = '0 kilos';
         if (eligibleBigasCount >= 6) {
             bigasKilos = '10 kilos';
@@ -99,11 +136,12 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             totalScore,
             totalKM,
             servedCount: servedOEs.size,
-            totalDays: filteredRecords.length,
+            totalDays: onDutyDays.size,
             bigasCount: eligibleBigasCount,
             bigasKilos,
+            BU: BU,
         };
-    }, [filteredRecords]);
+    }, [filteredRecords, calcMode]);
 
 
 
@@ -220,12 +258,30 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             </div>
                             <h3 className="emp-modal-title">{employeeName}</h3>
                             <p className="emp-modal-subtitle">
-                                ID: <b>{metrics.empId}</b> • {metrics.position}
+                                ID: <b>{metrics.empId}</b> • {metrics.position} • {metrics.BU}
                             </p>
+
                         </div>
                     </div>
 
                     <div className="emp-header-right">
+                        {/* Calculation Mode Toggle */}
+                        <div className="emp-sum-calc-mode-toggle">
+                            <button
+                                type="button"
+                                className={`toggle-btn approved ${calcMode === 'Approved' ? 'active' : ''}`}
+                                onClick={() => setCalcMode('Approved')}
+                            >
+                                Approved
+                            </button>
+                            <button
+                                type="button"
+                                className={`toggle-btn theoretical ${calcMode === 'Theoretical' ? 'active' : ''}`}
+                                onClick={() => setCalcMode('Theoretical')}
+                            >
+                                Theoretical
+                            </button>
+                        </div>
                         {selectedCutoff && (
                             <div className="cutoff-badge-pill">
                                 <Calendar size={13} />
@@ -303,12 +359,14 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                         <th>Date</th>
                                         <th>Status</th>
                                         <th>OE</th>
-                                        <th>DMS OE</th>
+                                        {/* <th>DMS OE</th> */}
                                         <th>Route / Source-Destination (SD)</th>
                                         <th>Distance</th>
                                         <th>Score</th>
-                                        <th>BU</th>
+                                        {/* <th>BU</th> */}
                                         <th>Approval</th>
+                                        <th>Modified By</th>
+                                        <th>Approved By</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -326,16 +384,16 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                         </span>
                                                     </td>
                                                     <td className="font-mono font-bold">{rec.OE || '---'}</td>
-                                                    <td className="font-mono text-muted">{rec.DMS_OE || '---'}</td>
+                                                    {/* <td className="font-mono text-muted">{rec.DMS_OE || '---'}</td> */}
                                                     <td className="route-cell" title={rec.SD || ''}>
                                                         <MapPin size={11} className="inline-icon" />
                                                         <span>{rec.SD || '---'}</span>
                                                     </td>
-                                                    <td>{rec.tripKM ? `${rec.tripKM} km` : '---'}</td>
+                                                    <td className="font-bold text-primary">{rec.tripKM ? `${rec.tripKM} km` : '---'}</td>
                                                     <td className="font-bold text-primary">
                                                         {rec.tripIndex !== null && rec.tripIndex !== undefined ? rec.tripIndex : '---'}
                                                     </td>
-                                                    <td>{rec.BU || '---'}</td>
+                                                    {/* <td>{rec.BU || '---'}</td> */}
                                                     <td>
                                                         <button
                                                             type="button"
@@ -346,6 +404,8 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                             {isApproved ? 'Approved' : 'Not Approved'}
                                                         </button>
                                                     </td>
+                                                    <td>---</td>
+                                                    <td>---</td>
                                                 </tr>
                                             )
                                         })

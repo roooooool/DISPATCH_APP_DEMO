@@ -965,12 +965,21 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
 
   const employeeCutoffMetricsMap = useMemo(() => {
-    const result: Record<string, { score: number; servedCount: number }> = {};
+    const result: Record<string, {
+      score: number;
+      servedCount: number;
+      bigasCount: number;
+      bigasKilos: string;
+    }> = {};
 
     // Early return empty result object if no cutoff is selected
     if (!selectedCutoff) return result;
 
-    const map: Record<string, { totalScore: number; servedOEs: Set<string> }> = {};
+    const map: Record<string, {
+      totalScore: number;
+      servedOEs: Set<string>;
+      eligibleBigasCount: number;
+    }> = {};
     const { startDate, endDate } = selectedCutoff;
 
     filteredData.forEach(item => {
@@ -978,25 +987,46 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
       if (dateStr >= startDate && dateStr <= endDate) {
         if (!map[item.EmployeeName]) {
-          map[item.EmployeeName] = { totalScore: 0, servedOEs: new Set() };
+          map[item.EmployeeName] = {
+            totalScore: 0,
+            servedOEs: new Set(),
+            eligibleBigasCount: 0
+          };
         }
 
         const score = Number(item.tripIndex) || 0;
         map[item.EmployeeName].totalScore += score;
 
         const status = item.AttendanceStatus?.toUpperCase();
+        const isApproved = item.Approved === 'Approved';
         const oe = item.OE?.trim();
 
         if (status === 'SERVED' && oe && oe !== '---') {
           map[item.EmployeeName].servedOEs.add(oe);
         }
+
+        // Track records where status is SERVED and Approved is Approved
+        if (status === 'SERVED' && isApproved) {
+          map[item.EmployeeName].eligibleBigasCount += 1;
+        }
       }
     });
 
     Object.keys(map).forEach(name => {
+      const eligibleCount = map[name].eligibleBigasCount;
+
+      let bigasKilos = '0 kilos';
+      if (eligibleCount >= 6) {
+        bigasKilos = '10 kilos';
+      } else if (eligibleCount >= 4) {
+        bigasKilos = '5 kilos';
+      }
+
       result[name] = {
         score: map[name].totalScore,
-        servedCount: map[name].servedOEs.size
+        servedCount: map[name].servedOEs.size,
+        bigasCount: eligibleCount,
+        bigasKilos,
       };
     });
 
@@ -1076,7 +1106,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
   return (
     <div className="attendance-container">
-      {showOverlay && <div><LoadingOverlay message="Fetching Attendance..." bgColor="rgba(255, 255, 255, 0.2)" blur={2} size="md" /></div>}
+
 
 
 
@@ -1189,6 +1219,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
         onMouseUp={handleMouseLeaveOrUp}
         onMouseMove={handleMouseMove}
       >
+        {showOverlay && <div style={{ position: 'relative' }}><LoadingOverlay message="Fetching Attendance..." bgColor="rgba(255, 255, 255, 0.2)" blur={2} size="md" /></div>}
         <table className="attendance-table">
           <thead>
             <tr>
@@ -1447,6 +1478,14 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
                               title={`Accumulated Trip Score in current cutoff (${ALLOWED_DATE_CLICK.startDate} to ${ALLOWED_DATE_CLICK.endDate})`}
                             >
                               <b>{metrics.score > 0 ? metrics.score.toFixed(2) : '0'}</b> pts
+                            </span>
+
+                            {/* New Bigas Metric Pill */}
+                            <span
+                              className="metric-pill bigas"
+                              title={`Bigas Allowance (${metrics.bigasCount || 0} approved served trips in cutoff)`}
+                            >
+                              <b>{metrics.bigasKilos || '0 kilos'}</b>
                             </span>
                           </div>
 

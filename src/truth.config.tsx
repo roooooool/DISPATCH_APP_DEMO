@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.14.8"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.15.8"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -1021,7 +1021,10 @@ export const NEW_TRIPS_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
       filter: { type: "dropdown-multiple", options: orderStatuses, default: ["Approved"] },
       cellStyle: (row: any) => {
         let style: React.CSSProperties = { color: '#666' };
-        if (row["SAPStatus"] === "Approved") style = { color: '#2ea107' };
+
+        const isApproved = row["SAPStatus"] === "Approved";
+
+        if (isApproved) style = { color: '#2ea107' };
         if (row["SAPStatus"] === "Disapproved") style = { color: '#680000' };
         if (row["SAPStatus"] === "Tagged") style = { color: '#2c02ff' };
         if (row["SAPStatus"] === "Manual") style = { color: '#ff00d9' };
@@ -1032,9 +1035,19 @@ export const NEW_TRIPS_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
         style.textTransform = 'uppercase';
         style.letterSpacing = '0.5px';
 
+        // Drag-prevention styling for non-Approved rows
+        if (!isApproved) {
+          style.cursor = 'not-allowed';
+          style.userSelect = 'none';
+          style.opacity = 0.7; // Optional: visual cue for non-draggable items
+        } else {
+          style.cursor = 'grab';
+        }
+
         return style;
       }
     },
+    { col: "TaggedBU", alias: "BU", portion: 0.5 },
 
 
 

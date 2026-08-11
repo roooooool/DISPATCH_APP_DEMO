@@ -28,4 +28,6 @@ export interface NewTripsView_CEM_unfiltered {
   Approved_x0020_Date?: string;
   OE_x0020_Date?: string;
   OEDateAsInt?: number;
+  TaggedBU?: string;
+  TripProgress?: string;
 }
