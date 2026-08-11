@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { X, Calendar, Route, Award, MapPin, CheckCircle2, User, ClipboardList } from 'lucide-react';
+import { X, Calendar, Route, Award, MapPin, CheckCircle2, User, ClipboardList, ShoppingBag, Download } from 'lucide-react';
 
 import { type AttendanceRecord } from './ewul_AttendanceSheet';
 
@@ -57,6 +57,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     const metrics = useMemo(() => {
         let totalScore = 0;
         let totalKM = 0;
+        let eligibleBigasCount = 0;
         const servedOEs = new Set<string>();
         let empId = '---';
         let position = '---';
@@ -71,11 +72,26 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
             // Count served trips
             const status = rec.AttendanceStatus?.toUpperCase();
+            const isApproved = rec.Approved === 'Approved';
             const oe = rec.OE?.trim();
+
             if (status === 'SERVED' && oe && oe !== '---') {
                 servedOEs.add(oe);
             }
+
+            // Count records eligible for Bigas metric
+            if (status === 'SERVED' && isApproved) {
+                eligibleBigasCount++;
+            }
         });
+
+        // Determine Bigas metric in kilos based on eligible count
+        let bigasKilos = '0 kilos';
+        if (eligibleBigasCount >= 6) {
+            bigasKilos = '10 kilos';
+        } else if (eligibleBigasCount >= 4) {
+            bigasKilos = '5 kilos';
+        }
 
         return {
             empId,
@@ -84,6 +100,8 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             totalKM,
             servedCount: servedOEs.size,
             totalDays: filteredRecords.length,
+            bigasCount: eligibleBigasCount,
+            bigasKilos,
         };
     }, [filteredRecords]);
 
@@ -124,6 +142,66 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     const canEditApproval = ["Supervisor", "Developer", "Manager"].includes(user?.Position || '');
 
+    const handleExportCSV = () => {
+        // Helper to safely escape CSV cell values (handles commas, quotes, and newlines)
+        const escapeCSV = (val: any) => {
+            if (val === null || val === undefined) return '""';
+            const str = String(val).replace(/"/g, '""');
+            return `"${str}"`;
+        };
+
+        // 1. Build Metrics & Summary rows at the top
+        const csvRows: string[][] = [
+            ['EMPLOYEE ATTENDANCE & TRIP SUMMARY'],
+            ['Employee Name', employeeName],
+            ['Employee ID', metrics.empId],
+            ['Position', metrics.position],
+            ['Cutoff Period', selectedCutoff ? `${selectedCutoff.label} (${selectedCutoff.startDate} to ${selectedCutoff.endDate})` : 'N/A'],
+            [], // Blank row separator
+            ['KPI METRICS'],
+            ['Cutoff Score (pts)', metrics.totalScore.toFixed(2)],
+            ['Served Trips (OE)', String(metrics.servedCount)],
+            ['Total Distance (km)', String(metrics.totalKM)],
+            ['Active Days', String(metrics.totalDays)],
+            ['Bigas Allowance', metrics.bigasKilos],
+            [], // Blank row separator
+            // 2. Table Headers
+            ['Date', 'Status', 'OE', 'DMS OE', 'Route / SD', 'Distance (km)', 'Score', 'BU', 'Approval']
+        ];
+
+        // 3. Append Table Data Rows
+        filteredRecords.forEach((rec) => {
+            const dateStr = rec.AttendanceDate ? rec.AttendanceDate.split('T')[0] : '';
+            csvRows.push([
+                dateStr,
+                rec.AttendanceStatus || '---',
+                rec.OE || '---',
+                rec.DMS_OE || '---',
+                rec.SD || '---',
+                rec.tripKM != null ? String(rec.tripKM) : '---',
+                rec.tripIndex != null ? String(rec.tripIndex) : '---',
+                rec.BU || '---',
+                rec.Approved === 'Approved' ? 'Approved' : 'Not Approved'
+            ]);
+        });
+
+        // 4. Convert array of arrays to CSV string
+        const csvString = csvRows.map((row) => row.map(escapeCSV).join(',')).join('\n');
+
+        // 5. Trigger download (\uFEFF adds UTF-8 BOM so Excel opens special chars correctly)
+        const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        const fileName = `${employeeName.replace(/\s+/g, '_')}_Summary_${selectedCutoff?.startDate || 'export'}.csv`;
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="emp-modal-backdrop" onClick={onClose}>
             <div className="emp-modal-container" onClick={(e) => e.stopPropagation()}>
@@ -154,6 +232,15 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                 <span>{selectedCutoff.label} ({selectedCutoff.startDate} to {selectedCutoff.endDate})</span>
                             </div>
                         )}
+                        {/* Export CSV Button */}
+                        <button
+                            className="emp-modal-export-btn"
+                            onClick={handleExportCSV}
+                            title="Export CSV"
+                        >
+                            <Download size={15} />
+                            <span>Export CSV</span>
+                        </button>
                         <button className="emp-modal-close-btn" onClick={onClose} title="Close">
                             <X size={18} />
                         </button>
@@ -194,6 +281,14 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             <div className="kpi-details">
                                 <span className="kpi-label">Active Records</span>
                                 <span className="kpi-value">{metrics.totalDays} Days</span>
+                            </div>
+                        </div>
+
+                        <div className="kpi-card bigas">
+                            <div className="kpi-icon"><ShoppingBag size={18} /></div>
+                            <div className="kpi-details">
+                                <span className="kpi-label">Bigas Allowance</span>
+                                <span className="kpi-value">{metrics.bigasKilos}</span>
                             </div>
                         </div>
                     </div>
