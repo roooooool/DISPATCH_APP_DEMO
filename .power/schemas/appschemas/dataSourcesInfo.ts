@@ -1200,6 +1200,18 @@ export const dataSourcesInfo = {
           }
         ]
       },
+      "ResetAttendanceLogBySpID": {
+        "path": "/dbo.ResetAttendanceLogBySpID",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "spID",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
       "sp_fetchAttendanceCalendar": {
         "path": "/dbo.sp_fetchAttendanceCalendar",
         "method": "POST",
@@ -1362,6 +1374,18 @@ export const dataSourcesInfo = {
           },
           {
             "name": "OE",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ModifiedBy",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ApprovedBy",
             "in": "body",
             "required": false,
             "type": "string"

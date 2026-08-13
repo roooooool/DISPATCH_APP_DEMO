@@ -4,14 +4,15 @@
 .page-layout-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Fixed height to prevent body scroll */
-  overflow: hidden; 
+  height: 100vh;
+  /* Fixed height to prevent body scroll */
+  overflow: hidden;
 
   /*background-image: url('/images/trucks.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;*/
-  
+
 }
 
 /* ============================================================
@@ -19,20 +20,24 @@
    ============================================================ */
 .sticky-header-toggle-container {
   position: absolute;
-  top: 70px; /* Height of the navbar */
+  top: 70px;
+  /* Height of the navbar */
   right: 15px;
   z-index: 999;
   display: flex;
   justify-content: center;
-  pointer-events: none; /* Allows clicks to pass through the container */
+  pointer-events: none;
+  /* Allows clicks to pass through the container */
 }
 
 .header-slim-toggle {
-  pointer-events: all; /* Re-enable clicks on the button itself */
+  pointer-events: all;
+  /* Re-enable clicks on the button itself */
   background: var(--color-primary);
   color: white;
   border: 2px solid var(--color-border);
-  border-top: none; /* Remove top border to blend with navbar */
+  border-top: none;
+  /* Remove top border to blend with navbar */
   border-radius: 0 0 12px 12px;
   width: 60px;
   height: 24px;
@@ -41,7 +46,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .header-slim-toggle:hover {
@@ -57,18 +62,25 @@
   display: flex;
   align-items: center;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 40; /* Stays above map */
+  z-index: 40;
+  /* Stays above map */
+
+  /* ADJUSTED: Allow height to adapt directly to inner contents */
+  height: auto;
 }
 
-/* Expanded State */
+/* Expanded State - Tight padding and height based on content */
 .page-header-ribbon.expanded {
-  min-height: 70px;
-  padding: 0 40px;
+  min-height: auto;
+  /* REMOVED hardcoded 70px min-height */
+  padding: 6px 20px;
+  /* REDUCED from 0 40px to tight top/bottom vertical padding */
 }
 
 /* Slim/Collapsed State */
 .page-header-ribbon.collapsed {
-  min-height: 32px; /* Professional slim bar height */
+  min-height: 32px;
+  /* Professional slim bar height */
   height: 32px;
   background: var(--color-bg);
   padding: 0;
@@ -80,6 +92,8 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  height: auto;
+  /* ADDED: Shrink-wrap to height of actions/title */
   transition: opacity 0.2s ease;
 }
 
@@ -99,7 +113,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Children like the map will handle their own scroll */
+  overflow: hidden;
+  /* Children like the map will handle their own scroll */
   /*background-color: var(--color-bg);*/
   transition: margin-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0.2rem 0.5rem;
@@ -107,7 +122,8 @@
 }
 
 .main-content-container.expanded-main {
-    margin-top: -38px; /* Pulls up the content. (32px header height + 6px extra for overlap) */
+  margin-top: -38px;
+  /* Pulls up the content. (32px header height + 6px extra for overlap) */
 }
 
 
@@ -117,7 +133,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  
+
   /* From theme.css: Centering and max-width */
   width: 100%;
   /* max-width: 2400px; */
@@ -166,12 +182,14 @@
   position: fixed;
   bottom: 80px;
   right: 30px;
-  background: linear-gradient(135deg, #000080 0%, #ff0000 100%); /* Navy to Red Gradient */
+  background: linear-gradient(135deg, #000080 0%, #ff0000 100%);
+  /* Navy to Red Gradient */
   color: white;
   border: none;
   width: 55px;
   height: 55px;
-  border-radius: 12px; /* Matching gentle design */
+  border-radius: 12px;
+  /* Matching gentle design */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,31 +212,43 @@
 }
 
 @keyframes fadeInContent {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .page-header-ribbon.expanded {
     padding: 20px;
-    min-height: auto; /* Allow height to grow with content */
+    min-height: auto;
+    /* Allow height to grow with content */
   }
 
-  .header-container { 
-    flex-direction: column; 
-    align-items: flex-start; 
-    gap: 20px; /* Increased gap for better spacing when stacked */
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    /* Increased gap for better spacing when stacked */
   }
 
   .header-actions {
-    width: 100%; /* Take full width to allow justify-content to work */
-    justify-content: flex-start; /* Align items to the start */
-    gap: 12px; /* Adjust gap for mobile */
+    width: 100%;
+    /* Take full width to allow justify-content to work */
+    justify-content: flex-start;
+    /* Align items to the start */
+    gap: 12px;
+    /* Adjust gap for mobile */
   }
 
-  .main-content-container { 
-    padding: 1rem; 
+  .main-content-container {
+    padding: 1rem;
   }
 }
 
@@ -234,11 +264,13 @@
 
 
 .brand-accent {
-  color: var(--color-primary); /* Your Navy Blue */
+  color: var(--color-primary);
+  /* Your Navy Blue */
 }
 
 .title-separator {
-  color: var(--color-accent); /* Your Red Accent */
+  color: var(--color-accent);
+  /* Your Red Accent */
   margin: 0 8px;
   font-weight: 900;
 }
@@ -251,4 +283,3 @@
   flex-wrap: wrap;
   justify-content: flex-end;
 }
-

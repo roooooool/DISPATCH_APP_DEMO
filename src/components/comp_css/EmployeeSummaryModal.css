@@ -17,9 +17,14 @@
 /* Modal Card Box */
 .emp-modal-container {
     background: #ffffff;
-    width: 100%;
-    max-width: 100vh;
-    max-height: 85vh;
+    width: 95vw;
+    /* Changed from 100% to use viewport width */
+    /* max-width: 1600px; */
+    /* Increased from 100vh to 1400px for wider viewports */
+    height: 90vh;
+    /* Added fixed relative height */
+    max-height: 90vh;
+    /* Increased max height from 85vh to 90vh */
     border-radius: 12px;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
     display: flex;
@@ -435,4 +440,231 @@
     background-color: #f97316;
     color: #ffffff;
     box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+}
+
+
+/* Temp Changes Action Container */
+.emp-temp-actions-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 3px 6px;
+    border-radius: 8px;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.emp-temp-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffcc00;
+    padding: 0 4px;
+}
+
+/* Confirm Button */
+.emp-btn-confirm {
+    background-color: #10b981;
+    color: #ffffff;
+    border: none;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emp-btn-confirm:hover {
+    background-color: #059669;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+}
+
+/* Cancel Button */
+.emp-btn-cancel {
+    background-color: #ff3b30;
+    color: #ffffff;
+    border: none;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emp-btn-cancel:hover {
+    background-color: #dc2626;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+
+/* Section Header Layout */
+.emp-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.emp-section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.emp-section-header .section-title {
+    margin: 0;
+}
+
+/* Toggle Control Refined for Light Background */
+.emp-sum-calc-mode-toggle {
+    display: inline-flex;
+    background-color: #f1f5f9;
+    padding: 3px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.emp-sum-calc-mode-toggle .toggle-btn {
+    border: none;
+    background: transparent;
+    color: #64748b;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emp-sum-calc-mode-toggle .toggle-btn:hover {
+    color: #0f172a;
+}
+
+.emp-sum-calc-mode-toggle .toggle-btn.approved.active {
+    background-color: #10b981;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
+}
+
+.emp-sum-calc-mode-toggle .toggle-btn.theoretical.active {
+    background-color: #f97316;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(249, 115, 22, 0.25);
+}
+
+/* Temp Changes Action Bar (Far Right) */
+.emp-temp-actions-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #fefce8;
+    border: 1px solid #fef08a;
+    padding: 3px 8px;
+    border-radius: 8px;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.emp-temp-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #a16207;
+}
+
+.emp-btn-confirm {
+    background-color: #10b981;
+    color: #ffffff;
+    border: none;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emp-btn-confirm:hover {
+    background-color: #059669;
+}
+
+.emp-btn-cancel {
+    background-color: #ef4444;
+    color: #ffffff;
+    border: none;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emp-btn-cancel:hover {
+    background-color: #dc2626;
+}
+
+/* Modified Row Visual Cues */
+.emp-history-table tr.row-pending-edit {
+    background-color: #fefce8 !important;
+    /* Gentle amber background tint */
+    transition: background-color 0.2s ease;
+}
+
+.emp-history-table tr.row-pending-edit td:first-child {
+    border-left: 4px solid #f59e0b;
+    /* Amber left accent bar */
+}
+
+/* Button & Dot Container */
+.approval-btn-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Modified State Button Highlight */
+.emp-summ-approve-btn.btn-modified {
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
+}
+
+/* Pulsing Amber Dot Indicator */
+.edited-indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+    flex-shrink: 0;
+    animation: pulseDot 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: scale(1.25);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
 }

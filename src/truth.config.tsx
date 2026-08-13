@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.15.8"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.17.8"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -33,6 +33,7 @@ export type UserInfo = {
   lastTripFilter?: string; // track last trip filter for persistence
   FullName?: string;
   lastActiveModule?: string;
+  attendanceSheetZoom?: number;
 };
 
 export const TRIP_GROUPS = [
@@ -818,6 +819,7 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
     { col: "OE", alias: "OE #", sticky: true, cellStyle: () => { return { fontWeight: 'bold' } } },
+    { col: "Trip Status", alias: "Status", filter: { type: "dropdown-multiple", options: statusOptions }, cellStyle: () => { return { fontWeight: 'bold' } } },
     {
       col: "TripProgress",
       alias: "Progress",

@@ -9,13 +9,15 @@ export const useVersionCheck = () => {
   const { config } = useAppConfig();
 
   useEffect(() => {
+    console.log("version checker: ", APP_VERSION.split('.').map(num => parseInt(num)));
+
     // 1. Bail out if config isn't loaded or we are already on the update page
     if (!config?.Version || location.pathname === '/update-required') return;
 
     // 2. Parse "1.2.3" -> [1, 2, 3]
     const current = APP_VERSION.split('.').map(num => parseInt(num));
     const latest = config.Version.split('.').map((num: string) => parseInt(num));
-
+    console.log("version checker: ", current, latest);
     const [currentMajor, currentMinor] = current;
     const [latestMajor, latestMinor] = latest;
 
@@ -26,13 +28,13 @@ export const useVersionCheck = () => {
 
     if ((isMajorUpdate || isMinorUpdate) && config.mandatoryUpdate) {
       console.warn(`Outdated Client: ${APP_VERSION} < ${config.Version}`);
-      
+
       // Pass the new version as state so the page can display it
-      navigate('/update-required', { 
-        state: { 
+      navigate('/update-required', {
+        state: {
           newVersion: config.Version,
-          isMajor: isMajorUpdate 
-        } 
+          isMajor: isMajorUpdate
+        }
       });
     }
   }, [config, navigate, location.pathname, APP_VERSION]);

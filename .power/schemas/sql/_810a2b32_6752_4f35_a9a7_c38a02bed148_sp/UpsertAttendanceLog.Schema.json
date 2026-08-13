@@ -24,6 +24,14 @@
         "OE": {
           "title": "OE",
           "type": "string"
+        },
+        "ModifiedBy": {
+          "title": "ModifiedBy",
+          "type": "string"
+        },
+        "ApprovedBy": {
+          "title": "ApprovedBy",
+          "type": "string"
         }
       }
     },

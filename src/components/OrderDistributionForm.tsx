@@ -2627,6 +2627,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               Position: Position,
               TCVC: TCVC,
 
+              ModifiedBy: editingUser?.FullName
+
             } as any);
             return { success: true };
           } catch (error) {

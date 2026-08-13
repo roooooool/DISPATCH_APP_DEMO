@@ -466,31 +466,30 @@ const FleetMonitoring: React.FC = () => {
                             className="fleet-bu-selector"
                             value={selectedBU || ''}
                             onChange={e => setSelectedBU(e.target.value)}
-                            style={{ minWidth: 120, marginRight: 12, borderRadius: 8, padding: '6px 12px', border: '1px solid #e2e8f0' }}
                         >
                             {BUSINESS_UNITS.map(bu => (
                                 <option key={bu.Title} value={bu.Title}>{bu.Title}</option>
                             ))}
                         </select>
+
                         <button className={`fleet-action-btn ${modalOpen === null ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule(null)}>
-                            <MapIcon size={18} /> <span>Fleet Monitoring</span>
+                            <MapIcon size={14} /> <span>Fleet Monitoring</span>
                         </button>
                         <button className={`fleet-action-btn ${modalOpen === 'attendance' ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule('attendance')}>
-                            <Calendar size={18} /> <span>Attendance</span>
+                            <Calendar size={14} /> <span>Attendance</span>
                         </button>
                         <button className={`fleet-action-btn ${modalOpen === 'fuel' ? 'active-highlight' : 'primary-solid'}`} onClick={() => { changeModule('fuel'); fetchFuelRequests(); }}>
-                            <Fuel size={18} /> <span>Fuel Request</span>
+                            <Fuel size={14} /> <span>Fuel Request</span>
                         </button>
                         <button className={`fleet-action-btn ${modalOpen === 'fleet' ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule('fleet')}>
-                            <Settings size={18} /> <span>Fleet Manage</span>
+                            <Settings size={14} /> <span>Fleet Manage</span>
                         </button>
-                        <button className={`fleet-action-btn primary-solid`} title="Refresh Data" onClick={fetchPairingData} disabled={ewul_isAnythingLoading()}>
-                            <RefreshCw size={18} className={ewul_isAnythingLoading() ? 'spin-refresh' : ''} /> <span>Refresh</span>
+                        <button className="fleet-action-btn primary-solid" title="Refresh Data" onClick={fetchPairingData} disabled={ewul_isAnythingLoading()}>
+                            <RefreshCw size={14} className={ewul_isAnythingLoading() ? 'spin-refresh' : ''} /> <span>Refresh</span>
                         </button>
                         <button className="fleet-action-btn secondary-outline">
-                            <FileDown size={18} /> <span>Export CSV</span>
+                            <FileDown size={14} /> <span>Export CSV</span>
                         </button>
-
                     </div>
                 }
                 className="flush-map-page"

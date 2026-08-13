@@ -150,6 +150,8 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                     return;
                 }
 
+                console.log("weeeew: ", rawData);
+
                 if (isBUItem && sourceBu === targetBu) return;
 
                 const targetRowKey = record.OE !== undefined && record.OE !== null ? record.OE : (record._rowId || record.id);
@@ -418,7 +420,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                 Buisness_x0020_Unit: order.BU,
 
                                 _tripGroup: order._tripGroup,
-                                cementType: order.cementType,
+                                cementType: order.CementTypeName,
 
                                 Loading_x0020_Sequence: 9999,
 

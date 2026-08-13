@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import LoadingOverlay from '../components/LoadingOverlay_navblue';
 import { EmployeeSummaryModal } from './EmployeeSummaryModal';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon, Star, Mail, FileText, Lock, } from 'lucide-react';
+import {
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon, Star, Mail, FileText, Lock, ZoomIn, ZoomOut, RotateCcw
+} from 'lucide-react';
 import '../components/comp_css/ewul_AttendanceSheet.css';
 import AutoDismissBanner from '../components/ewul_Banner';
 import Modal from '../components/ewul_Modal';
@@ -52,6 +54,10 @@ export interface AttendanceRecord {
   secondTrip?: string | null;
   tripKM?: number | null;
   Approved?: string;
+
+  spID?: string;
+  ModifiedBy?: string;
+  ApprovedBy?: string;
 }
 
 interface CutoffGroup {
@@ -264,10 +270,46 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   } | null>(null);
 
   const { addTask } = useTaskWorker();
-  const { user } = useUser();
+  const { user, updateUser } = useUser();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, _setPageSize] = useState(25); //11
+
+  // Initialize state from user object or fallback to 1
+  const [zoomLevel, setZoomLevel] = useState<number>(() => {
+    return user?.attendanceSheetZoom ? Number(user.attendanceSheetZoom) : 1;
+  });
+
+  // Helper function to update state AND trigger updateUser
+  const updateZoom = (newZoom: number) => {
+    const roundedZoom = Number(newZoom.toFixed(1)); // Prevents JS floating point precision issues (e.g., 1.1000000000000001)
+    setZoomLevel(roundedZoom);
+
+    // Sync to User Context / Backend
+    if (updateUser) {
+      updateUser({ attendanceSheetZoom: roundedZoom });
+    }
+  };
+
+  const handleZoomIn = () => {
+    setZoomLevel(prev => {
+      const next = Math.min(prev + 0.1, 2);
+      updateZoom(next);
+      return next;
+    });
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => {
+      const next = Math.max(prev - 0.1, 0.7);
+      updateZoom(next);
+      return next;
+    });
+  };
+
+  const handleZoomReset = () => {
+    updateZoom(1);
+  };
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPosition, setFilterPosition] = useState('All');
@@ -426,7 +468,8 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
         updated[targetIdx] = {
           ...updated[targetIdx],
           AttendanceStatus: newAttendance,
-          ModifiedAt: new Date().toISOString()
+          ModifiedAt: new Date().toISOString(),
+          ModifiedBy: user?.FullName || 'Unknown User'
         };
       } else {
         // Create a fallback mock record block locally if one doesn't exist yet
@@ -440,7 +483,8 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           AttendanceStatus: newAttendance,
           OE: OE || null,
           Position: targetMeta?.position || 'Driver',
-          ModifiedAt: new Date().toISOString()
+          ModifiedAt: new Date().toISOString(),
+          ModifiedBy: user?.FullName || 'Unknown User'
         });
       }
       return updated;
@@ -459,6 +503,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
             AttendanceDate: dateStr,
             AttendanceStatus: newAttendance || 'PRESENT',
             OE: OE || '',
+            ModifiedBy: user?.FullName || 'Unknown User'
           } as any);
           return { success: true };
         } catch (error) {
@@ -602,7 +647,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
   useEffect(() => {
     const fetchAttendance = async () => {
-      console.log(`Fetching attendance for Year: ${year}, Month: ${month}, BU: ${BU}`);
+      // console.log(`Fetching attendance for Year: ${year}, Month: ${month}, BU: ${BU}`);
       setLoading(true);
       try {
         const res = await Sp_fetchAttendanceCalendar2Service.Sp_fetchAttendanceCalendar2({
@@ -636,8 +681,12 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           secondTrip: item.secondTrip ?? 'N',
           tripKM: item.tripKM !== undefined && item.tripKM !== null ? Number(item.tripKM) : null,
           Approved: item.Approved ?? null,
-        }));
 
+          spID: item.spID ?? null,
+          ModifiedBy: item.ModifiedBy ?? null,
+          ApprovedBy: item.ApprovedBy ?? null,
+        }));
+        // console.log('fromatted wasd: ', rawData);
         setRawAttendanceData(formattedRecords);
 
 
@@ -1105,7 +1154,14 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
 
   return (
-    <div className="attendance-container">
+    <div
+      className="attendance-container"
+      style={{
+        // Pass the zoom multiplier directly into CSS variables
+        '--grid-zoom': zoomLevel,
+        '--grid-font-scale': `${zoomLevel}rem`,
+      } as React.CSSProperties}
+    >
 
 
 
@@ -1181,6 +1237,43 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
         {/* RIGHT CONTROL */}
         <div className="header-section right">
+
+          {/* ADD ZOOM CONTROLS HERE */}
+          <div className="zoom-controls-group" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {zoomLevel !== 1 && (
+              <button
+                onClick={handleZoomReset}
+                title="Reset Zoom"
+                className="gsdc-toggle-btn"
+                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <RotateCcw size={13} />
+                <span>Reset</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleZoomOut}
+              title="Zoom Out"
+              className="gsdc-toggle-btn"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 6px' }}
+            >
+              <ZoomOut size={14} />
+            </button>
+
+            <span style={{ fontSize: '12px', minWidth: '38px', textAlign: 'center', fontWeight: 'bold' }}>
+              {Math.round(zoomLevel * 100)}%
+            </span>
+
+            <button
+              onClick={handleZoomIn}
+              title="Zoom In"
+              className="gsdc-toggle-btn"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 6px' }}
+            >
+              <ZoomIn size={14} />
+            </button>
+          </div>
 
           {/* Position Dropdown */}
           <div className="attendance-dropdown-wrapper">

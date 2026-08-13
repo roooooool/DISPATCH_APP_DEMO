@@ -4,31 +4,38 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
+
 /* Fleet Monitoring - GSDC Refined */
 
 .fleet-monitoring-bg {
   position: relative;
   width: 100%;
   /* Use calc to fill the available screen snugly */
-  height: calc(100vh - 160px); 
+  height: calc(100vh - 160px);
   min-height: 500px;
   overflow: hidden;
-  border-radius: 12px; /* Gentle corners for the map container */
+  border-radius: 12px;
+  /* Gentle corners for the map container */
   z-index: 1;
 }
 
 /* Floating Table Styling */
 .fleet-floating-table {
-  background: var(--color-bg); 
+  background: var(--color-bg);
   backdrop-filter: blur(12px);
-  border-radius: calc(var(--radius) - 3px); 
+  border-radius: calc(var(--radius) - 3px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  width: 100%; 
+  width: 100%;
   height: 100%;
 }
 
@@ -36,7 +43,7 @@
 .fleet-table-gradient-wrapper.windowed-mode {
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: none !important; 
+  transition: none !important;
 }
 
 /* .fleet-floating-table.expanded {
@@ -56,7 +63,7 @@
   padding: 0 15px;
   height: 50px;
   /* Use your primary navy for the header background to contrast the white content */
-  background: var(--bg-gradient-main); 
+  background: var(--bg-gradient-main);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -70,7 +77,8 @@
 
 /* Toggle inside the header for a cleaner look */
 .fleet-table-toggle-inner {
-  background: rgba(241, 245, 249, 0.55); /* semi-transparent */
+  background: rgba(241, 245, 249, 0.55);
+  /* semi-transparent */
   border: none;
   padding: 4px 10px;
   border-radius: 6px;
@@ -96,14 +104,48 @@
 /* Action Buttons - Solid Theme */
 .fleet-actions-bar {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 6px;
+  /* Tightened space between controls */
+}
+
+/* Compact Selector Dropdown */
+.fleet-bu-selector {
+  min-width: 110px;
+  height: 28px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: var(--color-primary, #00082d);
+  outline: none;
+  cursor: pointer;
+}
+
+.fleet-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 28px;
+  /* Fixed tight height */
+  padding: 0 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.1s ease, filter 0.2s ease, background-color 0.2s ease;
 }
 
 .fleet-action-btn.primary-solid {
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--color-primary); /* Navy Blue */
+  background-color: var(--color-primary);
+  /* Navy Blue */
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -114,7 +156,8 @@
 }
 
 .fleet-action-btn.primary-solid:hover {
-  filter: brightness(1.2); /* Gentle highlight */
+  filter: brightness(1.2);
+  /* Gentle highlight */
 }
 
 .fleet-action-btn.primary-solid:active {
@@ -137,13 +180,15 @@
 /* When the template has this class, strip all gaps from the inner content */
 .page-layout-wrapper.flush-map-page .main-content-container {
   padding: 0;
-  overflow: hidden; /* Prevent double scrollbars with the map */
+  overflow: hidden;
+  /* Prevent double scrollbars with the map */
 }
 
 .page-layout-wrapper.flush-map-page .content-inner-box {
   padding: 0;
   margin: 0;
-  max-width: none; /* Ensure it hits the edges of the screen */
+  max-width: none;
+  /* Ensure it hits the edges of the screen */
   flex: 1;
 }
 
@@ -157,10 +202,11 @@
 /* Header Ribbon Base */
 .page-header-ribbon {
   overflow: hidden;
-  max-height: 200px; /* Adjust to fit your header's natural height */
-  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
-              padding 0.35s ease, 
-              opacity 0.25s ease;
+  max-height: 200px;
+  /* Adjust to fit your header's natural height */
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.35s ease,
+    opacity 0.25s ease;
   background: white;
   border-bottom: 1px solid #e2e8f0;
   position: relative;
@@ -173,7 +219,8 @@
   padding-bottom: 0;
   border-bottom: none;
   opacity: 0;
-  pointer-events: none; /* Prevents clicking hidden buttons */
+  pointer-events: none;
+  /* Prevents clicking hidden buttons */
 }
 
 /* Map height depends on the header state */
@@ -182,14 +229,16 @@
 }
 
 .header-closed.flush-map-page .fleet-monitoring-bg {
-  height: calc(100vh - 60px); /* Smaller subtraction because header is gone */
+  height: calc(100vh - 60px);
+  /* Smaller subtraction because header is gone */
 }
 
 
 .fleet-table-content {
   flex: 1 1 auto;
   min-height: 0;
-  max-height: 100%; /* or whatever fits your layout */
+  max-height: 100%;
+  /* or whatever fits your layout */
   padding-bottom: 8px;
 
 
@@ -199,12 +248,13 @@
 
 
 .header-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Space between the switch and the chevron */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Space between the switch and the chevron */
 }
 
-.view-mode-toggle, 
+.view-mode-toggle,
 .fleet-table-toggle-inner,
 .map-action-btn {
   background: rgba(255, 255, 255, 0.15);
@@ -219,7 +269,7 @@
   justify-content: center;
 }
 
-.view-mode-toggle:hover, 
+.view-mode-toggle:hover,
 .fleet-table-toggle-inner:hover,
 .map-action-btn:hover,
 .map-action-btn.primary-solid-lock {
@@ -230,28 +280,32 @@
 
 /* Expansion toggle styling update to match */
 .fleet-table-toggle-inner {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(20px); /* The Blur Effect */
-    -webkit-backdrop-filter: blur(20px);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    color:  var(--color-bg);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  /* The Blur Effect */
+  -webkit-backdrop-filter: blur(20px);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: var(--color-bg);
 }
 
 .fleet-table-toggle-inner:hover {
-    color:  var(--color-bg); /* Red Accent on hover */
+  color: var(--color-bg);
+  /* Red Accent on hover */
 }
 
 .fleet-table-gradient-wrapper {
-  position: absolute; 
+  position: absolute;
   top: 0px;
   left: 0px;
   z-index: 10;
-  padding: 2px; /* Gradient border thickness */
+  padding: 2px;
+  /* Gradient border thickness */
   background: var(--bg-gradient-main-eq);
-  border-radius: var(--radius); /* 10px */
+  border-radius: var(--radius);
+  /* 10px */
   box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
   overflow: hidden;
 }
@@ -265,9 +319,11 @@
 
 /* Navy Blue primary backdrop, White text, Red border accent line */
 .fleet-action-btn.active-highlight {
-  background-color: #00082d; /* Primary Navy Blue */
+  background-color: #00082d;
+  /* Primary Navy Blue */
   color: #ffffff;
-  border: 1px solid #3a4efc; /* Primary 2nd Blue */
+  border: 1px solid #3a4efc;
+  /* Primary 2nd Blue */
   position: relative;
   font-weight: 600;
 }
@@ -280,25 +336,27 @@
   left: 10%;
   width: 80%;
   height: 3px;
-  background: var(--color-red, #ff0000); /* Accent sub color */
+  background: var(--color-red, #ff0000);
+  /* Accent sub color */
   border-radius: 2px 2px 0 0;
 }
 
 .fleet-monitoring-bg {
-    position: relative;
-    width: 100%;
-    height: 100%;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 /* Clear native overrides when windowed */
 .fleet-floating-table.windowed-mode {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: none !important; /* Disables width animations during manual resize dragging */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: none !important;
+  /* Disables width animations during manual resize dragging */
 }
 
 .fleet-floating-table.fullscreen-mode {
-  height: 83vh; /* 🌟 Keep the standard fixed display aspect only when fullscreen */
+  height: 83vh;
+  /* 🌟 Keep the standard fixed display aspect only when fullscreen */
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-

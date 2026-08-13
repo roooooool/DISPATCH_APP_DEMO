@@ -10,6 +10,15 @@ import {
 
 import './comp_css/EmployeeSummaryModal.css';
 
+//POWERAPPS
+import { GSDC_AttendanceService } from '../generated/services/GSDC_AttendanceService';
+import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
+import { ResetAttendanceLogBySpIDService } from '../generated/services/ResetAttendanceLogBySpIDService';
+
+//utils
+import { useTaskWorker } from '../utils/TaskWorkerContext';
+
+
 interface CutoffGroup {
     label: string;
     startDate: string;
@@ -31,6 +40,11 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     onClose,
     user,
 }) => {
+
+    const { addTask } = useTaskWorker();
+
+    const [pendingChanges, setPendingChanges] = useState<Record<string, AttendanceRecord>>({});
+
     // 1. Local state for optimistic updates
     const [localRecords, setLocalRecords] = useState<AttendanceRecord[]>(allRecords);
     const [calcMode, setCalcMode] = useState<'Approved' | 'Theoretical'>('Approved');
@@ -38,6 +52,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     // Keep local records in sync if parent prop updates
     useEffect(() => {
         setLocalRecords(allRecords);
+        setPendingChanges({});
     }, [allRecords]);
 
 
@@ -145,11 +160,26 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
 
 
-    const handleToggleApproval = async (targetRecord: AttendanceRecord) => {
-        const previousStatus = targetRecord.Approved;
-        const newStatus = previousStatus === 'Approved' ? 'Not Approved' : 'Approved';
+    // 2. Toggle approval locally & track in pendingChanges
+    const handleToggleApproval = (targetRecord: AttendanceRecord) => {
+        const groupKey = `${targetRecord.AttendanceDate?.split('T')[0]}_${targetRecord.OE || ''}`;
 
-        // Step A: Instant Optimistic UI Update
+        const currentRecord = localRecords.find(
+            (rec) => rec === targetRecord || (rec.AttendanceDate === targetRecord.AttendanceDate && rec.OE === targetRecord.OE)
+        );
+
+        // Toggle between 'Approved' and undefined
+        const newStatus: 'Approved' | undefined = currentRecord?.Approved === 'Approved' ? undefined : 'Approved';
+
+        // Construct full updated record object
+        const updatedRecord: AttendanceRecord = {
+            ...(currentRecord || targetRecord),
+            Approved: newStatus,
+        };
+
+        console.log('wasd: ', updatedRecord);
+
+        // Update optimistic local records for UI/KPIs
         setLocalRecords((prev) =>
             prev.map((rec) =>
                 rec === targetRecord || (rec.AttendanceDate === targetRecord.AttendanceDate && rec.OE === targetRecord.OE)
@@ -158,27 +188,200 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             )
         );
 
-        try {
-            // Step B: API call placeholder
-            console.log(`[API CALL PLACEHOLDER] Updating Approval status for ${targetRecord.EmployeeName}: ${newStatus}`);
+        // Update pending changes dictionary
+        setPendingChanges((prev) => {
+            const updated = { ...prev };
 
-            // await api.updateApprovalStatus({ id: targetRecord.id, status: newStatus });
-        } catch (error) {
-            console.error('Failed to update approval status:', error);
-
-            // Step C: Rollback on API Error
-            setLocalRecords((prev) =>
-                prev.map((rec) =>
-                    rec === targetRecord || (rec.AttendanceDate === targetRecord.AttendanceDate && rec.OE === targetRecord.OE)
-                        ? { ...rec, Approved: previousStatus }
-                        : rec
-                )
+            const originalRec = allRecords.find(
+                (rec) => rec === targetRecord || (rec.AttendanceDate === targetRecord.AttendanceDate && rec.OE === targetRecord.OE)
             );
-            alert('Failed to update approval status. Changes reverted.');
-        }
+
+            // Normalize baseline status to 'Approved' or undefined
+            const originalStatus = originalRec?.Approved === 'Approved' ? 'Approved' : undefined;
+
+            // Revert back to baseline if toggled back to original state
+            if (newStatus === originalStatus) {
+                delete updated[groupKey];
+            } else {
+                updated[groupKey] = updatedRecord;
+            }
+
+            return updated;
+        });
     };
 
     const canEditApproval = ["Supervisor", "Developer", "Manager"].includes(user?.Position || '');
+
+    const handleConfirmChanges = async () => {
+        const pendingArray: AttendanceRecord[] = Object.values(pendingChanges);
+
+        if (pendingArray.length === 0) return;
+
+        const updateRecords = pendingArray.filter((rec) => rec.spID);
+        const createRecords = pendingArray.filter((rec) => !rec.spID);
+
+        console.log('To be updated in SharePoint:', updateRecords);
+        console.log('To be created in SharePoint:', createRecords);
+
+        const totalCount = pendingArray.length;
+        const summaryLabel = `${totalCount} item${totalCount > 1 ? 's' : ''}`;
+
+        addTask({
+            id: `attendanceapproval-${Date.now()}`,
+            name: `Attendance Approval`,
+            execute: async () => {
+                try {
+                    // 1. Process SharePoint Creates
+                    if (createRecords.length > 0) {
+                        const createPayloads = createRecords.map((rec) => ({
+                            OE: rec.OE || '',
+                            TripKM: rec.tripKM?.toString() || '',
+                            SD: rec.SD || '',
+                            Date: rec.AttendanceDate,
+                            AttendanceDetail: rec.tripIndex?.toString() || '',
+                            SecondTrip: rec.secondTrip || '',
+                            Creator: user?.FullName || '',
+                            TCVC: rec.TCVC || '',
+                            Position: rec.Position || '',
+                            TransactionType: rec.TransactionType || '',
+                            EmployeeName: rec.EmployeeName || '',
+                            hrID: rec.EmployeeID?.toString() || '',
+                            Approval: rec.Approved || '',
+                        }));
+
+                        const createResults = await Promise.all(
+                            createPayloads.map((payload) => GSDC_AttendanceService.create(payload))
+                        );
+
+                        const hasCreateFailure = createResults.some((res) => !res?.success);
+                        if (hasCreateFailure) {
+                            throw new Error("Failed to create one or more attendance records in SharePoint.");
+                        }
+                    }
+
+                    // 2. Process SharePoint Updates with Fallback Creation
+                    if (updateRecords.length > 0) {
+                        const updateResults = await Promise.all(
+                            updateRecords.map(async (rec) => {
+                                try {
+                                    // Attempt standard update
+                                    const updateRes = await GSDC_AttendanceService.update(rec.spID!, {
+                                        Approval: rec.Approved || '',
+                                    });
+
+                                    // If update succeeded, return response
+                                    if (updateRes?.success) {
+                                        return updateRes;
+                                    }
+
+                                    // If update returned success: false (e.g., ID no longer exists in SharePoint)
+                                    console.warn(`spID ${rec.spID} not found in SharePoint. Resetting orphan log and creating new record...`);
+
+                                    // 1. Reset orphan spID binding in SQL Database
+                                    await ResetAttendanceLogBySpIDService.ResetAttendanceLogBySpID({ spID: rec.spID! } as any);
+
+                                    // 2. Create replacement record with FULL payload
+                                    const createRes = await GSDC_AttendanceService.create({
+                                        OE: rec.OE || '',
+                                        TripKM: rec.tripKM?.toString() || '',
+                                        SD: rec.SD || '',
+                                        Date: rec.AttendanceDate,
+                                        AttendanceDetail: rec.tripIndex?.toString() || '',
+                                        SecondTrip: rec.secondTrip || '',
+                                        Creator: user?.FullName || '',
+                                        TCVC: rec.TCVC || '',
+                                        Position: rec.Position || '',
+                                        TransactionType: rec.TransactionType || '',
+                                        EmployeeName: rec.EmployeeName || '',
+                                        hrID: rec.EmployeeID?.toString() || '',
+                                        Approval: rec.Approved || '',
+                                    });
+
+                                    return createRes;
+                                } catch (err) {
+                                    console.error(`Exception updating spID ${rec.spID}. Executing fallback reset & create:`, err);
+
+                                    // Fallback attempt if update threw an unhandled exception
+                                    try {
+                                        await ResetAttendanceLogBySpIDService.ResetAttendanceLogBySpID({ spID: rec.spID! } as any);
+
+                                        return await GSDC_AttendanceService.create({
+                                            OE: rec.OE || '',
+                                            TripKM: rec.tripKM?.toString() || '',
+                                            SD: rec.SD || '',
+                                            Date: rec.AttendanceDate,
+                                            AttendanceDetail: rec.tripIndex?.toString() || '',
+                                            SecondTrip: rec.secondTrip || '',
+                                            Creator: user?.FullName || '',
+                                            TCVC: rec.TCVC || '',
+                                            Position: rec.Position || '',
+                                            TransactionType: rec.TransactionType || '',
+                                            EmployeeName: rec.EmployeeName || '',
+                                            hrID: rec.EmployeeID?.toString() || '',
+                                            Approval: rec.Approved || '',
+                                        });
+                                    } catch (fallbackErr) {
+                                        console.error(`Fallback failed for spID ${rec.spID}:`, fallbackErr);
+                                        return { success: false };
+                                    }
+                                }
+                            })
+                        );
+
+                        const hasUpdateFailure = updateResults.some((res) => !res?.success);
+                        if (hasUpdateFailure) {
+                            throw new Error("Failed to update or recreate one or more attendance records in SharePoint.");
+                        }
+                    }
+
+                    // 3. Process SQL Database Upserts (All Records)
+                    const upsertResults = await Promise.all(
+                        pendingArray.map((rec) =>
+                            UpsertAttendanceLogService.UpsertAttendanceLog({
+                                EmployeeName: rec.EmployeeName,
+                                EmployeeID: rec.EmployeeID,
+                                AttendanceDate: rec.AttendanceDate,
+                                OE: rec.OE || '',
+                                Approved: rec.Approved,
+                                AttendanceStatus: rec.AttendanceStatus,
+                                ModifiedBy: user?.FullName || 'Unknown User',
+                                ApprovedBy: rec.Approved === 'Approved' ? (user?.FullName || undefined) : undefined,
+                            } as any)
+                        )
+                    );
+
+                    const hasUpsertFailure = upsertResults.some((res) => res && res.success === false);
+                    if (hasUpsertFailure) {
+                        throw new Error("Failed to sync one or more attendance records with the SQL database.");
+                    }
+
+                    return { success: true, data: null };
+                } catch (err) {
+                    console.error("Error submitting attendance records:", err);
+                    return { success: false, data: null };
+                }
+            },
+            checkSuccess: (result: { success: boolean }) => result.success,
+            onSuccess: () => {
+                setPendingChanges({});
+                // fetchAttendanceRecords(); // Refresh data if needed
+            },
+            onFailure: () => {
+                console.error('Failed to commit attendance approval changes.');
+            },
+            message: `Submitting approval for ${summaryLabel}...`,
+            message_success: `Attendance approvals for ${summaryLabel} submitted successfully.`,
+            message_failure: `Failed to submit attendance approvals for ${summaryLabel}.`,
+        });
+    };
+
+    // 4. Cancel handler to revert back to original records
+    const handleCancelChanges = () => {
+        setLocalRecords(allRecords);
+        setPendingChanges({});
+    };
+
+    const pendingCount = Object.keys(pendingChanges).length;
 
     const handleExportCSV = () => {
         // Helper to safely escape CSV cell values (handles commas, quotes, and newlines)
@@ -265,23 +468,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                     </div>
 
                     <div className="emp-header-right">
-                        {/* Calculation Mode Toggle */}
-                        <div className="emp-sum-calc-mode-toggle">
-                            <button
-                                type="button"
-                                className={`toggle-btn approved ${calcMode === 'Approved' ? 'active' : ''}`}
-                                onClick={() => setCalcMode('Approved')}
-                            >
-                                Approved
-                            </button>
-                            <button
-                                type="button"
-                                className={`toggle-btn theoretical ${calcMode === 'Theoretical' ? 'active' : ''}`}
-                                onClick={() => setCalcMode('Theoretical')}
-                            >
-                                Theoretical
-                            </button>
-                        </div>
+
                         {selectedCutoff && (
                             <div className="cutoff-badge-pill">
                                 <Calendar size={13} />
@@ -351,7 +538,51 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
                     {/* Detailed Attendance History Table */}
                     <div className="emp-history-section">
-                        <h4 className="section-title">Attendance & Trip Breakdown</h4>
+                        {/* Section Header Row */}
+                        <div className="emp-section-header">
+                            <div className="emp-section-header-left">
+                                <h4 className="section-title">Attendance & Trip Breakdown</h4>
+
+                                {/* Calculation Mode Toggle */}
+                                <div className="emp-sum-calc-mode-toggle">
+                                    <button
+                                        type="button"
+                                        className={`toggle-btn approved ${calcMode === 'Approved' ? 'active' : ''}`}
+                                        onClick={() => setCalcMode('Approved')}
+                                    >
+                                        Approved
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`toggle-btn theoretical ${calcMode === 'Theoretical' ? 'active' : ''}`}
+                                        onClick={() => setCalcMode('Theoretical')}
+                                    >
+                                        Theoretical
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Temp Changes Action Bar (Far Right) */}
+                            {pendingCount > 0 && (
+                                <div className="emp-temp-actions-bar">
+                                    <span className="emp-temp-badge">{pendingCount} Unsaved</span>
+                                    <button
+                                        type="button"
+                                        className="emp-btn-confirm"
+                                        onClick={handleConfirmChanges}
+                                    >
+                                        Confirm
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="emp-btn-cancel"
+                                        onClick={handleCancelChanges}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                         <div className="emp-table-wrapper">
                             <table className="emp-history-table">
                                 <thead>
@@ -367,6 +598,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                         <th>Approval</th>
                                         <th>Modified By</th>
                                         <th>Approved By</th>
+                                        <th>Coor App</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -374,9 +606,12 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                         filteredRecords.map((rec, idx) => {
                                             const isApproved = rec.Approved === 'Approved';
 
-                                            return (
+                                            // Check if this record has staged/unsaved changes
+                                            const groupKey = `${rec.AttendanceDate?.split('T')[0]}_${rec.OE || ''}`;
+                                            const isModified = Boolean(pendingChanges[groupKey]);
 
-                                                <tr key={idx}>
+                                            return (
+                                                <tr key={idx} className={isModified ? 'row-pending-edit' : ''}>
                                                     <td className="font-mono">{rec.AttendanceDate?.split('T')[0]}</td>
                                                     <td>
                                                         <span className={`emp-summ-status-pill ${rec.AttendanceStatus?.toLowerCase().replace(/\s+/g, '-')}`}>
@@ -384,7 +619,6 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                         </span>
                                                     </td>
                                                     <td className="font-mono font-bold">{rec.OE || '---'}</td>
-                                                    {/* <td className="font-mono text-muted">{rec.DMS_OE || '---'}</td> */}
                                                     <td className="route-cell" title={rec.SD || ''}>
                                                         <MapPin size={11} className="inline-icon" />
                                                         <span>{rec.SD || '---'}</span>
@@ -393,21 +627,28 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                     <td className="font-bold text-primary">
                                                         {rec.tripIndex !== null && rec.tripIndex !== undefined ? rec.tripIndex : '---'}
                                                     </td>
-                                                    {/* <td>{rec.BU || '---'}</td> */}
                                                     <td>
-                                                        <button
-                                                            type="button"
-                                                            disabled={!canEditApproval}
-                                                            className={`emp-summ-approve-btn ${isApproved ? 'emp-summ-approved' : 'emp-summ-not-approved'} `}
-                                                            onClick={() => handleToggleApproval(rec)}
-                                                        >
-                                                            {isApproved ? 'Approved' : 'Not Approved'}
-                                                        </button>
+                                                        <div className="approval-btn-wrapper">
+                                                            <button
+                                                                type="button"
+                                                                disabled={!canEditApproval}
+                                                                className={`emp-summ-approve-btn ${isApproved ? 'emp-summ-approved' : 'emp-summ-not-approved'} ${isModified ? 'btn-modified' : ''}`}
+                                                                onClick={() => handleToggleApproval(rec)}
+                                                            >
+                                                                {isApproved ? 'Approved' : 'Not Approved'}
+                                                            </button>
+
+                                                            {/* Pulsing visual indicator for unsaved state */}
+                                                            {isModified && (
+                                                                <span className="edited-indicator-dot" title="Unsaved change" />
+                                                            )}
+                                                        </div>
                                                     </td>
-                                                    <td>---</td>
-                                                    <td>---</td>
+                                                    <td>{rec.ModifiedBy || '---'}</td>
+                                                    <td>{rec.ApprovedBy || '---'}</td>
+                                                    <td className="text-primary">{rec.spID}</td>
                                                 </tr>
-                                            )
+                                            );
                                         })
                                     ) : (
                                         <tr>

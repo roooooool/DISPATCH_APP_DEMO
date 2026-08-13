@@ -787,7 +787,6 @@ tr {
 /* Hover State: Slight Lift and Glow */
 .status-inner:hover {
   filter: brightness(1.15);
-  z-index: 2;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
   transform: scale(1.02);
   /* Very gentle pop */
@@ -956,16 +955,16 @@ td.today-column-cell {
 .today-cell {
   background-color: rgba(58, 78, 252, 0.05);
   /* Very faint navy tint */
-  border-left: 1px dashed rgba(58, 78, 252, 0.2);
-  border-right: 1px dashed rgba(58, 78, 252, 0.2);
+  /* border-left: 1px dashed rgba(58, 78, 252, 0.2); */
+  /* border-right: 1px dashed rgba(58, 78, 252, 0.2); */
 }
 
 .attendance-table td.today-cell {
   background-color: rgba(58, 78, 252, 0.05) !important;
 
   /* Dashed side borders frame the current day clearly without being overly heavy */
-  border-left: 1px dashed rgba(58, 78, 252, 0.25) !important;
-  border-right: 1px dashed rgba(58, 78, 252, 0.25) !important;
+  /* border-left: 1px dashed rgba(58, 78, 252, 0.25) !important; */
+  /* border-right: 1px dashed rgba(58, 78, 252, 0.25) !important; */
 }
 
 .attendance-table td.today-cell .status-na:not(.entry-locked) {
@@ -1349,7 +1348,7 @@ td.today-column-cell {
 .attendance-table th.lock-end-boundary,
 .attendance-table td.lock-end-boundary {
   /* Green division wall separating the editable window from the future/locked window */
-  border-right: 1px solid var(--color-primary) !important;
+  border-right: 1px solid var(--color-primary);
   position: relative;
 }
 
@@ -1902,4 +1901,59 @@ tbody tr:last-child .selected-cutoff-boundary-end {
   pointer-events: none;
   z-index: 3;
   /* fill: currentColor; */
+}
+
+
+
+
+
+/* Container adjustments */
+/* .attendance-container {
+  font-size: calc(13px * var(--grid-zoom, 1));
+} */
+
+/* Dynamic cell heights and paddings */
+/* .attendance-table th, */
+.attendance-table td {
+  padding: calc(6px * var(--grid-zoom, 1)) calc(8px * var(--grid-zoom, 1)) !important;
+  font-size: calc(12px * var(--grid-zoom, 1)) !important;
+}
+
+/* Adjust cell item heights / status tags */
+.status-inner {
+  min-height: calc(24px * var(--grid-zoom, 1));
+  font-size: calc(11px * var(--grid-zoom, 1)) !important;
+  padding: calc(2px * var(--grid-zoom, 1)) calc(4px * var(--grid-zoom, 1));
+}
+
+/* Metric pills & badges scaling */
+.metric-pill {
+  font-size: calc(10px * var(--grid-zoom, 1)) !important;
+  padding: calc(2px * var(--grid-zoom, 1)) calc(5px * var(--grid-zoom, 1)) !important;
+}
+
+/* Column headers scaling */
+.day-name {
+  font-size: calc(10px * var(--grid-zoom, 1)) !important;
+}
+
+.day-num {
+  font-size: calc(14px * var(--grid-zoom, 1)) !important;
+}
+
+/* Primary employee name */
+.primary-name-text {
+  font-size: calc(13px * var(--grid-zoom, 1)) !important;
+}
+
+/* OE Number font size scaling */
+.served-oe {
+  font-size: calc(11px * var(--grid-zoom, 1)) !important;
+  font-weight: 600;
+}
+
+/* Meta info (trip index/KM) font size scaling */
+.served-meta {
+  font-size: calc(9.5px * var(--grid-zoom, 1)) !important;
+  opacity: 0.85;
 }

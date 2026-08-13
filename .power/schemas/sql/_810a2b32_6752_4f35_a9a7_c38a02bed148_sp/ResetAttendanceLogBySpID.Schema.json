@@ -1,0 +1,33 @@
+{
+  "name": "[dbo].[ResetAttendanceLogBySpID]",
+  "title": "[dbo].[ResetAttendanceLogBySpID]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "spID": {
+          "title": "spID",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

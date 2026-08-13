@@ -1560,7 +1560,7 @@ const OrderManagement: React.FC = () => {
         ) {
             errorMessage = isDev ? null : "Trip group does not match. Please select a trip with the same trip group.";
         }
-        else if (raw_record.CementTypeName !== original.cementType) {
+        else if (raw_record.cementType !== original.cementType) {
             errorMessage = isDev ? null : "Cement type does not match. Please select a trip with the same cement type.";
         }
 
@@ -1942,8 +1942,8 @@ const OrderManagement: React.FC = () => {
                                             const changedTripRecord =
                                             {
                                                 OE: selectedChangeTripOE.OE,
-                                                Source: selectedChangeTripOE.SourceName,
-                                                Destination: selectedChangeTripOE.DestiName,
+                                                Source: selectedChangeTripOE.Source,
+                                                Destination: selectedChangeTripOE.Destination,
                                                 Customer: selectedChangeTripOE.Customer,
                                                 Ordered_x0020_Date: selectedChangeTripOE.OrderedDate,
                                                 Needed_x0020_Date: selectedChangeTripOE.NeededDate,
@@ -1963,6 +1963,8 @@ const OrderManagement: React.FC = () => {
                                                             showChangeTripModal.record.ID.toString(),
                                                             changedTripRecord
                                                         );
+
+                                                        await DMS_CEMService.delete(selectedChangeTripOE.ID.toString())
 
 
                                                         const result2 = await TripTicketsService.update(

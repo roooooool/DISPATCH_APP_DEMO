@@ -19,4 +19,7 @@ export interface DMS_AttendanceLogs {
   Position?: string;
   TCVC?: string;
   Approved?: string;
+  spID?: string;
+  ModifiedBy?: string;
+  ApprovedBy?: string;
 }

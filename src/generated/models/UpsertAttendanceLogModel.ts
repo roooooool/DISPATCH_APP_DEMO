@@ -9,6 +9,8 @@ export interface UpsertAttendanceLogRequest {
   AttendanceDate?: string;
   AttendanceStatus?: string;
   OE?: string;
+  ModifiedBy?: string;
+  ApprovedBy?: string;
 }
 
 export interface UpsertAttendanceLogResponse {

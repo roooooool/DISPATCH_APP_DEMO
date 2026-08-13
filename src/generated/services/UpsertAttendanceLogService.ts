@@ -13,9 +13,9 @@ export class UpsertAttendanceLogService {
 
   private static readonly client = getClient(dataSourcesInfo);
 
-  public static async UpsertAttendanceLog(EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string): Promise<IOperationResult<UpsertAttendanceLogResponse>> {
-    const params: { EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string } = { EmployeeName, EmployeeID, AttendanceDate, AttendanceStatus, OE };
-    const result = await UpsertAttendanceLogService.client.executeAsync<{ EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string }, UpsertAttendanceLogResponse>(
+  public static async UpsertAttendanceLog(EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string, ModifiedBy?: string, ApprovedBy?: string): Promise<IOperationResult<UpsertAttendanceLogResponse>> {
+    const params: { EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string, ModifiedBy?: string, ApprovedBy?: string } = { EmployeeName, EmployeeID, AttendanceDate, AttendanceStatus, OE, ModifiedBy, ApprovedBy };
+    const result = await UpsertAttendanceLogService.client.executeAsync<{ EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string, ModifiedBy?: string, ApprovedBy?: string }, UpsertAttendanceLogResponse>(
       {
         connectorOperation: {
           tableName: UpsertAttendanceLogService.dataSourceName,
