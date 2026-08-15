@@ -1,28 +1,29 @@
 .main-navbar {
   width: 100%;
   height: 70px;
-  
+
   /* GENTLE NAVY TO RED GRADIENT */
   /* Starts with Navy on top-left, ends with Red on bottom-right */
   /*background: linear-gradient(135deg, #092162 0%, #8b0000 100%);*/
   background: var(--color-primary);
-  
+
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 30px;
-  
+
   /* Subtle Shadow for Depth */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  
+
   /* Fixed positioning logic */
   position: sticky;
   top: 0;
   z-index: 1000;
-  
+
   /* Border for extra definition */
   border-bottom: 3px solid var(--color-primary);
 }
+
 /* --- LEFT SIDE: PROFILE --- */
 .nav-profile-section {
   display: flex;
@@ -33,7 +34,7 @@
   padding: 20px 15px;
   border-radius: 10px;
   transition: background 0.2s ease;
-  
+
 }
 
 .nav-profile-section:hover {
@@ -45,17 +46,22 @@
   position: absolute;
   right: 10px;
   /*top: 15%;*/
-  height: 100%; /* Not full height for a cleaner look */
+  height: 100%;
+  /* Not full height for a cleaner look */
   width: 4px;
-  background-color: var(--color-accent); /* Your Dark Red */
-  transform: skewX(-25deg); /* This creates the slant */
+  background-color: var(--color-accent);
+  /* Your Dark Red */
+  transform: skewX(-25deg);
+  /* This creates the slant */
   border-radius: 2px;
-  box-shadow: 2px 0 8px rgba(139, 0, 0, 0.3); /* Subtle red glow */
+  box-shadow: 2px 0 8px rgba(139, 0, 0, 0.3);
+  /* Subtle red glow */
 }
 
 /* Optional: Make the streak "pulse" or glow on hover */
 .nav-profile-section:hover .nav-divider-streak {
-  background-color: #ff3131; /* Brighter red on hover */
+  background-color: #ff3131;
+  /* Brighter red on hover */
   width: 5px;
   transition: all 0.3s ease;
 }
@@ -93,7 +99,7 @@
   background: white;
   min-width: 180px;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   padding: 8px;
@@ -116,7 +122,8 @@
 }
 
 .nav-dropdown .logout-btn {
-  color: var(--color-accent); /* Red */
+  color: var(--color-accent);
+  /* Red */
   font-weight: 700;
 }
 
@@ -130,7 +137,8 @@
 .nav-right-section {
   display: flex;
   align-items: center;
-  gap: 1rem; /* spacing between nav items and bell */
+  gap: 1rem;
+  /* spacing between nav items and bell */
 }
 
 .nav-icon-button {
@@ -168,26 +176,31 @@
 }
 
 .nav-item:hover {
-  background: var(--color-accent); /* Red Accent */
+  background: var(--color-accent);
+  /* Red Accent */
   transform: translateY(-2px);
 }
 
 .nav-item.active {
-  background: #000080; /* Navy Blue */
+  background: #000080;
+  /* Navy Blue */
   color: white;
-  border-bottom: 3px solid #FF0000; /* Red Accent line */
+  border-bottom: 3px solid #FF0000;
+  /* Red Accent line */
   font-weight: bold;
 }
 
 /* --- MOBILE & RESPONSIVE --- */
 .mobile-menu-toggle {
-  display: none; /* Hidden by default */
+  display: none;
+  /* Hidden by default */
   cursor: pointer;
   color: white;
 }
 
 .mobile-nav-menu {
-  display: none; /* Hidden by default */
+  display: none;
+  /* Hidden by default */
 }
 
 .nav-right-section {
@@ -200,11 +213,13 @@
   }
 
   .nav-links {
-    display: none; /* Hide desktop links */
+    display: none;
+    /* Hide desktop links */
   }
 
   .mobile-menu-toggle {
-    display: block; /* Show hamburger icon */
+    display: block;
+    /* Show hamburger icon */
   }
 
   .nav-right-section {
@@ -215,12 +230,13 @@
     display: flex;
     flex-direction: column;
     position: absolute;
-    top: 70px; /* Below navbar */
+    top: 70px;
+    /* Below navbar */
     left: 0;
     right: 0;
     background: var(--color-primary);
     padding: 10px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 999;
   }
 
@@ -235,10 +251,122 @@
   }
 
   .nav-user-info .nav-position {
-    display: none; /* Hide position on small screens */
+    display: none;
+    /* Hide position on small screens */
   }
 
   .nav-username {
     font-size: 0.9rem;
   }
+}
+
+
+/* ==========================================
+   Mandatory Re-Login Modal
+   ========================================== */
+
+/* Darkened overlay background */
+.navbar-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(10, 25, 47, 0.75);
+  /* Dark Navy tint backdrop */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  /* Ensure it stays above all UI elements */
+  backdrop-filter: blur(4px);
+}
+
+/* Gradient-bordered Outer Wrapper */
+.navbar-modal-content-wrapper {
+  background: linear-gradient(135deg, #0a192f, #3a4efc, #e63946);
+  /* Navy -> Blue -> Red */
+  padding: 2px;
+  /* Border thickness */
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  max-width: 420px;
+  width: 90%;
+  animation: navbarModalFadeIn 0.25s ease-out forwards;
+}
+
+/* Inner White Container */
+.navbar-modal-content {
+  background-color: #ffffff;
+  border-radius: 10px;
+  /* Slightly smaller than wrapper to fit border */
+  padding: 24px;
+  text-align: center;
+  color: #0a192f;
+}
+
+.navbar-modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0a192f;
+}
+
+.navbar-modal-content p {
+  font-size: 0.95rem;
+  color: #4a5568;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* Action Area */
+.navbar-modal-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* Primary Action Button (Red Accent with subtle gradient) */
+.navbar-modal-actions .navbar-logout-btn {
+  background: linear-gradient(135deg, #e63946, #c52838);
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.25);
+}
+
+.navbar-modal-actions .navbar-logout-btn:hover {
+  background: linear-gradient(135deg, #d62839, #b01e2e);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(230, 57, 70, 0.35);
+}
+
+.navbar-modal-actions .navbar-logout-btn:active {
+  transform: translateY(0);
+}
+
+/* Entry Animation */
+@keyframes navbarModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.navbar-timer-text {
+  font-size: 0.85rem;
+  color: #e63946;
+  font-weight: 600;
+  margin-top: -8px;
+  margin-bottom: 16px;
 }

@@ -828,6 +828,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "dispapp_bu_capacity_summary": {
+    "tableId": "DISPAPP_BU_Capacity_Summary",
+    "version": "v2",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "dms_attendancelogs": {
     "tableId": "DMS_AttendanceLogs",
     "version": "v2",
@@ -1386,6 +1393,12 @@ export const dataSourcesInfo = {
           },
           {
             "name": "ApprovedBy",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Approved",
             "in": "body",
             "required": false,
             "type": "string"

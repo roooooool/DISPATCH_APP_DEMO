@@ -1159,7 +1159,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       );
 
       setCollapsed(createCollapsedState(groupsToExpand));
-    }, [formData.TripProgress, validationStatus.new_trip, validationStatus.assigned, validationStatus.dispatchedToSource, validationStatus.dispatchedToDestination, validationStatus.done]);
+    }, [formData.TripProgress, formData.ID]);
 
     useEffect(() => {
       if (showCancelConfirmModal) {
@@ -3297,7 +3297,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <div className="input-group">
                       <label>Dispatcher Remarks</label>
                       <div className="gradient-input-wrapper textarea-wrapper">
-                        <textarea disabled={disabledAssGrp} rows={5} value={formData.Planning || ''} onChange={(e) => handleFieldChange('Planning', e.target.value)} placeholder='Remarks & Planning...' />
+                        <textarea disabled rows={5} value={formData.Planning || ''} onChange={(e) => handleFieldChange('Planning', e.target.value)} placeholder='Remarks & Planning...' />
                       </div>
                     </div>
                   </div>

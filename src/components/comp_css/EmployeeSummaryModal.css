@@ -206,6 +206,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
+    table-layout: fixed;
 }
 
 .emp-history-table th {
@@ -215,7 +216,59 @@
     text-align: left;
     padding: 8px 12px;
     border-bottom: 1px solid #e2e8f0;
+
+    position: relative;
+    user-select: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
+
+/* Drag Handle Styling */
+.emp-history-table th .col-resizer {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    /* Centers it vertically */
+    width: 6px;
+    height: 90%;
+    cursor: col-resize;
+    user-select: none;
+    z-index: 1;
+    background-color: rgba(101, 109, 176, 0.25);
+    border-radius: 4px;
+    /* Gentle rounded corners */
+}
+
+/* Visual cue when hovering over handle */
+.emp-history-table th .col-resizer:hover,
+.emp-history-table th .col-resizer:active {
+    background-color: #3a4efc;
+    /* Primary blue accent */
+}
+
+/* Always-Visible Subtle Drag Line */
+.emp-history-table th .col-resizer::after {
+    content: '';
+    width: 2px;
+    height: 50%;
+    background-color: rgba(58, 78, 252, 1);
+    /* Translucent primary blue */
+    border-radius: 2px;
+    transition: all 0.15s ease-in-out;
+}
+
+/* Highlighted Active / Hover State */
+.emp-history-table th .col-resizer:hover::after,
+.emp-history-table th .col-resizer:active::after {
+    width: 3px;
+    height: 85%;
+    background-color: #3a4efc;
+    /* Full primary blue */
+    box-shadow: 0 0 6px rgba(58, 78, 252, 0.5);
+}
+
 
 .emp-history-table td {
     padding: 8px 12px;
@@ -244,13 +297,19 @@
 }
 
 .route-cell {
-    max-width: 200px;
+    /* max-width: 200px; */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.emp-history-table td.route-cell span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .inline-icon {
@@ -667,4 +726,17 @@
         transform: scale(0.9);
         opacity: 0.7;
     }
+}
+
+
+/* Even rows get a subtle background tint */
+.emp-history-table tbody tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.025);
+    /* Or #f9fafb / #f8fafc */
+}
+
+/* Hover state for better row visibility */
+.emp-history-table tbody tr:hover {
+    background-color: rgba(58, 78, 252, 0.05);
+    /* Uses your primary blue tint */
 }

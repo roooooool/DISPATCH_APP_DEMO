@@ -32,6 +32,10 @@
         "ApprovedBy": {
           "title": "ApprovedBy",
           "type": "string"
+        },
+        "Approved": {
+          "title": "Approved",
+          "type": "string"
         }
       }
     },

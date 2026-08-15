@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 // import Modal from '../components/ewul_Modal';
-import AttendanceSheet from '../components/ewul_AttendanceSheet';
+import AttendanceSheet, { type AttendanceSheetRef } from '../components/ewul_AttendanceSheet';
 import PageTemplate from './template';
 import GSDCMap, { type GSDCMapHandle, type HighlightConfig } from '../components/ewul_Maps';
 import { Calendar, Fuel, Settings, FileDown, MapIcon, RefreshCw, MapPin, Lock, Unlock, TruckIcon, Map, Fullscreen } from 'lucide-react';
@@ -40,6 +40,8 @@ const FleetMonitoring: React.FC = () => {
 
     const { user, updateUser } = useUser();
     const { addTask } = useTaskWorker();
+
+    const [isAttendanceSheetLoading, setIsAttendanceSheetLoading] = useState<boolean>(false);
 
     const [tableExpanded, _setTableExpanded] = useState(true);
     const [pairingData, setPairingData] = useState<any[]>([]);
@@ -288,17 +290,34 @@ const FleetMonitoring: React.FC = () => {
         }
     };
 
+    const attendanceRef = useRef<AttendanceSheetRef>(null);
+
+    const handleManualRefresh = () => {
+        console.log('modal open: ', modalOpen);
+        switch (modalOpen) {
+            case 'attendance':
+                attendanceRef.current?.refresh();
+                break;
+
+            default:
+                fetchPairingData();
+                break;
+        }
+    };
+
 
     const renderModalContent = () => {
         switch (modalOpen) {
             case 'attendance':
                 return (
                     <AttendanceSheet
+                        ref={attendanceRef}
                         liveTrips={pairingData}
                         colName={['Driver', 'Helper']}
                         colOE={'OE'}
                         colStatus={enc("Trip Status")}
                         BU={selectedBU}
+                        onLoadingChange={setIsAttendanceSheetLoading}
                     />
                 );
             case 'fuel':
@@ -484,8 +503,8 @@ const FleetMonitoring: React.FC = () => {
                         <button className={`fleet-action-btn ${modalOpen === 'fleet' ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule('fleet')}>
                             <Settings size={14} /> <span>Fleet Manage</span>
                         </button>
-                        <button className="fleet-action-btn primary-solid" title="Refresh Data" onClick={fetchPairingData} disabled={ewul_isAnythingLoading()}>
-                            <RefreshCw size={14} className={ewul_isAnythingLoading() ? 'spin-refresh' : ''} /> <span>Refresh</span>
+                        <button className="fleet-action-btn primary-solid" title="Refresh Data" onClick={handleManualRefresh} disabled={ewul_isAnythingLoading()}>
+                            <RefreshCw size={14} className={((ewul_isAnythingLoading() && modalOpen == null) || isAttendanceSheetLoading) ? 'spin-refresh' : ''} /> <span>Refresh</span>
                         </button>
                         <button className="fleet-action-btn secondary-outline">
                             <FileDown size={14} /> <span>Export CSV</span>

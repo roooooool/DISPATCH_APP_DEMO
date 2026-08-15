@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import LoadingOverlay from '../components/LoadingOverlay_navblue';
+import { HeaderSyncBadge } from './ewul_HeaderSyncBadge';
 import { EmployeeSummaryModal } from './EmployeeSummaryModal';
 import {
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon, Star, Mail, FileText, Lock, ZoomIn, ZoomOut, RotateCcw
@@ -33,6 +33,10 @@ import {
 
 
 } from '../utils/Ewul_GSDC_Utils';
+
+export interface AttendanceSheetRef {
+  refresh: () => Promise<void>;
+}
 
 export interface AttendanceRecord {
   EmployeeName: string;
@@ -71,7 +75,9 @@ interface CutoffGroup {
 
 const AttendanceCell = React.memo(({
   dateStr,
+  //@ts-ignore
   dayOfWeek,
+  //@ts-ignore
   isWeekend,
   isToday,
   displayEntries,
@@ -139,8 +145,8 @@ const AttendanceCell = React.memo(({
     <td
       className={`status-cell 
         ${isToday ? 'today-cell' : ''} 
-        ${isWeekend ? 'weekend-cell' : ''}
-        ${dayOfWeek === 0 ? 'sunday-cell' : ''}
+        ${/*isWeekend ? 'weekend-cell' : ''*/''}
+        ${/*dayOfWeek === 0 ? 'sunday-cell' : ''*/''}
         ${isActiveMenuCell ? 'menu-active-cell' : ''}
         ${showBoundaryEdge ? 'lock-boundary-edge' : ''}
         ${showEndBoundary ? 'lock-end-boundary' : ''}
@@ -245,9 +251,17 @@ interface AttendanceSheetProps {
   colOE: string;    // e.g., "OE_Number"
   colStatus: string; // e.g., "Trip_Status"
   BU?: string | null | undefined;
+  onLoadingChange?: (isLoading: boolean) => void;
 }
 
-const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, colOE, colStatus, BU = 'SBUO-1A' }) => {
+const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProps>(({
+  liveTrips,
+  colName,
+  colOE,
+  colStatus,
+  BU = 'SBUO-1A',
+  onLoadingChange,
+}, ref) => {
   const [data, setData] = useState<AttendanceRecord[]>([]);
   const [rawAttendanceData, setRawAttendanceData] = useState<AttendanceRecord[]>([]);
   const [showAllStatuses, setShowAllStatuses] = useState(false);
@@ -646,75 +660,116 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   }, [loading, selectedCutoff, scrollToDateStr]);
 
   useEffect(() => {
-    const fetchAttendance = async () => {
-      // console.log(`Fetching attendance for Year: ${year}, Month: ${month}, BU: ${BU}`);
-      setLoading(true);
-      try {
-        const res = await Sp_fetchAttendanceCalendar2Service.Sp_fetchAttendanceCalendar2({
-          Year: year,
-          Month: month,
-          BU: BU
-        } as any);
-        const rawData = (res.data?.ResultSets?.Table1 || []) as any;
-        console.log('wutdahell: ', rawData[0]);
-        setData(rawData as any);
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
 
-        const formattedRecords: AttendanceRecord[] = rawData.map((item: any) => ({
-          // Base Fields
-          EmployeeName: item.EmployeeName ?? '',
-          EmployeeID: item.EmployeeID ?? 0,
-          AttendanceDate: item.AttendanceDate ?? '',
-          AttendanceStatus: item.AttendanceStatus ?? 'ABSENT',
-          OE: item.OE ?? null,
-          Position: item.Position ?? 'Driver',
-          ModifiedAt: item.ModifiedAt ?? null,
-          tripIndex: item.tripIndex !== undefined && item.tripIndex !== null ? Number(item.tripIndex) : null,
-          DMS_OE: item.DMS_OE ?? null,
-          DMS_TripStatus: item.DMS_TripStatus ?? null,
+  // Extract fetch logic so it can be re-used
+  const fetchAttendance = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await Sp_fetchAttendanceCalendar2Service.Sp_fetchAttendanceCalendar2({
+        Year: year,
+        Month: month,
+        BU: BU
+      } as any);
 
-          // Newly Added Fields
-          BU: item.BU ?? null,
-          Position1: item.Position1 ?? item.Position ?? 'Driver',
-          SD: item.SD ?? null,
-          TCVC: item.TCVC ?? null,
-          TransactionType: item.TransactionType ?? null,
-          secondTrip: item.secondTrip ?? 'N',
-          tripKM: item.tripKM !== undefined && item.tripKM !== null ? Number(item.tripKM) : null,
-          Approved: item.Approved ?? null,
+      const rawData = (res.data?.ResultSets?.Table1 || []) as any;
 
-          spID: item.spID ?? null,
-          ModifiedBy: item.ModifiedBy ?? null,
-          ApprovedBy: item.ApprovedBy ?? null,
-        }));
-        // console.log('fromatted wasd: ', rawData);
-        setRawAttendanceData(formattedRecords);
+      // // --- DEBUG LOG START ---
+      // if (rawData.length > 0) {
+      //   const dates = rawData
+      //     .map((item: any) => item.AttendanceDate?.split('T')[0])
+      //     .filter(Boolean)
+      //     .sort();
 
+      //   if (dates.length > 0) {
+      //     console.log(`📅 [Attendance Range]: ${dates[0]} ➔ ${dates[dates.length - 1]} (Total: ${rawData.length} rows)`);
+      //   }
+      // } else {
+      //   console.log('⚠️ [Attendance Range]: No records returned.');
+      // }
+      // // --- DEBUG LOG END ---
 
-        // Only scroll to today if viewing the current month and year
-        const now = new Date();
-        if (year === now.getFullYear() && month === now.getMonth() + 1) {
-          scrollToDateStr();
-        }
-      } catch (error) {
-        console.error("Fetch error:", error);
-        setData([]);
-      } finally {
-        setLoading(false);
+      setData(rawData as any);
+
+      const formattedRecords: AttendanceRecord[] = rawData.map((item: any) => ({
+        EmployeeName: item.EmployeeName ?? '',
+        EmployeeID: item.EmployeeID ?? 0,
+        AttendanceDate: item.AttendanceDate ?? '',
+        AttendanceStatus: item.AttendanceStatus ?? 'ABSENT',
+        OE: item.OE ?? null,
+        Position: item.Position ?? 'Driver',
+        ModifiedAt: item.ModifiedAt ?? null,
+        tripIndex: item.tripIndex !== undefined && item.tripIndex !== null ? Number(item.tripIndex) : null,
+        DMS_OE: item.DMS_OE ?? null,
+        DMS_TripStatus: item.DMS_TripStatus ?? null,
+        BU: item.BU ?? null,
+        Position1: item.Position1 ?? item.Position ?? 'Driver',
+        SD: item.SD ?? null,
+        TCVC: item.TCVC ?? null,
+        TransactionType: item.TransactionType ?? null,
+        secondTrip: item.secondTrip ?? 'N',
+        tripKM: item.tripKM !== undefined && item.tripKM !== null ? Number(item.tripKM) : null,
+        Approved: item.Approved ?? null,
+        spID: item.spID ?? null,
+        ModifiedBy: item.ModifiedBy ?? null,
+        ApprovedBy: item.ApprovedBy ?? null,
+      }));
+
+      setRawAttendanceData(formattedRecords);
+
+      const now = new Date();
+      if (year === now.getFullYear() && month === now.getMonth() + 1) {
+        scrollToDateStr();
       }
-    };
-    fetchAttendance();
-  }, [currentDate]); // Re-fetch whenever date changes
-
-  // 1. Generate Header Dates for the selected Month
-  const daysInMonth = useMemo(() => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const days = [];
-    while (date.getMonth() === currentDate.getMonth()) {
-      days.push(new Date(date));
-      date.setDate(date.getDate() + 1);
+    } catch (error) {
+      console.error("Fetch error:", error);
+      setData([]);
+    } finally {
+      setLoading(false);
     }
-    return days;
-  }, [currentDate]);
+  }, [year, month, BU, scrollToDateStr]);
+
+  // Expose the refresh function to parent ref
+  React.useImperativeHandle(ref, () => ({
+    refresh: fetchAttendance
+  }), [fetchAttendance]);
+
+  // Re-fetch automatically when date/BU changes
+  useEffect(() => {
+    fetchAttendance();
+  }, [fetchAttendance]);
+
+  // 1. Generate Header Dates based on actual records returned by SP
+  const daysInMonth = useMemo(() => {
+    // Fallback: If no data yet, default to standard 1st-to-end of month while loading
+    if (!data || data.length === 0) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const days = [];
+      while (date.getMonth() === currentDate.getMonth()) {
+        days.push(new Date(date));
+        date.setDate(date.getDate() + 1);
+      }
+      return days;
+    }
+
+    // Extract unique AttendanceDate strings from SQL response
+    const dateMap = new Map<string, Date>();
+
+    data.forEach(item => {
+      if (item.AttendanceDate) {
+        const dateStr = item.AttendanceDate.split('T')[0];
+        if (!dateMap.has(dateStr)) {
+          // Parse date as local time (YYYY-MM-DD)
+          const [y, m, d] = dateStr.split('-').map(Number);
+          dateMap.set(dateStr, new Date(y, m - 1, d));
+        }
+      }
+    });
+
+    // Sort dates chronologically
+    return Array.from(dateMap.values()).sort((a, b) => a.getTime() - b.getTime());
+  }, [data, currentDate]);
 
   const filteredData = useMemo(() => {
     return data.filter(item => {
@@ -929,6 +984,47 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
 
 
+  // Handler to process optimistic updates from EmployeeSummaryModal
+  const handleOptimisticSummaryUpdate = useCallback((updatedRecords: AttendanceRecord[]) => {
+    const applyUpdates = (prevList: AttendanceRecord[]) => {
+      const listCopy = [...prevList];
+
+      updatedRecords.forEach((updatedRec) => {
+        const targetDate = updatedRec.AttendanceDate?.split('T')[0];
+        const targetOE = (updatedRec.OE || '').trim();
+
+        const index = listCopy.findIndex((item) => {
+          const itemDate = item.AttendanceDate?.split('T')[0];
+          const itemOE = (item.OE || '').trim();
+          return (
+            item.EmployeeName === updatedRec.EmployeeName &&
+            itemDate === targetDate &&
+            itemOE === targetOE
+          );
+        });
+
+        if (index !== -1) {
+          // Merge changed properties (e.g., Approved, ApprovedBy, ModifiedBy)
+          listCopy[index] = {
+            ...listCopy[index],
+            ...updatedRec,
+          };
+        } else {
+          // If it was a newly created record, append it to the sheet data
+          listCopy.push(updatedRec);
+        }
+      });
+
+      return listCopy;
+    };
+
+    // Update both UI state and raw data cache
+    setData(prevData => applyUpdates(prevData));
+    setRawAttendanceData(prevRaw => applyUpdates(prevRaw));
+  }, []);
+
+
+
   const AttendanceSkeleton = ({ days }: { days: any[] }) => (
     <>
       {[...Array(10)].map((_, i) => (
@@ -1135,7 +1231,14 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
   }, [todayStr]); // Added todayStr to dependencies
 
   useEffect(() => {
-    if (!activeMenu) return;
+    if (!activeMenu || !scrollContainerRef.current) return;
+
+    // const container = scrollContainerRef.current;
+
+    const handleScroll = () => {
+      // Option A: Close menu on scroll (Standard UI pattern for context menus)
+      setActiveMenu(null);
+    };
 
     const handleOutsideClick = (event: MouseEvent) => {
       // If the click is outside the context menu container, close it quietly
@@ -1146,8 +1249,10 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
     // Listen globally in the capture phase to react instantly
     window.addEventListener('mousedown', handleOutsideClick, true);
+    window.addEventListener('scroll', handleScroll, true);
     return () => {
       window.removeEventListener('mousedown', handleOutsideClick, true);
+      window.removeEventListener('scroll', handleScroll, true);
     };
   }, [activeMenu]);
 
@@ -1162,11 +1267,6 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
         '--grid-font-scale': `${zoomLevel}rem`,
       } as React.CSSProperties}
     >
-
-
-
-
-
 
       <div className="attendance-control-header">
 
@@ -1303,351 +1403,384 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
 
 
       </div>
+      <>
+        <div
+          className={`attendance-scroll-area ${isDragging ? 'grabbing' : ''}`}
+          ref={scrollContainerRef}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeaveOrUp}
+          onMouseUp={handleMouseLeaveOrUp}
+          onMouseMove={handleMouseMove}
+          style={{ position: 'relative' }}
+        >
+          <div
+            style={{
+              position: 'sticky',
+              left: 0,
+              right: 0,
+              top: '10px',
+              display: 'flex',
+              justifyContent: 'center',
+              zIndex: 100,
+              pointerEvents: 'none',
+              height: 0, // Prevents pushing table headers down
+            }}
+          >
+            <HeaderSyncBadge loading={showOverlay} label="Syncing attendance..." />
+          </div>
+          <table className="attendance-table">
+            <thead>
+              <tr>
+                <th className="sticky-col sticky-header cutoff-super-header-fortitle">
+                  <div className="super-header-title">Cutoff Groups</div>
+                </th>
+                {/* Cutoff Super-Headers */}
+                {(() => {
+                  let regularCutoffCounter = 0;
 
-      <div
-        className={`attendance-scroll-area ${isDragging ? 'grabbing' : ''}`}
-        ref={scrollContainerRef}
-        onMouseDown={handleMouseDown}
-        onMouseLeave={handleMouseLeaveOrUp}
-        onMouseUp={handleMouseLeaveOrUp}
-        onMouseMove={handleMouseMove}
-      >
-        {showOverlay && <div style={{ position: 'relative' }}><LoadingOverlay message="Fetching Attendance..." bgColor="rgba(255, 255, 255, 0.2)" blur={2} size="md" /></div>}
-        <table className="attendance-table">
-          <thead>
-            <tr>
-              <th className="sticky-col sticky-header cutoff-super-header-fortitle">
-                <div className="super-header-title">Cutoff Groups</div>
-              </th>
-              {/* Cutoff Super-Headers */}
-              {(() => {
-                let regularCutoffCounter = 0;
+                  return cutoffGroups.map((group, idx) => {
+                    let alternatingClass = 'last-month-bg';
 
-                return cutoffGroups.map((group, idx) => {
-                  let alternatingClass = 'last-month-bg';
+                    if (!group.isLastMonth) {
+                      alternatingClass = regularCutoffCounter % 2 === 0 ? 'odd-cutoff' : 'even-cutoff';
+                      regularCutoffCounter++;
+                    }
 
-                  if (!group.isLastMonth) {
-                    alternatingClass = regularCutoffCounter % 2 === 0 ? 'odd-cutoff' : 'even-cutoff';
-                    regularCutoffCounter++;
-                  }
+                    const isSelected = selectedCutoff?.startDate === group.startDate && selectedCutoff?.endDate === group.endDate;
 
-                  const isSelected = selectedCutoff?.startDate === group.startDate && selectedCutoff?.endDate === group.endDate;
-
-                  return (
-                    <th
-                      key={idx}
-                      colSpan={group.count}
-                      onClick={() => setSelectedCutoff(group)}
-                      className={`sticky-header cutoff-super-header group-span-cell ${alternatingClass} ${isSelected ? 'active-cutoff-header' : ''}`}
-                      style={{ cursor: 'pointer' }}
-                      title={`Click to focus ${group.label} (${group.startDate} to ${group.endDate})`}
-                    >
-                      <span className="cutoff-text-header">
-                        {group.label} {isSelected ? '(SELECTED)' : ''}
-                      </span>
-                    </th>
-                  );
-                });
-              })()}
-            </tr>
-
-            {/* 🟢 BOTTOM ROW: Dynamic Date Headers Matching Parent Colors */}
-            <tr>
-              <th className="sticky-col sticky-header employee-name-header">
-                <div className="header-top-row">
-                  Employee Name
-                </div>
-
-                <div className="header-pagination-container">
-                  <div className="pagination-centered-group">
-                    <button
-                      className="pager-btn"
-                      disabled={currentPage === 1}
-                      onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev - 1); }}
-                    >
-                      <ChevronLeft size={14} />
-                    </button>
-
-                    <div className="pager-info">
-                      <span className="current">{currentPage}</span>
-                      <span className="separator">/</span>
-                      <span className="total">{totalPages || 1}</span>
-                    </div>
-
-                    <button
-                      className="pager-btn"
-                      disabled={currentPage === totalPages || totalPages === 0}
-                      onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev + 1); }}
-                    >
-                      <ChevronRight size={14} />
-                    </button>
-                  </div>
-                </div>
-              </th>
-
-              {(() => {
-                const getFirstCutoffAnchor = (startDay: number, current: Date): Date => {
-                  const year = current.getFullYear();
-                  const month = current.getMonth();
-                  const target = new Date(year, month, 1);
-                  while (target.getDay() !== startDay) {
-                    target.setDate(target.getDate() + 1);
-                  }
-                  return target;
-                };
-
-                const firstTrueAnchor = getFirstCutoffAnchor(ALLOWED_DATE_CLICK.startDayOfWeek, currentDate);
-                let regularCutoffCounter = 0;
-                let lastLoggedLabel = '';
-
-                return daysInMonth.map((date, index) => {
-                  const y = date.getFullYear();
-                  const m = String(date.getMonth() + 1).padStart(2, '0');
-                  const d = String(date.getDate()).padStart(2, '0');
-                  const dateStr = `${y}-${m}-${d}`;
-
-                  const dayOfWeek = date.getDay();
-                  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                  const isToday = dateStr === todayStr;
-
-                  const isBoundary = dateStr === boundaryDateStr;
-                  const isEndBoundary = dateStr === endBoundaryDateStr;
-
-
-                  // Compute cutoff group context
-                  let currentLabel = '';
-                  let isLastMonth = false;
-
-                  if (date < firstTrueAnchor) {
-                    currentLabel = "LAST MONTH CUT OFF";
-                    isLastMonth = true;
-                  } else {
-                    const diffTime = date.getTime() - firstTrueAnchor.getTime();
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    const cutoffIndex = Math.floor(diffDays / 7) + 1;
-                    currentLabel = `${cutoffIndex} CUT OFF`;
-                  }
-
-                  // 🔴 DETECT FIRST DAY OF CUTOFF: Brand new label string OR index 0
-                  const isFirstDayOfCutoff = index === 0 || (lastLoggedLabel !== '' && lastLoggedLabel !== currentLabel);
-
-                  if (lastLoggedLabel !== '' && lastLoggedLabel !== currentLabel && !isLastMonth) {
-                    regularCutoffCounter++;
-                  }
-                  lastLoggedLabel = currentLabel;
-
-                  let matchingColorClass = 'last-month-bg';
-                  if (!isLastMonth) {
-                    matchingColorClass = regularCutoffCounter % 2 === 0 ? 'odd-cutoff' : 'even-cutoff';
-                  }
-
-                  const isCellInSelectedCutoff = selectedCutoff ? (dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate) : false;
-                  const isCutoffStart = selectedCutoff?.startDate === dateStr;
-                  const isCutoffEnd = selectedCutoff?.endDate === dateStr;
-
-                  return (
-                    <th
-                      key={dateStr}
-                      data-date={dateStr}
-                      ref={isToday ? todayRef : null}
-                      className={`sticky-header date-sub-header ${matchingColorClass}
-                      ${isToday ? 'today-column' : ''} 
-                      ${isWeekend ? 'weekend-column' : ''}
-                      ${dayOfWeek === 0 ? 'sunday' : ''}
-                      ${isBoundary ? 'lock-boundary-edge' : ''}
-                      ${isEndBoundary ? 'lock-end-boundary' : ''}
-                      ${isFirstDayOfCutoff ? 'cutoff-start-column' : ''} 
-                      ${isCellInSelectedCutoff ? 'selected-cutoff-col' : ''}
-                      ${isCutoffStart ? 'selected-cutoff-boundary-start' : ''}
-                      ${isCutoffEnd ? 'selected-cutoff-boundary-end' : ''}
-                    `}
-                    >
-                      {isToday &&
-                        <span className="today-label-flag">
-                          <Star size={10} strokeWidth={3} className="today-star-icon" />
-                          TODAY
+                    return (
+                      <th
+                        key={idx}
+                        colSpan={group.count}
+                        onClick={() => setSelectedCutoff(group)}
+                        className={`sticky-header cutoff-super-header group-span-cell ${alternatingClass} ${isSelected ? 'active-cutoff-header' : ''}`}
+                        style={{ cursor: 'pointer' }}
+                        title={`Click to focus ${group.label} (${group.startDate} to ${group.endDate})`}
+                      >
+                        <span className="cutoff-text-header">
+                          {group.label} {isSelected ? '(SELECTED)' : ''}
                         </span>
-                      }
-                      <div className="header-date-box">
-                        <span className="day-name">{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                        <span className="day-num">{date.getDate()}</span>
+                      </th>
+                    );
+                  });
+                })()}
+              </tr>
+
+              {/* 🟢 BOTTOM ROW: Dynamic Date Headers Matching Parent Colors */}
+              <tr>
+                <th className="sticky-col sticky-header employee-name-header">
+                  <div className="header-top-row">
+                    Employee Name
+                  </div>
+
+                  <div className="header-pagination-container">
+                    <div className="pagination-centered-group">
+                      <button
+                        className="pager-btn"
+                        disabled={currentPage === 1}
+                        onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev - 1); }}
+                      >
+                        <ChevronLeft size={14} />
+                      </button>
+
+                      <div className="pager-info">
+                        <span className="current">{currentPage}</span>
+                        <span className="separator">/</span>
+                        <span className="total">{totalPages || 1}</span>
                       </div>
-                    </th>
-                  );
-                });
-              })()}
-            </tr>
-          </thead>
-          <tbody>
-            {showSkeleton ? (
-              <AttendanceSkeleton days={daysInMonth} />
-            ) : (
-              paginatedEmployeeNames.map(name => {
-                const meta = employeeMetaMap[name];
-                // Find trip info for the current employee from liveTrips table
 
-                // 1. Read directly from API data first, then fall back to liveTripsMap, then '---'
-                const tripInfo = liveTripsMap[name];
-                const oeValue = meta?.dmsOE || (tripInfo ? tripInfo[colOE] : null) || '---';
-                const tripStatus = meta?.dmsStatus || (tripInfo ? tripInfo[colStatus] : null);
+                      <button
+                        className="pager-btn"
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => prev + 1); }}
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </th>
 
-                // Retrieve cutoff summary metrics
-                const metrics = employeeCutoffMetricsMap[name] || { score: 0, servedCount: 0 };
-                const employeeData = pageGroupedData[name] || { positions: '', dates: {} };
+                {(() => {
+                  const getFirstCutoffAnchor = (startDay: number, current: Date): Date => {
+                    const year = current.getFullYear();
+                    const month = current.getMonth();
+                    const target = new Date(year, month, 1);
+                    while (target.getDay() !== startDay) {
+                      target.setDate(target.getDate() + 1);
+                    }
+                    return target;
+                  };
 
-                return (
-                  <tr key={name}>
-                    <td
-                      className="sticky-col emp-name"
-                      title={`${name} - ${employeeData.positions || ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveSummaryEmp(name);
-                      }}
-                    >
-                      <div className="name-cell-content">
-                        {/* 1. Position Indicator */}
-                        <div className="position-indicator">
-                          {employeeData.positions === 'Driver' ? (
-                            <span className="indicator-d">D</span>
-                          ) : (
-                            <span className="indicator-h">H</span>
-                          )}
+                  const firstTrueAnchor = getFirstCutoffAnchor(ALLOWED_DATE_CLICK.startDayOfWeek, currentDate);
+                  let regularCutoffCounter = 0;
+                  let lastLoggedLabel = '';
+
+                  return daysInMonth.map((date, index) => {
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    const dateStr = `${y}-${m}-${d}`;
+
+                    const dayOfWeek = date.getDay();
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                    const isToday = dateStr === todayStr;
+
+                    const isBoundary = dateStr === boundaryDateStr;
+                    const isEndBoundary = dateStr === endBoundaryDateStr;
+
+                    // Check if date belongs to a different month
+                    const isDifferentMonth = date.getMonth() !== currentDate.getMonth();
+
+                    // Get 3-letter uppercase month (e.g., 'JUL', 'SEP')
+                    const monthAbbrev = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+
+                    // Display 'JUL 30' for extra days, or just '30' for the current month
+                    const dateDisplay = isDifferentMonth
+                      ? `${monthAbbrev} ${date.getDate()}`
+                      : date.getDate();
+
+
+                    // Compute cutoff group context
+                    let currentLabel = '';
+                    let isLastMonth = false;
+
+                    if (date < firstTrueAnchor) {
+                      currentLabel = "LAST MONTH CUT OFF";
+                      isLastMonth = true;
+                    } else {
+                      const diffTime = date.getTime() - firstTrueAnchor.getTime();
+                      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                      const cutoffIndex = Math.floor(diffDays / 7) + 1;
+                      currentLabel = `${cutoffIndex} CUT OFF`;
+                    }
+
+                    // 🔴 DETECT FIRST DAY OF CUTOFF: Brand new label string OR index 0
+                    const isFirstDayOfCutoff = index === 0 || (lastLoggedLabel !== '' && lastLoggedLabel !== currentLabel);
+
+                    if (lastLoggedLabel !== '' && lastLoggedLabel !== currentLabel && !isLastMonth) {
+                      regularCutoffCounter++;
+                    }
+                    lastLoggedLabel = currentLabel;
+
+                    let matchingColorClass = 'last-month-bg';
+                    if (!isLastMonth) {
+                      matchingColorClass = regularCutoffCounter % 2 === 0 ? 'odd-cutoff' : 'even-cutoff';
+                    }
+
+                    const isCellInSelectedCutoff = selectedCutoff ? (dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate) : false;
+                    const isCutoffStart = selectedCutoff?.startDate === dateStr;
+                    const isCutoffEnd = selectedCutoff?.endDate === dateStr;
+
+                    return (
+                      <th
+                        key={dateStr}
+                        data-date={dateStr}
+                        ref={isToday ? todayRef : null}
+                        className={`sticky-header date-sub-header ${matchingColorClass}
+                        ${isToday ? 'today-column' : ''} 
+                        ${isWeekend ? 'weekend-column' : ''}
+                        ${/*dayOfWeek === 0 ? 'sunday' : ''*/''}
+                        ${isBoundary ? 'lock-boundary-edge' : ''}
+                        ${isEndBoundary ? 'lock-end-boundary' : ''}
+                        ${isFirstDayOfCutoff ? 'cutoff-start-column' : ''} 
+                        ${isCellInSelectedCutoff ? 'selected-cutoff-col' : ''}
+                        ${isCutoffStart ? 'selected-cutoff-boundary-start' : ''}
+                        ${isCutoffEnd ? 'selected-cutoff-boundary-end' : ''}
+                      `}
+                      >
+                        {isToday &&
+                          <span className="today-label-flag">
+                            <Star size={10} strokeWidth={3} className="today-star-icon" />
+                            TODAY
+                          </span>
+                        }
+                        <div className="header-date-box">
+                          <span className="day-name">
+                            {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                          </span>
+                          <span className={`day-num ${isDifferentMonth ? 'different-month-num' : ''}`}>
+                            {dateDisplay}
+                          </span>
                         </div>
+                      </th>
+                    );
+                  });
+                })()}
+              </tr>
+            </thead>
+            <tbody>
+              {showSkeleton ? (
+                <AttendanceSkeleton days={daysInMonth} />
+              ) : (
+                paginatedEmployeeNames.map(name => {
+                  const meta = employeeMetaMap[name];
+                  // Find trip info for the current employee from liveTrips table
 
-                        {/* 2. Text Stack (Name + Trip Info) */}
-                        <div className="name-details-stack">
+                  // 1. Read directly from API data first, then fall back to liveTripsMap, then '---'
+                  const tripInfo = liveTripsMap[name];
+                  const oeValue = meta?.dmsOE || (tripInfo ? tripInfo[colOE] : null) || '---';
+                  const tripStatus = meta?.dmsStatus || (tripInfo ? tripInfo[colStatus] : null);
 
-                          {/* Primary Employee Name + Summary Icon */}
-                          <div className="primary-name-row">
-                            <span
-                              className="primary-name-text clickable-name"
-                              title="Click to view employee summary"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveSummaryEmp(name);
-                              }}
-                            >
-                              <HighlightText text={name} highlight={searchTerm} />
-                            </span>
+                  // Retrieve cutoff summary metrics
+                  const metrics = employeeCutoffMetricsMap[name] || { score: 0, servedCount: 0 };
+                  const employeeData = pageGroupedData[name] || { positions: '', dates: {} };
 
-                            <button
-                              className="summary-icon-btn"
-                              title="View Employee Summary"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveSummaryEmp(name);
-                              }}
-                            >
-                              <FileText size={13} />
-                            </button>
-                          </div>
-
-                          {/* Tier 2: Current Live Trip Status */}
-                          <div className="secondary-oe-row">
-                            <div className="oe-left-group">
-                              <span className="oe-label">Trip:</span>
-                              <span className="oe-value">{oeValue}</span>
-                            </div>
-
-                            {tripStatus && (
-                              <div className="oe-status-tag">
-                                {tripStatus}
-                              </div>
+                  return (
+                    <tr key={name}>
+                      <td
+                        className="sticky-col emp-name"
+                        title={`${name} - ${employeeData.positions || ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveSummaryEmp(name);
+                        }}
+                      >
+                        <div className="name-cell-content">
+                          {/* 1. Position Indicator */}
+                          <div className="position-indicator">
+                            {employeeData.positions === 'Driver' ? (
+                              <span className="indicator-d">D</span>
+                            ) : (
+                              <span className="indicator-h">H</span>
                             )}
                           </div>
 
-                          {/* Tier 3: Cutoff Summary Metrics Bar */}
-                          <div className="cutoff-metrics-row">
-                            <span
-                              className="metric-pill served"
-                              title={`Unique Served Trips in current cutoff (${ALLOWED_DATE_CLICK.startDate} to ${ALLOWED_DATE_CLICK.endDate})`}
-                            >
-                              <b>{metrics.servedCount}</b> Served
-                            </span>
+                          {/* 2. Text Stack (Name + Trip Info) */}
+                          <div className="name-details-stack">
 
-                            <span
-                              className="metric-pill score"
-                              title={`Accumulated Trip Score in current cutoff (${ALLOWED_DATE_CLICK.startDate} to ${ALLOWED_DATE_CLICK.endDate})`}
-                            >
-                              <b>{metrics.score > 0 ? metrics.score.toFixed(2) : '0'}</b> pts
-                            </span>
+                            {/* Primary Employee Name + Summary Icon */}
+                            <div className="primary-name-row">
+                              <span
+                                className="primary-name-text clickable-name"
+                                title="Click to view employee summary"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveSummaryEmp(name);
+                                }}
+                              >
+                                <HighlightText text={name} highlight={searchTerm} />
+                              </span>
 
-                            {/* New Bigas Metric Pill */}
-                            <span
-                              className="metric-pill bigas"
-                              title={`Bigas Allowance (${metrics.bigasCount || 0} approved served trips in cutoff)`}
-                            >
-                              <b>{metrics.bigasKilos || '0 kilos'}</b>
-                            </span>
+                              <button
+                                className="summary-icon-btn"
+                                title="View Employee Summary"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveSummaryEmp(name);
+                                }}
+                              >
+                                <FileText size={13} />
+                              </button>
+                            </div>
+
+                            {/* Tier 2: Current Live Trip Status */}
+                            <div className="secondary-oe-row">
+                              <div className="oe-left-group">
+                                <span className="oe-label">Trip:</span>
+                                <span className="oe-value">{oeValue}</span>
+                              </div>
+
+                              {tripStatus && (
+                                <div className="oe-status-tag">
+                                  {tripStatus}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Tier 3: Cutoff Summary Metrics Bar */}
+                            <div className="cutoff-metrics-row">
+                              <span
+                                className="metric-pill served"
+                                title={`Unique Served Trips in current cutoff (${ALLOWED_DATE_CLICK.startDate} to ${ALLOWED_DATE_CLICK.endDate})`}
+                              >
+                                <b>{metrics.servedCount}</b> Served
+                              </span>
+
+                              <span
+                                className="metric-pill score"
+                                title={`Accumulated Trip Score in current cutoff (${ALLOWED_DATE_CLICK.startDate} to ${ALLOWED_DATE_CLICK.endDate})`}
+                              >
+                                <b>{metrics.score > 0 ? metrics.score.toFixed(2) : '0'}</b> pts
+                              </span>
+
+                              {/* New Bigas Metric Pill */}
+                              <span
+                                className="metric-pill bigas"
+                                title={`Bigas Allowance (${metrics.bigasCount || 0} approved served trips in cutoff)`}
+                              >
+                                <b>{metrics.bigasKilos || '0 kilos'}</b>
+                              </span>
+                            </div>
+
                           </div>
-
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Attendance Status Cells */}
-                    {daysInMonth.map(date => {
-                      const y = date.getFullYear();
-                      const m = String(date.getMonth() + 1).padStart(2, '0');
-                      const d = String(date.getDate()).padStart(2, '0');
-                      const dateStr = `${y}-${m}-${d}`;
-                      const allEntries = employeeData.dates[dateStr] || [];
-                      const lastEntry = allEntries.length > 0 ? allEntries[allEntries.length - 1] : null;
-                      const displayEntries = showAllStatuses ? allEntries : (lastEntry ? [lastEntry] : []);
+                      {/* Attendance Status Cells */}
+                      {daysInMonth.map(date => {
+                        const y = date.getFullYear();
+                        const m = String(date.getMonth() + 1).padStart(2, '0');
+                        const d = String(date.getDate()).padStart(2, '0');
+                        const dateStr = `${y}-${m}-${d}`;
+                        const allEntries = employeeData.dates[dateStr] || [];
+                        const lastEntry = allEntries.length > 0 ? allEntries[allEntries.length - 1] : null;
+                        const displayEntries = showAllStatuses ? allEntries : (lastEntry ? [lastEntry] : []);
 
-                      const dayOfWeek = date.getDay();
-                      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                      const isToday = dateStr === todayStr;
+                        const dayOfWeek = date.getDay();
+                        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                        const isToday = dateStr === todayStr;
 
-                      const isContextMenuOpenHere =
-                        activeMenu !== null &&
-                        activeMenu.dateStr === dateStr &&
-                        String(activeMenu.empId) === String(meta?.id || '0');
+                        const isContextMenuOpenHere =
+                          activeMenu !== null &&
+                          activeMenu.dateStr === dateStr &&
+                          String(activeMenu.empId) === String(meta?.id || '0');
 
-                      const isBoundary = dateStr === boundaryDateStr;
-                      const isEndBoundary = dateStr === endBoundaryDateStr;
+                        const isBoundary = dateStr === boundaryDateStr;
+                        const isEndBoundary = dateStr === endBoundaryDateStr;
 
-                      const cellKey = `${meta?.id || '0'}-${dateStr}`;
-                      const isCellLoading = !!cellLoadingStates[cellKey];
+                        const cellKey = `${meta?.id || '0'}-${dateStr}`;
+                        const isCellLoading = !!cellLoadingStates[cellKey];
 
-                      const isCellInSelectedCutoff = selectedCutoff ? (dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate) : false;
-                      const isCutoffStart = selectedCutoff?.startDate === dateStr;
-                      const isCutoffEnd = selectedCutoff?.endDate === dateStr;
+                        const isCellInSelectedCutoff = selectedCutoff ? (dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate) : false;
+                        const isCutoffStart = selectedCutoff?.startDate === dateStr;
+                        const isCutoffEnd = selectedCutoff?.endDate === dateStr;
 
-                      return (
-                        <AttendanceCell
-                          key={dateStr}
-                          dateStr={dateStr}
-                          dayOfWeek={dayOfWeek}
-                          isWeekend={isWeekend}
-                          isToday={isToday}
-                          displayEntries={displayEntries}
-                          searchTerm={searchTerm}
-                          empName={name}
-                          oeValue={oeValue}
-                          empMetaId={String(meta?.id || '0')}
-                          onCellClick={handleCellContextOpen}
-                          isActiveMenuCell={isContextMenuOpenHere}
-                          isBoundaryCell={isBoundary}
-                          isEndBoundaryCell={isEndBoundary}
-                          onBannerMsg={handleBannerMessage}
-                          isCellLoading={isCellLoading}
-                          // Add cutoff selection flags below:
-                          isSelectedCutoff={isCellInSelectedCutoff}
-                          isCutoffStart={isCutoffStart}
-                          isCutoffEnd={isCutoffEnd}
-                        />
-                      );
-                    })}
 
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+
+                        return (
+                          <AttendanceCell
+                            key={dateStr}
+                            dateStr={dateStr}
+                            dayOfWeek={dayOfWeek}
+                            isWeekend={isWeekend}
+                            isToday={isToday}
+                            displayEntries={displayEntries}
+                            searchTerm={searchTerm}
+                            empName={name}
+                            oeValue={oeValue}
+                            empMetaId={String(meta?.id || '0')}
+                            onCellClick={handleCellContextOpen}
+                            isActiveMenuCell={isContextMenuOpenHere}
+                            isBoundaryCell={isBoundary}
+                            isEndBoundaryCell={isEndBoundary}
+                            onBannerMsg={handleBannerMessage}
+                            isCellLoading={isCellLoading}
+                            // Add cutoff selection flags below:
+                            isSelectedCutoff={isCellInSelectedCutoff}
+                            isCutoffStart={isCutoffStart}
+                            isCutoffEnd={isCutoffEnd}
+                          />
+                        );
+                      })}
+
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </>
 
 
       {activeMenu && (
@@ -1756,11 +1889,12 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ liveTrips, colName, c
           allRecords={rawAttendanceData}
           onClose={() => setActiveSummaryEmp(null)}
           user={user || undefined}
+          onRecordsUpdate={handleOptimisticSummaryUpdate}
         />
       )}
 
     </div>
   );
-};
-
+});
+AttendanceSheet.displayName = 'AttendanceSheet';
 export default AttendanceSheet;

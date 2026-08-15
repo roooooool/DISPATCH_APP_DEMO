@@ -1,18 +1,21 @@
 import React, { useState, useImperativeHandle, forwardRef, useRef, useEffect } from 'react';
 import { Wrench, Fuel } from 'lucide-react';
 import { createPortal } from "react-dom";
-import {HighlightText, encodeColumnName as enc} from './components/ewul_TableFlex';
+import { HighlightText, encodeColumnName as enc } from './components/ewul_TableFlex';
 
 //
-import {ATTENDANCE_STATUS_COLORS} from './truth.config';
+import { ATTENDANCE_STATUS_COLORS } from './truth.config';
 
 //
-import {ewulFetchAll} from './utils/Ewul_GSDC_Utils';
+import { ewulFetchAll } from './utils/Ewul_GSDC_Utils';
 
 
-import {LiveVehicleAssignmentLIstViewService} from './generated/services/LiveVehicleAssignmentLIstViewService';
+import { LiveVehicleAssignmentLIstViewService } from './generated/services/LiveVehicleAssignmentLIstViewService';
 import { DMS_CEMService } from './generated/services/DMS_CEMService';
 import { UpsertAttendanceLogService } from './generated/services/UpsertAttendanceLogService';
+
+
+import './components/comp_css/DDRemarksInput.css';
 
 
 // This is the global controller
@@ -22,7 +25,7 @@ export type ModalOptions = {
   title?: string;
 };
 
-export let openFleetModal: (options: ModalOptions) => void = () => {};
+export let openFleetModal: (options: ModalOptions) => void = () => { };
 
 export const GlobalFleetModal = forwardRef((_props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,14 +45,14 @@ export const GlobalFleetModal = forwardRef((_props, ref) => {
 
   return (
     <div className="fleetmon-modal-overlay" onClick={() => setIsOpen(false)}>
-      <div 
-        className="fleetmon-modal-content stop-propagation" 
-        onClick={e => e.stopPropagation()} 
+      <div
+        className="fleetmon-modal-content stop-propagation"
+        onClick={e => e.stopPropagation()}
         style={{ borderRadius: 8, border: '2px solid transparent', backgroundImage: 'linear-gradient(white, white), linear-gradient(to right, #3a4efc, #ff0000)', backgroundOrigin: 'border-box', backgroundClip: 'content-box, border-box' }}
       >
         <h3 style={{ color: 'var(--color-text-2)' }}>{title || `Details: ${data?.TruckFull}`}</h3>
         <hr />
-        
+
         {/* If a custom renderer is provided, use it. Otherwise, fallback to default. */}
         <div className="fleetmon-modal-body">
           {renderCustomContent ? (
@@ -80,7 +83,7 @@ const DropdownSpan: React.FC<{
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const [dropdownPos, setDropdownPos] = useState<{top: number, left: number, width: number}>({top: 0, left: 0, width: 0});
+  const [dropdownPos, setDropdownPos] = useState<{ top: number, left: number, width: number }>({ top: 0, left: 0, width: 0 });
   const [localStatusKey, setlocalStatusKey] = useState(statusKey);
   useEffect(() => {
     setlocalStatusKey(statusKey);
@@ -162,8 +165,8 @@ const DropdownSpan: React.FC<{
           setOpen((v) => !v);
           //setOpen(true); // Always open on click, let outside clicks handle closing
         }}
-        onMouseEnter={() => {setHover(true);}}
-        onMouseLeave={() => {setHover(false);}}
+        onMouseEnter={() => { setHover(true); }}
+        onMouseLeave={() => { setHover(false); }}
         className='stop-propagation'
       >
         <span
@@ -183,8 +186,8 @@ const DropdownSpan: React.FC<{
       </div>
       {open && createPortal(
         <div
-        onMouseDown={(e) => e.stopPropagation()} // Stop mousedown from closing the portal
-        className="attendance-dropdown-animate-in"
+          onMouseDown={(e) => e.stopPropagation()} // Stop mousedown from closing the portal
+          className="attendance-dropdown-animate-in"
           style={{
             position: "absolute",
             top: dropdownPos.top,
@@ -237,7 +240,7 @@ export interface PersonnelProps {
 }
 
 export const PersonnelCell: React.FC<PersonnelProps> = ({ employeeName, row, statusRaw, searchTerm, onAttendanceChange }) => {
-  
+
   const [localstatusRaw, setLocalstatusRaw] = useState(statusRaw);
   useEffect(() => {
     setLocalstatusRaw(statusRaw);
@@ -277,17 +280,17 @@ export const PersonnelCell: React.FC<PersonnelProps> = ({ employeeName, row, sta
       >
         {attendance_initial}
       </DropdownSpan>
-      <span 
-        onClick={() => { openFleetModal(row); }} 
-        className='fleetmonpage-redhover stop-propagation' 
-        style={{ 
-          whiteSpace: 'pre-wrap', 
-          wordBreak: 'break-word', 
-          textAlign: 'left', 
-          color: 'var(--color-primary)' 
-        }} 
+      <span
+        onClick={() => { openFleetModal(row); }}
+        className='fleetmonpage-redhover stop-propagation'
+        style={{
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          textAlign: 'left',
+          color: 'var(--color-primary)'
+        }}
         title={`View: ${employeeName}`}
-        >
+      >
         <HighlightText text={employeeName} highlight={searchTerm} isSearchable={true} />
       </span>
     </div>
@@ -312,7 +315,7 @@ export const StatusSelect: React.FC<StatusSelectProps> = ({ val, row, enc, TRIP_
   // Filter logic based on your existing structure
   const availableStatuses = TRIP_STATUSES.filter(status =>
     Array.isArray(status.Progress) &&
-    status.Progress.some((progress: { Progress: string }) => 
+    status.Progress.some((progress: { Progress: string }) =>
       progress && progress.Progress === row[enc("Trip Progress")]
     )
   );
@@ -320,11 +323,11 @@ export const StatusSelect: React.FC<StatusSelectProps> = ({ val, row, enc, TRIP_
 
 
   return (
-    <select 
+    <select
       value={localVal}
       onClick={(e) => e.stopPropagation()} // Prevents row selection in OrderManagement
-      onMouseEnter={() => setIsHovered(true) }
-      onMouseLeave={() => setIsHovered(false) }
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onChange={(e) => {
         setLocalVal(e.target.value);
         onStatusChange(e.target.value, row);
@@ -357,35 +360,35 @@ export const StatusSelect: React.FC<StatusSelectProps> = ({ val, row, enc, TRIP_
 export const handleUpdateStatus = async (newValue: string, row: any) => {
 
 
-    const ID = row.dmsID;
-    try {
-      const result = await DMS_CEMService.update(ID, { [enc("Trip Status")]: newValue });
-      console.log("Status update result:", result);
+  const ID = row.dmsID;
+  try {
+    const result = await DMS_CEMService.update(ID, { [enc("Trip Status")]: newValue });
+    console.log("Status update result:", result);
 
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
-
-      return { success: true, data: result.data };
-
-    } catch (error) {
-      console.error('Failed to save trip:', error);
-      return { success: false, error };
+    if (result.error) {
+      throw new Error(result.error.message);
     }
+
+    return { success: true, data: result.data };
+
+  } catch (error) {
+    console.error('Failed to save trip:', error);
+    return { success: false, error };
+  }
 
 
 };
 
 export const handleUpdateAttendanceStatus = async (newAttendance: string, empId: string, empName: string, OE: string) => {
   try {
-    UpsertAttendanceLogService.UpsertAttendanceLog({ 
+    UpsertAttendanceLogService.UpsertAttendanceLog({
       EmployeeName: empName,
       EmployeeID: empId,
       AttendanceDate: new Date().toISOString().split('T')[0],
       AttendanceStatus: newAttendance || 'PRESENT',
       OE: OE || '',
     } as any);
-    return { success: true};
+    return { success: true };
   } catch (error) {
     console.error("Fetch error:", error);
     return { success: false, error };
@@ -407,18 +410,18 @@ export const renderRepairIcon = (row: any, jrNumberKey: string, jrStatusKey: str
   const isOngoing = jrStatus === 'On going';
 
   return (
-    <span 
-      title={`Repair Job: ${jrNumber}`} 
+    <span
+      title={`Repair Job: ${jrNumber}`}
       style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}
     >
-      <Wrench 
-        size={18} 
-        strokeWidth={2.5} 
-        fill={wrenchColor} 
-        style={{ 
-          color: wrenchColor, 
-          filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))' 
-        }} 
+      <Wrench
+        size={18}
+        strokeWidth={2.5}
+        fill={wrenchColor}
+        style={{
+          color: wrenchColor,
+          filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))'
+        }}
         className={isOngoing ? "animate-wrench-pulse" : ""}
       />
     </span>
@@ -442,10 +445,10 @@ export const fetchTractorDetails = async (head_number: string) => {
 
   try {
     const result = await ewulFetchAll<any>(
-                    LiveVehicleAssignmentLIstViewService, 
-                    options, 
-                    1,
-                );
+      LiveVehicleAssignmentLIstViewService,
+      options,
+      1,
+    );
     return result[0]; // return the first matched record, or handle as needed
   } catch (error) {
     console.error("Error fetching tractor details:", error);
@@ -459,31 +462,161 @@ export const fetchTractorDetails = async (head_number: string) => {
 export const renderFuelRequestIcon = (hasFuelRequest: boolean, hasFuelPO: boolean, hasFuelDisapproved: boolean, fontSize?: number) => {
   let color = 'transparent';
   let title = '';
-  
+
   if (hasFuelRequest) {
     color = 'var(--color-yellow)'
     title = 'Request On Going'
-  } 
+  }
   if (hasFuelPO) {
     color = 'var(--color-green)'
     title = 'Request Liquidated'
-  } 
+  }
   if (hasFuelDisapproved) {
     color = 'var(--color-red)'
     title = 'Request Disapproved'
-  } 
+  }
 
   return (
-    <div 
+    <div
       style={{
         display: 'flex',          // Enables Flexbox
         justifyContent: 'center', // Centers horizontally
         alignItems: 'center',     // Centers vertically
-      }} 
+      }}
       title={title}
-    > 
-      <Fuel size={(fontSize ? fontSize*1.2 : 1)+'rem'} color={color}/>
+    >
+      <Fuel size={(fontSize ? fontSize * 1.2 : 1) + 'rem'} color={color} />
     </div>
   );
 
 }
+
+
+interface DDRemarksInputProps {
+  initialValue: string;
+  onSave: (newValue: string) => void;
+  placeholder?: string;
+}
+
+export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
+  initialValue,
+  onSave,
+  placeholder = 'Add remarks...'
+}) => {
+  // Normalize undefined / null / empty to strictly a string ""
+  const cleanInitial = initialValue ?? '';
+
+  const [value, setValue] = useState<string>(cleanInitial);
+  const [savedValue, setSavedValue] = useState<string>(cleanInitial);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Sync state if initialValue changes externally
+  useEffect(() => {
+    const freshVal = initialValue ?? '';
+    setValue(freshVal);
+    setSavedValue(freshVal);
+  }, [initialValue]);
+
+  // Strict string comparison ensures "" vs "something" works correctly
+  const isEdited = value !== savedValue;
+
+  // Auto-resize logic
+  useEffect(() => {
+    if (textareaRef.current) {
+      if (isFocused) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      } else {
+        textareaRef.current.style.height = '';
+      }
+    }
+  }, [value, isFocused]);
+
+  const handleCancel = () => {
+    // 1. Force value back to clean savedValue (even if it's "")
+    setValue(savedValue);
+
+    // 2. Delay blur slightly so state updates before collapsing height
+    setTimeout(() => {
+      textareaRef.current?.blur();
+    }, 0);
+  };
+
+  const handleSave = () => {
+    onSave(value);
+    setSavedValue(value);
+
+    setTimeout(() => {
+      textareaRef.current?.blur();
+    }, 0);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && isEdited) {
+      handleSave();
+    } else if (e.key === 'Escape' && isEdited) {
+      handleCancel();
+    }
+  };
+
+  return (
+    <div className={`dd-compact-wrapper ${isEdited ? 'is-edited' : ''} ${isFocused ? 'is-focused' : ''}`}>
+      <textarea
+        ref={textareaRef}
+        rows={1}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        className="dd-compact-textarea"
+      />
+
+      {isEdited && (
+        <div className="dd-compact-actions">
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()} // Prevents premature blur when clicking check
+            onClick={handleSave}
+            className="dd-compact-btn dd-compact-check"
+            title="Save (Ctrl + Enter)"
+            aria-label="Save"
+          >
+            ✓
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()} // Prevents premature blur when clicking cancel
+            onClick={handleCancel}
+            className="dd-compact-btn dd-compact-cancel"
+            title="Cancel (Esc)"
+            aria-label="Cancel"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const saveODMRemarks = async (newRemarks: string, recordID: string) => {
+  await DMS_CEMService.update(recordID, { [enc('Planning')]: newRemarks });
+};
+
+export const renderDDRemarksInput = (
+  value: string,
+  id: string
+) => {
+  const safeValue = value ?? '';
+
+  return (
+    <DDRemarksInputCompact
+      key={`${id}-${safeValue}`} // Forces React to reset component state if table data changes
+      initialValue={safeValue}
+      onSave={(newValue) => saveODMRemarks(newValue, id)}
+    />
+  );
+};

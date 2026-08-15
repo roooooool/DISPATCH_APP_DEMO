@@ -31,6 +31,7 @@ interface EmployeeSummaryModalProps {
     allRecords: AttendanceRecord[];
     onClose: () => void;
     user?: UserInfo;
+    onRecordsUpdate?: (updatedRecords: AttendanceRecord[]) => void;
 }
 
 export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
@@ -39,6 +40,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     allRecords,
     onClose,
     user,
+    onRecordsUpdate,
 }) => {
 
     const { addTask } = useTaskWorker();
@@ -57,8 +59,12 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
 
     // 1. Filter records strictly for this employee & active cutoff date range
+    // 1. Filter records strictly for this employee & active cutoff date range (up to today)
     const filteredRecords = useMemo(() => {
         if (!selectedCutoff) return [];
+
+        // Get today's date in YYYY-MM-DD format
+        const todayStr = new Date().toISOString().split('T')[0];
 
         // Helper to safely convert nullable dates to timestamps
         const getTime = (val: string | number | Date | null | undefined): number => {
@@ -69,7 +75,13 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             .filter((item) => {
                 if (item.EmployeeName !== employeeName) return false;
                 const dateStr = item.AttendanceDate ? item.AttendanceDate.split('T')[0] : '';
-                return dateStr >= selectedCutoff.startDate && dateStr <= selectedCutoff.endDate;
+
+                // Check if date is within cutoff range AND NOT in the future
+                return (
+                    dateStr >= selectedCutoff.startDate &&
+                    dateStr <= selectedCutoff.endDate &&
+                    dateStr <= todayStr
+                );
             })
             .sort((a, b) => {
                 // Primary sort: AttendanceDate DESC
@@ -83,6 +95,50 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
 
     // console.log("awdaw: ", filteredRecords)
+
+    // 1. Initial column widths (in pixels)
+    const [colWidths, setColWidths] = useState<Record<string, number>>({
+        date: 110,
+        status: 120,
+        oe: 100,
+        sd: 220,
+        distance: 100,
+        score: 90,
+        tranType: 130,
+        approval: 130,
+        ModifiedAt: 110,
+        modifiedBy: 130,
+        approvedBy: 130,
+        coorApp: 100,
+    });
+
+    // 2. Mouse drag handler for resizing
+    const handleResizeMouseDown = (colKey: string, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const startX = e.clientX;
+        const startWidth = colWidths[colKey] || 100;
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            const currentX = moveEvent.clientX;
+            const newWidth = Math.max(60, startWidth + (currentX - startX)); // Min width 60px
+            setColWidths((prev) => ({
+                ...prev,
+                [colKey]: newWidth,
+            }));
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.body.style.cursor = 'default';
+        };
+
+        document.body.style.cursor = 'col-resize';
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    };
 
     // 1. Dynamic set of statuses where onduty === true (defined outside component or at top level)
     const ON_DUTY_STATUSES = new Set(
@@ -162,6 +218,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     // 2. Toggle approval locally & track in pendingChanges
     const handleToggleApproval = (targetRecord: AttendanceRecord) => {
+        // console.log('awdtest: ', targetRecord);
         const groupKey = `${targetRecord.AttendanceDate?.split('T')[0]}_${targetRecord.OE || ''}`;
 
         const currentRecord = localRecords.find(
@@ -177,7 +234,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             Approved: newStatus,
         };
 
-        console.log('wasd: ', updatedRecord);
+        // console.log('wasd: ', updatedRecord);
 
         // Update optimistic local records for UI/KPIs
         setLocalRecords((prev) =>
@@ -214,8 +271,18 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     const handleConfirmChanges = async () => {
         const pendingArray: AttendanceRecord[] = Object.values(pendingChanges);
+        const processedArray = pendingArray.map((rec) => ({
+            ...rec,
+            ApprovedBy: rec.Approved === 'Approved' ? (user?.FullName || '') : '',
+            ModifiedBy: user?.FullName || '',
+            ModifiedAt: new Date().toISOString(), // Standard ISO format ("YYYY-MM-DDTHH:mm:ss.sssZ")
+        }));
 
         if (pendingArray.length === 0) return;
+
+        if (onRecordsUpdate) {
+            onRecordsUpdate(processedArray);
+        }
 
         const updateRecords = pendingArray.filter((rec) => rec.spID);
         const createRecords = pendingArray.filter((rec) => !rec.spID);
@@ -231,27 +298,40 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             name: `Attendance Approval`,
             execute: async () => {
                 try {
+
                     // 1. Process SharePoint Creates
                     if (createRecords.length > 0) {
-                        const createPayloads = createRecords.map((rec) => ({
-                            OE: rec.OE || '',
-                            TripKM: rec.tripKM?.toString() || '',
-                            SD: rec.SD || '',
-                            Date: rec.AttendanceDate,
-                            AttendanceDetail: rec.tripIndex?.toString() || '',
-                            SecondTrip: rec.secondTrip || '',
-                            Creator: user?.FullName || '',
-                            TCVC: rec.TCVC || '',
-                            Position: rec.Position || '',
-                            TransactionType: rec.TransactionType || '',
-                            EmployeeName: rec.EmployeeName || '',
-                            hrID: rec.EmployeeID?.toString() || '',
-                            Approval: rec.Approved || '',
-                        }));
+                        const createPayloads = createRecords.map((rec) => {
+                            const camelStatus = rec.AttendanceStatus
+                                ? rec.AttendanceStatus.charAt(0).toLowerCase() + rec.AttendanceStatus.slice(1)
+                                : '';
+
+                            return {
+                                OE: rec.OE || '',
+                                TripKM: rec.tripKM?.toString() || '',
+                                SD: rec.SD || '',
+                                Date: rec.AttendanceDate,
+                                // Uses loose inequality (!=) to handle both null and undefined safely, 
+                                // and uses camelStatus as the fallback
+                                AttendanceDetail: rec.tripIndex != null ? rec.tripIndex.toString() : camelStatus,
+                                SecondTrip: rec.secondTrip || '',
+                                Creator: user?.FullName || '',
+                                TCVC: rec.TCVC || '',
+                                Position: rec.Position || '',
+                                TransactionType: rec.TransactionType || '',
+                                EmployeeName: rec.EmployeeName || '',
+                                hrID: rec.EmployeeID?.toString() || '',
+                                Approval: rec.Approved || '',
+                            };
+                        });
+
+                        console.log('payload create: ', createPayloads);
 
                         const createResults = await Promise.all(
                             createPayloads.map((payload) => GSDC_AttendanceService.create(payload))
                         );
+
+                        console.log('success wew1', createResults)
 
                         const hasCreateFailure = createResults.some((res) => !res?.success);
                         if (hasCreateFailure) {
@@ -334,21 +414,33 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                         }
                     }
 
+                    console.log('upserting to attendance log')
                     // 3. Process SQL Database Upserts (All Records)
                     const upsertResults = await Promise.all(
-                        pendingArray.map((rec) =>
-                            UpsertAttendanceLogService.UpsertAttendanceLog({
+                        pendingArray.map((rec) => {
+                            // Safely parse into a Date object whether rec.AttendanceDate is a string or Date instance
+                            const dateObj = new Date(rec.AttendanceDate);
+                            const year = dateObj.getFullYear();
+                            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const day = String(dateObj.getDate()).padStart(2, '0');
+                            const dateStr = `${year}-${month}-${day}`;
+
+                            return UpsertAttendanceLogService.UpsertAttendanceLog({
                                 EmployeeName: rec.EmployeeName,
                                 EmployeeID: rec.EmployeeID,
-                                AttendanceDate: rec.AttendanceDate,
+                                AttendanceDate: dateStr,
                                 OE: rec.OE || '',
                                 Approved: rec.Approved,
                                 AttendanceStatus: rec.AttendanceStatus,
                                 ModifiedBy: user?.FullName || 'Unknown User',
                                 ApprovedBy: rec.Approved === 'Approved' ? (user?.FullName || undefined) : undefined,
-                            } as any)
-                        )
+                            } as any);
+                        })
                     );
+
+
+
+                    console.log('upserting success!', upsertResults);
 
                     const hasUpsertFailure = upsertResults.some((res) => res && res.success === false);
                     if (hasUpsertFailure) {
@@ -373,6 +465,12 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             message_success: `Attendance approvals for ${summaryLabel} submitted successfully.`,
             message_failure: `Failed to submit attendance approvals for ${summaryLabel}.`,
         });
+
+        //close the summary
+        if (onClose) {
+            onClose();
+        };
+
     };
 
     // 4. Cancel handler to revert back to original records
@@ -406,23 +504,25 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             ['Active Days', String(metrics.totalDays)],
             ['Bigas Allowance', metrics.bigasKilos],
             [], // Blank row separator
-            // 2. Table Headers
-            ['Date', 'Status', 'OE', 'DMS OE', 'Route / SD', 'Distance (km)', 'Score', 'BU', 'Approval']
+            // 2. Table Headers matching the JSX <table>
+            ['Date', 'Status', 'OE', 'Route / Source-Destination (SD)', 'Distance (km)', 'Index', 'Transaction', 'Approval', 'Modified By', 'Approved By', 'Coor App']
         ];
 
-        // 3. Append Table Data Rows
+        // 3. Append Table Data Rows matching column order
         filteredRecords.forEach((rec) => {
             const dateStr = rec.AttendanceDate ? rec.AttendanceDate.split('T')[0] : '';
             csvRows.push([
                 dateStr,
                 rec.AttendanceStatus || '---',
                 rec.OE || '---',
-                rec.DMS_OE || '---',
                 rec.SD || '---',
                 rec.tripKM != null ? String(rec.tripKM) : '---',
                 rec.tripIndex != null ? String(rec.tripIndex) : '---',
-                rec.BU || '---',
-                rec.Approved === 'Approved' ? 'Approved' : 'Not Approved'
+                rec.TransactionType || rec.tripIndex ? 'Full Trip' : '---',
+                rec.Approved === 'Approved' ? 'Approved' : 'Not Approved',
+                rec.ModifiedBy || '---',
+                rec.ApprovedBy || '---',
+                rec.spID != null ? String(rec.spID) : '---'
             ]);
         });
 
@@ -498,7 +598,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                         <div className="kpi-card score">
                             <div className="kpi-icon"><Award size={18} /></div>
                             <div className="kpi-details">
-                                <span className="kpi-label">Cutoff Score</span>
+                                <span className="kpi-label">Trip Index</span>
                                 <span className="kpi-value">{metrics.totalScore.toFixed(2)} pts</span>
                             </div>
                         </div>
@@ -587,18 +687,54 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             <table className="emp-history-table">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        <th>OE</th>
-                                        {/* <th>DMS OE</th> */}
-                                        <th>Route / Source-Destination (SD)</th>
-                                        <th>Distance</th>
-                                        <th>Score</th>
-                                        {/* <th>BU</th> */}
-                                        <th>Approval</th>
-                                        <th>Modified By</th>
-                                        <th>Approved By</th>
-                                        <th>Coor App</th>
+                                        <th style={{ width: colWidths.date }}>
+                                            Date
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('date', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.status }}>
+                                            Status
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('status', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.oe }}>
+                                            OE
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('oe', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.sd }}>
+                                            Route / Source-Destination (SD)
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('sd', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.distance }}>
+                                            Distance
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('distance', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.score }}>
+                                            Index
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('score', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.tranType }}>
+                                            Transaction
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('tranType', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.approval }}>
+                                            Approval
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('approval', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.ModifiedAt }}>
+                                            Modified
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('ModifiedAt', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.modifiedBy }}>
+                                            Modified By
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('modifiedBy', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.approvedBy }}>
+                                            Approved By
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('approvedBy', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.coorApp }}>
+                                            Coor App
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('coorApp', e)} />
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -627,6 +763,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                     <td className="font-bold text-primary">
                                                         {rec.tripIndex !== null && rec.tripIndex !== undefined ? rec.tripIndex : '---'}
                                                     </td>
+                                                    <td className="font-mono font-bold">{rec.TransactionType || rec.tripIndex ? 'Full Trip' : '---'}</td>
                                                     <td>
                                                         <div className="approval-btn-wrapper">
                                                             <button
@@ -643,6 +780,20 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                                 <span className="edited-indicator-dot" title="Unsaved change" />
                                                             )}
                                                         </div>
+                                                    </td>
+                                                    <td className="font-mono">
+                                                        {
+                                                            rec.ModifiedAt
+                                                                ? new Date(rec.ModifiedAt).toLocaleString('en-US', {
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                    year: 'numeric',
+                                                                    hour: 'numeric',
+                                                                    minute: '2-digit',
+                                                                    hour12: true,
+                                                                })
+                                                                : '---'
+                                                        }
                                                     </td>
                                                     <td>{rec.ModifiedBy || '---'}</td>
                                                     <td>{rec.ApprovedBy || '---'}</td>

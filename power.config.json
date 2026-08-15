@@ -37,7 +37,8 @@
         "triptickets",
         "op_incidentreports",
         "cifmetripsview_cem_unfiltered",
-        "late_attendance_requests"
+        "late_attendance_requests",
+        "dispapp_bu_capacity_summary"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -113,6 +114,9 @@
             },
             "late_attendance_requests": {
               "tableName": "[dbo].[Late_Attendance_Requests]"
+            },
+            "dispapp_bu_capacity_summary": {
+              "tableName": "[dbo].[DISPAPP_BU_Capacity_Summary]"
             }
           }
         }

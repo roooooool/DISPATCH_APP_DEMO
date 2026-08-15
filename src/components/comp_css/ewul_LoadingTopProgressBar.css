@@ -1,0 +1,31 @@
+.top-progress-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: rgba(58, 78, 252, 0.08);
+    overflow: hidden;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    z-index: 99999;
+}
+
+.top-progress-bar {
+    height: 100%;
+    width: 100%;
+    /* Navy -> 3a4efc -> Red Accent Gradient */
+    background: linear-gradient(90deg, #0b132b 0%, #3a4efc 50%, #e63946 100%);
+    border-radius: 3px;
+    animation: topBarIndeterminate 1.4s ease-in-out infinite;
+}
+
+@keyframes topBarIndeterminate {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(250%);
+    }
+}

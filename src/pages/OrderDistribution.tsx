@@ -32,6 +32,7 @@ import { type DMS_CEM } from '../generated/models/DMS_CEMModel'
 import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
 import { GenerateAdditionalOE_ID2Service } from '../generated/services/GenerateAdditionalOE_ID2Service';
 import { Vw_FCT_RouteNodeListService } from '../generated/services/Vw_FCT_RouteNodeListService';
+import { DISPAPP_BU_Capacity_SummaryService } from '../generated/services/DISPAPP_BU_Capacity_SummaryService';
 
 import {
   NEW_TRIPS_UNFILTERED_TABLE_CONFIG,
@@ -113,6 +114,7 @@ interface OrdersModuleProps {
     removed: string[];
   }) => void;
   onRefreshTripsAssigned: () => void;
+  buCapacity?: any[];
 }
 
 const OrdersModule: React.FC<OrdersModuleProps> = ({
@@ -134,7 +136,8 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
   isArrangementMode,
   onArrangementModeChange,
   onOptimisticUpdate,
-  onRefreshTripsAssigned
+  onRefreshTripsAssigned,
+  buCapacity
 }) => {
   const { user } = useUser();
 
@@ -200,6 +203,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
             onUpdateTripAssignedList={onOptimisticUpdate}
             onRefreshTrips={onRefreshTripsAssigned}
             newTripsTableConfig={newTripsTableConfig}
+            buCapacity={buCapacity}
           />
         </div>
 
@@ -818,6 +822,25 @@ const OrderDistribution: React.FC = () => {
     }
   }, [selectedRangeNewOrders]);
 
+  // DATA SOURCE 2: Fetching Fleet Assigned Logs
+  const [buCapacity, setBUCapacity] = useState<any[]>([])
+  const fetchBUCapacity = useCallback(async () => {
+    try {
+      const dateFilter =
+        `
+          BU eq 'SBUO-1A' or BU eq 'SBUO-1B'
+        `;
+      const result = await ewulFetchAll<any>(DISPAPP_BU_Capacity_SummaryService, { filter: dateFilter }, 1000, 'BU');
+
+      setBUCapacity(result || []);
+      console.log('bucapacity: ', result)
+    } catch (err) {
+      console.error(err);
+      setBUCapacity([]);
+    } finally {
+    }
+  }, []);
+
 
   const fetchFCTRoutes = useCallback(async () => {
     if (stationOptions.length > 0 && sourceOptions.length > 0 && destinationOptions.length > 0) {
@@ -935,8 +958,10 @@ const OrderDistribution: React.FC = () => {
   const handleSync = useCallback(() => {
     if (activeMode === 'NEW') {
       fetchNewOrders();
+      fetchBUCapacity();
     } else if (activeMode === 'ASSIGNED') {
       fetchAssignedOrders();
+      fetchBUCapacity();
     } else return;
   }, [activeMode, fetchNewOrders, fetchAssignedOrders]);
 
@@ -1370,6 +1395,7 @@ const OrderDistribution: React.FC = () => {
                   onArrangementModeChange={setIsArranging}
                   onOptimisticUpdate={handleOptimisticUpdate}
                   onRefreshTripsAssigned={fetchAssignedOrders}
+                  buCapacity={buCapacity}
                 />
                 {bannerMessage &&
                   <AutoDismissBanner

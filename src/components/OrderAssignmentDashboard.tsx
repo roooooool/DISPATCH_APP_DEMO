@@ -38,6 +38,7 @@ interface OrderAssignmentDashboardProps {
         removed: string[];
     }) => void;
     newTripsTableConfig: ColumnConfig[];
+    buCapacity?: any[];
 }
 
 interface DroppedItemsState {
@@ -71,6 +72,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     onRefreshTrips,
     onUpdateTripAssignedList,
     newTripsTableConfig,
+    buCapacity,
 }) => {
     console.log(tripAssignedLoading, newOrdersLoading);
 
@@ -592,7 +594,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
         } else if (ratio >= 0.85 && ratio <= 1.0) {
             return { text: "100% Utilization Perfect load!", color: "#00ff66", icon: <Sparkles size={14} /> }; // Green (Goal reached)
         } else {
-            return { text: "Good balance, Keep going", color: "#ffffff", icon: <ThumbsUp size={14} /> }; // Neutral / Encouraging
+            return { text: "Good distribution, Keep going", color: "#ffffff", icon: <ThumbsUp size={14} /> }; // Neutral / Encouraging
         }
     };
 
@@ -722,6 +724,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
                         const activeFilter = buFilters[bu] || 'all';
 
+
                         const filteredCardTrips = allCombinedTrips.filter(trip => {
                             const sourceObj = trip.rawData || trip;
                             if (activeFilter === 'new') return trip._isLocal === true;
@@ -754,7 +757,8 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                             return sourceObj.TripProgress !== 'Assigned' && sourceObj.TripProgress !== 'New Trip';
                         }).length;
 
-                        const maxCapacity = 50;
+                        const matchedBu = buCapacity?.find((item) => item.BU === bu);
+                        const maxCapacity = matchedBu?.TotalHeadcount ?? 50; // Fallback to 50 if undefined or not found
                         // const loadPercentage = Math.min((totalCount / maxCapacity) * 100, 100);
 
                         // Determine if the card is collapsed, factoring in temporary drag hover expansion

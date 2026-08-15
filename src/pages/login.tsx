@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GSDC_AccountsService } from "../generated/services/GSDC_AccountsService";
 
-import {type UserInfo} from '../truth.config';
+import { type UserInfo, mandatoryLogout } from '../truth.config';
 
-import "./css/Login.css"; 
+import "./css/Login.css";
 import "../theme.css";
 
 import ImageCarousel from "../components/imgHighlights";
@@ -14,7 +14,7 @@ import gsdcLogo from "../../public/gsdc_logo.png";
 import truckBg from "../../public/images/trucks.jpg"; // Import the background image
 
 
-import {useUser} from '../utils/useUser';
+import { useUser } from '../utils/useUser';
 
 
 export default function Login() {
@@ -70,25 +70,29 @@ export default function Login() {
       } else if (account.PassWord !== password) {
         setError("Incorrect password");
       } else {
-          const userInfo: UserInfo = {
-            FirstName: account.fullName || "",
-            MiddleName: account.MiddleName || "",
-            LastName: account.LastName || "",
-            FullName: account.LastName + ', ' + account.fullName + (account.MiddleName ? ` (${account.MiddleName})` : ''),
-            BusinessUnit: account.BusinessUnit || "",
-            Position: account.Position || "",
-            id: String(account.ID) || "",
+        const userInfo: UserInfo = {
+          FirstName: account.fullName || "",
+          MiddleName: account.MiddleName || "",
+          LastName: account.LastName || "",
+          FullName: account.LastName + ', ' + account.fullName + (account.MiddleName ? ` (${account.MiddleName})` : ''),
+          BusinessUnit: account.BusinessUnit || "",
+          Position: account.Position || "",
+          id: String(account.ID) || "",
 
-            CurrentNav: "/dash"
-          };
+          CurrentNav: "/dash"
+        };
 
-          //localStorage.setItem("gsdc_user", JSON.stringify(userInfo));
-          updateUser(userInfo);
-          setIsLeaving(true);
+        if (userInfo?.id) {
+          localStorage.setItem(`lastLogout_${userInfo.id}`, mandatoryLogout);
+        }
 
-          setTimeout(() => {
-            navigate("/dash", { state: { user: userInfo } });
-          }, 500); 
+        //localStorage.setItem("gsdc_user", JSON.stringify(userInfo));
+        updateUser(userInfo);
+        setIsLeaving(true);
+
+        setTimeout(() => {
+          navigate("/dash", { state: { user: userInfo } });
+        }, 500);
       }
     } catch (err: any) {
       console.error(err);
@@ -131,11 +135,11 @@ export default function Login() {
       </div>
 
       {/* Right Side - Company Info */}
-      <div 
-        className="login-right" 
+      <div
+        className="login-right"
         style={{ backgroundImage: `url(${truckBg})` }} // Corrected: Uses the imported variable
       >
-        <ImageCarousel/>
+        <ImageCarousel />
 
         <div className="gradient-overlay"></div>
 

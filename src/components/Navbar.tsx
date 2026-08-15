@@ -5,12 +5,12 @@ import "./comp_css/Navbar.css";
 import "./comp_css/ChatBadge.css";
 import SettingsModal from "./SettingsModal";
 import { Menu, X, MessageSquare } from 'lucide-react'; // Import icons for hamburger menu
-import NotificationBell  from './NotificationBell'; // Import the new component
+import NotificationBell from './NotificationBell'; // Import the new component
 import ChatBox, { type ChatBoxHandle } from './ChatBox'; // Import the new ChatBox component and its handle
 import TaskTracker from './ewul_TripTaskTracker';
 
-import { useUser  } from "../utils/useUser";
-
+import { useUser } from "../utils/useUser";
+import { mandatoryLogout } from "../truth.config"
 
 import profile_icon_placeholder from "../../public/icons/pwhite.svg"; // Placeholder profile icon path
 
@@ -35,6 +35,28 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
   const chatBoxRef = useRef<ChatBoxHandle>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [hiddenNav, setHiddenNav] = useState(true); // State to track hidden navigation toggle
+  const [showMandatoryLogoutModal, setShowMandatoryLogoutModal] = useState(false);
+  const [logoutCountdown, setLogoutCountdown] = useState(30);
+
+  // Timer effect when modal is active
+  useEffect(() => {
+    if (!showMandatoryLogoutModal) {
+      setLogoutCountdown(30); // Reset countdown when closed
+      return;
+    }
+
+    // If timer reaches 0, execute logout
+    if (logoutCountdown <= 0) {
+      handleMandatoryLogoutConfirm();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setLogoutCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [showMandatoryLogoutModal, logoutCountdown]);
 
 
   //const prev_notifications: Notification[] = notifications;
@@ -62,14 +84,14 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
 
   useEffect(() => {
     const fetchCount = async () => {
-        if (chatBoxRef.current) {
-            try {
-                const total = await chatBoxRef.current.fetchTotalUnread();
-                setUnreadChatMessages(total);
-            } catch (error) {
-                console.error("Failed to fetch total unread chat messages:", error);
-            }
+      if (chatBoxRef.current) {
+        try {
+          const total = await chatBoxRef.current.fetchTotalUnread();
+          setUnreadChatMessages(total);
+        } catch (error) {
+          console.error("Failed to fetch total unread chat messages:", error);
         }
+      }
     };
 
     // Fetch count immediately and then poll
@@ -96,14 +118,47 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
     if (onNavigate && !hiddenNav) {
       onNavigate(path);
     }
-    
+
     navigate(path);
     setIsMobileMenuOpen(false); // Close mobile menu on navigation
   };
 
-  const handleLogout = () => {
+  const handleLogout = (logoutTime?: string | React.MouseEvent) => {
+    // If called by an onClick event, ignore the event object and default to mandatoryLogout or now
+    const actualLogoutTime = typeof logoutTime === "string"
+      ? logoutTime
+      : mandatoryLogout;
+
+    if (user?.id) {
+      localStorage.setItem(`lastLogout_${user.id}`, actualLogoutTime);
+    }
+
     localStorage.removeItem("gsdc_user");
     navigate("/");
+  };
+
+  useEffect(() => {
+    if (!user?.id || !mandatoryLogout) return;
+
+    const storageKey = `lastLogout_${user.id}`;
+    const storedLastLogout = localStorage.getItem(storageKey);
+
+    if (storedLastLogout) {
+      const lastLogoutTime = new Date(storedLastLogout).getTime();
+      const mandatoryLogoutTime = new Date(mandatoryLogout).getTime();
+
+      if (lastLogoutTime < mandatoryLogoutTime) {
+        setShowMandatoryLogoutModal(true);
+      }
+    } else {
+      // If no record exists, trigger modal to update timestamp
+      setShowMandatoryLogoutModal(true);
+    }
+  }, [user?.id]);
+
+  const handleMandatoryLogoutConfirm = () => {
+    setShowMandatoryLogoutModal(false);
+    handleLogout(mandatoryLogout);
   };
 
   const handleNavigateError = (error: string) => {
@@ -124,23 +179,23 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
 
   useEffect(() => {
     const handleTaskNavigation = (event: any) => {
-        const { oe } = event.detail;
-        const targetPath = "/order"; // Adjust this to your actual dispatch route
+      const { oe } = event.detail;
+      const targetPath = "/order"; // Adjust this to your actual dispatch route
 
-        // 1. Determine if we need to navigate
-        // If we are already on the page, we still push the new OE to the URL
-        // If not, we move to that page
-        navigate(`${targetPath}?oe=${oe}`, { 
-            replace: false, 
-            state: { fromTaskTracker: true } 
-        });
+      // 1. Determine if we need to navigate
+      // If we are already on the page, we still push the new OE to the URL
+      // If not, we move to that page
+      navigate(`${targetPath}?oe=${oe}`, {
+        replace: false,
+        state: { fromTaskTracker: true }
+      });
 
-        // 2. Notify parent if you have global state tracking active path
-        if (onNavigate) {
-            onNavigate(targetPath);
-        }
-        
-        console.log(`Navbar navigating to ${targetPath} for OE: ${oe}`);
+      // 2. Notify parent if you have global state tracking active path
+      if (onNavigate) {
+        onNavigate(targetPath);
+      }
+
+      console.log(`Navbar navigating to ${targetPath} for OE: ${oe}`);
     };
 
     window.addEventListener(GSDC_NAVIGATE_TO_TRIP_key, handleTaskNavigation);
@@ -168,130 +223,152 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
 
   // Filter navigation based on user position whitelist
   const allowedNavs = user ? NAV_DESTINATIONS.filter((nav) => {
-      const isSpecial = SPECIAL_POSITIONS.includes(user.Position);
-      const isWhitelisted = nav.whiteList.includes(user.Position);
-      const noSpecialAccess = nav.noSpecialAccess || false; // Default to false if not specified
-      
-      // Check if the nav is marked as "hidden" (ends with *)
-      const isMarkedHidden = nav.hidden;
+    const isSpecial = SPECIAL_POSITIONS.includes(user.Position);
+    const isWhitelisted = nav.whiteList.includes(user.Position);
+    const noSpecialAccess = nav.noSpecialAccess || false; // Default to false if not specified
 
-      // Logic: 
-      const meetsSecurity = (isSpecial && !noSpecialAccess) || isWhitelisted;
-      const visibilityPass = isMarkedHidden ? (!hiddenNav === true && user.Position === 'Developer') : true;
+    // Check if the nav is marked as "hidden" (ends with *)
+    const isMarkedHidden = nav.hidden;
 
-      return meetsSecurity && visibilityPass;
+    // Logic: 
+    const meetsSecurity = (isSpecial && !noSpecialAccess) || isWhitelisted;
+    const visibilityPass = isMarkedHidden ? (!hiddenNav === true && user.Position === 'Developer') : true;
+
+    return meetsSecurity && visibilityPass;
   }) : [];
 
 
-  
+
 
   return (
-    <nav className="main-navbar">
+    <>
+      <nav className="main-navbar">
         {/* LEFT: User Profile Section */}
         <div className="nav-profile-section" ref={dropdownRef} onClick={() => setShowDropdown(!showDropdown)}>
-            <img 
+          <img
             src={profile_icon_placeholder}
-            alt="Profile" 
-            className="nav-avatar" 
-            />
-            <div className="nav-user-info">
+            alt="Profile"
+            className="nav-avatar"
+          />
+          <div className="nav-user-info">
             <span className="nav-username">{user?.FirstName} {user?.LastName}</span>
             <span className="nav-position">{user?.Position} | {user?.BusinessUnit}</span>
+          </div>
+
+          {/* Dropdown Menu */}
+          {showDropdown && (
+            <div className="nav-dropdown" onClick={(e) => e.stopPropagation()}>
+              <button onClick={() => { }}>User Profile</button>
+              <button onClick={() => { setIsSettingsOpen(true); setShowDropdown(false); }}>
+                Settings
+              </button>
+              <button className="report-btn" onClick={() => { handleReportProblem() }}>Report Problem</button>
+              <hr />
+              <button className="logout-btn" onClick={handleLogout}>Log out</button>
             </div>
+          )}
 
-            {/* Dropdown Menu */}
-            {showDropdown && ( 
-              <div className="nav-dropdown" onClick={(e) => e.stopPropagation()}>
-                <button onClick={() => {}}>User Profile</button>
-                <button onClick={() => { setIsSettingsOpen(true); setShowDropdown(false);  }}>
-                  Settings
-                </button>
-                <button className="report-btn" onClick={() => {handleReportProblem()}}>Report Problem</button>
-                <hr />
-                <button className="logout-btn" onClick={handleLogout}>Log out</button>
-              </div>
+          {/*<div className="nav-divider-streak"></div>*/}
+        </div>
+
+        {/* RIGHT: Navigation Buttons & Notifications */}
+        <div className="nav-right-section">
+          <div className="nav-links">
+            {allowedNavs.map((nav) => (
+              <button
+                key={nav.path}
+                // Optional: Add an 'active' class if this is the current path
+                className={`nav-item ${location.pathname === nav.path ? 'active' : ''}`}
+                onClick={() => handleNavigate(nav.path, nav.hidden)} // Use our new helper
+              >
+                {nav.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Notification Bell */}
+          <NotificationBell />
+
+
+          {/* Chat/Message Icon */}
+          <button className="nav-icon-button" onClick={() => { setIsChatBoxOpen(true); }}>
+            <MessageSquare size={24} />
+            {unreadChatMessages > 0 && (
+              <span className="notification-badge">
+                {unreadChatMessages > 99 ? '99+' : unreadChatMessages}
+              </span>
             )}
+          </button>
 
-            {/*<div className="nav-divider-streak"></div>*/}
+
+          {/** Task Tracker */}
+          <TaskTracker />
+
+
+          {/* Hamburger Menu for Mobile */}
+          <div className="mobile-menu-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </div>
+
+
         </div>
 
-      {/* RIGHT: Navigation Buttons & Notifications */}
-      <div className="nav-right-section">
-        <div className="nav-links">
-          {allowedNavs.map((nav) => (
-            <button 
-              key={nav.path} 
-              // Optional: Add an 'active' class if this is the current path
-              className={`nav-item ${location.pathname === nav.path ? 'active' : ''}`} 
-              onClick={() => handleNavigate(nav.path,nav.hidden)} // Use our new helper
-            >
-              {nav.label}
-            </button>
-          ))}
-        </div>
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="mobile-nav-menu">
+            {allowedNavs.map((nav) => (
+              <button
+                key={nav.path}
+                className={`nav-item ${location.pathname === nav.path ? 'active' : ''}`}
+                onClick={() => handleNavigate(nav.path)}
+              >
+                {nav.label}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* Notification Bell */}
-        <NotificationBell />
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          theme={theme}
+          toggleTheme={toggleTheme}
+          hiddenNav={hiddenNav}
+          toggleHiddenNav={() => setHiddenNav((prev) => !prev)}
+          key={`${isSettingsOpen}`} // Force remount to reset internal state
+          user={user}
+          updateUser={updateUser}
+        />
 
-
-        {/* Chat/Message Icon */}
-        <button className="nav-icon-button" onClick={() => {setIsChatBoxOpen(true);}}>
-          <MessageSquare size={24} />
-          {unreadChatMessages > 0 && (
-            <span className="notification-badge">
-              {unreadChatMessages > 99 ? '99+' : unreadChatMessages}
-            </span>
-          )} 
-        </button>
-        
-
-        {/** Task Tracker */}
-        <TaskTracker />
-
-
-        {/* Hamburger Menu for Mobile */}
-        <div className="mobile-menu-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-        </div>
-
-
-      </div>
-
-      {/* Mobile Navigation Menu */}
-      {isMobileMenuOpen && (
-        <div className="mobile-nav-menu">
-          {allowedNavs.map((nav) => (
-            <button 
-              key={nav.path} 
-              className={`nav-item ${location.pathname === nav.path ? 'active' : ''}`} 
-              onClick={() => handleNavigate(nav.path)}
-            >
-              {nav.label}
-            </button>
-          ))}
+        <ChatBox
+          ref={chatBoxRef}
+          isOpen={isChatBoxOpen}
+          onOpen={() => setIsChatBoxOpen(true)}
+          onClose={() => setIsChatBoxOpen(false)}
+          user={user}
+        />
+      </nav>
+      {showMandatoryLogoutModal && (
+        <div className="navbar-modal-overlay">
+          <div className="navbar-modal-content-wrapper">
+            <div className="navbar-modal-content">
+              <h3>Session Update Required</h3>
+              <p>
+                A mandatory system update requires you to log in again to ensure your session is up to date.
+              </p>
+              <p className="navbar-timer-text">
+                Logging out automatically in <strong>{logoutCountdown}s</strong>...
+              </p>
+              <div className="navbar-modal-actions">
+                <button className="navbar-logout-btn" onClick={handleMandatoryLogoutConfirm}>
+                  Log In Again
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
-
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
-        theme={theme}
-        toggleTheme={toggleTheme}
-        hiddenNav={hiddenNav}
-        toggleHiddenNav={() => setHiddenNav((prev) => !prev)}
-        key={`${isSettingsOpen}`} // Force remount to reset internal state
-        user={user}
-        updateUser={updateUser}
-      />
-
-      <ChatBox 
-        ref={chatBoxRef}
-        isOpen={isChatBoxOpen}
-        onOpen={() => setIsChatBoxOpen(true)}
-        onClose={() => setIsChatBoxOpen(false)}
-        user={user}
-      />
-    </nav>
+    </>
   );
 });
 

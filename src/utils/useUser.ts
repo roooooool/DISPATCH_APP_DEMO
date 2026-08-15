@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { type UserInfo } from '../truth.config';
 
+// import { mandatoryLogout } from '../truth.config';
+
 const SYNC_EVENT = "gsdc_user_sync";
 
 export const useUser = () => {

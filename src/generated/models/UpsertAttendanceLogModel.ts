@@ -11,6 +11,7 @@ export interface UpsertAttendanceLogRequest {
   OE?: string;
   ModifiedBy?: string;
   ApprovedBy?: string;
+  Approved?: string;
 }
 
 export interface UpsertAttendanceLogResponse {

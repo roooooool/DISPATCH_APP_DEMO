@@ -12,6 +12,7 @@ import {
   handleUpdateStatus,
   handleUpdateAttendanceStatus,
   renderFuelRequestIcon,
+  renderDDRemarksInput,
 } from './truth_react_helper.tsx'
 
 import { HighlightText } from './components/ewul_TableFlex';
@@ -34,7 +35,10 @@ export type UserInfo = {
   FullName?: string;
   lastActiveModule?: string;
   attendanceSheetZoom?: number;
+  lastLogout?: string; // for the logout modal
 };
+
+export const mandatoryLogout = "2026-08-13 16:54:03"
 
 export const TRIP_GROUPS = [
   { id: 'Trading_bulk', label: 'Trading - Bulk', color: '#092162' },
@@ -731,7 +735,9 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     { col: "Plant DR", alias: "PLANT DR" },
     { col: "SO#", alias: "SO#" },
     { col: "GSDC DR", alias: "GSDC DR" },
-    { col: "Planning", alias: "Dispatcher Remarks" },
+    {
+      col: "Planning", alias: "Dispatcher Remarks",
+    },
 
     //Disp to Source
     { col: "Dispatched to Source", alias: "Dispatched to Source", calculate: (row: any) => formatDate(row[enc("Dispatched to Source")], { mode: "datetime", alreadyLocal: true }) },
@@ -881,7 +887,14 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
       },
     },
 
-    { col: "Planning", alias: "ODM Remarks" },
+    {
+      col: "Planning", alias: "ODM Remarks",
+      //@ts-ignore
+      render: (val: any, row: any, searchTerm: string) => {
+        return renderDDRemarksInput(val, row['ID'])
+      },
+
+    },
 
     { col: "Tagged Date", alias: "Plotted Date", calculate: (row: any) => formatDate(row[enc("Tagged Date")], { mode: 'datetime', alreadyLocal: true }), cellStyle: (_row: any) => { return { fontWeight: 'bold' } } },
     {
