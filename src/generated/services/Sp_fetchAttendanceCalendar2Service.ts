@@ -13,9 +13,9 @@ export class Sp_fetchAttendanceCalendar2Service {
 
   private static readonly client = getClient(dataSourcesInfo);
 
-  public static async Sp_fetchAttendanceCalendar2(Year?: number, Month?: number, BU?: string): Promise<IOperationResult<Sp_fetchAttendanceCalendar2Response>> {
-    const params: { Year?: number, Month?: number, BU?: string } = { Year, Month, BU };
-    const result = await Sp_fetchAttendanceCalendar2Service.client.executeAsync<{ Year?: number, Month?: number, BU?: string }, Sp_fetchAttendanceCalendar2Response>(
+  public static async Sp_fetchAttendanceCalendar2(Year?: number, Month?: number, BU?: string, CutoffStartDay?: number, CutoffEndDay?: number): Promise<IOperationResult<Sp_fetchAttendanceCalendar2Response>> {
+    const params: { Year?: number, Month?: number, BU?: string, CutoffStartDay?: number, CutoffEndDay?: number } = { Year, Month, BU, CutoffStartDay, CutoffEndDay };
+    const result = await Sp_fetchAttendanceCalendar2Service.client.executeAsync<{ Year?: number, Month?: number, BU?: string, CutoffStartDay?: number, CutoffEndDay?: number }, Sp_fetchAttendanceCalendar2Response>(
       {
         connectorOperation: {
           tableName: Sp_fetchAttendanceCalendar2Service.dataSourceName,

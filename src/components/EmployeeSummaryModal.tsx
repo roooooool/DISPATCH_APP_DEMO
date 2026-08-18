@@ -1,11 +1,12 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { X, Calendar, Route, Award, MapPin, CheckCircle2, User, ClipboardList, ShoppingBag, Download } from 'lucide-react';
+import { X, Calendar, Route, Award, MapPin, CheckCircle2, User, ClipboardList, ShoppingBag, Download, Trash2 } from 'lucide-react';
 
 import { type AttendanceRecord } from './ewul_AttendanceSheet';
 
 import {
     type UserInfo,
-    ATTENDANCE_STATUSES
+    ATTENDANCE_STATUSES,
+    SP_ATTENDANCE_STATUS_KEY_MAP
 } from '../truth.config';
 
 import './comp_css/EmployeeSummaryModal.css';
@@ -14,6 +15,7 @@ import './comp_css/EmployeeSummaryModal.css';
 import { GSDC_AttendanceService } from '../generated/services/GSDC_AttendanceService';
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
 import { ResetAttendanceLogBySpIDService } from '../generated/services/ResetAttendanceLogBySpIDService';
+// import { DMS_AttendanceLogsService } from '../generated/services/DMS_AttendanceLogsService';
 
 //utils
 import { useTaskWorker } from '../utils/TaskWorkerContext';
@@ -25,6 +27,12 @@ interface CutoffGroup {
     endDate: string;
 }
 
+export interface AllowedDateClick {
+    startDate: string;
+    endDate: string;
+    startDayOfWeek?: number;
+}
+
 interface EmployeeSummaryModalProps {
     employeeName: string;
     selectedCutoff: CutoffGroup | null;
@@ -32,6 +40,7 @@ interface EmployeeSummaryModalProps {
     onClose: () => void;
     user?: UserInfo;
     onRecordsUpdate?: (updatedRecords: AttendanceRecord[]) => void;
+    allowedDateClick?: AllowedDateClick;
 }
 
 export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
@@ -41,14 +50,15 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     onClose,
     user,
     onRecordsUpdate,
+    allowedDateClick,
 }) => {
 
     const { addTask } = useTaskWorker();
 
-    const [pendingChanges, setPendingChanges] = useState<Record<string, AttendanceRecord>>({});
+    const [pendingChanges, setPendingChanges] = useState<Record<string, AttendanceRecord & { isDeleted?: boolean }>>({});
 
     // 1. Local state for optimistic updates
-    const [localRecords, setLocalRecords] = useState<AttendanceRecord[]>(allRecords);
+    const [localRecords, setLocalRecords] = useState<(AttendanceRecord & { isDeleted?: boolean })[]>(allRecords);
     const [calcMode, setCalcMode] = useState<'Approved' | 'Theoretical'>('Approved');
 
     // Keep local records in sync if parent prop updates
@@ -56,6 +66,13 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         setLocalRecords(allRecords);
         setPendingChanges({});
     }, [allRecords]);
+
+    const isDateClickAllowed = (recordDate?: string) => {
+        if (!allowedDateClick || !recordDate) return true; // If prop is not passed, default to allowed
+
+        const dateStr = recordDate.split('T')[0];
+        return dateStr >= allowedDateClick.startDate && dateStr <= allowedDateClick.endDate;
+    };
 
 
     // 1. Filter records strictly for this employee & active cutoff date range
@@ -99,7 +116,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     // 1. Initial column widths (in pixels)
     const [colWidths, setColWidths] = useState<Record<string, number>>({
         date: 110,
-        status: 120,
+        status: 90,
         oe: 100,
         sd: 220,
         distance: 100,
@@ -110,6 +127,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         modifiedBy: 130,
         approvedBy: 130,
         coorApp: 100,
+        actions: 90,
     });
 
     // 2. Mouse drag handler for resizing
@@ -161,6 +179,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         let BU = '---';
 
         filteredRecords.forEach((rec) => {
+            if (rec.isDeleted) return;
             if (rec.EmployeeID) empId = String(rec.EmployeeID);
             if (rec.Position) position = rec.Position;
             if (rec.BU) BU = rec.BU;
@@ -218,11 +237,18 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     // 2. Toggle approval locally & track in pendingChanges
     const handleToggleApproval = (targetRecord: AttendanceRecord) => {
-        // console.log('awdtest: ', targetRecord);
+        // Block approval changes if record date is outside ALLOWED_DATE_CLICK
+        if (!isDateClickAllowed(targetRecord.AttendanceDate)) {
+            console.warn("Editing approval for this date is locked by ALLOWED_DATE_CLICK policy.");
+            return;
+        }
+
+        console.log('taeg: ', targetRecord);
+
         const groupKey = `${targetRecord.AttendanceDate?.split('T')[0]}_${targetRecord.OE || ''}`;
 
         const currentRecord = localRecords.find(
-            (rec) => rec === targetRecord || (rec.AttendanceDate === targetRecord.AttendanceDate && rec.OE === targetRecord.OE)
+            (rec) => rec.attendanceID === targetRecord.attendanceID
         );
 
         // Toggle between 'Approved' and undefined
@@ -239,7 +265,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         // Update optimistic local records for UI/KPIs
         setLocalRecords((prev) =>
             prev.map((rec) =>
-                rec === targetRecord || (rec.AttendanceDate === targetRecord.AttendanceDate && rec.OE === targetRecord.OE)
+                rec.attendanceID === targetRecord.attendanceID
                     ? { ...rec, Approved: newStatus }
                     : rec
             )
@@ -250,7 +276,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             const updated = { ...prev };
 
             const originalRec = allRecords.find(
-                (rec) => rec === targetRecord || (rec.AttendanceDate === targetRecord.AttendanceDate && rec.OE === targetRecord.OE)
+                (rec) => rec.attendanceID === targetRecord.attendanceID
             );
 
             // Normalize baseline status to 'Approved' or undefined
@@ -269,8 +295,52 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     const canEditApproval = ["Supervisor", "Developer", "Manager"].includes(user?.Position || '');
 
+    // Toggle removal/deletion locally & track in pendingChanges
+    const handleToggleDelete = (targetRecord: AttendanceRecord & { isDeleted?: boolean }) => {
+        const dateStr = targetRecord.AttendanceDate?.split('T')[0] || '';
+        const groupKey = `${dateStr}_${targetRecord.OE || ''}`;
+
+        const currentRecord = localRecords.find(
+            (rec) => rec.attendanceID === targetRecord.attendanceID
+        );
+
+        const newIsDeleted = !currentRecord?.isDeleted;
+
+        const updatedRecord = {
+            ...(currentRecord || targetRecord),
+            isDeleted: newIsDeleted,
+        };
+
+        setLocalRecords((prev) =>
+            prev.map((rec) =>
+                rec.attendanceID === targetRecord.attendanceID
+                    ? { ...rec, isDeleted: newIsDeleted }
+                    : rec
+            )
+        );
+
+        setPendingChanges((prev) => {
+            const updated = { ...prev };
+
+            const originalRec = allRecords.find(
+                (rec) => rec.attendanceID === targetRecord.attendanceID
+            );
+
+            const originalStatus = originalRec?.Approved === 'Approved' ? 'Approved' : undefined;
+            const originalIsDeleted = Boolean((originalRec as any)?.isDeleted);
+
+            if (newIsDeleted === originalIsDeleted && (updatedRecord.Approved === originalStatus)) {
+                delete updated[groupKey];
+            } else {
+                updated[groupKey] = updatedRecord;
+            }
+
+            return updated;
+        });
+    };
+
     const handleConfirmChanges = async () => {
-        const pendingArray: AttendanceRecord[] = Object.values(pendingChanges);
+        const pendingArray = Object.values(pendingChanges);
         const processedArray = pendingArray.map((rec) => ({
             ...rec,
             ApprovedBy: rec.Approved === 'Approved' ? (user?.FullName || '') : '',
@@ -284,6 +354,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             onRecordsUpdate(processedArray);
         }
 
+        const deleteRecords = pendingArray.filter((rec) => rec.isDeleted);
         const updateRecords = pendingArray.filter((rec) => rec.spID);
         const createRecords = pendingArray.filter((rec) => !rec.spID);
 
@@ -299,21 +370,20 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             execute: async () => {
                 try {
 
+
                     // 1. Process SharePoint Creates
                     if (createRecords.length > 0) {
                         const createPayloads = createRecords.map((rec) => {
-                            const camelStatus = rec.AttendanceStatus
-                                ? rec.AttendanceStatus.charAt(0).toLowerCase() + rec.AttendanceStatus.slice(1)
-                                : '';
+                            const formattedStatus = SP_ATTENDANCE_STATUS_KEY_MAP[rec.AttendanceStatus || 'ABSENT'];
 
                             return {
                                 OE: rec.OE || '',
                                 TripKM: rec.tripKM?.toString() || '',
-                                SD: rec.SD || '',
+                                SD: rec.SD || formattedStatus || '',
                                 Date: rec.AttendanceDate,
                                 // Uses loose inequality (!=) to handle both null and undefined safely, 
                                 // and uses camelStatus as the fallback
-                                AttendanceDetail: rec.tripIndex != null ? rec.tripIndex.toString() : camelStatus,
+                                AttendanceDetail: rec.tripIndex != null ? rec.tripIndex.toString() : formattedStatus,
                                 SecondTrip: rec.secondTrip || '',
                                 Creator: user?.FullName || '',
                                 TCVC: rec.TCVC || '',
@@ -361,12 +431,13 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                     await ResetAttendanceLogBySpIDService.ResetAttendanceLogBySpID({ spID: rec.spID! } as any);
 
                                     // 2. Create replacement record with FULL payload
+                                    const formattedStatus = SP_ATTENDANCE_STATUS_KEY_MAP[rec.AttendanceStatus];
                                     const createRes = await GSDC_AttendanceService.create({
                                         OE: rec.OE || '',
                                         TripKM: rec.tripKM?.toString() || '',
-                                        SD: rec.SD || '',
+                                        SD: rec.SD || formattedStatus || '',
                                         Date: rec.AttendanceDate,
-                                        AttendanceDetail: rec.tripIndex?.toString() || '',
+                                        AttendanceDetail: rec.tripIndex?.toString() || formattedStatus || '',
                                         SecondTrip: rec.secondTrip || '',
                                         Creator: user?.FullName || '',
                                         TCVC: rec.TCVC || '',
@@ -414,7 +485,49 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                         }
                     }
 
-                    console.log('upserting to attendance log')
+                    // 1. Process Deletions
+                    if (deleteRecords.length > 0) {
+                        const deleteResults = await Promise.all(
+                            deleteRecords.map(async (rec) => {
+                                try {
+                                    // Safely format date to YYYY-MM-DD for the Upsert service
+                                    const dateObj = new Date(rec.AttendanceDate);
+                                    const year = dateObj.getFullYear();
+                                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                    const day = String(dateObj.getDate()).padStart(2, '0');
+                                    const dateStr = `${year}-${month}-${day}`;
+
+                                    if (rec.spID) {
+                                        // Reset SQL status by upserting blank/null values
+                                        await UpsertAttendanceLogService.UpsertAttendanceLog({
+                                            EmployeeName: rec.EmployeeName,
+                                            EmployeeID: rec.EmployeeID,
+                                            AttendanceDate: dateStr,
+                                            OE: rec.OE || '',
+                                            Approved: null,
+                                            AttendanceStatus: null,
+                                            ModifiedBy: user?.FullName || 'Unknown User',
+                                            ApprovedBy: null,
+                                        } as any);
+
+                                        // Delete from SharePoint
+                                        await GSDC_AttendanceService.delete(rec.spID);
+                                    }
+                                    return { success: true };
+                                } catch (err) {
+                                    console.error(`Failed to delete spID ${rec.spID}:`, err);
+                                    return { success: false };
+                                }
+                            })
+                        );
+
+                        const hasDeleteFailure = deleteResults.some((res) => !res?.success);
+                        if (hasDeleteFailure) {
+                            throw new Error("Failed to delete one or more attendance records.");
+                        }
+                    }
+
+
                     // 3. Process SQL Database Upserts (All Records)
                     const upsertResults = await Promise.all(
                         pendingArray.map((rec) => {
@@ -687,6 +800,10 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             <table className="emp-history-table">
                                 <thead>
                                     <tr>
+                                        {/* <th style={{ width: colWidths.date }}>
+                                            Test
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('date', e)} />
+                                        </th> */}
                                         <th style={{ width: colWidths.date }}>
                                             Date
                                             <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('date', e)} />
@@ -735,19 +852,34 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                             Coor App
                                             <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('coorApp', e)} />
                                         </th>
+                                        <th style={{ width: colWidths.actions, textAlign: 'center' }}>
+                                            Action
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('actions', e)} />
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredRecords.length > 0 ? (
                                         filteredRecords.map((rec, idx) => {
                                             const isApproved = rec.Approved === 'Approved';
+                                            const dateAllowed = isDateClickAllowed(rec.AttendanceDate);
 
                                             // Check if this record has staged/unsaved changes
-                                            const groupKey = `${rec.AttendanceDate?.split('T')[0]}_${rec.OE || ''}`;
+                                            const groupKey = rec.attendanceID || `${rec.AttendanceDate?.split('T')[0]}_${rec.OE || ''}`;
                                             const isModified = Boolean(pendingChanges[groupKey]);
 
+                                            const isDeleted = Boolean(rec.isDeleted);
+
+                                            let rowClassName = '';
+                                            if (isDeleted) {
+                                                rowClassName = 'row-pending-delete';
+                                            } else if (isModified) {
+                                                rowClassName = 'row-pending-edit';
+                                            }
+
                                             return (
-                                                <tr key={idx} className={isModified ? 'row-pending-edit' : ''}>
+                                                <tr key={idx} className={rowClassName}>
+                                                    {/* <td className="font-mono">{rec.attendanceID}</td> */}
                                                     <td className="font-mono">{rec.AttendanceDate?.split('T')[0]}</td>
                                                     <td>
                                                         <span className={`emp-summ-status-pill ${rec.AttendanceStatus?.toLowerCase().replace(/\s+/g, '-')}`}>
@@ -768,7 +900,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                         <div className="approval-btn-wrapper">
                                                             <button
                                                                 type="button"
-                                                                disabled={!canEditApproval}
+                                                                disabled={!canEditApproval || !dateAllowed}
                                                                 className={`emp-summ-approve-btn ${isApproved ? 'emp-summ-approved' : 'emp-summ-not-approved'} ${isModified ? 'btn-modified' : ''}`}
                                                                 onClick={() => handleToggleApproval(rec)}
                                                             >
@@ -798,6 +930,17 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                     <td>{rec.ModifiedBy || '---'}</td>
                                                     <td>{rec.ApprovedBy || '---'}</td>
                                                     <td className="text-primary">{rec.spID}</td>
+                                                    {/* Action Cell */}
+                                                    <td className="action-cell" style={{ textAlign: 'center' }}>
+                                                        <button
+                                                            type="button"
+                                                            className={`emp-summ-action-btn ${isDeleted ? 'btn-delete-active' : ''}`}
+                                                            onClick={() => handleToggleDelete(rec)}
+                                                            title={isDeleted ? "Restore Record" : "Remove Record"}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             );
                                         })

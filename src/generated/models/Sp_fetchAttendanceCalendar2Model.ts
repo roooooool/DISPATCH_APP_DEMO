@@ -7,6 +7,8 @@ export interface Sp_fetchAttendanceCalendar2Request {
   Year?: number;
   Month?: number;
   BU?: string;
+  CutoffStartDay?: number;
+  CutoffEndDay?: number;
 }
 
 export interface Sp_fetchAttendanceCalendar2Response {

@@ -18,6 +18,7 @@ export * as DMS_TripFuelRequestsListModel from './models/DMS_TripFuelRequestsLis
 export * as DMS_updatedModel from './models/DMS_updatedModel';
 export * as Fct2Model from './models/Fct2Model';
 export * as FctFinalModel from './models/FctFinalModel';
+export * as FetchAttendanceCalendarModel from './models/FetchAttendanceCalendarModel';
 export * as GenerateAdditionalOE_ID2Model from './models/GenerateAdditionalOE_ID2Model';
 export * as GenerateAdditionalOE_IDModel from './models/GenerateAdditionalOE_IDModel';
 export * as GenerateIRIDModel from './models/GenerateIRIDModel';
@@ -71,6 +72,7 @@ export * from './services/DMS_TripFuelRequestsListService';
 export * from './services/DMS_updatedService';
 export * from './services/Fct2Service';
 export * from './services/FctFinalService';
+export * from './services/FetchAttendanceCalendarService';
 export * from './services/GenerateAdditionalOE_ID2Service';
 export * from './services/GenerateAdditionalOE_IDService';
 export * from './services/GenerateIRIDService';

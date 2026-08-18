@@ -16,6 +16,14 @@
         "BU": {
           "title": "BU",
           "type": "string"
+        },
+        "CutoffStartDay": {
+          "title": "CutoffStartDay",
+          "type": "integer"
+        },
+        "CutoffEndDay": {
+          "title": "CutoffEndDay",
+          "type": "integer"
         }
       }
     },

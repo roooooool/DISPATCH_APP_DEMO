@@ -430,6 +430,18 @@ export const ATTENDANCE_STATUSES = [
 
 ]
 
+export const SP_ATTENDANCE_STATUS_KEY_MAP: Record<string, string> = {
+  [ATTENDANCE_STATUSES.find(s => s.Alias === 'ABSENT')!.Status]: "Absent",
+  // Apprentice has no matching status in ATTENDANCE_STATUSES
+  [ATTENDANCE_STATUSES.find(s => s.Alias === 'LEAVE')!.Status]: "Leave",
+  [ATTENDANCE_STATUSES.find(s => s.Alias === 'ON TRIP')!.Status]: "On trip",
+  [ATTENDANCE_STATUSES.find(s => s.Alias === 'IN TRANSIT')!.Status]: "On trip-Intransit",
+  [ATTENDANCE_STATUSES.find(s => s.Alias === 'PRESENT')!.Status]: "Present",
+  // Present-Awaiting Trip, Present-No Trip, Present-UR have no matching status in ATTENDANCE_STATUSES
+  [ATTENDANCE_STATUSES.find(s => s.Alias === 'REST DAY')!.Status]: "Rest day",
+  [ATTENDANCE_STATUSES.find(s => s.Alias === 'SUSPENDED')!.Status]: "Suspended",
+};
+
 
 // IR Types
 export const IR_TYPES = [

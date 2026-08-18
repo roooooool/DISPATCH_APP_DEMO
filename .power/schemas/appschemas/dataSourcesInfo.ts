@@ -1099,6 +1099,42 @@ export const dataSourcesInfo = {
           }
         ]
       },
+      "FetchAttendanceCalendar": {
+        "path": "/dbo.FetchAttendanceCalendar",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "Year",
+            "in": "body",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "Month",
+            "in": "body",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "BU",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "CutoffStartDay",
+            "in": "body",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "CutoffEndDay",
+            "in": "body",
+            "required": false,
+            "type": "integer"
+          }
+        ]
+      },
       "GenerateAdditionalOE_ID": {
         "path": "/dbo.GenerateAdditionalOE_ID",
         "method": "POST",
@@ -1264,6 +1300,18 @@ export const dataSourcesInfo = {
             "in": "body",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "CutoffStartDay",
+            "in": "body",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "CutoffEndDay",
+            "in": "body",
+            "required": false,
+            "type": "integer"
           }
         ]
       },

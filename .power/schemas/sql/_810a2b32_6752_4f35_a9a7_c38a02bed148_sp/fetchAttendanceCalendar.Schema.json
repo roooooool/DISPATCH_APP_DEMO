@@ -1,0 +1,49 @@
+{
+  "name": "[dbo].[FetchAttendanceCalendar]",
+  "title": "[dbo].[FetchAttendanceCalendar]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "Year": {
+          "title": "Year",
+          "type": "integer"
+        },
+        "Month": {
+          "title": "Month",
+          "type": "integer"
+        },
+        "BU": {
+          "title": "BU",
+          "type": "string"
+        },
+        "CutoffStartDay": {
+          "title": "CutoffStartDay",
+          "type": "integer"
+        },
+        "CutoffEndDay": {
+          "title": "CutoffEndDay",
+          "type": "integer"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

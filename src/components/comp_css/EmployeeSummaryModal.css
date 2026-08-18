@@ -688,6 +688,63 @@
     /* Amber left accent bar */
 }
 
+/* Deleted Row Visual Cues */
+.emp-history-table tr.row-pending-delete {
+    background-color: #fef2f2 !important;
+    /* Gentle red background tint */
+    transition: background-color 0.2s ease;
+}
+
+.emp-history-table tr.row-pending-delete td {
+    color: #991b1b !important;
+    text-decoration: line-through;
+}
+
+.emp-history-table tr.row-pending-delete td:first-child {
+    border-left: 4px solid #ef4444;
+    /* Red left accent bar */
+}
+
+/* Prevent strikethrough on action button cell */
+.emp-history-table tr.row-pending-delete td.action-cell {
+    text-decoration: none !important;
+}
+
+/* Action Button Base Styling */
+.emp-summ-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background-color: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Hover State */
+.emp-summ-action-btn:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+/* Active Marked for Deletion State */
+.emp-summ-action-btn.btn-delete-active {
+    background-color: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    box-shadow: 0 0 8px rgba(220, 38, 38, 0.35);
+}
+
+/* Optional Focus Outline */
+.emp-summ-action-btn:focus-visible {
+    outline: 2px solid #ef4444;
+    outline-offset: 1px;
+}
+
 /* Button & Dot Container */
 .approval-btn-wrapper {
     display: inline-flex;

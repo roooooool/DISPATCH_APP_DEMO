@@ -13,7 +13,8 @@ import { useTaskWorker } from '../utils/TaskWorkerContext';
 import { useUser } from '../utils/useUser';
 
 //POWER APPS
-import { Sp_fetchAttendanceCalendar2Service } from '../generated/services/Sp_fetchAttendanceCalendar2Service';
+// import { Sp_fetchAttendanceCalendar2Service } from '../generated/services/Sp_fetchAttendanceCalendar2Service';
+import { FetchAttendanceCalendarService } from '../generated/services/FetchAttendanceCalendarService';
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
 import { Late_Attendance_RequestsService } from '../generated/services/Late_Attendance_RequestsService';
 
@@ -62,6 +63,8 @@ export interface AttendanceRecord {
   spID?: string;
   ModifiedBy?: string;
   ApprovedBy?: string;
+
+  attendanceID?: string;
 }
 
 interface CutoffGroup {
@@ -665,15 +668,20 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
 
   // Extract fetch logic so it can be re-used
   const fetchAttendance = useCallback(async () => {
+    console.log('fetching data...')
     setLoading(true);
     try {
-      const res = await Sp_fetchAttendanceCalendar2Service.Sp_fetchAttendanceCalendar2({
+      const res = await FetchAttendanceCalendarService.FetchAttendanceCalendar({
         Year: year,
         Month: month,
-        BU: BU
+        BU: BU,
+        CutoffStartDay: 5,
+        CutoffEndDay: 4
       } as any);
-
+      // console.log('fetching attendance successfull...', res)
       const rawData = (res.data?.ResultSets?.Table1 || []) as any;
+
+
 
       // // --- DEBUG LOG START ---
       // if (rawData.length > 0) {
@@ -714,6 +722,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
         spID: item.spID ?? null,
         ModifiedBy: item.ModifiedBy ?? null,
         ApprovedBy: item.ApprovedBy ?? null,
+        attendanceID: item.attendanceID ?? null,
       }));
 
       setRawAttendanceData(formattedRecords);
@@ -814,6 +823,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     // Stream through filtered data, but skip anything not on the active viewport page
     filteredData.forEach(item => {
       if (!visibleNamesSet.has(item.EmployeeName)) return;
+      if (!item.AttendanceDate) return;
 
       if (!map[item.EmployeeName]) {
         map[item.EmployeeName] = { positions: item.Position, dates: {} };
@@ -1890,6 +1900,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
           onClose={() => setActiveSummaryEmp(null)}
           user={user || undefined}
           onRecordsUpdate={handleOptimisticSummaryUpdate}
+          allowedDateClick={ALLOWED_DATE_CLICK}
         />
       )}
 
