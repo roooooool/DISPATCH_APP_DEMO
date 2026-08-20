@@ -164,7 +164,7 @@ export const ATTENDANCE_STATUS_COLORS = {
 export type StatusKey = keyof typeof ATTENDANCE_STATUS_COLORS;
 export const ATTENDANCE_SERVED_COUNTS_INITIAL = ["N", "Y", "X", "Z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "O", "P", "Q", "R", "S", "T", "U", "V", "W"];
 
-export const SPECIAL_POSITIONS = ['Developer', 'Admin', 'Execom', "Manager", "Supervisor", "IT SUPPORT"]; // Positions that bypass whitelist
+export const SPECIAL_POSITIONS = ['Developer', 'Admin', 'Execom', "Manager", "IT SUPPORT"]; // Positions that bypass whitelist
 export const NAV_DESTINATIONS = [
   {
     label: "Dashboard",
@@ -182,13 +182,13 @@ export const NAV_DESTINATIONS = [
   {
     label: "Trip Dispatch",
     path: "/order",
-    whiteList: ["OD", "Coor", 'DCC', 'LCC'],
+    whiteList: ["OD", "Coor", 'DCC', 'LCC', "Supervisor"],
     hidden: false
   },
   {
     label: "Fleet Monitoring",
     path: "/fleet",
-    whiteList: ["Driver", "OD", "Coor", 'DCC', 'LCC'],
+    whiteList: ["Driver", "OD", "Coor", 'DCC', 'LCC', "Supervisor"],
     noSpecialAccess: false,
     hidden: false
   },

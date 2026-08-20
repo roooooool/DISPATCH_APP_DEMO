@@ -58,7 +58,8 @@ const FleetMonitoring: React.FC = () => {
         }
         return BUSINESS_UNITS[0].Title;
     });*/
-    const [selectedBU, setSelectedBU] = useState(['Coor'].includes(user?.Position || '') ? user?.BusinessUnit : null);
+
+    const [selectedBU, setSelectedBU] = useState(['Coor', 'Supervisor'].includes(user?.Position || '') ? user?.BusinessUnit : null);
     const [viewMode, _setViewMode] = useState<'table' | 'gallery'>('table');
 
     const mapRef = useRef<GSDCMapHandle>(null);
@@ -481,7 +482,7 @@ const FleetMonitoring: React.FC = () => {
                 title="Fleet Monitoring"
                 actions={
                     <div className="fleet-actions-bar">
-                        <select
+                        {['Developer'].includes(user?.Position || '') && (<select
                             className="fleet-bu-selector"
                             value={selectedBU || ''}
                             onChange={e => setSelectedBU(e.target.value)}
@@ -489,7 +490,7 @@ const FleetMonitoring: React.FC = () => {
                             {BUSINESS_UNITS.map(bu => (
                                 <option key={bu.Title} value={bu.Title}>{bu.Title}</option>
                             ))}
-                        </select>
+                        </select>)}
 
                         <button className={`fleet-action-btn ${modalOpen === null ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule(null)}>
                             <MapIcon size={14} /> <span>Fleet Monitoring</span>

@@ -199,7 +199,11 @@
 .emp-table-wrapper {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    overflow: hidden;
+    overflow-x: auto;
+    /* Only scroll side-to-side here */
+    overflow-y: hidden;
+    /* Avoid double vertical scrollbars */
+    width: 100%;
 }
 
 .emp-history-table {
@@ -796,4 +800,104 @@
 .emp-history-table tbody tr:hover {
     background-color: rgba(58, 78, 252, 0.05);
     /* Uses your primary blue tint */
+}
+
+
+
+/* KPI Value Transition Effect (Slower & Smoother) */
+@keyframes metricPulse {
+    0% {
+        opacity: 0.2;
+        transform: scale(0.92) translateY(-2px);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.04);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.kpi-value-animated {
+    display: inline-block;
+    /* Increased duration to 0.65s and adjusted curve for a softer ease */
+    animation: metricPulse 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+
+
+
+/* Update Header Title to render bright on dark gradient background */
+.emp-modal-header .emp-modal-title {
+    color: #ffffff;
+}
+
+/* Align Header Section Items Cleanly */
+.emp-header-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.emp-section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 16px;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    /* Visual separator */
+}
+
+/* Ensure breakdown title is visible in header */
+.emp-section-header-left .section-title {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Dark Header Translucent Toggle Container */
+.emp-modal-header .emp-sum-calc-mode-toggle {
+    display: inline-flex;
+    background-color: rgba(0, 0, 0, 0.25);
+    padding: 3px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Toggle Buttons inside Modal Header */
+.emp-modal-header .emp-sum-calc-mode-toggle .toggle-btn {
+    border: none;
+    background: transparent;
+    color: #cbd5e1;
+    /* Clear off-white text */
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emp-modal-header .emp-sum-calc-mode-toggle .toggle-btn:hover {
+    color: #ffffff;
+}
+
+/* Active State - Approved (Emerald Green) */
+.emp-modal-header .emp-sum-calc-mode-toggle .toggle-btn.approved.active {
+    background-color: #10b981;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+}
+
+/* Active State - Theoretical (Orange Accent) */
+.emp-modal-header .emp-sum-calc-mode-toggle .toggle-btn.theoretical.active {
+    background-color: #f97316;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(249, 115, 22, 0.35);
 }

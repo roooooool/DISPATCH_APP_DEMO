@@ -2,7 +2,13 @@ import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { HeaderSyncBadge } from './ewul_HeaderSyncBadge';
 import { EmployeeSummaryModal } from './EmployeeSummaryModal';
 import {
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calendar, Search, PinIcon, Star, Mail, FileText, Lock, ZoomIn, ZoomOut, RotateCcw
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Calendar, Search,
+  PinIcon, Star, Mail, Lock, ZoomIn, ZoomOut, RotateCcw,
+
 } from 'lucide-react';
 import '../components/comp_css/ewul_AttendanceSheet.css';
 import AutoDismissBanner from '../components/ewul_Banner';
@@ -17,6 +23,7 @@ import { useUser } from '../utils/useUser';
 import { FetchAttendanceCalendarService } from '../generated/services/FetchAttendanceCalendarService';
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
 import { Late_Attendance_RequestsService } from '../generated/services/Late_Attendance_RequestsService';
+import { type Late_Attendance_Requests } from '../generated/models/Late_Attendance_RequestsModel';
 
 import {
   ATTENDANCE_STATUSES,
@@ -65,6 +72,11 @@ export interface AttendanceRecord {
   ApprovedBy?: string;
 
   attendanceID?: string;
+
+  isDeleted?: boolean;
+
+  requestID?: string;
+  requestStatus?: string;
 }
 
 interface CutoffGroup {
@@ -92,6 +104,7 @@ const AttendanceCell = React.memo(({
   isActiveMenuCell,
   isBoundaryCell,
   isEndBoundaryCell,
+  //@ts-ignore
   onBannerMsg,
   isCellLoading,
   isSelectedCutoff,
@@ -107,7 +120,20 @@ const AttendanceCell = React.memo(({
   empName: string;
   oeValue: string;
   empMetaId: string;
-  onCellClick: (e: React.MouseEvent, empName: string, empId: string, currentOE: string, dateStr: string, currentStatus: string, oeValue: string, isEditable: boolean) => void;
+  onCellClick: (
+    e: React.MouseEvent,
+    empName: string,
+    empId: string,
+    currentOE: string,
+    dateStr: string,
+    currentStatus: string,
+    oeValue: string,
+    isEditable: boolean,
+    Approval?: string,
+    attendanceID?: string,
+    requestID?: string | null,
+    requestStatus?: string | null
+  ) => void;
   isActiveMenuCell?: boolean;
   isBoundaryCell?: boolean;
   isEndBoundaryCell?: boolean;
@@ -129,16 +155,6 @@ const AttendanceCell = React.memo(({
   const isStatusAllowed = !NOT_ALLOWED_STAT_EDIT.includes(currentStatus.toUpperCase());
   const isEditable = isDateAllowed && isStatusAllowed && !isLastEntryApproved;
 
-  // @ts-ignore 
-  const buildBannerMsg = (status_allow: boolean, date_allow: boolean) => {
-    let msg = "test";
-
-    if (!date_allow) msg = "Cannot edit attendance outside of cutoff."
-    else if (!status_allow) msg = "The attendance status for this date is finalized and cannot be changed."
-
-    if (onBannerMsg) onBannerMsg(msg);
-  };
-
   // Pre-calculate precedence
   const hasCutoffBoundary = isCutoffStart || isCutoffEnd;
   const showBoundaryEdge = isBoundaryCell && !hasCutoffBoundary;
@@ -148,8 +164,6 @@ const AttendanceCell = React.memo(({
     <td
       className={`status-cell 
         ${isToday ? 'today-cell' : ''} 
-        ${/*isWeekend ? 'weekend-cell' : ''*/''}
-        ${/*dayOfWeek === 0 ? 'sunday-cell' : ''*/''}
         ${isActiveMenuCell ? 'menu-active-cell' : ''}
         ${showBoundaryEdge ? 'lock-boundary-edge' : ''}
         ${showEndBoundary ? 'lock-end-boundary' : ''}
@@ -172,26 +186,42 @@ const AttendanceCell = React.memo(({
               const isApproved = entry.Approved === 'Approved';
               const isIndividualStatusAllowed = !NOT_ALLOWED_STAT_EDIT.includes((entry.AttendanceStatus || '').toUpperCase());
               const isEntryEditable = isDateAllowed && isIndividualStatusAllowed && !isApproved;
+
+              // Request flags
+              const hasRequest = Boolean(entry.requestID ?? entry.request_id);
+              const rawReqStatus = entry.requestStatus ?? entry.request_status ?? 'Pending';
+              const reqStatusClass = rawReqStatus.toLowerCase();
+
               return (
                 <div
                   key={idx}
                   className={`
-                      status-inner ${statusClass} 
-                      ${searchTerm && entry.OE?.toLowerCase().includes(searchTerm.toLowerCase()) ? 'force-reveal' : ''}
-                      ${!isEntryEditable ? (statusClass ? 'entry-locked' : 'entry-locked-na') : ''}
-                    `}
-
+                    status-inner ${statusClass} 
+                    ${searchTerm && entry.OE?.toLowerCase().includes(searchTerm.toLowerCase()) ? 'force-reveal' : ''}
+                    ${!isEntryEditable ? (statusClass ? 'entry-locked' : 'entry-locked-na') : ''}
+                    ${hasRequest ? 'has-pending-request' : ''}
+                  `}
                   onClick={(e) => {
-                    e.stopPropagation(); // Stop from hitting table parent listeners
+                    e.stopPropagation();
                     const empId = entry.EmployeeID || empMetaId || '0';
                     const currentOE = entry.OE || entry.DMS_OE || '';
                     const currentStatus = entry.AttendanceStatus || 'ABSENT';
-                    console.log(lastEntry);
-                    // Fires with the exact OE + Status linked to this specific text block!
-                    onCellClick(e, empName, String(empId), currentOE, dateStr, currentStatus, oeValue, isEntryEditable);
-                  }}
 
-                  // LAZY EVALUATION: parse date when user interacts or requests a native tooltip fallback safely
+                    onCellClick(
+                      e,
+                      empName,
+                      String(empId),
+                      currentOE,
+                      dateStr,
+                      currentStatus,
+                      oeValue,
+                      isEntryEditable,
+                      entry.Approved,
+                      entry.attendanceID,
+                      entry.requestID ?? entry.request_id,
+                      entry.requestStatus ?? entry.request_status
+                    );
+                  }}
                   onMouseEnter={(e) => {
                     const isServed = entry.AttendanceStatus?.toUpperCase() === 'SERVED';
                     if (!isServed && entry.ModifiedAt && !e.currentTarget.getAttribute('title')) {
@@ -199,27 +229,39 @@ const AttendanceCell = React.memo(({
                     }
                   }}
                 >
+                  {/* Lock icon for approval */}
                   {isApproved && (
                     <Lock
                       size={12}
                       strokeWidth={3}
                       className="approved-lock-icon"
-                    // title="Approved record — status cannot be changed"
+
                     />
                   )}
+
+                  {/* File icon for active request */}
+                  {hasRequest && (
+                    <span
+                      className={`request-rec-dot req-${reqStatusClass}`}
+                      title={`Request: ${rawReqStatus}`}
+                    />
+                  )}
+
                   <span className="status-main-value">
                     {entry.AttendanceStatus?.toUpperCase() === 'SERVED' ? (
                       <div className="served-details">
                         <span className="served-oe">{entry.OE || 'NO OE'}</span>
                         <span className="served-meta">
-                          {/* {(entry.tripKM ?? 0)} KM |  */} {entry.tripIndex ?? 0}
+                          {entry.tripIndex ?? 0}
                         </span>
                       </div>
                     ) : (
                       entry.AttendanceStatus || '---'
                     )}
                   </span>
-                  {entry.AttendanceStatus?.toUpperCase() !== 'SERVED' && (<span className="oe-hover-label">{entry.OE || ''}</span>)}
+                  {entry.AttendanceStatus?.toUpperCase() !== 'SERVED' && (
+                    <span className="oe-hover-label">{entry.OE || ''}</span>
+                  )}
                 </div>
               );
             })
@@ -231,12 +273,24 @@ const AttendanceCell = React.memo(({
               `}
               onClick={(e) => {
                 e.stopPropagation();
-                // Fallback default variables when no record row block exists yet
                 const empId = empMetaId || '0';
                 const currentOE = oeValue === '---' ? '' : oeValue;
                 const currentStatus = 'ABSENT';
 
-                onCellClick(e, empName, String(empId), currentOE, dateStr, currentStatus, oeValue, isEditable);
+                onCellClick(
+                  e,
+                  empName,
+                  String(empId),
+                  currentOE,
+                  dateStr,
+                  currentStatus,
+                  oeValue,
+                  isEditable,
+                  undefined,
+                  undefined,
+                  null,
+                  null
+                );
               }}
             >
               ---
@@ -262,7 +316,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
   colName,
   colOE,
   colStatus,
-  BU = 'SBUO-1A',
+  BU = 'SBUO-1A,SBUO-1B',
   onLoadingChange,
 }, ref) => {
   const [data, setData] = useState<AttendanceRecord[]>([]);
@@ -284,6 +338,10 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     renderUpwards: boolean;
     currentStatus: string;
     isEditable: boolean;
+    Approval?: string;
+    attendanceID: string;
+    requestID?: string | null;
+    requestStatus?: string | null;
   } | null>(null);
 
   const { addTask } = useTaskWorker();
@@ -455,7 +513,13 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  const handleUpdateAttendanceStatus = async (newAttendance: string, empId: string, empName: string, OE: string, attendanceDate?: Date) => {
+  const handleUpdateAttendanceStatus = async (
+    newAttendance: string,
+    empId: string,
+    empName: string,
+    OE: string,
+    attendanceDate?: Date
+  ) => {
     if (!attendanceDate) return;
 
     const year = attendanceDate.getFullYear();
@@ -466,12 +530,11 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
 
     setCellLoadingStates(prev => ({ ...prev, [cellKey]: true }));
 
-    // 1. Capture snapshots of the current state before modifying it for a clean rollback fallback
+    // 1. Capture snapshots of the current state before modifying it for rollback
     let previousRecord: AttendanceRecord | null = null;
     let hadExistingRecord = false;
 
-    setData(prevData => {
-      // Look for an existing match using standard entity rules
+    const updateRecordList = (prevData: AttendanceRecord[]) => {
       const targetIdx = prevData.findIndex(
         item => String(item.EmployeeID) === String(empId) && item.AttendanceDate.split('T')[0] === dateStr
       );
@@ -481,7 +544,6 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       if (targetIdx !== -1) {
         previousRecord = { ...updated[targetIdx] };
         hadExistingRecord = true;
-        // Optimistically update the match
         updated[targetIdx] = {
           ...updated[targetIdx],
           AttendanceStatus: newAttendance,
@@ -489,7 +551,6 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
           ModifiedBy: user?.FullName || 'Unknown User'
         };
       } else {
-        // Create a fallback mock record block locally if one doesn't exist yet
         hadExistingRecord = false;
         const targetMeta = employeeMetaMap[empName];
 
@@ -505,15 +566,18 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
         });
       }
       return updated;
-    });
+    };
 
-    // 2. Queue the task worker using your architecture patterns
+    // Optimistically update BOTH table view data AND raw modal data
+    setData(prevData => updateRecordList(prevData));
+    setRawAttendanceData(prevRaw => updateRecordList(prevRaw));
+
+    // 2. Queue the task worker
     addTask({
       id: `attendance-update-${empId}-${dateStr}-${Date.now()}`,
       name: `Employee Attendance Update`,
       execute: async () => {
         try {
-          // Await the actual database promise call securely
           await UpsertAttendanceLogService.UpsertAttendanceLog({
             EmployeeName: empName,
             EmployeeID: empId,
@@ -530,29 +594,30 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       },
       checkSuccess: (result: { success: boolean }) => result.success,
       onSuccess: () => {
-        // The structural data layer already holds the correct optimistic value!
         setCellLoadingStates(prev => ({ ...prev, [cellKey]: false }));
       },
       onFailure: () => {
         setCellLoadingStates(prev => ({ ...prev, [cellKey]: false }));
-        // 3. Roll back changes natively on failure interceptors
-        setData(prevData => {
-          const updated = [...prevData];
+
+        // Revert rollback for BOTH data sources on failure
+        const revertRecordList = (prevList: AttendanceRecord[]) => {
+          const updated = [...prevList];
           const targetIdx = updated.findIndex(
             item => String(item.EmployeeID) === String(empId) && item.AttendanceDate.split('T')[0] === dateStr
           );
 
           if (targetIdx !== -1) {
             if (hadExistingRecord && previousRecord) {
-              // Revert back to the snapshot copy
               updated[targetIdx] = previousRecord;
             } else {
-              // If it never existed, strip out our optimistic placeholder row block entirely
               updated.splice(targetIdx, 1);
             }
           }
           return updated;
-        });
+        };
+
+        setData(prevData => revertRecordList(prevData));
+        setRawAttendanceData(prevRaw => revertRecordList(prevRaw));
       },
       message: `Setting attendance for ${empName}...`,
       message_success: `${empName} tagged '${newAttendance || 'PRESENT'}' successfully!`,
@@ -594,7 +659,20 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     }).sort((a, b) => a.sort - b.sort);
   };
 
+  // Track if the Create Late Attendance Request modal is open
+  const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
 
+  // Form state for creating late request
+  const [requestFormData, setRequestFormData] = useState({
+    Employee: '',
+    Date: '',
+    Attendance: 'ABSENT',
+    Trip: '',
+    Approval: 'Not Approved',
+    RequestDeletion: false,
+    remarks: '',
+    attendanceID: '',
+  });
   const [showRequestsModal, setShowRequestsModal] = useState(false);
   const [lateAttendanceRequests, setLateAttendanceRequests] = useState<any[]>([]);
   const fetchLateAttendanceRequests = useCallback(async () => {
@@ -653,14 +731,82 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     fetchLateAttendanceRequests();
   }, []);
 
+  const handleCreateRequestSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Resolve cutoff date target
+    const targetCutoff = cutoffGroups.find(group =>
+      group.dates.includes(requestFormData.Date)
+    ) || selectedCutoff;
+
+    // 2. Build payload
+    const payload = {
+      employee_name: requestFormData.Employee,
+      request_date: requestFormData.Date,
+      attendance_status: requestFormData.Attendance,
+      OE: requestFormData.Trip,
+      request_status: 'Pending',
+      request_to_delete: requestFormData.RequestDeletion,
+      requested_by: user?.FullName || 'Unknown User',
+      cutoff_start: targetCutoff?.startDate || '',
+      cutoff_end: targetCutoff?.endDate || '',
+      remarks: requestFormData?.remarks,
+      attendanceID: requestFormData.attendanceID,
+      attendance_approval: requestFormData.Approval === 'Approved' ? 'Approved' : null,
+    } as Partial<Late_Attendance_Requests>;
+
+    // 3. Close modal instantly for seamless UI response
+    setShowCreateRequestModal(false);
+
+    // 4. Queue task to background worker
+    const taskId = `late-request-create-${requestFormData.Employee}-${requestFormData.Date}-${Date.now()}`;
+
+    addTask({
+      id: taskId,
+      name: `Create Late Attendance Request`,
+      execute: async () => {
+        try {
+          const result = await Late_Attendance_RequestsService.create(payload as any);
+          console.log('creating late attendance request: ', payload);
+          console.log('late attendance request result: ', result);
+          return { success: true, data: result };
+        } catch (error) {
+          console.error("Task worker error creating request:", error);
+          return { success: false, error };
+        }
+      },
+      checkSuccess: (result: { success: boolean }) => result.success,
+      onSuccess: async () => {
+        // Refresh requests data upon worker success
+        await fetchLateAttendanceRequests();
+      },
+      onFailure: () => {
+        // Optionally notify user or handle error state
+        console.error(`Failed to submit request for ${requestFormData.Employee}`);
+      },
+      message: `Submitting late attendance request for ${requestFormData.Employee}...`,
+      message_success: `Late request for ${requestFormData.Employee} submitted successfully!`,
+      message_failure: `Failed to submit late request for ${requestFormData.Employee}.`
+    });
+  };
 
 
-  // Trigger scroll to latest date after data load completes
+
+  // 1. Add a ref near your other useRef declarations
+  const lastScrolledTargetRef = useRef<string | null>(null);
+
+  // 2. Modify the data-load effect to scroll ONLY on first load of the selected date
   useEffect(() => {
     if (!loading && selectedCutoff?.endDate) {
-      scrollToDateStr(selectedCutoff.endDate);
+      const currentTargetKey = `${year}-${month}`;
+
+      // Execute scroll only if this target date/month hasn't been scrolled yet
+      if (lastScrolledTargetRef.current !== currentTargetKey) {
+        scrollToDateStr(selectedCutoff.endDate);
+        lastScrolledTargetRef.current = currentTargetKey;
+      }
     }
-  }, [loading, selectedCutoff, scrollToDateStr]);
+  }, [loading, selectedCutoff, year, month, scrollToDateStr]);
 
   useEffect(() => {
     onLoadingChange?.(loading);
@@ -674,7 +820,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       const res = await FetchAttendanceCalendarService.FetchAttendanceCalendar({
         Year: year,
         Month: month,
-        BU: BU,
+        BU: BU || 'SBUO-1A,SBUO-1B',
         CutoffStartDay: 5,
         CutoffEndDay: 4
       } as any);
@@ -727,10 +873,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
 
       setRawAttendanceData(formattedRecords);
 
-      const now = new Date();
-      if (year === now.getFullYear() && month === now.getMonth() + 1) {
-        scrollToDateStr();
-      }
+
     } catch (error) {
       console.error("Fetch error:", error);
       setData([]);
@@ -997,13 +1140,20 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
   // Handler to process optimistic updates from EmployeeSummaryModal
   const handleOptimisticSummaryUpdate = useCallback((updatedRecords: AttendanceRecord[]) => {
     const applyUpdates = (prevList: AttendanceRecord[]) => {
-      const listCopy = [...prevList];
+      let listCopy = [...prevList];
 
       updatedRecords.forEach((updatedRec) => {
         const targetDate = updatedRec.AttendanceDate?.split('T')[0];
         const targetOE = (updatedRec.OE || '').trim();
 
+        // Find target by unique IDs first, then fallback to composite key
         const index = listCopy.findIndex((item) => {
+          if (updatedRec.spID && item.spID) {
+            return item.spID === updatedRec.spID;
+          }
+          if (updatedRec.attendanceID && item.attendanceID) {
+            return item.attendanceID === updatedRec.attendanceID;
+          }
           const itemDate = item.AttendanceDate?.split('T')[0];
           const itemOE = (item.OE || '').trim();
           return (
@@ -1013,14 +1163,23 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
           );
         });
 
+        // 1. Handle Deletion
+        if (updatedRec.isDeleted) {
+          if (index !== -1) {
+            listCopy.splice(index, 1);
+          }
+          return;
+        }
+
+        // 2. Handle Update or Create
         if (index !== -1) {
-          // Merge changed properties (e.g., Approved, ApprovedBy, ModifiedBy)
+          // Merge changed properties
           listCopy[index] = {
             ...listCopy[index],
             ...updatedRec,
           };
         } else {
-          // If it was a newly created record, append it to the sheet data
+          // Append newly created record
           listCopy.push(updatedRec);
         }
       });
@@ -1029,8 +1188,8 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     };
 
     // Update both UI state and raw data cache
-    setData(prevData => applyUpdates(prevData));
-    setRawAttendanceData(prevRaw => applyUpdates(prevRaw));
+    setData((prevData) => applyUpdates(prevData));
+    setRawAttendanceData((prevRaw) => applyUpdates(prevRaw));
   }, []);
 
 
@@ -1098,7 +1257,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
 
 
   const employeeMetaMap = useMemo(() => {
-    const map: Record<string, { id: number; position: string; dmsOE?: string; dmsStatus?: string }> = {};
+    const map: Record<string, { id: number; position: string; dmsOE?: string; dmsStatus?: string; BU?: string }> = {};
 
     filteredData.forEach(item => {
       if (!map[item.EmployeeName]) {
@@ -1107,11 +1266,13 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
           position: item.Position,
           dmsOE: item.DMS_OE || undefined,
           dmsStatus: item.DMS_TripStatus || undefined,
+          BU: item.BU || '',
         };
       } else if (!map[item.EmployeeName].dmsOE && item.DMS_OE) {
-        // Pick up DMS_OE if a subsequent row has it populated
+        // Pick up DMS_OE and BU if a subsequent row has it populated
         map[item.EmployeeName].dmsOE = item.DMS_OE;
         map[item.EmployeeName].dmsStatus = item.DMS_TripStatus || undefined;
+        map[item.EmployeeName].BU = item.BU || map[item.EmployeeName].BU;
       }
     });
 
@@ -1204,7 +1365,11 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     dateStr: string,
     currentStatus: string,
     liveOE: string,
-    isEditable: boolean
+    isEditable: boolean,
+    Approval?: string,
+    attendanceID?: string,
+    requestID?: string | null,
+    requestStatus?: string | null
   ) => {
     // Prevent menu from opening for future dates
     if (dateStr > todayStr) {
@@ -1236,7 +1401,11 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       renderUpwards: shouldFlipUp,
       currentStatus: currentStatus || 'ABSENT',
       liveOE: liveOE === '---' ? '' : liveOE,
-      isEditable
+      isEditable,
+      Approval,
+      attendanceID: attendanceID || '',
+      requestID: requestID || null,
+      requestStatus: requestStatus || null,
     });
   }, [todayStr]); // Added todayStr to dependencies
 
@@ -1671,16 +1840,12 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
                                 <HighlightText text={name} highlight={searchTerm} />
                               </span>
 
-                              <button
+                              <div
                                 className="summary-icon-btn"
                                 title="View Employee Summary"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveSummaryEmp(name);
-                                }}
                               >
-                                <FileText size={13} />
-                              </button>
+                                {meta.BU?.slice(-2) || 'N/A'}
+                              </div>
                             </div>
 
                             {/* Tier 2: Current Live Trip Status */}
@@ -1806,7 +1971,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
           <div className="context-menu-header">
             <strong>{activeMenu.empName}</strong>
             <span>{activeMenu.dateStr} {activeMenu.oeValue ? `(${activeMenu.oeValue || 'NO TRIP'})` : ''}</span>
-            <button
+            {/* <button
               className="context-timeline-btn"
               title="Feature Coming Soon"
               onClick={(e) => {
@@ -1816,19 +1981,45 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
               }}
             >
               View Timelogs
-            </button>
-            {!activeMenu.isEditable && activeMenu.currentStatus.toUpperCase() !== 'SERVED' && (
+            </button> */}
+            {!activeMenu.isEditable && (
               <button
                 className="context-request-btn context-timeline-btn"
-                style={{ marginTop: '5px', background: 'var(--color-green)', color: 'white', border: 'none' }}
+                style={{
+                  marginTop: '5px',
+                  background: activeMenu.requestID ? '#3a4efc' : 'var(--color-green)',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
+
+                  if (activeMenu.requestID) {
+                    // Open requests list view if request already exists
+                    fetchLateAttendanceRequests();
+                    setShowRequestsModal(true);
+                  } else {
+                    // Auto-fill and open creation modal if no request exists
+                    setRequestFormData({
+                      Employee: activeMenu.empName,
+                      Date: activeMenu.dateStr,
+                      Attendance: activeMenu.currentStatus || 'ABSENT',
+                      Trip: activeMenu.oeValue || '',
+                      Approval: activeMenu.Approval || 'Not Approved',
+                      RequestDeletion: false,
+                      remarks: '',
+                      attendanceID: activeMenu.attendanceID,
+                    });
+                    setShowCreateRequestModal(true);
+                  }
+
                   setActiveMenu(null);
-                  console.log("Opening request modal for:", activeMenu.empName);
-                  setShowRequestsModal(true);
                 }}
               >
-                + Request
+                {activeMenu.requestID
+                  ? `View Request: ${activeMenu.requestStatus || 'Pending'}`
+                  : '+ Request'}
               </button>
             )}
           </div>
@@ -1880,6 +2071,132 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
                 colMinWidth={120}
               />
             </div>
+          </div>
+        </Modal>
+      )}
+
+      {showCreateRequestModal && (
+        <Modal onClose={() => setShowCreateRequestModal(false)} width="480px" height="auto">
+          <div className="late-request-modal-container">
+            <h2 className="late-request-modal-title">Create Late Attendance Request</h2>
+
+
+            <form onSubmit={handleCreateRequestSubmit} className="late-request-form">
+              {/* Request Deletion Checkbox */}
+              <label className="form-checkbox-label">
+                <input
+                  type="checkbox"
+                  className="form-checkbox-input"
+                  checked={requestFormData.RequestDeletion}
+                  onChange={(e) => setRequestFormData(prev => ({ ...prev, RequestDeletion: e.target.checked }))}
+                />
+                Request Attendance Deletion
+              </label>
+
+              {/* Employee Name (Disabled) */}
+              <div className="form-group">
+                <label className="form-label">Employee</label>
+                <div className="form-input-wrapper disabled">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={requestFormData.Employee}
+                    disabled
+                  />
+                </div>
+              </div>
+
+              {/* Date (Disabled) */}
+              <div className="form-group">
+                <label className="form-label">Date</label>
+                <div className="form-input-wrapper disabled">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={requestFormData.Date}
+                    disabled
+                  />
+                </div>
+              </div>
+
+              {/* Attendance (Dropdown) */}
+              <div className="form-group">
+                <label className="form-label">Attendance Status</label>
+                <div className={`form-input-wrapper ${requestFormData.RequestDeletion ? 'disabled' : ''}`}>
+                  <select
+                    className="form-control"
+                    value={requestFormData.Attendance}
+                    disabled={requestFormData.RequestDeletion}
+                    onChange={(e) => setRequestFormData(prev => ({ ...prev, Attendance: e.target.value }))}
+                  >
+                    {ATTENDANCE_STATUSES.map((status) => (
+                      <option key={status.Status} value={status.Status}>
+                        {status.Alias || status.Status}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Trip (Disabled) */}
+              <div className="form-group">
+                <label className="form-label">Trip (OE)</label>
+                <div className="form-input-wrapper disabled">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={requestFormData.Trip || '---'}
+                    disabled
+                  />
+                </div>
+              </div>
+
+              {/* Approval (Dropdown) */}
+              <div className="form-group">
+                <label className="form-label">Approval Status</label>
+                <div className={`form-input-wrapper ${requestFormData.RequestDeletion ? 'disabled' : ''}`}>
+                  <select
+                    className="form-control"
+                    value={requestFormData.Approval}
+                    disabled={requestFormData.RequestDeletion}
+                    onChange={(e) => setRequestFormData(prev => ({ ...prev, Approval: e.target.value }))}
+                  >
+                    <option value="Approved">Approved</option>
+                    <option value="Not Approved">Not Approved</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Remarks Input */}
+              <div className="form-group">
+                <label className="form-label">Remarks</label>
+                <div className="form-input-wrapper">
+                  <textarea
+                    className="form-control"
+                    rows={3}
+                    placeholder="Enter reason or additional details..."
+                    value={requestFormData.remarks}
+                    onChange={(e) => setRequestFormData(prev => ({ ...prev, remarks: e.target.value }))}
+                    style={{ resize: 'vertical' }}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => setShowCreateRequestModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-submit">
+                  Submit Request
+                </button>
+              </div>
+
+            </form>
           </div>
         </Modal>
       )}

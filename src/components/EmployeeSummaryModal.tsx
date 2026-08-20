@@ -15,10 +15,11 @@ import './comp_css/EmployeeSummaryModal.css';
 import { GSDC_AttendanceService } from '../generated/services/GSDC_AttendanceService';
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
 import { ResetAttendanceLogBySpIDService } from '../generated/services/ResetAttendanceLogBySpIDService';
-// import { DMS_AttendanceLogsService } from '../generated/services/DMS_AttendanceLogsService';
+import { DMS_AttendanceLogsService } from '../generated/services/DMS_AttendanceLogsService';
 
 //utils
 import { useTaskWorker } from '../utils/TaskWorkerContext';
+
 
 
 interface CutoffGroup {
@@ -165,7 +166,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             .map((item) => item.Status.toUpperCase())
     );
 
-    // 2. Compute KPI Metrics for the Modal
+
     // 2. Compute KPI Metrics based on calcMode
     const metrics = useMemo(() => {
         let totalScore = 0;
@@ -189,13 +190,13 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             const oe = rec.OE?.trim();
             const dateStr = rec.AttendanceDate ? rec.AttendanceDate.split('T')[0] : '';
 
-            // Unique days with onduty == true (Independent of mode/approval)
-            if (ON_DUTY_STATUSES.has(status) && dateStr) {
+            // Determine approval bypass based on mode
+            const shouldIncludeInMetrics = calcMode === 'Theoretical' || isApproved;
+
+            // Apply approval condition to onDutyDays calculation
+            if (shouldIncludeInMetrics && ON_DUTY_STATUSES.has(status) && dateStr) {
                 onDutyDays.add(dateStr);
             }
-
-            // In 'Approved' mode, strictly enforce approval. In 'Theoretical', bypass approval check.
-            const shouldIncludeInMetrics = calcMode === 'Theoretical' || isApproved;
 
             if (shouldIncludeInMetrics) {
                 // Score & Distance
@@ -358,15 +359,16 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         const updateRecords = pendingArray.filter((rec) => rec.spID);
         const createRecords = pendingArray.filter((rec) => !rec.spID);
 
-        console.log('To be updated in SharePoint:', updateRecords);
-        console.log('To be created in SharePoint:', createRecords);
+        console.log('To be updated in Sharepoint:', updateRecords);
+        console.log('To be created in Sharepoint:', createRecords);
+        console.log('To be deleted in Sharepoint:', deleteRecords);
 
         const totalCount = pendingArray.length;
         const summaryLabel = `${totalCount} item${totalCount > 1 ? 's' : ''}`;
 
         addTask({
             id: `attendanceapproval-${Date.now()}`,
-            name: `Attendance Approval`,
+            name: `Attendance Changes Update`,
             execute: async () => {
                 try {
 
@@ -386,7 +388,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                 AttendanceDetail: rec.tripIndex != null ? rec.tripIndex.toString() : formattedStatus,
                                 SecondTrip: rec.secondTrip || '',
                                 Creator: user?.FullName || '',
-                                TCVC: rec.TCVC || '',
+                                TCVC: rec.TCVC || 'VC',
                                 Position: rec.Position || '',
                                 TransactionType: rec.TransactionType || '',
                                 EmployeeName: rec.EmployeeName || '',
@@ -440,7 +442,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                         AttendanceDetail: rec.tripIndex?.toString() || formattedStatus || '',
                                         SecondTrip: rec.secondTrip || '',
                                         Creator: user?.FullName || '',
-                                        TCVC: rec.TCVC || '',
+                                        TCVC: rec.TCVC || 'VC',
                                         Position: rec.Position || '',
                                         TransactionType: rec.TransactionType || '',
                                         EmployeeName: rec.EmployeeName || '',
@@ -464,7 +466,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                             AttendanceDetail: rec.tripIndex?.toString() || '',
                                             SecondTrip: rec.secondTrip || '',
                                             Creator: user?.FullName || '',
-                                            TCVC: rec.TCVC || '',
+                                            TCVC: rec.TCVC || 'VC',
                                             Position: rec.Position || '',
                                             TransactionType: rec.TransactionType || '',
                                             EmployeeName: rec.EmployeeName || '',
@@ -487,32 +489,14 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
                     // 1. Process Deletions
                     if (deleteRecords.length > 0) {
+
                         const deleteResults = await Promise.all(
                             deleteRecords.map(async (rec) => {
                                 try {
-                                    // Safely format date to YYYY-MM-DD for the Upsert service
-                                    const dateObj = new Date(rec.AttendanceDate);
-                                    const year = dateObj.getFullYear();
-                                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                                    const day = String(dateObj.getDate()).padStart(2, '0');
-                                    const dateStr = `${year}-${month}-${day}`;
-
-                                    if (rec.spID) {
-                                        // Reset SQL status by upserting blank/null values
-                                        await UpsertAttendanceLogService.UpsertAttendanceLog({
-                                            EmployeeName: rec.EmployeeName,
-                                            EmployeeID: rec.EmployeeID,
-                                            AttendanceDate: dateStr,
-                                            OE: rec.OE || '',
-                                            Approved: null,
-                                            AttendanceStatus: null,
-                                            ModifiedBy: user?.FullName || 'Unknown User',
-                                            ApprovedBy: null,
-                                        } as any);
-
-                                        // Delete from SharePoint
-                                        await GSDC_AttendanceService.delete(rec.spID);
-                                    }
+                                    //Delete from SQL
+                                    if (rec.attendanceID) { await DMS_AttendanceLogsService.delete(rec.attendanceID); }
+                                    //Delete from sharepoint
+                                    if (rec.spID) { await GSDC_AttendanceService.delete(rec.spID); }
                                     return { success: true };
                                 } catch (err) {
                                     console.error(`Failed to delete spID ${rec.spID}:`, err);
@@ -529,8 +513,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
 
                     // 3. Process SQL Database Upserts (All Records)
+                    const activeRecords = pendingArray.filter((rec) => !rec.isDeleted);
                     const upsertResults = await Promise.all(
-                        pendingArray.map((rec) => {
+                        activeRecords.map((rec) => {
                             // Safely parse into a Date object whether rec.AttendanceDate is a string or Date instance
                             const dateObj = new Date(rec.AttendanceDate);
                             const year = dateObj.getFullYear();
@@ -547,6 +532,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                 AttendanceStatus: rec.AttendanceStatus,
                                 ModifiedBy: user?.FullName || 'Unknown User',
                                 ApprovedBy: rec.Approved === 'Approved' ? (user?.FullName || undefined) : undefined,
+                                TCVC: rec.TCVC || 'VC'
                             } as any);
                         })
                     );
@@ -574,9 +560,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             onFailure: () => {
                 console.error('Failed to commit attendance approval changes.');
             },
-            message: `Submitting approval for ${summaryLabel}...`,
-            message_success: `Attendance approvals for ${summaryLabel} submitted successfully.`,
-            message_failure: `Failed to submit attendance approvals for ${summaryLabel}.`,
+            message: `Commiting Attendance changes for ${summaryLabel}...`,
+            message_success: `Attendance changes for ${summaryLabel} submitted successfully.`,
+            message_failure: `Failed to submit attendance changes for ${summaryLabel}.`,
         });
 
         //close the summary
@@ -678,7 +664,29 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             </p>
 
                         </div>
+                        <div className="emp-section-header-left">
+                            <h4 className="section-title">Attendance & Trip Breakdown</h4>
+
+                            {/* Calculation Mode Toggle */}
+                            <div className="emp-sum-calc-mode-toggle">
+                                <button
+                                    type="button"
+                                    className={`toggle-btn approved ${calcMode === 'Approved' ? 'active' : ''}`}
+                                    onClick={() => setCalcMode('Approved')}
+                                >
+                                    Approved
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`toggle-btn theoretical ${calcMode === 'Theoretical' ? 'active' : ''}`}
+                                    onClick={() => setCalcMode('Theoretical')}
+                                >
+                                    Theoretical
+                                </button>
+                            </div>
+                        </div>
                     </div>
+
 
                     <div className="emp-header-right">
 
@@ -712,7 +720,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             <div className="kpi-icon"><Award size={18} /></div>
                             <div className="kpi-details">
                                 <span className="kpi-label">Trip Index</span>
-                                <span className="kpi-value">{metrics.totalScore.toFixed(2)} pts</span>
+                                <span key={calcMode} className="kpi-value kpi-value-animated">
+                                    {metrics.totalScore.toFixed(2)} pts
+                                </span>
                             </div>
                         </div>
 
@@ -720,7 +730,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             <div className="kpi-icon"><CheckCircle2 size={18} /></div>
                             <div className="kpi-details">
                                 <span className="kpi-label">Served Trips</span>
-                                <span className="kpi-value">{metrics.servedCount} OE</span>
+                                <span key={calcMode} className="kpi-value kpi-value-animated">
+                                    {metrics.servedCount} OE
+                                </span>
                             </div>
                         </div>
 
@@ -728,7 +740,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             <div className="kpi-icon"><Route size={18} /></div>
                             <div className="kpi-details">
                                 <span className="kpi-label">Total Distance</span>
-                                <span className="kpi-value">{metrics.totalKM.toLocaleString()} km</span>
+                                <span key={calcMode} className="kpi-value kpi-value-animated">
+                                    {metrics.totalKM.toLocaleString()} km
+                                </span>
                             </div>
                         </div>
 
@@ -736,7 +750,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             <div className="kpi-icon"><Calendar size={18} /></div>
                             <div className="kpi-details">
                                 <span className="kpi-label">Active Records</span>
-                                <span className="kpi-value">{metrics.totalDays} Days</span>
+                                <span key={calcMode} className="kpi-value kpi-value-animated">
+                                    {metrics.totalDays} Days
+                                </span>
                             </div>
                         </div>
 
@@ -744,7 +760,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             <div className="kpi-icon"><ShoppingBag size={18} /></div>
                             <div className="kpi-details">
                                 <span className="kpi-label">Bigas Allowance</span>
-                                <span className="kpi-value">{metrics.bigasKilos}</span>
+                                <span key={calcMode} className="kpi-value kpi-value-animated">
+                                    {metrics.bigasKilos}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -753,27 +771,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                     <div className="emp-history-section">
                         {/* Section Header Row */}
                         <div className="emp-section-header">
-                            <div className="emp-section-header-left">
-                                <h4 className="section-title">Attendance & Trip Breakdown</h4>
 
-                                {/* Calculation Mode Toggle */}
-                                <div className="emp-sum-calc-mode-toggle">
-                                    <button
-                                        type="button"
-                                        className={`toggle-btn approved ${calcMode === 'Approved' ? 'active' : ''}`}
-                                        onClick={() => setCalcMode('Approved')}
-                                    >
-                                        Approved
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`toggle-btn theoretical ${calcMode === 'Theoretical' ? 'active' : ''}`}
-                                        onClick={() => setCalcMode('Theoretical')}
-                                    >
-                                        Theoretical
-                                    </button>
-                                </div>
-                            </div>
 
                             {/* Temp Changes Action Bar (Far Right) */}
                             {pendingCount > 0 && (

@@ -12,6 +12,7 @@ export interface UpsertAttendanceLogRequest {
   ModifiedBy?: string;
   ApprovedBy?: string;
   Approved?: string;
+  TCVC?: string;
 }
 
 export interface UpsertAttendanceLogResponse {

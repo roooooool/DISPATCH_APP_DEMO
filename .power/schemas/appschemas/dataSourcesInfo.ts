@@ -1450,6 +1450,12 @@ export const dataSourcesInfo = {
             "in": "body",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "TCVC",
+            "in": "body",
+            "required": false,
+            "type": "string"
           }
         ]
       },

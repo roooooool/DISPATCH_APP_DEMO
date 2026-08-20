@@ -36,6 +36,10 @@
         "Approved": {
           "title": "Approved",
           "type": "string"
+        },
+        "TCVC": {
+          "title": "TCVC",
+          "type": "string"
         }
       }
     },

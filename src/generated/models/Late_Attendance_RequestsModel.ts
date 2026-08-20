@@ -15,4 +15,9 @@ export interface Late_Attendance_Requests {
   created_at: string;
   created_at_as_int?: number;
   remarks?: string;
+  payload?: string;
+  request_to_delete?: boolean;
+  requested_by?: string;
+  attendanceID?: string;
+  attendance_approval?: string;
 }
