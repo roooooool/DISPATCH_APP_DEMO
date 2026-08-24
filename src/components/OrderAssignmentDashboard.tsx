@@ -586,13 +586,14 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     const getCapacitySuggestion = (current: number, max: number) => {
         if (!max || max <= 0) return { text: "Set capacity limit", color: "#a0a0a0", icon: null };
         const ratio = current / max;
+        const percentage = Math.round(ratio * 100);
 
         if (ratio === 0 || ratio < 0.4) {
             return { text: "Underloaded, Assign more orders to meet qouta.", color: "#ffcc00ff", icon: <AlertTriangle size={18} /> }; // Orange (Bad - too low)
         } else if (ratio > 1.0) {
             return { text: "Over capacity, Re-assign orders to other BU to reduce load!", color: "#f09c9cff", icon: <Ban size={32} /> }; // Red (Bad - overloaded)
         } else if (ratio >= 0.85 && ratio <= 1.0) {
-            return { text: "100% Utilization Perfect load!", color: "#00ff66", icon: <Sparkles size={14} /> }; // Green (Goal reached)
+            return { text: `${percentage}% Utilization ${ratio >= 1.0 ? 'Perfect' : 'Ideal'} load!`, color: "#00ff66", icon: <Sparkles size={14} /> }; // Green (Goal reached)
         } else {
             return { text: "Good distribution, Keep going", color: "#ffffff", icon: <ThumbsUp size={14} /> }; // Neutral / Encouraging
         }

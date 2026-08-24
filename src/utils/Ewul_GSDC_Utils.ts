@@ -3,6 +3,7 @@ import type { IOperationResult } from '@microsoft/power-apps/data';
 import type { IGetAllOptions } from '../generated/models/CommonModels';
 import { DMS_updatedService } from '../generated/services/DMS_updatedService';
 import { DMS_ATTACHMENTS_ENDPOINT } from '../truth.config';
+import MD5 from 'crypto-js/md5';
 
 /**
  * Bypasses the standard 2,000-row delegation limit of Power Apps/OData services 
@@ -670,4 +671,30 @@ export const encodeColumnName = (name: string): string => {
     const hex = char.charCodeAt(0).toString(16).padStart(4, '0');
     return `_x${hex}_`;
   });
+};
+
+
+
+
+
+export const generateAttendanceID = (
+  employeeName: string,
+  attendanceDate: string | Date,
+  oe?: string | null
+): string => {
+  // 1. Format date strictly as YYYY-MM-DD (CONVERT(VARCHAR(10), @AttendanceDate, 120))
+  const dateObj = typeof attendanceDate === 'string' ? new Date(attendanceDate) : attendanceDate;
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const dateStr = `${year}-${month}-${day}`;
+
+  // 2. Normalize OE for NULL safety (ISNULL(@OE, '<NULL>'))
+  const oeHash = (oe && oe.trim().length > 0) ? oe.trim() : '<NULL>';
+
+  // 3. Concatenate: EmployeeName + AttendanceDate + OE_Hash
+  const rawInput = `${employeeName}${dateStr}${oeHash}`;
+
+  // 4. Compute MD5 Hash & convert to uppercase 32-char hex string
+  return MD5(rawInput).toString().toUpperCase();
 };

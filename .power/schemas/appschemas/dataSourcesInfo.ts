@@ -849,6 +849,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "dms_newtrip_remarks": {
+    "tableId": "DMS_NewTrip_Remarks",
+    "version": "v2",
+    "primaryKey": "ID",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "dms_tripfuelrequestslist": {
     "tableId": "DMS_TripFuelRequestsList",
     "version": "v2",
@@ -1453,6 +1460,24 @@ export const dataSourcesInfo = {
           },
           {
             "name": "TCVC",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
+      "UpsertNewTripRemarks": {
+        "path": "/dbo.UpsertNewTripRemarks",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "OE",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Remarks",
             "in": "body",
             "required": false,
             "type": "string"

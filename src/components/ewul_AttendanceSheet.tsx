@@ -132,7 +132,8 @@ const AttendanceCell = React.memo(({
     Approval?: string,
     attendanceID?: string,
     requestID?: string | null,
-    requestStatus?: string | null
+    requestStatus?: string | null,
+    spID?: string,
   ) => void;
   isActiveMenuCell?: boolean;
   isBoundaryCell?: boolean;
@@ -219,7 +220,8 @@ const AttendanceCell = React.memo(({
                       entry.Approved,
                       entry.attendanceID,
                       entry.requestID ?? entry.request_id,
-                      entry.requestStatus ?? entry.request_status
+                      entry.requestStatus ?? entry.request_status,
+                      entry.spID ?? entry.spID,
                     );
                   }}
                   onMouseEnter={(e) => {
@@ -289,7 +291,8 @@ const AttendanceCell = React.memo(({
                   undefined,
                   undefined,
                   null,
-                  null
+                  null,
+                  undefined,
                 );
               }}
             >
@@ -342,6 +345,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     attendanceID: string;
     requestID?: string | null;
     requestStatus?: string | null;
+    spID?: string;
   } | null>(null);
 
   const { addTask } = useTaskWorker();
@@ -672,6 +676,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     RequestDeletion: false,
     remarks: '',
     attendanceID: '',
+    spID: '',
   });
   const [showRequestsModal, setShowRequestsModal] = useState(false);
   const [lateAttendanceRequests, setLateAttendanceRequests] = useState<any[]>([]);
@@ -753,6 +758,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       remarks: requestFormData?.remarks,
       attendanceID: requestFormData.attendanceID,
       attendance_approval: requestFormData.Approval === 'Approved' ? 'Approved' : null,
+      spID: requestFormData.spID || null,
     } as Partial<Late_Attendance_Requests>;
 
     // 3. Close modal instantly for seamless UI response
@@ -1369,7 +1375,8 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     Approval?: string,
     attendanceID?: string,
     requestID?: string | null,
-    requestStatus?: string | null
+    requestStatus?: string | null,
+    spID?: string
   ) => {
     // Prevent menu from opening for future dates
     if (dateStr > todayStr) {
@@ -1406,6 +1413,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       attendanceID: attendanceID || '',
       requestID: requestID || null,
       requestStatus: requestStatus || null,
+      spID: spID,
     });
   }, [todayStr]); // Added todayStr to dependencies
 
@@ -2010,6 +2018,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
                       RequestDeletion: false,
                       remarks: '',
                       attendanceID: activeMenu.attendanceID,
+                      spID: activeMenu.spID || "",
                     });
                     setShowCreateRequestModal(true);
                   }
@@ -2067,6 +2076,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
                 searchCol={LATE_ATTENDANCE_REQUESTS.searchable_cols as string[]}
                 storageKey="attendance_sheet_requests"
                 overflowY={true}
+                overflowX={true}
                 maxHeight={600}
                 colMinWidth={120}
               />

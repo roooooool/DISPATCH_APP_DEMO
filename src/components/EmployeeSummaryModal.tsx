@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { X, Calendar, Route, Award, MapPin, CheckCircle2, User, ClipboardList, ShoppingBag, Download, Trash2 } from 'lucide-react';
 
+
 import { type AttendanceRecord } from './ewul_AttendanceSheet';
 
 import {
@@ -19,7 +20,7 @@ import { DMS_AttendanceLogsService } from '../generated/services/DMS_AttendanceL
 
 //utils
 import { useTaskWorker } from '../utils/TaskWorkerContext';
-
+import { generateAttendanceID } from '../utils/Ewul_GSDC_Utils'
 
 
 interface CutoffGroup {
@@ -58,13 +59,27 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     const [pendingChanges, setPendingChanges] = useState<Record<string, AttendanceRecord & { isDeleted?: boolean }>>({});
 
+    // Helper function to map and populate missing IDs
+    const normalizeRecords = (records: AttendanceRecord[]) => {
+        return records.map((rec) => ({
+            ...rec,
+            attendanceID: rec.attendanceID || generateAttendanceID(
+                rec.EmployeeName || employeeName,
+                rec.AttendanceDate,
+                rec.OE
+            ),
+        }));
+    };
+
     // 1. Local state for optimistic updates
-    const [localRecords, setLocalRecords] = useState<(AttendanceRecord & { isDeleted?: boolean })[]>(allRecords);
+    const [localRecords, setLocalRecords] = useState<(AttendanceRecord & { isDeleted?: boolean })[]>(
+        () => normalizeRecords(allRecords)
+    );
     const [calcMode, setCalcMode] = useState<'Approved' | 'Theoretical'>('Approved');
 
-    // Keep local records in sync if parent prop updates
+    // Keep local records in sync when parent prop updates
     useEffect(() => {
-        setLocalRecords(allRecords);
+        setLocalRecords(normalizeRecords(allRecords));
         setPendingChanges({});
     }, [allRecords]);
 

@@ -1,0 +1,134 @@
+/* src/components/comp_css/DDRemarksStatusDropdown.css */
+
+.dd-status-wrapper {
+    position: relative;
+    display: inline-block;
+    width: fit-content;
+    /* Replaces max-content to prevent stretching beyond bounds */
+    max-width: 100%;
+    font-family: inherit;
+}
+
+/* Pill Trigger Button */
+.dd-status-pill-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    /* Pill Shape */
+    border: 1px solid transparent;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(10, 25, 47, 0.08);
+    width: max-content;
+}
+
+.dd-status-pill-trigger:hover {
+    filter: brightness(0.96);
+    box-shadow: 0 2px 6px rgba(10, 25, 47, 0.12);
+}
+
+.dd-status-label {
+    white-space: nowrap;
+    font-size: 0.75rem;
+}
+
+.dd-status-arrow {
+    font-size: 0.55rem;
+    transition: transform 0.2s ease;
+    opacity: 0.7;
+}
+
+.dd-status-arrow.open {
+    transform: rotate(180deg);
+}
+
+/* Menu Dropdown */
+.dd-status-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 50;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(10, 25, 47, 0.12);
+    border: 1px solid rgba(10, 25, 47, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 170px;
+}
+
+.dd-status-option-pill {
+    width: 100%;
+    text-align: left;
+    padding: 3px 6px;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.dd-status-option-pill:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+.dd-status-option-pill.is-selected {
+    border-color: #0a192f;
+}
+
+/* Status Pill Colors */
+.status-placeholder {
+    background-color: #f1f5f9;
+    color: #3a4efc;
+    border: 1px dashed #3a4efc;
+}
+
+.status-light-blue {
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+.status-light-gray {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.status-light-green {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.status-light-red {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Add to src/components/comp_css/DDRemarksStatusDropdown.css */
+
+.dd-status-menu-portal {
+    position: absolute;
+    z-index: 9999;
+    margin: 0;
+    padding: 3px;
+    list-style: none;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(10, 25, 47, 0.18);
+    border: 1px solid rgba(10, 25, 47, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 170px;
+}

@@ -16,7 +16,7 @@
     font-weight: 600;
 }
 
-.timeline-header{
+.timeline-header {
     z-index: 5;
 }
 
@@ -29,7 +29,8 @@
 .timeline-item {
     display: flex;
     gap: 15px;
-    margin-bottom: 0; /* Managed by connector height */
+    margin-bottom: 0;
+    /* Managed by connector height */
     position: relative;
 }
 
@@ -52,7 +53,7 @@
     color: #64748b;
     z-index: 2;
     border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dot-active {
@@ -62,26 +63,33 @@
 
 .timeline-line {
     position: absolute;
-    top: 32px; /* Starts below the dot */
-    bottom: 0;   /* Stretches to the very bottom of the padded item */
+    top: 32px;
+    /* Starts below the dot */
+    bottom: 0;
+    /* Stretches to the very bottom of the padded item */
     width: 2px;
     background: #e2e8f0;
-    z-index: 1;  /* Sits behind the dots */
+    z-index: 1;
+    /* Sits behind the dots */
 }
 
-.timeline-line.line-active{
+.timeline-line.line-active {
     position: absolute;
-    top: 32px; /* Starts below the dot */
-    bottom: 0;   /* Stretches to the very bottom of the padded item */
+    top: 32px;
+    /* Starts below the dot */
+    bottom: 0;
+    /* Stretches to the very bottom of the padded item */
     width: 2px;
     background: var(--color-primary);
-    z-index: 1;  /* Sits behind the dots */
+    z-index: 1;
+    /* Sits behind the dots */
 }
 
 /* CONTENT CARD */
 .timeline-content {
     flex: 1;
-    padding-bottom: 25px; /* Creates spacing between events */
+    padding-bottom: 25px;
+    /* Creates spacing between events */
 }
 
 .timeline-time-row {
@@ -128,8 +136,10 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    min-height: 200px; /* Ensures it looks good even in small wrappers */
-    color: #64748b; /* Soft gray slate text */
+    min-height: 200px;
+    /* Ensures it looks good even in small wrappers */
+    color: #64748b;
+    /* Soft gray slate text */
     text-align: center;
     gap: 12px;
 }
@@ -141,7 +151,8 @@
 }
 
 .timeline-empty-state .empty-icon {
-    color: #cbd5e1; /* Even softer gray for illustration icons */
+    color: #cbd5e1;
+    /* Even softer gray for illustration icons */
 }
 
 /* --- Header Layout adjustments --- */
@@ -166,14 +177,16 @@
 
 .header-title-section h3 {
     margin: 0;
-    color: #000080; /* Navy blue primary */
+    color: #000080;
+    /* Navy blue primary */
     font-size: 1.1rem;
     font-weight: 600;
 }
 
 .filter-indicator-badge {
     background: #fff5f5;
-    color: #e53e3e; /* Red Accent sub */
+    color: #e53e3e;
+    /* Red Accent sub */
     font-size: 0.75rem;
     padding: 2px 8px;
     border-radius: 999px;
@@ -189,12 +202,13 @@
     min-width: 210px;
     background: var(--color-primary);
     border-radius: 8px;
-    color: var(--color-text-2); /* Use your requested text color variable */
+    color: var(--color-text-2);
+    /* Use your requested text color variable */
 }
 
 .filter-field-icon {
     /* Set icon to match the text color variable */
-    color: var(--color-text-2); 
+    color: var(--color-text-2);
     margin-right: 8px;
     flex-shrink: 0;
 }
@@ -204,13 +218,14 @@
     outline: none;
     background: transparent;
     /* Use your requested text color variable */
-    color: var(--color-text); 
+    color: var(--color-text);
     font-size: 0.85rem;
     font-weight: 500;
     width: 100%;
     cursor: pointer;
     font-family: inherit;
-    appearance: none; /* Removes default browser styling */
+    appearance: none;
+    /* Removes default browser styling */
 }
 
 
@@ -235,7 +250,7 @@
     font-weight: 600;
 }
 
-.timeline-context-select option{
+.timeline-context-select option {
     color: var(--color-text);
 }
 
@@ -272,7 +287,8 @@
 }
 
 .item-expanded {
-    background: #f1f5f9; /* Slightly darker when active */
+    background: #f1f5f9;
+    /* Slightly darker when active */
 }
 
 /* Expanded Detail Container */
@@ -283,8 +299,9 @@
     padding: 0 12px;
     border: 0 solid var(--color-primary);
     overflow: hidden;
-    visibility: hidden; /* Prevents screen reader/tab focus issues when hidden */
-    transition: 
+    visibility: hidden;
+    /* Prevents screen reader/tab focus issues when hidden */
+    transition:
         max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
         opacity 0.25s ease,
         margin 0.3s ease,
@@ -294,14 +311,15 @@
 
 /* --- Active Open State --- */
 .timeline-expanded-details.show {
-    max-height: 1000px; /* High enough value to clear any large JSON strings */
+    max-height: 1000px;
+    /* High enough value to clear any large JSON strings */
     opacity: 1;
     margin: 12px 0;
     padding: 12px;
     border: 1px solid var(--color-primary);
     visibility: visible;
     overflow: hidden;
-    transition: 
+    transition:
         max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
         opacity 0.35s ease,
         margin 0.3s ease,

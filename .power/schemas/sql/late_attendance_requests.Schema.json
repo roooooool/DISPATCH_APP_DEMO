@@ -553,6 +553,37 @@
           "type": "string",
           "x-ms-permission": "read-write",
           "x-ms-sort": "none"
+        },
+        "spID": {
+          "title": "spID",
+          "x-ms-capabilities": {
+            "filterFunctions": [
+              "lt",
+              "le",
+              "eq",
+              "ne",
+              "gt",
+              "ge",
+              "min",
+              "max",
+              "countdistinct",
+              "contains",
+              "startswith",
+              "endswith",
+              "length",
+              "indexof",
+              "replace",
+              "substring",
+              "substringof",
+              "tolower",
+              "toupper",
+              "trim",
+              "concat"
+            ]
+          },
+          "type": "string",
+          "x-ms-permission": "read-write",
+          "x-ms-sort": "none"
         }
       }
     },

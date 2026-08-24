@@ -13,9 +13,12 @@ import { ewulFetchAll } from './utils/Ewul_GSDC_Utils';
 import { LiveVehicleAssignmentLIstViewService } from './generated/services/LiveVehicleAssignmentLIstViewService';
 import { DMS_CEMService } from './generated/services/DMS_CEMService';
 import { UpsertAttendanceLogService } from './generated/services/UpsertAttendanceLogService';
+import { UpsertNewTripRemarksService } from './generated/services/UpsertNewTripRemarksService';
+import { DMS_NewTrip_RemarksService } from './generated/services/DMS_NewTrip_RemarksService';
 
 
 import './components/comp_css/DDRemarksInput.css';
+import './components/comp_css/DDRemarksStatusDropdown.css';
 
 
 // This is the global controller
@@ -617,6 +620,188 @@ export const renderDDRemarksInput = (
       key={`${id}-${safeValue}`} // Forces React to reset component state if table data changes
       initialValue={safeValue}
       onSave={(newValue) => saveODMRemarks(newValue, id)}
+    />
+  );
+};
+
+
+
+
+
+// NEW TRIPS DD REMARKS
+// NEW TRIPS DD REMARKS
+interface DDRemarksStatusDropdownProps {
+  id: string;
+  value?: string | null;
+  placeholder?: string;
+  oe?: string;
+}
+
+const STATUS_OPTIONS = [
+  'None',
+  'Advance order',
+  'Waiting for advice',
+  'Buffer OE',
+  'for Cancellation',
+];
+
+// Internal change handler
+//@ts-ignore
+const onRemarksStatusDropdownChange = (val: string, id: string, oe: string) => {
+  if (!id) return;
+  DMS_NewTrip_RemarksService.delete(id);
+};
+
+// Internal removal handler
+//@ts-ignore
+const onRemarksStatusDropdownRemove = (id: string, oe: string) => {
+  // Call your API or service to remove/clear the remark
+  UpsertNewTripRemarksService.UpsertNewTripRemarks({ OE: oe, Remarks: "" } as any);
+  // Or: RemoveNewTripRemarksService.RemoveNewTripRemarks({ OE: oe, ID: id });
+};
+
+export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = ({
+  id,
+  value = null,
+  placeholder = '+ Add Remarks',
+  oe,
+}) => {
+  // Local optimistic state
+  const [selected, setSelected] = useState<string | null>(value ?? null);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
+
+  // Sync local state when external value prop changes
+  useEffect(() => {
+    setSelected(value ?? null);
+  }, [value]);
+
+  const updatePosition = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + window.scrollY + 6,
+        left: rect.left + window.scrollX,
+      });
+    }
+  };
+
+  const toggleOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isOpen) {
+      updatePosition();
+    }
+    setIsOpen(!isOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(target) &&
+        menuRef.current &&
+        !menuRef.current.contains(target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const getStatusClass = (status?: string | null): string => {
+    switch (status) {
+      case 'Advance order':
+        return 'status-light-blue';
+      case 'Waiting for advice':
+        return 'status-light-gray';
+      case 'Buffer OE':
+        return 'status-light-green';
+      case 'for Cancellation':
+        return 'status-light-red';
+      case 'None':
+        return 'status-light-gray';
+      default:
+        return 'status-placeholder';
+    }
+  };
+
+  const handleSelect = (option: string) => {
+    setIsOpen(false);
+
+    if (option === 'None') {
+      // 1. Reset state to placeholder
+      setSelected(null);
+      // 2. Trigger removal handler
+      onRemarksStatusDropdownRemove(id, oe || '');
+    } else {
+      // 1. Optimistic UI update
+      setSelected(option);
+      // 2. Trigger change handler
+      onRemarksStatusDropdownChange(option, id, oe || '');
+    }
+  };
+
+  return (
+    <div className="dd-status-wrapper">
+      <button
+        ref={triggerRef}
+        type="button"
+        className={`dd-status-pill-trigger ${getStatusClass(selected)} ${isOpen ? 'is-open' : ''}`}
+        onClick={toggleOpen}
+      >
+        <span className="dd-status-label">{selected ?? placeholder}</span>
+        <span className={`dd-status-arrow ${isOpen ? 'open' : ''}`}>▼</span>
+      </button>
+
+      {isOpen &&
+        createPortal(
+          <ul
+            ref={menuRef}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="dd-status-menu-portal"
+            style={{
+              position: 'absolute',
+              top: `${coords.top}px`,
+              left: `${coords.left}px`,
+            }}
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <li key={option}>
+                <button
+                  type="button"
+                  className={`dd-status-option-pill ${getStatusClass(option)} ${selected === option ? 'is-selected' : ''
+                    }`}
+                  onClick={() => handleSelect(option)}
+                >
+                  {option}
+                </button>
+              </li>
+            ))}
+          </ul>,
+          document.body
+        )}
+    </div>
+  );
+};
+
+export const renderDDRemarksStatusDropdown = (id: any, value?: any, oe?: string) => {
+  const safeId = String(id ?? '');
+  const safeValue = value ? String(value) : null;
+
+  return (
+    <DDRemarksStatusDropdown
+      key={safeId}
+      id={safeId}
+      value={safeValue}
+      oe={oe}
+      placeholder={safeValue || '+ Add Remarks'}
     />
   );
 };

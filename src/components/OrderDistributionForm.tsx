@@ -1803,6 +1803,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         ttID = await generateTripTicketID(formData.OE)
       }
 
+      console.log('saving..: ', formData);
+
       // If the trip hasn't been saved before, we need to create it first to get an ID for attachments
 
       setOriginalFormData(formData); //unsave the save state
@@ -1835,8 +1837,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 Destination_x0020_in: convNaive(formData.Destination_x0020_in),
                 Destination_x0020_out: convNaive(formData.Destination_x0020_out),
 
-                Driver_x0020_Loader: formData.Driver_x0020_Loader,
-                Driver_x0020_Unloader: formData.Driver_x0020_Unloader,
+                Driver_x0020_Loader: formData.Driver_x0020_Loader || "",
+                Driver_x0020_Unloader: formData.Driver_x0020_Unloader || "",
 
 
                 Aissigned_x0020_By_x0020_OD: formData.Aissigned_x0020_By_x0020_OD,
@@ -1851,8 +1853,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
                 Modified: new Date().toISOString(), // Update modified date to current time
                 LastModifiedBy: formData.LastModifiedBy,
-                Helper_x0020_Loader: formData.Helper_x0020_Loader,
-                Helper_x0020_Unloader: formData.Helper_x0020_Unloader,
+                Helper_x0020_Loader: formData.Helper_x0020_Loader || "",
+                Helper_x0020_Unloader: formData.Helper_x0020_Unloader || "",
                 Baranggay_Fee_Total: formData.Baranggay_Fee_Total,
                 FlatTire_Fee_Total: formData.FlatTire_Fee_Total,
                 Toll_Fee_Total: formData.Toll_Fee_Total,

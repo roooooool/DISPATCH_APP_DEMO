@@ -310,7 +310,27 @@ const OrderDistribution: React.FC = () => {
   const { user } = useUser();
   const { addTask } = useTaskWorker();
 
-  const [activeMode, setActiveMode] = useState<ViewMode>('ASSIGNED');
+  const [activeMode, setActiveMode] = useState<ViewMode>(() => {
+    const savedMode = localStorage.getItem(`ordr_dist_active_mode_${user?.id || 'guest'}`);
+    return (savedMode as ViewMode) || 'ASSIGNED';
+  });
+
+  // Auto-load saved mode when user finishes loading/changing
+  useEffect(() => {
+    if (!user?.id) return;
+    const savedMode = localStorage.getItem(`ordr_dist_active_mode_${user.id}`);
+    if (savedMode && ['NEW', 'ASSIGNED', '1A', '1B'].includes(savedMode)) {
+      setActiveMode(savedMode as ViewMode);
+    }
+  }, [user?.id]);
+
+  // Save selected mode whenever activeMode changes
+  useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem(`ordr_dist_active_mode_${user.id}`, activeMode);
+    }
+  }, [activeMode, user?.id]);
+
   const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{ from: string, to: string } | null>(null);
 
   const [stationOptions, setStationOptions] = useState<DropdownOption[]>([]);
@@ -959,11 +979,21 @@ const OrderDistribution: React.FC = () => {
     if (activeMode === 'NEW') {
       fetchNewOrders();
       fetchBUCapacity();
-    } else if (activeMode === 'ASSIGNED') {
+    } else if (['ASSIGNED', '1A', '1B'].includes(activeMode)) {
       fetchAssignedOrders();
       fetchBUCapacity();
-    } else return;
-  }, [activeMode, fetchNewOrders, fetchAssignedOrders]);
+    }
+  }, [activeMode, fetchNewOrders, fetchAssignedOrders, fetchBUCapacity]);
+
+  // Initial load: Pre-fetch all datasets once date range initializes
+  useEffect(() => {
+    if (selectedRangeNewOrders?.from && selectedRangeNewOrders?.to) {
+      fetchNewOrders();
+      fetchAssignedOrders();
+      fetchBUCapacity();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRangeNewOrders]); // Triggers when date range picker sets initial range
 
   const {
     cooldown,

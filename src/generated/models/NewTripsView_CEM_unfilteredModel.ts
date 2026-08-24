@@ -30,4 +30,6 @@ export interface NewTripsView_CEM_unfiltered {
   OEDateAsInt?: number;
   TaggedBU?: string;
   TripProgress?: string;
+  ODMRemarks?: string;
+  remarksID?: number;
 }

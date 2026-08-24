@@ -235,6 +235,12 @@
   border-color: var(--color-border);
 }
 
+.header-btn.secondary.cancellation {
+  background: var(--color-red);
+  color: var(--color-text-2);
+  border-color: var(--color-border);
+}
+
 .header-btn.secondary.preload:hover {
   background: color-mix(in srgb, var(--color-green) 80%, black 20%);
   border-color: var(--color-border);
@@ -243,6 +249,12 @@
 
 .header-btn.secondary.mobilization:hover {
   background: color-mix(in srgb, var(--color-orange) 80%, black 20%);
+  border-color: var(--color-border);
+  transform: translateY(-1px);
+}
+
+.header-btn.secondary.cancellation:hover {
+  background: color-mix(in srgb, var(--color-red) 80%, black 20%);
   border-color: var(--color-border);
   transform: translateY(-1px);
 }

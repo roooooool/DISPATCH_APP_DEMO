@@ -1196,6 +1196,20 @@ const OrderManagement: React.FC = () => {
                 ))}
             </select> */}
             <button
+                className="header-btn primary"
+                onClick={() => null}
+                style={{ minWidth: 90 }}
+            >
+                Fuel PO Tracking
+            </button>
+            <button
+                className="header-btn secondary cancellation"
+                onClick={() => null}
+                style={{ minWidth: 90 }}
+            >
+                Cancellation Requests
+            </button>
+            <button
                 className="header-btn secondary"
                 onClick={() => setShowCharts(prev => !prev)}
                 style={{ minWidth: 110 }}

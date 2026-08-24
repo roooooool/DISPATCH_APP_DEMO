@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.18.8"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.19.8"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -13,6 +13,7 @@ import {
   handleUpdateAttendanceStatus,
   renderFuelRequestIcon,
   renderDDRemarksInput,
+  renderDDRemarksStatusDropdown,
 } from './truth_react_helper.tsx'
 
 import { HighlightText } from './components/ewul_TableFlex';
@@ -677,6 +678,8 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     { col: "Trip Status", alias: "Status", filter: { type: "dropdown-multiple", options: statusOptions }, cellStyle: () => { return { fontWeight: 'bold' } } },
     { col: "Loading Sequence", defaultSort: 'asc', orderSort: 3, alias: "LS", hidden: true },
     { col: "OE Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("OE Date")]) },
+    // { col: "Ordered Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("Ordered Date")]) },
+    { col: "Needed Date", alias: "Needed Date", calculate: (row: any) => formatDate(row[enc("Needed Date")]) },
     {
       col: "Buisness Unit", alias: "BU",
       filter: {
@@ -837,6 +840,9 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
     { col: "OE", alias: "OE #", sticky: true, cellStyle: () => { return { fontWeight: 'bold' } } },
+    { col: "OE Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("OE Date")]) },
+    // { col: "Ordered Date", alias: "Date", calculate: (row: any) => formatDate(row[enc("Ordered Date")]) },
+    { col: "Needed Date", alias: "Needed Date", calculate: (row: any) => formatDate(row[enc("Needed Date")]) },
     { col: "Trip Status", alias: "Status", filter: { type: "dropdown-multiple", options: statusOptions }, cellStyle: () => { return { fontWeight: 'bold' } } },
     {
       col: "TripProgress",
@@ -1036,6 +1042,33 @@ export const NEW_TRIPS_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
   table_config: [
 
     /*{ col: "OrderedDate", alias: "Order Date", calculate: (row: any) => formatDate(row["OrderedDate"]) },*/
+    {
+      col: "_odmddremarks", alias: "Remarks", portion: 1,
+      //@ts-ignore
+      render: (val: any, row: any, searchTerm: string) => {
+        return renderDDRemarksStatusDropdown(row['remarksID'], row['ODMRemarks'], row['OE']);
+      },
+      calculate: (row: any) => {
+        const val = row['ODMRemarks']
+        let sortVal = null
+        switch (val) {
+          case "Advance order":
+            sortVal = 0;
+            break;
+          case "Buffer OE":
+            sortVal = 1;
+            break;
+          case "Waiting for advice":
+            sortVal = 2;
+            break;
+          case "For cancellation":
+            sortVal = 3;
+            break;
+        }
+        return sortVal
+      },
+      useCalculatedSort: true,
+    },
     { col: "OE Date", alias: "OE Date", portion: 1, calculate: (row: any) => formatDate(row[enc("OE Date")]) },
     { col: "NeededDate", alias: "Need Date", portion: 1, calculate: (row: any) => formatDate(row["NeededDate"]) },
     { col: "OE", alias: "OE #", portion: 1 },
@@ -1805,10 +1838,6 @@ export const LATE_ATTENDANCE_REQUESTS: TableModuleConfig = {
 
     /*{ col: "OrderedDate", alias: "Order Date", calculate: (row: any) => formatDate(row["OrderedDate"]) },*/
     { col: "created_at", alias: "Created Date", portion: 1, calculate: (row: any) => formatDate(row[enc("created_at")]) },
-    { col: "OE", alias: "Trip", portion: 1 },
-    { col: "employee_name", alias: "Employee", portion: 1.5 },
-    { col: "cutoff_start", alias: "Window Start", portion: 1, calculate: (row: any) => formatDate(row[enc("cutoff_start")]) },
-    { col: "cutoff_end", alias: "Window End", portion: 1, calculate: (row: any) => formatDate(row[enc("cutoff_end")]) },
     {
       col: "request_status", alias: "Status", portion: 1,
       filter: { type: "dropdown-multiple", options: attendanceRequestStatus },
@@ -1825,7 +1854,15 @@ export const LATE_ATTENDANCE_REQUESTS: TableModuleConfig = {
         return style;
       }
     },
-    { col: "remarks", alias: "Remarks", portion: 1 },
+    { col: "OE", alias: "Trip", portion: 1 },
+    { col: "employee_name", alias: "Employee", portion: 1.5 },
+    { col: "request_date", alias: "Attendance Date", portion: 1, calculate: (row: any) => formatDate(row[enc("request_date")]) },
+    { col: "attendance_status", alias: "Attendance", portion: 0.5 },
+    { col: "attendance_approval", alias: "Approval", portion: 0.5 },
+    { col: "cutoff_start", alias: "Cut Off Start", portion: 1, calculate: (row: any) => formatDate(row[enc("cutoff_start")]) },
+    { col: "cutoff_end", alias: "Cut Off End", portion: 1, calculate: (row: any) => formatDate(row[enc("cutoff_end")]) },
+    { col: "remarks", alias: "Remarks", portion: 2 },
+    { col: "request_to_delete", alias: "To Delete", portion: 0.5, calculate: (row: any) => !row[enc("request_to_delete")] ? "No" : "Yes" },
 
 
 
