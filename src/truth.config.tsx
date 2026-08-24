@@ -196,7 +196,7 @@ export const NAV_DESTINATIONS = [
   {
     label: "Incident Reports",
     path: "/incidents",
-    whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC'],
+    whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC', 'Inspection'],
     noSpecialAccess: false,
     hidden: false
   },
@@ -1515,9 +1515,27 @@ export const IR_REPORT_TYPES = [
 ];
 
 export const IR_ACTION_OPTIONS = [
-  { value: 'Inspection', label: 'Inspection', color: 'var(--color-border-info)' },
-  { value: 'Retrieval', label: 'Retrieval', color: 'var(--color-border-warning)' },
-  { value: 'Proceed Next Trip', label: 'Proceed Next Trip', color: 'var(--color-border-success)' }
+  { value: 'Proceed Next Trip', label: 'Proceed Next Trip', color: 'var(--color-border-success)' }, //anyone can use
+
+  { value: 'Inspection', label: 'For BULK Inspection', color: 'var(--color-border-warning)', type: 'Operations' },
+  { value: 'Empty', label: 'Empty bulk proceed to backload (photo empty bulk)', color: 'var(--color-border-success)', type: 'Operations' },
+  { value: 'LessThanFive', label: 'Proceed Next Trip - Less than five', color: 'var(--color-border-success)', type: 'Operations' },
+  { value: 'NoDriver', label: 'No attachment driver failed to report', color: 'var(--color-border-danger)', type: 'Operations' },
+
+  { value: 'Retrieval', label: 'For Retrieval', color: 'var(--color-border-info)', type: 'Inspection' },
+  { value: 'PhotoEmpty', label: 'Proceed Next Trip - Bulk photo empty', color: 'var(--color-border-warning)', type: 'Inspection' },
+
+  { value: 'PendingRetrieval', label: 'Pending', color: 'var(--color-border-warning)', type: 'Yard' },
+  { value: 'OngoingRetrieval', label: 'Ongoing Retrieval', color: 'var(--color-border-info)', type: 'Yard' },
+  { value: 'WarehouseTransfer', label: 'For Warehouse Transfer', color: 'var(--color-border-warning)', type: 'Yard' },
+  { value: 'Disposal', label: 'For Disposal', color: 'var(--color-border-danger)', type: 'Yard' },
+
+  { value: 'PendingTransfer', label: 'Pending Transfer', color: 'var(--color-border-warning)', type: 'Warehouse' },
+  { value: 'ReceivedTransfer', label: 'Received Transfer', color: 'var(--color-border-info)', type: 'Warehouse' },
+  { value: 'SoldTransfer', label: 'Sold', color: 'var(--color-border-success)', type: 'Warehouse' },
+  { value: 'SellingTransfer', label: 'For Selling', color: 'var(--color-border-warning)', type: 'Warehouse' },
+  { value: 'ReturnedToCustomer', label: 'Returned to Customer', color: 'var(--color-border-success)', type: 'Warehouse' },
+  { value: 'Disposed', label: 'Disposed', color: 'var(--color-border-success)', type: 'Warehouse' },
 ];
 
 export const SHORT_BAGS_LIMIT = 0;
@@ -1875,6 +1893,9 @@ export const LATE_ATTENDANCE_REQUESTS: TableModuleConfig = {
   searchable_cols: ["OE", "employee_name"] as const
 
 }
+
+
+
 
 
 
