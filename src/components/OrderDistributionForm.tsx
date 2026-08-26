@@ -2192,7 +2192,20 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           setIsCreatingIR(true);
           setIsIncidentModalOpen(true); // Open modal instantly so user sees the loading state
 
-          const data = await incidentFormRef.current.submit();
+          const raw_data = await incidentFormRef.current.submit();
+          const employee_details = driverOptions?.find((item) => item.label === formData.Driver)?.record
+          const data = {
+            ...raw_data,
+            OE_Reference: formData.OE,
+            EmployeeName: formData.Driver,
+            EmployeeID: employee_details.Id || '',
+            EmployeeBU: employee_details.BU || 'Unknown BU',
+            EmployeeTractor: formData.Head_Full,
+            EmployeeTrailer: formData.BO_Full,
+            flexValue: (actualDiscrepancy || discrepancy).toString()
+          } as OP_IncidentReports
+
+
           console.log('Created IR: ', data);
 
           setCreatedIR(data);

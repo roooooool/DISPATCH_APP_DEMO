@@ -52,6 +52,7 @@ export type IR_ShortBags_Form_Model = {
 
   // reported detailes
   empName: string;
+  empId: string;
   empPosition: string;
   businessUnit: string;
   buHead: string;
@@ -107,6 +108,7 @@ interface IR_ShortBags_Props {
 }
 
 export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete }) => {
+
   const { addTask } = useTaskWorker();
   const incidentReportItem = item || {};
   const [zoom, setZoom] = useState<number>(1.0); // 1.0 = 100% original scale
@@ -125,8 +127,9 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
 
     // Initialize other form fields as empty or default
     empName: incidentReportItem.EmployeeName || '',
+    empId: incidentReportItem.EmployeeID || '',
     empPosition: incidentReportItem.EmployeePosition || '',
-    businessUnit: '',
+    businessUnit: incidentReportItem.EmployeeBU || '',
     buHead: incidentReportItem.EmployeeBUHead || '',
     truck_full: incidentReportItem.EmployeeTractor || '',
     trailer_full: incidentReportItem.EmployeeTrailer || '',
@@ -167,6 +170,13 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
       warehouse: { name: '', action: '', bags: '', date: '' }
     },
   });
+
+  // Filter options matching section type OR options without a specific type (accessible to all)
+  const getSectionActionOptions = (sectionType: string) => {
+    return IR_ACTION_OPTIONS.filter(
+      option => !option.type || option.type.toLowerCase() === sectionType.toLowerCase()
+    );
+  };
 
   interface errorInterface { valid: boolean, msg: string, final?: boolean };
   const [error, setError] = useState<errorInterface | null>(null);
@@ -612,6 +622,8 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
   const handleSave = () => {
     if (onSave) {
 
+
+
       addTask({
         id: `saveir-${incidentReportItem.IRID}`,
         name: `Saving Incident Details for ${incidentReportItem.IRID}`,
@@ -623,11 +635,22 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
             if (incidentReportItem.IncidentID === undefined) return;
 
             const ir_details = {
+              OE_Reference: formData.irReferenceNo,
+              EmployeeName: formData.empName,
+              EmployeeID: formData.empId,
+              EmployeeBU: formData.businessUnit,
+              EmployeeTractor: formData.truck_full,
+              EmployeeTrailer: formData.trailer_full,
+              flexValue: formData.ShortBags,
               ModifiedBy: initialUser?.FullName,
               ModifiedDateTime: new Date().toISOString(),
             } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
 
+            console.log(`Saving IR [${incidentReportItem.IncidentID}]: `, { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
+
             result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
+            console.log('Saving result: ', result)
+
 
             if (result.error) {
               throw new Error(result.error.message);
@@ -679,6 +702,13 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
             if (incidentReportItem.IncidentID === undefined) return;
 
             const ir_details = {
+              OE_Reference: formData.irReferenceNo,
+              EmployeeName: formData.empName,
+              EmployeeID: formData.empId,
+              EmployeeBU: formData.businessUnit,
+              EmployeeTractor: formData.truck_full,
+              EmployeeTrailer: formData.trailer_full,
+              flexValue: formData.ShortBags,
               ModifiedBy: initialUser?.FullName,
               ModifiedDateTime: new Date().toISOString(),
               ResolvedDate: formData.date,
@@ -737,6 +767,13 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
             if (incidentReportItem.IncidentID === undefined) return;
 
             const ir_details = {
+              OE_Reference: formData.irReferenceNo,
+              EmployeeName: formData.empName,
+              EmployeeID: formData.empId,
+              EmployeeBU: formData.businessUnit,
+              EmployeeTractor: formData.truck_full,
+              EmployeeTrailer: formData.trailer_full,
+              flexValue: formData.ShortBags,
               ModifiedBy: initialUser?.FullName,
               ModifiedDateTime: new Date().toISOString(),
               ResolvedDate: formData.date,
@@ -1009,8 +1046,8 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                   <span className="ir-sb-label">Business Unit:</span>
                   <input type="text" name="businessUnit" value={formData.businessUnit} onChange={handleChange} className="ir-sb-line-input" />
                 </div> */}
-                  <span className="ir-sb-label">BU Head:</span>
-                  <input type="text" name="buHead" value={formData.buHead} onChange={handleChange} className="ir-sb-line-input" />
+                  <span className="ir-sb-label">BU:</span>
+                  <input type="text" name="businessUnit" value={formData.businessUnit} onChange={handleChange} className="ir-sb-line-input" />
                 </div>
                 <div className="ir-sb-input-group span-2">
                   <span className="ir-sb-label">Tractor:</span>
@@ -1049,7 +1086,7 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                         className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.operations?.action ? 'is-empty-print' : ''}`}
                       >
                         <option value="" disabled>-- Select Action --</option>
-                        {IR_ACTION_OPTIONS.map(option => (
+                        {getSectionActionOptions('Operations').map(option => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
@@ -1091,8 +1128,8 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                         onChange={(e) => handleActionChange('inspection', 'action', e.target.value)}
                         className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.inspection?.action ? 'is-empty-print' : ''}`}
                       >
-                        <option value="" disabled>-- Select Action --</option>
-                        {IR_ACTION_OPTIONS.map(option => (
+                        <option value="">-- Select Action --</option>
+                        {getSectionActionOptions('Inspection').map(option => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
@@ -1134,8 +1171,8 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                         onChange={(e) => handleActionChange('yard', 'action', e.target.value)}
                         className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.yard?.action ? 'is-empty-print' : ''}`}
                       >
-                        <option value="" disabled>-- Select Action --</option>
-                        {IR_ACTION_OPTIONS.map(option => (
+                        <option value="">-- Select Action --</option>
+                        {getSectionActionOptions('Yard').map(option => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
@@ -1185,8 +1222,8 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                         onChange={(e) => handleActionChange('warehouse', 'action', e.target.value)}
                         className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.warehouse?.action ? 'is-empty-print' : ''}`}
                       >
-                        <option value="" disabled>-- Select Action --</option>
-                        {IR_ACTION_OPTIONS.map(option => (
+                        <option value="">-- Select Action --</option>
+                        {getSectionActionOptions('Warehouse').map(option => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>

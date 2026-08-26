@@ -30,4 +30,5 @@ export interface OP_IncidentReports {
   ResolvedDateAsInt?: number;
   flexValue?: string;
   ReporterPosition?: string;
+  EmployeeBU?: string;
 }

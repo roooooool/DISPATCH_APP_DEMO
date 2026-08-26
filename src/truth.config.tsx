@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.19.8"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.20.8"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -1515,27 +1515,27 @@ export const IR_REPORT_TYPES = [
 ];
 
 export const IR_ACTION_OPTIONS = [
-  { value: 'Proceed Next Trip', label: 'Proceed Next Trip', color: 'var(--color-border-success)' }, //anyone can use
+  { value: 'Proceed Next Trip', label: 'Proceed Next Trip', color: 'var(--color-border-success)', isProceed: true }, //anyone can use
 
-  { value: 'Inspection', label: 'For BULK Inspection', color: 'var(--color-border-warning)', type: 'Operations' },
-  { value: 'Empty', label: 'Empty bulk proceed to backload (photo empty bulk)', color: 'var(--color-border-success)', type: 'Operations' },
-  { value: 'LessThanFive', label: 'Proceed Next Trip - Less than five', color: 'var(--color-border-success)', type: 'Operations' },
-  { value: 'NoDriver', label: 'No attachment driver failed to report', color: 'var(--color-border-danger)', type: 'Operations' },
+  { value: 'Inspection', label: 'For BULK Inspection', color: 'var(--color-border-warning)', type: 'Operations', isProceed: false },
+  { value: 'Empty', label: 'Empty bulk proceed to backload (photo empty bulk)', color: 'var(--color-border-success)', type: 'Operations', isProceed: true },
+  { value: 'LessThanFive', label: 'Proceed Next Trip - Less than five', color: 'var(--color-border-success)', type: 'Operations', isProceed: true },
+  { value: 'NoDriver', label: 'No attachment driver failed to report', color: 'var(--color-border-danger)', type: 'Operations', isProceed: false },
 
-  { value: 'Retrieval', label: 'For Retrieval', color: 'var(--color-border-info)', type: 'Inspection' },
-  { value: 'PhotoEmpty', label: 'Proceed Next Trip - Bulk photo empty', color: 'var(--color-border-warning)', type: 'Inspection' },
+  { value: 'Retrieval', label: 'For Retrieval', color: 'var(--color-border-info)', type: 'Inspection', isProceed: false },
+  { value: 'PhotoEmpty', label: 'Proceed Next Trip - Bulk photo empty', color: 'var(--color-border-warning)', type: 'Inspection', isProceed: true },
 
-  { value: 'PendingRetrieval', label: 'Pending', color: 'var(--color-border-warning)', type: 'Yard' },
-  { value: 'OngoingRetrieval', label: 'Ongoing Retrieval', color: 'var(--color-border-info)', type: 'Yard' },
-  { value: 'WarehouseTransfer', label: 'For Warehouse Transfer', color: 'var(--color-border-warning)', type: 'Yard' },
-  { value: 'Disposal', label: 'For Disposal', color: 'var(--color-border-danger)', type: 'Yard' },
+  { value: 'PendingRetrieval', label: 'Pending', color: 'var(--color-border-warning)', type: 'Yard', isProceed: false },
+  { value: 'OngoingRetrieval', label: 'Ongoing Retrieval', color: 'var(--color-border-info)', type: 'Yard', isProceed: false },
+  { value: 'WarehouseTransfer', label: 'For Warehouse Transfer', color: 'var(--color-border-warning)', type: 'Yard', isProceed: false },
+  { value: 'Disposal', label: 'For Disposal', color: 'var(--color-border-danger)', type: 'Yard', isProceed: false },
 
-  { value: 'PendingTransfer', label: 'Pending Transfer', color: 'var(--color-border-warning)', type: 'Warehouse' },
-  { value: 'ReceivedTransfer', label: 'Received Transfer', color: 'var(--color-border-info)', type: 'Warehouse' },
-  { value: 'SoldTransfer', label: 'Sold', color: 'var(--color-border-success)', type: 'Warehouse' },
-  { value: 'SellingTransfer', label: 'For Selling', color: 'var(--color-border-warning)', type: 'Warehouse' },
-  { value: 'ReturnedToCustomer', label: 'Returned to Customer', color: 'var(--color-border-success)', type: 'Warehouse' },
-  { value: 'Disposed', label: 'Disposed', color: 'var(--color-border-success)', type: 'Warehouse' },
+  { value: 'PendingTransfer', label: 'Pending Transfer', color: 'var(--color-border-warning)', type: 'Warehouse', isProceed: false },
+  { value: 'ReceivedTransfer', label: 'Received Transfer', color: 'var(--color-border-info)', type: 'Warehouse', isProceed: true },
+  { value: 'SoldTransfer', label: 'Sold', color: 'var(--color-border-success)', type: 'Warehouse', isProceed: true },
+  { value: 'SellingTransfer', label: 'For Selling', color: 'var(--color-border-warning)', type: 'Warehouse', isProceed: false },
+  { value: 'ReturnedToCustomer', label: 'Returned to Customer', color: 'var(--color-border-success)', type: 'Warehouse', isProceed: true },
+  { value: 'Disposed', label: 'Disposed', color: 'var(--color-border-success)', type: 'Warehouse', isProceed: true },
 ];
 
 export const SHORT_BAGS_LIMIT = 0;
