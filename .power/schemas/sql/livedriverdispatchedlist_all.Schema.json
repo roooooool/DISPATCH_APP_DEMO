@@ -106,6 +106,7 @@
             ]
           },
           "type": "string",
+          "maxLength": 255,
           "x-ms-permission": "read-write",
           "x-ms-sort": "none"
         },
@@ -817,6 +818,7 @@
             ]
           },
           "type": "string",
+          "maxLength": 100,
           "x-ms-permission": "read-write",
           "x-ms-sort": "none"
         },
@@ -848,6 +850,7 @@
             ]
           },
           "type": "string",
+          "maxLength": 100,
           "x-ms-permission": "read-write",
           "x-ms-sort": "none"
         },
@@ -879,6 +882,7 @@
             ]
           },
           "type": "string",
+          "maxLength": 100,
           "x-ms-permission": "read-write",
           "x-ms-sort": "none"
         },
@@ -941,6 +945,38 @@
           "format": "int32",
           "minimum": -2147483648,
           "maximum": 2147483647,
+          "x-ms-permission": "read-write",
+          "x-ms-sort": "none"
+        },
+        "plannedTrip": {
+          "title": "plannedTrip",
+          "x-ms-capabilities": {
+            "filterFunctions": [
+              "lt",
+              "le",
+              "eq",
+              "ne",
+              "gt",
+              "ge",
+              "min",
+              "max",
+              "countdistinct",
+              "contains",
+              "startswith",
+              "endswith",
+              "length",
+              "indexof",
+              "replace",
+              "substring",
+              "substringof",
+              "tolower",
+              "toupper",
+              "trim",
+              "concat"
+            ]
+          },
+          "type": "string",
+          "maxLength": 255,
           "x-ms-permission": "read-write",
           "x-ms-sort": "none"
         }

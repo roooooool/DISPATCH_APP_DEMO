@@ -32,4 +32,5 @@ export interface LiveDriverDispatchedList_All {
   MiddleName?: string;
   Suffix?: string;
   IRID?: number;
+  plannedTrip?: string;
 }

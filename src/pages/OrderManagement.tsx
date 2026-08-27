@@ -814,8 +814,9 @@ const OrderManagement: React.FC = () => {
     const fetchDriverHelperList = useCallback(async (nocd: boolean = false) => {
         if (driverOptions.length > 0 && !nocd) if (!canFetch(FETCH_LOADING_KEYS.driverHelperList)) return;
         console.log("Fetching driver and helper list...");
-
+        console.log("wew...");
         try {
+            console.log('drivers2: ')
             setLoadingFor(FETCH_LOADING_KEYS.driverHelperList, true);
             const result = await ewulFetchAll<any>(
                 LiveDriverDispatchedList_AllService,
@@ -823,6 +824,8 @@ const OrderManagement: React.FC = () => {
                 3000,
                 'Id'
             );
+
+            console.log('drivers3: ', result)
 
             setDriverHelperList(result);
 
