@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState, useImperativeHandle } from 'react';
 import { createPortal } from 'react-dom';
 import { Printer, ZoomIn, ZoomOut, RotateCcw, FileImage, Maximize2, ChevronLeft, ChevronRight, ThumbsDown, Sun, Moon, DeleteIcon, CheckCheck, CheckCircle, XCircle } from 'lucide-react'; // Clear, modern utility icons
 import '../components/comp_css/IR_ShortBags_Form.css';
@@ -112,7 +112,7 @@ interface IR_ShortBags_Props {
   onDelete?: (data: Partial<IR_ShortBags_Form_Model>) => void;
 }
 
-export const IR_ShortBags_Form = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Props>(
+const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Props>(
   ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete }, ref) => {
 
     const { addTask } = useTaskWorker();
@@ -176,6 +176,22 @@ export const IR_ShortBags_Form = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_P
         warehouse: { name: '', action: '', bags: '', date: '' }
       },
     });
+
+    useImperativeHandle(ref, () => ({
+      save: async () => {
+        // Return the current form state directly or perform saving logic
+        if (onSave) {
+          handleSave(); // Triggers the existing TaskWorker save flow
+        }
+        return formData;
+      },
+      submit: async () => {
+        if (handleSubmit) {
+          handleSubmit();
+        }
+        return formData;
+      }
+    }), [formData, onSave]);
 
     // Filter options matching section type OR options without a specific type (accessible to all)
     const getSectionActionOptions = (sectionType: string) => {
@@ -1677,3 +1693,10 @@ export const IR_ShortBags_Form = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_P
       </>
     );
   });
+
+
+
+IR_ShortBags_FormRender.displayName = 'IR_ShortBags_Form';
+
+export const IR_ShortBags_Form = IR_ShortBags_FormRender;
+export default IR_ShortBags_FormRender;

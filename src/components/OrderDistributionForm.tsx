@@ -49,7 +49,7 @@ import { Assi_icon, DispSrc_icon, DispDst_icon, Done_icon, CheckCircleSolidIcon,
 import { MapPin } from 'lucide-react';
 import IncidentReportForm, { type IncidentFormHandle, type CreateIR_EmployeeDetails } from '../components/CreateIncidentReportForm';
 import TripTimeline from './TripTimeline';
-import { type IR_ShortBags_Form_Model, IR_ShortBags_Form } from './IR_ShortBags_Form';
+import { type IR_ShortBags_Form_Model, IR_ShortBags_Form, type IR_ShortBags_FormRef } from './IR_ShortBags_Form';
 import AutoDismissBanner from '../components/ewul_Banner';
 
 
@@ -188,6 +188,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const [showIncidentPrompt, setShowIncidentPrompt] = useState(false);
     const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
     const incidentFormRef = useRef<IncidentFormHandle>(null);
+    const irShortBagsForm = useRef<IR_ShortBags_FormRef>(null);
     const [showTruckConflictModal, setShowTruckConflictModal] = useState(false);
     const [truckConflictInfo, setTruckConflictInfo] = useState<string[]>([]);
     const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
@@ -2192,7 +2193,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           setIsCreatingIR(true);
           setIsIncidentModalOpen(true); // Open modal instantly so user sees the loading state
 
-          const raw_data = await incidentFormRef.current.onSave();
+          const raw_data = await incidentFormRef.current.submit();
           const employee_details = driverOptions?.find((item) => item.label === formData.Driver)?.record
           const data = {
             ...raw_data,
@@ -2253,9 +2254,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     // This function handles the absolute wipeout execution when they confirm "Yes"
     const handleForceDiscardIR = async () => {
-      if (incidentFormRef.current) {
+      if (irShortBagsForm.current?.save) {
         //@ts-ignore
-        const raw_data = await incidentFormRef.current.save();
+        const raw_data = await irShortBagsForm.current.save();
         console.log('forced saved: ', raw_data);
       }
       setIsConfirmIRCloseOpen(false);
@@ -4321,6 +4322,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 </div>
               ) : (
                 <IR_ShortBags_Form
+                  ref={irShortBagsForm}
                   incidentReportItem={createdIR as Partial<OP_IncidentReports>}
                   initialUser={editingUser ?? undefined}
                   onClose={() => { handleConfirmIRClose() }}
