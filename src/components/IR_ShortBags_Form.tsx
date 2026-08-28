@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Printer, ZoomIn, ZoomOut, RotateCcw, FileImage, Maximize2, ChevronLeft, ChevronRight, ThumbsDown, Sun, Moon, DeleteIcon, CheckCheck, CheckCircle, XCircle } from 'lucide-react'; // Clear, modern utility icons
 import '../components/comp_css/IR_ShortBags_Form.css';
@@ -98,6 +98,11 @@ export type IR_ShortBags_Form_Model = {
 
 };
 
+export interface IR_ShortBags_FormRef {
+  save: () => Promise<Partial<IR_ShortBags_Form_Model>>;
+  submit: () => Promise<Partial<IR_ShortBags_Form_Model>>;
+}
+
 interface IR_ShortBags_Props {
   initialUser?: FormUserInfo | UserInfo;
   incidentReportItem: Partial<OP_IncidentReports>;
@@ -107,186 +112,187 @@ interface IR_ShortBags_Props {
   onDelete?: (data: Partial<IR_ShortBags_Form_Model>) => void;
 }
 
-export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete }) => {
+export const IR_ShortBags_Form = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Props>(
+  ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete }, ref) => {
 
-  const { addTask } = useTaskWorker();
-  const incidentReportItem = item || {};
-  const [zoom, setZoom] = useState<number>(1.0); // 1.0 = 100% original scale
-  const jsonDetails = (incidentReportItem && incidentReportItem.reportJSON)
-    ? (JSON.parse(incidentReportItem.reportJSON) as Partial<IR_ShortBags_Form_Model>)
-    : ({} as Partial<IR_ShortBags_Form_Model>);
+    const { addTask } = useTaskWorker();
+    const incidentReportItem = item || {};
+    const [zoom, setZoom] = useState<number>(1.0); // 1.0 = 100% original scale
+    const jsonDetails = (incidentReportItem && incidentReportItem.reportJSON)
+      ? (JSON.parse(incidentReportItem.reportJSON) as Partial<IR_ShortBags_Form_Model>)
+      : ({} as Partial<IR_ShortBags_Form_Model>);
 
-  const [formData, setFormData] = useState<Partial<IR_ShortBags_Form_Model>>({
-    // Prefill
-    irReferenceNo: incidentReportItem.IRID || '',
-    tripReferenceNo: incidentReportItem.OE_Reference || jsonDetails.tripReferenceNo || '',
-    irType: incidentReportItem.IncidentType || '', // Ensure it's a string
-    irAction: incidentReportItem.ActionStatus || '', // Ensure it's a string
-    dateResolved: incidentReportItem.IRStatus === 'Resolved' && incidentReportItem.ResolvedDate ? new Date(incidentReportItem.ResolvedDate).toISOString().slice(0, 10) : '',
-    date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : '',
+    const [formData, setFormData] = useState<Partial<IR_ShortBags_Form_Model>>({
+      // Prefill
+      irReferenceNo: incidentReportItem.IRID || '',
+      tripReferenceNo: incidentReportItem.OE_Reference || jsonDetails.tripReferenceNo || '',
+      irType: incidentReportItem.IncidentType || '', // Ensure it's a string
+      irAction: incidentReportItem.ActionStatus || '', // Ensure it's a string
+      dateResolved: incidentReportItem.IRStatus === 'Resolved' && incidentReportItem.ResolvedDate ? new Date(incidentReportItem.ResolvedDate).toISOString().slice(0, 10) : '',
+      date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : '',
 
-    // Initialize other form fields as empty or default
-    empName: incidentReportItem.EmployeeName || '',
-    empId: incidentReportItem.EmployeeID || '',
-    empPosition: incidentReportItem.EmployeePosition || '',
-    businessUnit: incidentReportItem.EmployeeBU || '',
-    buHead: incidentReportItem.EmployeeBUHead || '',
-    truck_full: incidentReportItem.EmployeeTractor || '',
-    trailer_full: incidentReportItem.EmployeeTrailer || '',
+      // Initialize other form fields as empty or default
+      empName: incidentReportItem.EmployeeName || '',
+      empId: incidentReportItem.EmployeeID || '',
+      empPosition: incidentReportItem.EmployeePosition || '',
+      businessUnit: incidentReportItem.EmployeeBU || '',
+      buHead: incidentReportItem.EmployeeBUHead || '',
+      truck_full: incidentReportItem.EmployeeTractor || '',
+      trailer_full: incidentReportItem.EmployeeTrailer || '',
 
-    Customer: jsonDetails.Customer || '',
-    Source: jsonDetails.Source || '',
-    Destination: jsonDetails.Destination || '',
-    TripGroup: jsonDetails.TripGroup || '',
-    QtyWithdrawn: jsonDetails.QtyWithdrawn || 0,
-    QtyDelivered: jsonDetails.QtyDelivered || 0,
-    ShortBags: jsonDetails.QtyWithdrawn ? (jsonDetails.QtyDelivered || 0) - jsonDetails.QtyWithdrawn : 0,
-    RetrievedBags: jsonDetails.RetrievedBags,
-    CementType: jsonDetails.CementType || '',
-    ServedDate: jsonDetails.ServedDate ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10) : '',
-    incident_date: jsonDetails.incident_date ? new Date(jsonDetails.incident_date).toISOString().slice(0, 10) : '',
-    incident_time: jsonDetails.incident_time || '',
-    incident_details: jsonDetails.incident_details || '',
-    yard: jsonDetails.yard || '',
-    yardOthers: jsonDetails.yardOthers || '',
-    reportDate: jsonDetails.reportDate || '',
-    reportName: incidentReportItem.ReportedBy || '',
-    reportPosition: incidentReportItem.ReporterPosition,
-    reportDept: '',
-    resolvedBy: incidentReportItem.ResolvedBy,
-
-
-    attachedImages: jsonDetails.attachedImages || [],
+      Customer: jsonDetails.Customer || '',
+      Source: jsonDetails.Source || '',
+      Destination: jsonDetails.Destination || '',
+      TripGroup: jsonDetails.TripGroup || '',
+      QtyWithdrawn: jsonDetails.QtyWithdrawn || 0,
+      QtyDelivered: jsonDetails.QtyDelivered || 0,
+      ShortBags: jsonDetails.QtyWithdrawn ? (jsonDetails.QtyDelivered || 0) - jsonDetails.QtyWithdrawn : 0,
+      RetrievedBags: jsonDetails.RetrievedBags,
+      CementType: jsonDetails.CementType || '',
+      ServedDate: jsonDetails.ServedDate ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10) : '',
+      incident_date: jsonDetails.incident_date ? new Date(jsonDetails.incident_date).toISOString().slice(0, 10) : '',
+      incident_time: jsonDetails.incident_time || '',
+      incident_details: jsonDetails.incident_details || '',
+      yard: jsonDetails.yard || '',
+      yardOthers: jsonDetails.yardOthers || '',
+      reportDate: jsonDetails.reportDate || '',
+      reportName: incidentReportItem.ReportedBy || '',
+      reportPosition: incidentReportItem.ReporterPosition,
+      reportDept: '',
+      resolvedBy: incidentReportItem.ResolvedBy,
 
 
-    actions: jsonDetails.actions || {
-      operations: {
-        name: incidentReportItem.ReportedBy || '', // Defaults to ReportedBy
-        action: incidentReportItem.ActionStatus || '',
-        date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : ''
+      attachedImages: jsonDetails.attachedImages || [],
+
+
+      actions: jsonDetails.actions || {
+        operations: {
+          name: incidentReportItem.ReportedBy || '', // Defaults to ReportedBy
+          action: incidentReportItem.ActionStatus || '',
+          date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : ''
+        },
+        inspection: { name: '', action: '', date: '' },
+        yard: { name: '', action: '', bags: '', date: '' },
+        warehouse: { name: '', action: '', bags: '', date: '' }
       },
-      inspection: { name: '', action: '', date: '' },
-      yard: { name: '', action: '', bags: '', date: '' },
-      warehouse: { name: '', action: '', bags: '', date: '' }
-    },
-  });
-
-  // Filter options matching section type OR options without a specific type (accessible to all)
-  const getSectionActionOptions = (sectionType: string) => {
-    return IR_ACTION_OPTIONS.filter(
-      option => !option.type || option.type.toLowerCase() === sectionType.toLowerCase()
-    );
-  };
-
-  interface errorInterface { valid: boolean, msg: string, final?: boolean };
-  const [error, setError] = useState<errorInterface | null>(null);
-  const validateForm = (currentData = formData): errorInterface | null => {
-
-    if (!currentData.incident_date) { return { valid: false, msg: "Incident date is required." }; }
-    if (!currentData.incident_time) { return { valid: false, msg: "Incident time is required (HH:MM AM/PM)." }; }
-    // Check Time Format
-    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
-    if (!timeRegex.test(currentData.incident_time)) {
-      return { valid: false, msg: "Please provide a valid 24-hour clock timestamp format (HH:MM AM/PM)." };
-    }
-    // Chech Time range
-    const [hours, minutes] = currentData.incident_time.split(':').map(Number);
-    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-      return { valid: false, msg: "The provided clock hour boundaries are outside permissible ranges." };
-    }
-
-
-    if (!currentData.incident_details || !currentData.incident_details.trim()) {
-      return { valid: false, msg: "Please provide an incident description overview." };
-    }
-
-    if (!currentData.attachedImages || currentData.attachedImages.length === 0) {
-      return { valid: false, msg: "You must append at least one asset picture file as documentation evidence." };
-    }
-
-    if (currentData.irAction !== 'Proceed Next Trip') { return { valid: false, msg: "All requirements completed! Set the Action to [Proceed Next Trip] to Complete & Close the IR.", final: true } }
-    else { { return { valid: true, msg: "You may now complete the form.", final: true } } }
-
-    return null
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    const nextState = { ...formData, [name]: value };
-
-    setFormData(nextState);
-    setError(validateForm(nextState));
-
-    // console.log('action taken changed: ' , formData);
-  };
-
-  const handleActionChange = (
-    section: keyof IR_Actions_Model,
-    field: keyof ActionEntry,
-    value: string | number
-  ) => {
-    setFormData(prev => {
-      const updatedActions: IR_Actions_Model = {
-        ...prev.actions,
-        [section]: {
-          ...prev.actions?.[section],
-          [field]: value
-        }
-      } as IR_Actions_Model;
-
-      // Maintain backwards compatibility with irAction if Operations action changes[cite: 1]
-      const updatedIrAction = section === 'operations' && field === 'action'
-        ? String(value)
-        : prev.irAction;
-
-      const nextState = {
-        ...prev,
-        irAction: updatedIrAction,
-        actions: updatedActions
-      };
-
-      setError(validateForm(nextState));
-      return nextState;
     });
-  };
 
-  const handleCheckbox = (yardName: string) => {
-    const nextState = { ...formData, yard: yardName };
+    // Filter options matching section type OR options without a specific type (accessible to all)
+    const getSectionActionOptions = (sectionType: string) => {
+      return IR_ACTION_OPTIONS.filter(
+        option => !option.type || option.type.toLowerCase() === sectionType.toLowerCase()
+      );
+    };
 
-    setFormData(nextState);
-    setError(validateForm(nextState));
-  };
+    interface errorInterface { valid: boolean, msg: string, final?: boolean };
+    const [error, setError] = useState<errorInterface | null>(null);
+    const validateForm = (currentData = formData): errorInterface | null => {
 
-  const handleRemoveAttachedImage = (idx: number) => {
-    const nextState = { ...formData, attachedImages: formData.attachedImages?.filter((_, itemIdx) => itemIdx !== idx) };
-    setFormData(nextState);
-    setError(validateForm(nextState));
-  };
+      if (!currentData.incident_date) { return { valid: false, msg: "Incident date is required." }; }
+      if (!currentData.incident_time) { return { valid: false, msg: "Incident time is required (HH:MM AM/PM)." }; }
+      // Check Time Format
+      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
+      if (!timeRegex.test(currentData.incident_time)) {
+        return { valid: false, msg: "Please provide a valid 24-hour clock timestamp format (HH:MM AM/PM)." };
+      }
+      // Chech Time range
+      const [hours, minutes] = currentData.incident_time.split(':').map(Number);
+      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        return { valid: false, msg: "The provided clock hour boundaries are outside permissible ranges." };
+      }
 
-  const handlePrint = () => {
-    // 1. Locate the exact document container element
-    const printContent = document.querySelector('.ir-sb-document');
-    if (!printContent) return;
 
-    // 2. Capture the actual user text value from the state
-    const currentDetailsText = formData.incident_details || '';
+      if (!currentData.incident_details || !currentData.incident_details.trim()) {
+        return { valid: false, msg: "Please provide an incident description overview." };
+      }
 
-    // 3. Calculate your dynamic inline height exactly like your React component does
-    const calculatedTextareaHeight = `${LINE_COUNT_LIMIT * 30}px`;
+      if (!currentData.attachedImages || currentData.attachedImages.length === 0) {
+        return { valid: false, msg: "You must append at least one asset picture file as documentation evidence." };
+      }
 
-    // 4. Create a temporary hidden iframe element
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.width = '0px';
-    iframe.style.height = '0px';
-    iframe.style.border = 'none';
-    document.body.appendChild(iframe);
+      if (currentData.irAction !== 'Proceed Next Trip') { return { valid: false, msg: "All requirements completed! Set the Action to [Proceed Next Trip] to Complete & Close the IR.", final: true } }
+      else { { return { valid: true, msg: "You may now complete the form.", final: true } } }
 
-    const iframeDoc = iframe.contentWindow?.document;
-    if (!iframeDoc) return;
+      return null
+    };
 
-    iframeDoc.open();
-    iframeDoc.write(`
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      const { name, value } = e.target;
+      const nextState = { ...formData, [name]: value };
+
+      setFormData(nextState);
+      setError(validateForm(nextState));
+
+      // console.log('action taken changed: ' , formData);
+    };
+
+    const handleActionChange = (
+      section: keyof IR_Actions_Model,
+      field: keyof ActionEntry,
+      value: string | number
+    ) => {
+      setFormData(prev => {
+        const updatedActions: IR_Actions_Model = {
+          ...prev.actions,
+          [section]: {
+            ...prev.actions?.[section],
+            [field]: value
+          }
+        } as IR_Actions_Model;
+
+        // Maintain backwards compatibility with irAction if Operations action changes[cite: 1]
+        const updatedIrAction = section === 'operations' && field === 'action'
+          ? String(value)
+          : prev.irAction;
+
+        const nextState = {
+          ...prev,
+          irAction: updatedIrAction,
+          actions: updatedActions
+        };
+
+        setError(validateForm(nextState));
+        return nextState;
+      });
+    };
+
+    const handleCheckbox = (yardName: string) => {
+      const nextState = { ...formData, yard: yardName };
+
+      setFormData(nextState);
+      setError(validateForm(nextState));
+    };
+
+    const handleRemoveAttachedImage = (idx: number) => {
+      const nextState = { ...formData, attachedImages: formData.attachedImages?.filter((_, itemIdx) => itemIdx !== idx) };
+      setFormData(nextState);
+      setError(validateForm(nextState));
+    };
+
+    const handlePrint = () => {
+      // 1. Locate the exact document container element
+      const printContent = document.querySelector('.ir-sb-document');
+      if (!printContent) return;
+
+      // 2. Capture the actual user text value from the state
+      const currentDetailsText = formData.incident_details || '';
+
+      // 3. Calculate your dynamic inline height exactly like your React component does
+      const calculatedTextareaHeight = `${LINE_COUNT_LIMIT * 30}px`;
+
+      // 4. Create a temporary hidden iframe element
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'absolute';
+      iframe.style.width = '0px';
+      iframe.style.height = '0px';
+      iframe.style.border = 'none';
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentWindow?.document;
+      if (!iframeDoc) return;
+
+      iframeDoc.open();
+      iframeDoc.write(`
       <!DOCTYPE html>
       <html>
         <head>
@@ -484,523 +490,523 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
         </body>
       </html>
     `);
-    iframeDoc.close();
+      iframeDoc.close();
 
-    // 4. Ensure input values are transferred over (innerHTML doesn't copy current live state text values)
-    const sourceInputs = printContent.querySelectorAll('input, textarea, select');
-    const iframeInputs = iframeDoc.querySelectorAll('input, textarea, select');
+      // 4. Ensure input values are transferred over (innerHTML doesn't copy current live state text values)
+      const sourceInputs = printContent.querySelectorAll('input, textarea, select');
+      const iframeInputs = iframeDoc.querySelectorAll('input, textarea, select');
 
-    sourceInputs.forEach((input: any, index: number) => {
-      // CRITICAL FIX: Skip file inputs entirely to prevent security value truncation crash
-      if (input.type === 'file') {
-        return;
-      }
+      sourceInputs.forEach((input: any, index: number) => {
+        // CRITICAL FIX: Skip file inputs entirely to prevent security value truncation crash
+        if (input.type === 'file') {
+          return;
+        }
 
-      if (input.type === 'checkbox' || input.type === 'radio') {
-        (iframeInputs[index] as HTMLInputElement).checked = input.checked;
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          (iframeInputs[index] as HTMLInputElement).checked = input.checked;
+        } else {
+          if (iframeInputs[index]) {
+            (iframeInputs[index] as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value = input.value;
+          }
+        }
+      });
+
+      // 5. Wait for the styles/assets inside the iframe to load fully before opening the print prompt
+      iframe.contentWindow?.focus();
+
+      // Give the browser engine a microtask tick to process asset links securely
+      setTimeout(() => {
+        iframe.contentWindow?.print();
+        // 6. Clean up after yourself by destroying the node element from the DOM tree
+        document.body.removeChild(iframe);
+      }, 250);
+    };
+
+    // Image Viewer Modal States
+    const [selectedPreviewImg, setSelectedPreviewImg] = useState<{ src: string; fileName: string } | null>(null);
+    const [previewZoom, setPreviewZoom] = useState<number>(1);
+    const [previewRotation, setPreviewRotation] = useState<number>(0);
+
+    // Helper handlers to constrain or manipulate image bounds cleanly
+    const handleModalZoomIn = () => setPreviewZoom(prev => Math.min(prev + 0.25, 3)); // Max 3x zoom
+    const handleModalZoomOut = () => setPreviewZoom(prev => Math.max(prev - 0.25, 0.5)); // Min 0.5x zoom
+    const handleModalRotate = () => setPreviewRotation(prev => (prev + 90) % 360); // Increments by 90 deg
+
+    const handleImgWheelZoom = (e: React.WheelEvent) => {
+      // e.deltaY < 0 means rolling the wheel forward (Zoom In)
+      // e.deltaY > 0 means rolling the wheel backward (Zoom Out)
+      if (e.deltaY < 0) {
+        // Zoom In: Constrain to max 3x
+        setPreviewZoom(prev => Math.min(prev + 0.15, 3));
       } else {
-        if (iframeInputs[index]) {
-          (iframeInputs[index] as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value = input.value;
+        // Zoom Out: Constrain to min 0.5x
+        setPreviewZoom(prev => Math.max(prev - 0.15, 0.5));
+      }
+    };
+
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Workspace Image Panning States
+    const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [isDraggingImage, setIsDraggingImage] = useState<boolean>(false);
+    const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+    // Handle mouse down event inside image frame canvas
+    const handleImgMouseDown = (e: React.MouseEvent) => {
+      e.preventDefault(); // Prevents browser image ghost duplication
+      setIsDraggingImage(true);
+      // Store the starting mouse coordinates adjusted by previous offsets
+      setDragStart({
+        x: e.clientX - panOffset.x,
+        y: e.clientY - panOffset.y
+      });
+    };
+
+    // Handle moving the mouse cursor inside image frame canvas
+    const handleImgMouseMove = (e: React.MouseEvent) => {
+      if (!isDraggingImage) return;
+      // Calculate new coordinates relative to start position
+      setPanOffset({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    };
+
+    // Handle releasing or exiting the drag boundary action
+    const handleImgMouseUpOrLeave = () => {
+      setIsDraggingImage(false);
+    };
+
+    // Update your existing handleModalReset to clear panning values too!
+    const handleModalReset = () => {
+      setPreviewZoom(1);
+      setPreviewRotation(0);
+      setPanOffset({ x: 0, y: 0 }); // Reset position to absolute center
+    };
+
+    const LINE_COUNT_LIMIT = 3
+    const handleNewLine = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const detalyeNgInsidenteValue = formData.incident_details || '';
+      const lineCount = (detalyeNgInsidenteValue.match(/\n/g) || []).length + 1;
+      if (e.key === 'Enter') {
+        if (lineCount >= LINE_COUNT_LIMIT) {
+          e.preventDefault();
         }
       }
-    });
+    };
 
-    // 5. Wait for the styles/assets inside the iframe to load fully before opening the print prompt
-    iframe.contentWindow?.focus();
+    // Zoom Handler functions
+    const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 1.5));  // Cap zoom maximum at 150%
+    const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.7)); // Cap zoom minimum at 70%
+    const handleResetZoom = () => setZoom(1.0);
 
-    // Give the browser engine a microtask tick to process asset links securely
-    setTimeout(() => {
-      iframe.contentWindow?.print();
-      // 6. Clean up after yourself by destroying the node element from the DOM tree
-      document.body.removeChild(iframe);
-    }, 250);
-  };
-
-  // Image Viewer Modal States
-  const [selectedPreviewImg, setSelectedPreviewImg] = useState<{ src: string; fileName: string } | null>(null);
-  const [previewZoom, setPreviewZoom] = useState<number>(1);
-  const [previewRotation, setPreviewRotation] = useState<number>(0);
-
-  // Helper handlers to constrain or manipulate image bounds cleanly
-  const handleModalZoomIn = () => setPreviewZoom(prev => Math.min(prev + 0.25, 3)); // Max 3x zoom
-  const handleModalZoomOut = () => setPreviewZoom(prev => Math.max(prev - 0.25, 0.5)); // Min 0.5x zoom
-  const handleModalRotate = () => setPreviewRotation(prev => (prev + 90) % 360); // Increments by 90 deg
-
-  const handleImgWheelZoom = (e: React.WheelEvent) => {
-    // e.deltaY < 0 means rolling the wheel forward (Zoom In)
-    // e.deltaY > 0 means rolling the wheel backward (Zoom Out)
-    if (e.deltaY < 0) {
-      // Zoom In: Constrain to max 3x
-      setPreviewZoom(prev => Math.min(prev + 0.15, 3));
-    } else {
-      // Zoom Out: Constrain to min 0.5x
-      setPreviewZoom(prev => Math.max(prev - 0.15, 0.5));
-    }
-  };
-
-  const [isDragging, setIsDragging] = useState(false);
-
-  // Workspace Image Panning States
-  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [isDraggingImage, setIsDraggingImage] = useState<boolean>(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  // Handle mouse down event inside image frame canvas
-  const handleImgMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevents browser image ghost duplication
-    setIsDraggingImage(true);
-    // Store the starting mouse coordinates adjusted by previous offsets
-    setDragStart({
-      x: e.clientX - panOffset.x,
-      y: e.clientY - panOffset.y
-    });
-  };
-
-  // Handle moving the mouse cursor inside image frame canvas
-  const handleImgMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingImage) return;
-    // Calculate new coordinates relative to start position
-    setPanOffset({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
-  };
-
-  // Handle releasing or exiting the drag boundary action
-  const handleImgMouseUpOrLeave = () => {
-    setIsDraggingImage(false);
-  };
-
-  // Update your existing handleModalReset to clear panning values too!
-  const handleModalReset = () => {
-    setPreviewZoom(1);
-    setPreviewRotation(0);
-    setPanOffset({ x: 0, y: 0 }); // Reset position to absolute center
-  };
-
-  const LINE_COUNT_LIMIT = 3
-  const handleNewLine = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    const detalyeNgInsidenteValue = formData.incident_details || '';
-    const lineCount = (detalyeNgInsidenteValue.match(/\n/g) || []).length + 1;
-    if (e.key === 'Enter') {
-      if (lineCount >= LINE_COUNT_LIMIT) {
-        e.preventDefault();
+    const [isActionsBarExpanded, setIsActionsBarExpanded] = useState<boolean>(true);
+    const [isCanvasDarkMode, setIsCanvasDarkMode] = useState<boolean>(() => {
+      // 1. Check if the application uses a data attribute on the html element (e.g., <html data-theme="dark">)
+      const htmlTheme = document.documentElement.getAttribute('data-theme');
+      if (htmlTheme) {
+        return htmlTheme === 'dark';
       }
-    }
-  };
 
-  // Zoom Handler functions
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 1.5));  // Cap zoom maximum at 150%
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.7)); // Cap zoom minimum at 70%
-  const handleResetZoom = () => setZoom(1.0);
+      // 2. Fallback: Check if the application appends a class to the body or html tag (e.g., <body className="dark-theme">)
+      const hasDarkClass = document.documentElement.classList.contains('dark') ||
+        document.body.classList.contains('dark') ||
+        document.body.classList.contains('dark-theme');
+      if (hasDarkClass) {
+        return true;
+      }
 
-  const [isActionsBarExpanded, setIsActionsBarExpanded] = useState<boolean>(true);
-  const [isCanvasDarkMode, setIsCanvasDarkMode] = useState<boolean>(() => {
-    // 1. Check if the application uses a data attribute on the html element (e.g., <html data-theme="dark">)
-    const htmlTheme = document.documentElement.getAttribute('data-theme');
-    if (htmlTheme) {
-      return htmlTheme === 'dark';
-    }
+      // 3. Fallback: Check the user's operating system hardware level media query preference
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return true;
+      }
 
-    // 2. Fallback: Check if the application appends a class to the body or html tag (e.g., <body className="dark-theme">)
-    const hasDarkClass = document.documentElement.classList.contains('dark') ||
-      document.body.classList.contains('dark') ||
-      document.body.classList.contains('dark-theme');
-    if (hasDarkClass) {
-      return true;
-    }
+      // Default fallback if no theme configuration is detected
+      return false;
+    });
 
-    // 3. Fallback: Check the user's operating system hardware level media query preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return true;
-    }
-
-    // Default fallback if no theme configuration is detected
-    return false;
-  });
-
-  const handleSave = () => {
-    if (onSave) {
+    const handleSave = () => {
+      if (onSave) {
 
 
 
-      addTask({
-        id: `saveir-${incidentReportItem.IRID}`,
-        name: `Saving Incident Details for ${incidentReportItem.IRID}`,
-        execute: async () => {
-          let result = null
-          try {
-            console.log("Submitting incident report");
+        addTask({
+          id: `saveir-${incidentReportItem.IRID}`,
+          name: `Saving Incident Details for ${incidentReportItem.IRID}`,
+          execute: async () => {
+            let result = null
+            try {
+              console.log("Submitting incident report");
 
-            if (incidentReportItem.IncidentID === undefined) return;
+              if (incidentReportItem.IncidentID === undefined) return;
 
-            const ir_details = {
-              OE_Reference: formData.irReferenceNo,
-              EmployeeName: formData.empName,
-              EmployeeID: formData.empId,
-              EmployeeBU: formData.businessUnit,
-              EmployeeTractor: formData.truck_full,
-              EmployeeTrailer: formData.trailer_full,
-              flexValue: formData.ShortBags,
-              ModifiedBy: initialUser?.FullName,
-              ModifiedDateTime: new Date().toISOString(),
-            } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
+              const ir_details = {
+                OE_Reference: formData.tripReferenceNo,
+                EmployeeName: formData.empName,
+                EmployeeID: formData.empId,
+                EmployeeBU: formData.businessUnit,
+                EmployeeTractor: formData.truck_full,
+                EmployeeTrailer: formData.trailer_full,
+                flexValue: formData.ShortBags,
+                ModifiedBy: initialUser?.FullName,
+                ModifiedDateTime: new Date().toISOString(),
+              } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
 
-            console.log(`Saving IR [${incidentReportItem.IncidentID}]: `, { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
+              console.log(`Saving IR [${incidentReportItem.IncidentID}]: `, { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
 
-            result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
-            console.log('Saving result: ', result)
+              result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
+              console.log('Saving result: ', result)
 
 
-            if (result.error) {
-              throw new Error(result.error.message);
+              if (result.error) {
+                throw new Error(result.error.message);
+              }
+
+              if (!result || !result.data) {
+                throw new Error("Unexpected response from server: " + JSON.stringify(result));
+              }
+
+            } catch (error) {
+              console.error("Failed to upload attendance records:", error);
+              return { success: false, error };
+            } finally {
+              return { success: true, data: result };
             }
+          },
+          checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
+            return result.success;
+          },
+          onSuccess: async (result: any) => {
+            onSave(result.data.data);
+            console.log(result);
+          },
+          onFailure: async (result: any) => {
+            console.log(result);
+          },
+          message: `Saving...`,
+          message_success: `Incident Report saved successfully for ${incidentReportItem.IRID}`,
+          message_failure: `Failed to saved Incident Report for ${incidentReportItem.IRID}`,
 
-            if (!result || !result.data) {
-              throw new Error("Unexpected response from server: " + JSON.stringify(result));
+
+
+        })
+        if (onClose) onClose();
+      }
+    };
+
+    const handleSubmit = () => {
+      if (onSubmit) {
+
+        addTask({
+          id: `submitir-${incidentReportItem.IRID}`,
+          name: `Submitting Incident Report for ${incidentReportItem.IRID}`,
+          execute: async () => {
+            let result = null
+            try {
+              console.log("Submitting incident report");
+
+              if (incidentReportItem.IncidentID === undefined) return;
+
+              const ir_details = {
+                OE_Reference: formData.tripReferenceNo,
+                EmployeeName: formData.empName,
+                EmployeeID: formData.empId,
+                EmployeeBU: formData.businessUnit,
+                EmployeeTractor: formData.truck_full,
+                EmployeeTrailer: formData.trailer_full,
+                flexValue: formData.ShortBags,
+                ModifiedBy: initialUser?.FullName,
+                ModifiedDateTime: new Date().toISOString(),
+                ResolvedDate: formData.date,
+                ResolvedBy: initialUser?.FullName,
+              } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
+
+              result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, IRStatus: 'Closed', reportJSON: JSON.stringify(formData) });
+
+              if (result.error) {
+                throw new Error(result.error.message);
+              }
+
+              if (!result || !result.data) {
+                throw new Error("Unexpected response from server: " + JSON.stringify(result));
+              }
+
+            } catch (error) {
+              console.error("Failed to upload attendance records:", error);
+              return { success: false, error };
+            } finally {
+              return { success: true, data: result };
             }
-
-          } catch (error) {
-            console.error("Failed to upload attendance records:", error);
-            return { success: false, error };
-          } finally {
-            return { success: true, data: result };
-          }
-        },
-        checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
-          return result.success;
-        },
-        onSuccess: async (result: any) => {
-          onSave(result.data.data);
-          console.log(result);
-        },
-        onFailure: async (result: any) => {
-          console.log(result);
-        },
-        message: `Saving...`,
-        message_success: `Incident Report saved successfully for ${incidentReportItem.IRID}`,
-        message_failure: `Failed to saved Incident Report for ${incidentReportItem.IRID}`,
+          },
+          checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
+            return result.success;
+          },
+          onSuccess: async (result: any) => {
+            onSubmit(result.data.data);
+            console.log(result);
+          },
+          onFailure: async (result: any) => {
+            console.log(result);
+          },
+          message: `Submitting...`,
+          message_success: `Incident Report submitted successfully for ${incidentReportItem.IRID}`,
+          message_failure: `Failed to submit Incident Report for ${incidentReportItem.IRID}`,
 
 
 
-      })
-      if (onClose) onClose();
+        })
+        if (onClose) onClose();
+      }
+    };
+
+    const handleReject = () => {
+      if (onSubmit) {
+
+        addTask({
+          id: `rejectir-${incidentReportItem.IRID}`,
+          name: `Rejecting Incident Report for ${incidentReportItem.IRID}`,
+          execute: async () => {
+            let result = null
+            try {
+              console.log("Submitting incident report");
+
+              if (incidentReportItem.IncidentID === undefined) return;
+
+              const ir_details = {
+                OE_Reference: formData.tripReferenceNo,
+                EmployeeName: formData.empName,
+                EmployeeID: formData.empId,
+                EmployeeBU: formData.businessUnit,
+                EmployeeTractor: formData.truck_full,
+                EmployeeTrailer: formData.trailer_full,
+                flexValue: formData.ShortBags,
+                ModifiedBy: initialUser?.FullName,
+                ModifiedDateTime: new Date().toISOString(),
+                ResolvedDate: formData.date,
+              } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
+
+              result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, IRStatus: 'Cancelled', reportJSON: JSON.stringify(formData) });
+
+              if (result.error) {
+                throw new Error(result.error.message);
+              }
+
+              if (!result || !result.data) {
+                throw new Error("Unexpected response from server: " + JSON.stringify(result));
+              }
+
+            } catch (error) {
+              console.error("Failed to upload attendance records:", error);
+              return { success: false, error };
+            } finally {
+              return { success: true, data: result };
+            }
+          },
+          checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
+            return result.success;
+          },
+          onSuccess: async (result: any) => {
+            onSubmit(result.data.data);
+            console.log(result);
+          },
+          onFailure: async (result: any) => {
+            console.log(result);
+          },
+          message: `Rejecting...`,
+          message_success: `Incident Report rejected successfully for ${incidentReportItem.IRID}`,
+          message_failure: `Failed to reject Incident Report for ${incidentReportItem.IRID}`,
+
+
+
+        })
+        if (onClose) onClose();
+      }
+    };
+
+    const handleDelete = () => {
+      if (onDelete) {
+
+        addTask({
+          id: `deleteir-${incidentReportItem.IRID}`,
+          name: `Deleting Incident Report for ${incidentReportItem.IRID}`,
+          execute: async () => {
+            try {
+              console.log("Submitting incident report");
+
+              if (incidentReportItem.IncidentID === undefined) return;
+
+
+              await OP_IncidentReportsService.delete(incidentReportItem.IncidentID.toString());
+
+            } catch (error) {
+              console.error("Failed to upload attendance records:", error);
+              return { success: false, error };
+            } finally {
+              return { success: true, data: { data: incidentReportItem } };
+            }
+          },
+          checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
+            return result.success;
+          },
+          onSuccess: async (result: any) => {
+            onDelete(result.data.data);
+
+            console.log('success', result.length);
+          },
+          onFailure: async (result: any) => {
+            console.log('failed', result.length);
+          },
+          message: `Deleting...`,
+          message_success: `Incident Report deleted successfully for ${incidentReportItem.IRID}`,
+          message_failure: `Failed to delete Incident Report for ${incidentReportItem.IRID}`,
+
+        })
+        if (onClose) onClose();
+      }
+    };
+
+    useEffect(() => {
+      setError(validateForm(formData));
+    }, []);
+
+    const getStatusColor = (status: string) => {
+      let style: React.CSSProperties = { color: 'var(--color-muted)' };
+      if (status === "Cancelled") style = { color: 'var(--color-border-warning)' };
+      if (status === "Open") style = { color: 'var(--color-border-info)' };
+      if (status === "Closed") style = { color: 'var(--color-border-success)' };
+      style.fontWeight = 'bold';
+      return { ...style, fontWeight: '800' } as React.CSSProperties;
     }
-  };
 
-  const handleSubmit = () => {
-    if (onSubmit) {
+    return (
+      <>
+        <div className="ir-sb-container">
 
-      addTask({
-        id: `submitir-${incidentReportItem.IRID}`,
-        name: `Submitting Incident Report for ${incidentReportItem.IRID}`,
-        execute: async () => {
-          let result = null
-          try {
-            console.log("Submitting incident report");
-
-            if (incidentReportItem.IncidentID === undefined) return;
-
-            const ir_details = {
-              OE_Reference: formData.irReferenceNo,
-              EmployeeName: formData.empName,
-              EmployeeID: formData.empId,
-              EmployeeBU: formData.businessUnit,
-              EmployeeTractor: formData.truck_full,
-              EmployeeTrailer: formData.trailer_full,
-              flexValue: formData.ShortBags,
-              ModifiedBy: initialUser?.FullName,
-              ModifiedDateTime: new Date().toISOString(),
-              ResolvedDate: formData.date,
-              ResolvedBy: initialUser?.FullName,
-            } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
-
-            result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, IRStatus: 'Closed', reportJSON: JSON.stringify(formData) });
-
-            if (result.error) {
-              throw new Error(result.error.message);
-            }
-
-            if (!result || !result.data) {
-              throw new Error("Unexpected response from server: " + JSON.stringify(result));
-            }
-
-          } catch (error) {
-            console.error("Failed to upload attendance records:", error);
-            return { success: false, error };
-          } finally {
-            return { success: true, data: result };
-          }
-        },
-        checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
-          return result.success;
-        },
-        onSuccess: async (result: any) => {
-          onSubmit(result.data.data);
-          console.log(result);
-        },
-        onFailure: async (result: any) => {
-          console.log(result);
-        },
-        message: `Submitting...`,
-        message_success: `Incident Report submitted successfully for ${incidentReportItem.IRID}`,
-        message_failure: `Failed to submit Incident Report for ${incidentReportItem.IRID}`,
-
-
-
-      })
-      if (onClose) onClose();
-    }
-  };
-
-  const handleReject = () => {
-    if (onSubmit) {
-
-      addTask({
-        id: `rejectir-${incidentReportItem.IRID}`,
-        name: `Rejecting Incident Report for ${incidentReportItem.IRID}`,
-        execute: async () => {
-          let result = null
-          try {
-            console.log("Submitting incident report");
-
-            if (incidentReportItem.IncidentID === undefined) return;
-
-            const ir_details = {
-              OE_Reference: formData.irReferenceNo,
-              EmployeeName: formData.empName,
-              EmployeeID: formData.empId,
-              EmployeeBU: formData.businessUnit,
-              EmployeeTractor: formData.truck_full,
-              EmployeeTrailer: formData.trailer_full,
-              flexValue: formData.ShortBags,
-              ModifiedBy: initialUser?.FullName,
-              ModifiedDateTime: new Date().toISOString(),
-              ResolvedDate: formData.date,
-            } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
-
-            result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, IRStatus: 'Cancelled', reportJSON: JSON.stringify(formData) });
-
-            if (result.error) {
-              throw new Error(result.error.message);
-            }
-
-            if (!result || !result.data) {
-              throw new Error("Unexpected response from server: " + JSON.stringify(result));
-            }
-
-          } catch (error) {
-            console.error("Failed to upload attendance records:", error);
-            return { success: false, error };
-          } finally {
-            return { success: true, data: result };
-          }
-        },
-        checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
-          return result.success;
-        },
-        onSuccess: async (result: any) => {
-          onSubmit(result.data.data);
-          console.log(result);
-        },
-        onFailure: async (result: any) => {
-          console.log(result);
-        },
-        message: `Rejecting...`,
-        message_success: `Incident Report rejected successfully for ${incidentReportItem.IRID}`,
-        message_failure: `Failed to reject Incident Report for ${incidentReportItem.IRID}`,
-
-
-
-      })
-      if (onClose) onClose();
-    }
-  };
-
-  const handleDelete = () => {
-    if (onDelete) {
-
-      addTask({
-        id: `deleteir-${incidentReportItem.IRID}`,
-        name: `Deleting Incident Report for ${incidentReportItem.IRID}`,
-        execute: async () => {
-          try {
-            console.log("Submitting incident report");
-
-            if (incidentReportItem.IncidentID === undefined) return;
-
-
-            await OP_IncidentReportsService.delete(incidentReportItem.IncidentID.toString());
-
-          } catch (error) {
-            console.error("Failed to upload attendance records:", error);
-            return { success: false, error };
-          } finally {
-            return { success: true, data: { data: incidentReportItem } };
-          }
-        },
-        checkSuccess: (result: { success: boolean, data?: any, error?: any }) => {
-          return result.success;
-        },
-        onSuccess: async (result: any) => {
-          onDelete(result.data.data);
-
-          console.log('success', result.length);
-        },
-        onFailure: async (result: any) => {
-          console.log('failed', result.length);
-        },
-        message: `Deleting...`,
-        message_success: `Incident Report deleted successfully for ${incidentReportItem.IRID}`,
-        message_failure: `Failed to delete Incident Report for ${incidentReportItem.IRID}`,
-
-      })
-      if (onClose) onClose();
-    }
-  };
-
-  useEffect(() => {
-    setError(validateForm(formData));
-  }, []);
-
-  const getStatusColor = (status: string) => {
-    let style: React.CSSProperties = { color: 'var(--color-muted)' };
-    if (status === "Cancelled") style = { color: 'var(--color-border-warning)' };
-    if (status === "Open") style = { color: 'var(--color-border-info)' };
-    if (status === "Closed") style = { color: 'var(--color-border-success)' };
-    style.fontWeight = 'bold';
-    return { ...style, fontWeight: '800' } as React.CSSProperties;
-  }
-
-  return (
-    <>
-      <div className="ir-sb-container">
-
-        {/* Screen-Only Action Header inside Modal[cite: 3] */}
-        <div className={`ir-sb-actions-bar no-print ${!isActionsBarExpanded ? 'collapsed' : ''}`}>
-          {/* The Toggle Toggle Handle Bar Button */}
-          <button
-            type="button"
-            className="ir-sb-actions-toggle-handle"
-            onClick={() => setIsActionsBarExpanded(!isActionsBarExpanded)}
-            title={isActionsBarExpanded ? "Collapse Controls" : "Expand Controls"}
-          >
-            {isActionsBarExpanded ? <ChevronRight size={18} strokeWidth={3} color='var(--color-primary)' /> : <ChevronLeft size={18} color='var(--color-text-2)' strokeWidth={3} />}
-          </button>
-
-          {/* Wrapped controls inside a dedicated inner container to manage spacing transitions neatly */}
-          <div className="ir-sb-actions-inner-content">
-            {/* Zoom Control Group */}
-            <div className="ir-sb-zoom-controls">
-              {zoom !== 1.0 && (
-                <button type="button" onClick={handleResetZoom} className="ir-sb-btn ir-sb-zoom-btn reset" title="Reset Zoom">
-                  <RotateCcw size={13} />
-                </button>
-              )}
-              <button type="button" onClick={handleZoomOut} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom Out" disabled={zoom <= 0.7}>
-                <ZoomOut size={14} />
-              </button>
-              <span className="ir-sb-zoom-indicator">{Math.round(zoom * 100)}%</span>
-              <button type="button" onClick={handleZoomIn} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom In" disabled={zoom >= 1.5}>
-                <ZoomIn size={14} />
-              </button>
-            </div>
-
-            <span className="ir-sb-actions-divider">|</span>
-
-            {/* Action Button Group */}
-            <button type="button" onClick={handlePrint} className="ir-sb-btn ir-sb-print-btn">
-              <Printer size={14} /> Print Report
-            </button>
-            <button type="button" onClick={handleSave} className="ir-sb-btn btn-save">
-              Save
-            </button>
+          {/* Screen-Only Action Header inside Modal[cite: 3] */}
+          <div className={`ir-sb-actions-bar no-print ${!isActionsBarExpanded ? 'collapsed' : ''}`}>
+            {/* The Toggle Toggle Handle Bar Button */}
             <button
               type="button"
-              onClick={handleSubmit}
-              disabled={!error?.valid}
-              className="ir-sb-btn ir-sb-submit-btn btn-proceed"
-              style={{ position: 'relative' }} /* Anchor point for the absolute badge */
+              className="ir-sb-actions-toggle-handle"
+              onClick={() => setIsActionsBarExpanded(!isActionsBarExpanded)}
+              title={isActionsBarExpanded ? "Collapse Controls" : "Expand Controls"}
             >
-              <CheckCheck size={14} /> Complete
+              {isActionsBarExpanded ? <ChevronRight size={18} strokeWidth={3} color='var(--color-primary)' /> : <ChevronLeft size={18} color='var(--color-text-2)' strokeWidth={3} />}
+            </button>
 
-              {/* Render the pulsing badge only when error.valid is true */}
-              {error?.valid && (
-                <span className="ir-sb-button-badge">
-                  !
-                </span>
-              )}
-            </button>
-            <button type="button" onClick={handleReject} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
-              <ThumbsDown size={14} />
-              Cancel IR
-            </button>
-            {initialUser?.Position === 'Developer' &&
-              (<button type="button" onClick={handleDelete} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
-                <DeleteIcon size={14} />
-                Delete
-              </button>)
-            }
-            {onClose && (
-              <button type="button" onClick={onClose} className="ir-sb-btn ir-sb-close-btn">
-                Close
+            {/* Wrapped controls inside a dedicated inner container to manage spacing transitions neatly */}
+            <div className="ir-sb-actions-inner-content">
+              {/* Zoom Control Group */}
+              <div className="ir-sb-zoom-controls">
+                {zoom !== 1.0 && (
+                  <button type="button" onClick={handleResetZoom} className="ir-sb-btn ir-sb-zoom-btn reset" title="Reset Zoom">
+                    <RotateCcw size={13} />
+                  </button>
+                )}
+                <button type="button" onClick={handleZoomOut} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom Out" disabled={zoom <= 0.7}>
+                  <ZoomOut size={14} />
+                </button>
+                <span className="ir-sb-zoom-indicator">{Math.round(zoom * 100)}%</span>
+                <button type="button" onClick={handleZoomIn} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom In" disabled={zoom >= 1.5}>
+                  <ZoomIn size={14} />
+                </button>
+              </div>
+
+              <span className="ir-sb-actions-divider">|</span>
+
+              {/* Action Button Group */}
+              <button type="button" onClick={handlePrint} className="ir-sb-btn ir-sb-print-btn">
+                <Printer size={14} /> Print Report
               </button>
-            )}
+              <button type="button" onClick={handleSave} className="ir-sb-btn btn-save">
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!error?.valid}
+                className="ir-sb-btn ir-sb-submit-btn btn-proceed"
+                style={{ position: 'relative' }} /* Anchor point for the absolute badge */
+              >
+                <CheckCheck size={14} /> Complete
+
+                {/* Render the pulsing badge only when error.valid is true */}
+                {error?.valid && (
+                  <span className="ir-sb-button-badge">
+                    !
+                  </span>
+                )}
+              </button>
+              <button type="button" onClick={handleReject} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
+                <ThumbsDown size={14} />
+                Cancel IR
+              </button>
+              {initialUser?.Position === 'Developer' &&
+                (<button type="button" onClick={handleDelete} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
+                  <DeleteIcon size={14} />
+                  Delete
+                </button>)
+              }
+              {onClose && (
+                <button type="button" onClick={onClose} className="ir-sb-btn ir-sb-close-btn">
+                  Close
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Scrollable Document Wrapper[cite: 3] */}
-        <div className="ir-sb-document-wrapper">
-          <div
-            className="ir-sb-document"
-            style={{
-              transform: `scale(${zoom})`,
-              transformOrigin: 'top center', // Ensures scaling stays anchored in the middle top position
-              marginBottom: `${(zoom - 1) * 350}px` // Offsets the visual gap scaling creates at bottom layout boundaries
-            }}
-          >
-            <div className="ir-sb-page ir-sb-page-1">
-              {/* Header Section[cite: 3] */}
-              <div className="ir-sb-header">
-                <div className="ir-sb-logo-container">
-                  <img src={gsdcLogo} alt="GSDC Logo" className="ir-sb-logo-img" />
+          {/* Scrollable Document Wrapper[cite: 3] */}
+          <div className="ir-sb-document-wrapper">
+            <div
+              className="ir-sb-document"
+              style={{
+                transform: `scale(${zoom})`,
+                transformOrigin: 'top center', // Ensures scaling stays anchored in the middle top position
+                marginBottom: `${(zoom - 1) * 350}px` // Offsets the visual gap scaling creates at bottom layout boundaries
+              }}
+            >
+              <div className="ir-sb-page ir-sb-page-1">
+                {/* Header Section[cite: 3] */}
+                <div className="ir-sb-header">
+                  <div className="ir-sb-logo-container">
+                    <img src={gsdcLogo} alt="GSDC Logo" className="ir-sb-logo-img" />
+                  </div>
+
+                  <div className="ir-sb-company-info">
+                    <h2>GREAT SIERRA DEVELOPMENT CORPORATION</h2>
+                    <p>Lot 2, Block 1, Grand Industrial Estate Subdivision Bo. Parulan Plaridel, Bulacan</p>
+                    <h1>INCIDENT REPORT</h1>
+                  </div>
+                  <div className="ir-sb-header-spacer" aria-hidden="true" />
                 </div>
 
-                <div className="ir-sb-company-info">
-                  <h2>GREAT SIERRA DEVELOPMENT CORPORATION</h2>
-                  <p>Lot 2, Block 1, Grand Industrial Estate Subdivision Bo. Parulan Plaridel, Bulacan</p>
-                  <h1>INCIDENT REPORT</h1>
+                {/* Reference and Date[cite: 3] */}
+                <div className="ir-sb-meta-row">
+                  <div className="ir-sb-input-group flex-2">
+                    <span className="ir-sb-label">IR Reference No:</span>
+                    <input type="text" name="irReferenceNo" value={formData.irReferenceNo} onChange={() => null} className="ir-sb-line-input" />
+                  </div>
+                  <div className="ir-sb-input-group flex-1">
+                    <span className="ir-sb-label">Report Date:</span>
+                    <input type="date" name="date" value={formData.date} onChange={() => null} className={`ir-sb-line-input ${!formData.date ? 'is-empty-print' : ''}`} />
+                  </div>
                 </div>
-                <div className="ir-sb-header-spacer" aria-hidden="true" />
-              </div>
 
-              {/* Reference and Date[cite: 3] */}
-              <div className="ir-sb-meta-row">
-                <div className="ir-sb-input-group flex-2">
-                  <span className="ir-sb-label">IR Reference No:</span>
-                  <input type="text" name="irReferenceNo" value={formData.irReferenceNo} onChange={() => null} className="ir-sb-line-input" />
+                <div className="ir-sb-meta-row">
+                  <div className="ir-sb-input-group flex-2">
+                    <span className="ir-sb-label">Completed By:</span><input type="text" name="resolvedBy" value={initialUser?.FullName} onChange={() => null} className="ir-sb-line-input" />
+                  </div>
+                  <div className="ir-sb-input-group flex-1">
+                    <span className="ir-sb-label">Completed Date:</span>
+                    <input type="text" name="dateResolved" onChange={() => null} className={`ir-sb-line-input`} />
+                  </div>
                 </div>
-                <div className="ir-sb-input-group flex-1">
-                  <span className="ir-sb-label">Report Date:</span>
-                  <input type="date" name="date" value={formData.date} onChange={() => null} className={`ir-sb-line-input ${!formData.date ? 'is-empty-print' : ''}`} />
-                </div>
-              </div>
 
-              <div className="ir-sb-meta-row">
-                <div className="ir-sb-input-group flex-2">
-                  <span className="ir-sb-label">Completed By:</span><input type="text" name="resolvedBy" value={initialUser?.FullName} onChange={() => null} className="ir-sb-line-input" />
-                </div>
-                <div className="ir-sb-input-group flex-1">
-                  <span className="ir-sb-label">Completed Date:</span>
-                  <input type="text" name="dateResolved" onChange={() => null} className={`ir-sb-line-input`} />
-                </div>
-              </div>
-
-              <div className="ir-sb-meta-row">
-                <div className="ir-sb-input-group flex-2 equal-split-row">
-                  <span className="ir-sb-label">Incident Type:</span>
-                  <input type="text" name="irType" value={formData.irType} onChange={() => null} className="ir-sb-line-input" />
-                  {/* <span className="ir-sb-label">Action Taken:</span>
+                <div className="ir-sb-meta-row">
+                  <div className="ir-sb-input-group flex-2 equal-split-row">
+                    <span className="ir-sb-label">Incident Type:</span>
+                    <input type="text" name="irType" value={formData.irType} onChange={() => null} className="ir-sb-line-input" />
+                    {/* <span className="ir-sb-label">Action Taken:</span>
                   <div className="ir-sb-select-wrapper">
                     {error && !error.valid && error.final && (<span className='ir-pulse-badge no-print'>!</span>)}
                     <select
@@ -1017,657 +1023,657 @@ export const IR_ShortBags_Form: React.FC<IR_ShortBags_Props> = ({ initialUser, i
                       ))}
                     </select>
                   </div> */}
+                  </div>
+                  <div className="ir-sb-input-group flex-1 no-print">
+                    <span className="ir-sb-label">Status:</span>
+                    <input
+                      type="text"
+                      name=""
+                      value={incidentReportItem.IRStatus}
+                      onChange={() => null}
+                      className="ir-sb-line-input"
+                      style={getStatusColor(incidentReportItem.IRStatus || '')}
+                    />
+                  </div>
                 </div>
-                <div className="ir-sb-input-group flex-1 no-print">
-                  <span className="ir-sb-label">Status:</span>
-                  <input
-                    type="text"
-                    name=""
-                    value={incidentReportItem.IRStatus}
-                    onChange={() => null}
-                    className="ir-sb-line-input"
-                    style={getStatusColor(incidentReportItem.IRStatus || '')}
-                  />
-                </div>
-              </div>
 
 
-              {/* Section: Impormasyon ng Empleado[cite: 3] */}
-              <h3 className="ir-sb-section-head">EMPLOYEE DETAILS</h3>
-              <div className="ir-sb-grid col-2">
-                <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Name:</span>
-                  <input type="text" name="empName" value={formData.empName} onChange={handleChange} className="ir-sb-line-input" />
-                </div>
-                <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Position:</span>
-                  <input type="text" name="empPosition" value={formData.empPosition} onChange={handleChange} className="ir-sb-line-input" />
-                  {/* <div className="ir-sb-input-group">
+                {/* Section: Impormasyon ng Empleado[cite: 3] */}
+                <h3 className="ir-sb-section-head">EMPLOYEE DETAILS</h3>
+                <div className="ir-sb-grid col-2">
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label">Name:</span>
+                    <input type="text" name="empName" value={formData.empName} onChange={handleChange} className="ir-sb-line-input" />
+                  </div>
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label">Position:</span>
+                    <input type="text" name="empPosition" value={formData.empPosition} onChange={handleChange} className="ir-sb-line-input" />
+                    {/* <div className="ir-sb-input-group">
                   <span className="ir-sb-label">Business Unit:</span>
                   <input type="text" name="businessUnit" value={formData.businessUnit} onChange={handleChange} className="ir-sb-line-input" />
                 </div> */}
-                  <span className="ir-sb-label">BU:</span>
-                  <input type="text" name="businessUnit" value={formData.businessUnit} onChange={handleChange} className="ir-sb-line-input" />
-                </div>
-                <div className="ir-sb-input-group span-2">
-                  <span className="ir-sb-label">Tractor:</span>
-                  <input type="text" name="truck_full" value={formData.truck_full} onChange={handleChange} className="ir-sb-line-input" />
-                  <span className="ir-sb-label">Trailer:</span>
-                  <input type="text" name="trailer_full" value={formData.trailer_full} onChange={handleChange} className="ir-sb-line-input" />
-                </div>
-              </div>
-
-              {/* Section: Actions */}
-              <h3 className="ir-sb-section-head">ACTIONS TAKEN</h3>
-
-              <div className="ir-sb-grid col-1" style={{ gap: '12px', marginBottom: '16px' }}>
-
-                {/* Operations */}
-                <div className="ir-sb-meta-row" style={{ alignItems: 'center', marginBottom: 0, gap: '12px' }}>
-                  <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className="ir-sb-label" style={{ fontWeight: 'bold' }}>Operations:</span>
-                    <input
-                      type="text"
-                      placeholder="Name..."
-                      value={formData.actions?.operations?.name || ''}
-                      onChange={(e) => handleActionChange('operations', 'name', e.target.value)}
-                      className="ir-sb-line-input"
-                    />
+                    <span className="ir-sb-label">BU:</span>
+                    <input type="text" name="businessUnit" value={formData.businessUnit} onChange={handleChange} className="ir-sb-line-input" />
                   </div>
+                  <div className="ir-sb-input-group span-2">
+                    <span className="ir-sb-label">Tractor:</span>
+                    <input type="text" name="truck_full" value={formData.truck_full} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Trailer:</span>
+                    <input type="text" name="trailer_full" value={formData.trailer_full} onChange={handleChange} className="ir-sb-line-input" />
+                  </div>
+                </div>
 
-                  <div className="ir-sb-input-group flex-2">
-                    <span className="ir-sb-label">Action:</span>
-                    <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
-                      {error && !error.valid && error.final && (<span className='ir-pulse-badge no-print'>!</span>)}
-                      <select
-                        name="operationsAction"
-                        value={formData.actions?.operations?.action || ''}
-                        onChange={(e) => handleActionChange('operations', 'action', e.target.value)}
-                        className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.operations?.action ? 'is-empty-print' : ''}`}
-                      >
-                        <option value="" disabled>-- Select Action --</option>
-                        {getSectionActionOptions('Operations').map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                {/* Section: Actions */}
+                <h3 className="ir-sb-section-head">ACTIONS TAKEN</h3>
+
+                <div className="ir-sb-grid col-1" style={{ gap: '12px', marginBottom: '16px' }}>
+
+                  {/* Operations */}
+                  <div className="ir-sb-meta-row" style={{ alignItems: 'center', marginBottom: 0, gap: '12px' }}>
+                    <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="ir-sb-label" style={{ fontWeight: 'bold' }}>Operations:</span>
+                      <input
+                        type="text"
+                        placeholder="Name..."
+                        value={formData.actions?.operations?.name || ''}
+                        onChange={(e) => handleActionChange('operations', 'name', e.target.value)}
+                        className="ir-sb-line-input"
+                      />
+                    </div>
+
+                    <div className="ir-sb-input-group flex-2">
+                      <span className="ir-sb-label">Action:</span>
+                      <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
+                        {error && !error.valid && error.final && (<span className='ir-pulse-badge no-print'>!</span>)}
+                        <select
+                          name="operationsAction"
+                          value={formData.actions?.operations?.action || ''}
+                          onChange={(e) => handleActionChange('operations', 'action', e.target.value)}
+                          className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.operations?.action ? 'is-empty-print' : ''}`}
+                        >
+                          <option value="" disabled>-- Select Action --</option>
+                          {getSectionActionOptions('Operations').map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="ir-sb-input-group flex-1">
+                      <span className="ir-sb-label">Date:</span>
+                      <input
+                        type="date"
+                        value={formData.actions?.operations?.date || ''}
+                        onChange={(e) => handleActionChange('operations', 'date', e.target.value)}
+                        className={`ir-sb-line-input ${!formData.actions?.operations?.date ? 'is-empty-print' : ''}`}
+                      />
                     </div>
                   </div>
 
-                  <div className="ir-sb-input-group flex-1">
-                    <span className="ir-sb-label">Date:</span>
-                    <input
-                      type="date"
-                      value={formData.actions?.operations?.date || ''}
-                      onChange={(e) => handleActionChange('operations', 'date', e.target.value)}
-                      className={`ir-sb-line-input ${!formData.actions?.operations?.date ? 'is-empty-print' : ''}`}
-                    />
-                  </div>
-                </div>
+                  {/* Inspection */}
+                  <div className="ir-sb-meta-row" style={{ alignItems: 'center', marginBottom: 0, gap: '12px' }}>
+                    <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="ir-sb-label" style={{ fontWeight: 'bold' }}>Inspection:</span>
+                      <input
+                        type="text"
+                        placeholder="Name..."
+                        value={formData.actions?.inspection?.name || ''}
+                        onChange={(e) => handleActionChange('inspection', 'name', e.target.value)}
+                        className="ir-sb-line-input"
+                      />
+                    </div>
 
-                {/* Inspection */}
-                <div className="ir-sb-meta-row" style={{ alignItems: 'center', marginBottom: 0, gap: '12px' }}>
-                  <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className="ir-sb-label" style={{ fontWeight: 'bold' }}>Inspection:</span>
-                    <input
-                      type="text"
-                      placeholder="Name..."
-                      value={formData.actions?.inspection?.name || ''}
-                      onChange={(e) => handleActionChange('inspection', 'name', e.target.value)}
-                      className="ir-sb-line-input"
-                    />
-                  </div>
+                    <div className="ir-sb-input-group flex-2">
+                      <span className="ir-sb-label">Action:</span>
+                      <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
+                        <select
+                          name="inspectionAction"
+                          value={formData.actions?.inspection?.action || ''}
+                          onChange={(e) => handleActionChange('inspection', 'action', e.target.value)}
+                          className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.inspection?.action ? 'is-empty-print' : ''}`}
+                        >
+                          <option value="">-- Select Action --</option>
+                          {getSectionActionOptions('Inspection').map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
 
-                  <div className="ir-sb-input-group flex-2">
-                    <span className="ir-sb-label">Action:</span>
-                    <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
-                      <select
-                        name="inspectionAction"
-                        value={formData.actions?.inspection?.action || ''}
-                        onChange={(e) => handleActionChange('inspection', 'action', e.target.value)}
-                        className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.inspection?.action ? 'is-empty-print' : ''}`}
-                      >
-                        <option value="">-- Select Action --</option>
-                        {getSectionActionOptions('Inspection').map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="ir-sb-input-group flex-1">
+                      <span className="ir-sb-label">Date:</span>
+                      <input
+                        type="date"
+                        value={formData.actions?.inspection?.date || ''}
+                        onChange={(e) => handleActionChange('inspection', 'date', e.target.value)}
+                        className={`ir-sb-line-input ${!formData.actions?.inspection?.date ? 'is-empty-print' : ''}`}
+                      />
                     </div>
                   </div>
 
-                  <div className="ir-sb-input-group flex-1">
-                    <span className="ir-sb-label">Date:</span>
-                    <input
-                      type="date"
-                      value={formData.actions?.inspection?.date || ''}
-                      onChange={(e) => handleActionChange('inspection', 'date', e.target.value)}
-                      className={`ir-sb-line-input ${!formData.actions?.inspection?.date ? 'is-empty-print' : ''}`}
-                    />
-                  </div>
-                </div>
-
-                {/* Yard */}
-                <div className="ir-sb-meta-row" style={{ alignItems: 'center', marginBottom: 0, gap: '12px' }}>
-                  <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className="ir-sb-label" style={{ fontWeight: 'bold' }}>Yard:</span>
-                    <input
-                      type="text"
-                      placeholder="Name..."
-                      value={formData.actions?.yard?.name || ''}
-                      onChange={(e) => handleActionChange('yard', 'name', e.target.value)}
-                      className="ir-sb-line-input"
-                    />
-                  </div>
-
-                  <div className="ir-sb-input-group flex-2" style={{ gap: '10px' }}>
-                    <span className="ir-sb-label">Action:</span>
-                    <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
-                      <select
-                        name="yardAction"
-                        value={formData.actions?.yard?.action || ''}
-                        onChange={(e) => handleActionChange('yard', 'action', e.target.value)}
-                        className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.yard?.action ? 'is-empty-print' : ''}`}
-                      >
-                        <option value="">-- Select Action --</option>
-                        {getSectionActionOptions('Yard').map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                  {/* Yard */}
+                  <div className="ir-sb-meta-row" style={{ alignItems: 'center', marginBottom: 0, gap: '12px' }}>
+                    <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="ir-sb-label" style={{ fontWeight: 'bold' }}>Yard:</span>
+                      <input
+                        type="text"
+                        placeholder="Name..."
+                        value={formData.actions?.yard?.name || ''}
+                        onChange={(e) => handleActionChange('yard', 'name', e.target.value)}
+                        className="ir-sb-line-input"
+                      />
                     </div>
-                    <span className="ir-sb-label">Bags:</span>
-                    <input
-                      type="number"
-                      style={{ width: '60px', flex: 'none' }}
-                      value={formData.actions?.yard?.bags || ''}
-                      onChange={(e) => handleActionChange('yard', 'bags', e.target.value)}
-                      className="ir-sb-line-input"
-                    />
-                  </div>
 
-                  <div className="ir-sb-input-group flex-1">
-                    <span className="ir-sb-label">Date:</span>
-                    <input
-                      type="date"
-                      value={formData.actions?.yard?.date || ''}
-                      onChange={(e) => handleActionChange('yard', 'date', e.target.value)}
-                      className={`ir-sb-line-input ${!formData.actions?.yard?.date ? 'is-empty-print' : ''}`}
-                    />
-                  </div>
-                </div>
-
-                {/* Warehouse */}
-                <div className="ir-sb-meta-row" style={{ alignItems: 'center', marginBottom: 0, gap: '12px' }}>
-                  <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className="ir-sb-label" style={{ fontWeight: 'bold' }}>Warehouse:</span>
-                    <input
-                      type="text"
-                      placeholder="Name..."
-                      value={formData.actions?.warehouse?.name || ''}
-                      onChange={(e) => handleActionChange('warehouse', 'name', e.target.value)}
-                      className="ir-sb-line-input"
-                    />
-                  </div>
-
-                  <div className="ir-sb-input-group flex-2" style={{ gap: '10px' }}>
-                    <span className="ir-sb-label">Action:</span>
-                    <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
-                      <select
-                        name="warehouseAction"
-                        value={formData.actions?.warehouse?.action || ''}
-                        onChange={(e) => handleActionChange('warehouse', 'action', e.target.value)}
-                        className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.warehouse?.action ? 'is-empty-print' : ''}`}
-                      >
-                        <option value="">-- Select Action --</option>
-                        {getSectionActionOptions('Warehouse').map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="ir-sb-input-group flex-2" style={{ gap: '10px' }}>
+                      <span className="ir-sb-label">Action:</span>
+                      <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
+                        <select
+                          name="yardAction"
+                          value={formData.actions?.yard?.action || ''}
+                          onChange={(e) => handleActionChange('yard', 'action', e.target.value)}
+                          className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.yard?.action ? 'is-empty-print' : ''}`}
+                        >
+                          <option value="">-- Select Action --</option>
+                          {getSectionActionOptions('Yard').map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <span className="ir-sb-label">Bags:</span>
+                      <input
+                        type="number"
+                        style={{ width: '60px', flex: 'none' }}
+                        value={formData.actions?.yard?.bags || ''}
+                        onChange={(e) => handleActionChange('yard', 'bags', e.target.value)}
+                        className="ir-sb-line-input"
+                      />
                     </div>
-                    <span className="ir-sb-label">Bags:</span>
-                    <input
-                      type="number"
-                      style={{ width: '60px', flex: 'none' }}
-                      value={formData.actions?.warehouse?.bags || ''}
-                      onChange={(e) => handleActionChange('warehouse', 'bags', e.target.value)}
-                      className="ir-sb-line-input"
+
+                    <div className="ir-sb-input-group flex-1">
+                      <span className="ir-sb-label">Date:</span>
+                      <input
+                        type="date"
+                        value={formData.actions?.yard?.date || ''}
+                        onChange={(e) => handleActionChange('yard', 'date', e.target.value)}
+                        className={`ir-sb-line-input ${!formData.actions?.yard?.date ? 'is-empty-print' : ''}`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Warehouse */}
+                  <div className="ir-sb-meta-row" style={{ alignItems: 'center', marginBottom: 0, gap: '12px' }}>
+                    <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="ir-sb-label" style={{ fontWeight: 'bold' }}>Warehouse:</span>
+                      <input
+                        type="text"
+                        placeholder="Name..."
+                        value={formData.actions?.warehouse?.name || ''}
+                        onChange={(e) => handleActionChange('warehouse', 'name', e.target.value)}
+                        className="ir-sb-line-input"
+                      />
+                    </div>
+
+                    <div className="ir-sb-input-group flex-2" style={{ gap: '10px' }}>
+                      <span className="ir-sb-label">Action:</span>
+                      <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
+                        <select
+                          name="warehouseAction"
+                          value={formData.actions?.warehouse?.action || ''}
+                          onChange={(e) => handleActionChange('warehouse', 'action', e.target.value)}
+                          className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.warehouse?.action ? 'is-empty-print' : ''}`}
+                        >
+                          <option value="">-- Select Action --</option>
+                          {getSectionActionOptions('Warehouse').map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <span className="ir-sb-label">Bags:</span>
+                      <input
+                        type="number"
+                        style={{ width: '60px', flex: 'none' }}
+                        value={formData.actions?.warehouse?.bags || ''}
+                        onChange={(e) => handleActionChange('warehouse', 'bags', e.target.value)}
+                        className="ir-sb-line-input"
+                      />
+                    </div>
+
+                    <div className="ir-sb-input-group flex-1">
+                      <span className="ir-sb-label">Date:</span>
+                      <input
+                        type="date"
+                        value={formData.actions?.warehouse?.date || ''}
+                        onChange={(e) => handleActionChange('warehouse', 'date', e.target.value)}
+                        className={`ir-sb-line-input ${!formData.actions?.warehouse?.date ? 'is-empty-print' : ''}`}
+                      />
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Section: Diskripsyon ng Insidente[cite: 3] */}
+                <h3 className="ir-sb-section-head">INCIDENT DETAILS ({formData.irType?.toUpperCase()})</h3>
+
+                <div className="ir-sb-grid col-2">
+                  <div className="ir-sb-input-group">
+
+                  </div>
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label"><span className='no-print is-req'>* </span>Incident Date:</span><input type="date" value={formData.incident_date} name="incident_date" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_date ? 'is-empty-print' : ''}`} />
+                    <span className="ir-sb-label"><span className='no-print is-req'>* </span>Time:</span><input type="time" value={formData.incident_time} name="incident_time" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_time ? 'is-empty-print' : ''}`} />
+                  </div>
+                </div>
+
+                <div className="ir-sb-spacer"></div>
+
+                <div className="ir-sb-grid col-2">
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label">Trip Ref No:</span>
+                    <input type="text" name="tripReferenceNo" value={formData.tripReferenceNo} onChange={() => null} className="ir-sb-line-input" />
+                  </div>
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label"><span className='no-print is-req'>* </span>Served Date:</span><input type="date" name="ServedDate" value={formData.ServedDate} onChange={handleChange} className="ir-sb-line-input" />
+                  </div>
+                </div>
+
+                <div className="ir-sb-grid col-1">
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Customer:</span><input type="text" name="Customer" value={formData.Customer} onChange={handleChange} className="ir-sb-line-input" /></div>
+                </div>
+
+
+                <div className="ir-sb-grid col-1">
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Source:</span><input type="text" name="Source" value={formData.Source} onChange={handleChange} className="ir-sb-line-input" /></div>          </div>
+
+                <div className="ir-sb-grid col-1">
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Destination:</span><input type="text" name="Destination" value={formData.Destination} onChange={handleChange} className="ir-sb-line-input" /></div>
+                </div>
+
+                <div className="ir-sb-grid col-2">
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label">Cement Type:</span><input type="text" name="CementType" value={formData.CementType} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Trip Group:</span><input type="text" name="TripGroup" value={formData.TripGroup} onChange={handleChange} className="ir-sb-line-input" />
+                  </div>
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label">Withdrawn:</span><input type="text" name="QtyWithdrawn" value={formData.QtyWithdrawn} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Delivered:</span><input type="text" name="QtyDelivered" value={formData.QtyDelivered} onChange={handleChange} className="ir-sb-line-input" />
+                  </div>
+                </div>
+
+                <div className="ir-sb-grid col-2">
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label">Short Bags:</span><input type="text" name="ShortBags" value={formData.ShortBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
+                  </div>
+                  <div className="ir-sb-input-group">
+                    <span className="ir-sb-label">Retrieved Bags:</span><input type="text" name="ShortBags" value={formData.RetrievedBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
+                  </div>
+                </div>
+
+                <div className="ir-sb-grid col-1">
+                  <div className="ir-sb-input-group full-width">
+                    <span className="ir-sb-label block"><span className='no-print is-req'>* </span>DESCRIPTION</span>
+                    <textarea
+                      name="incident_details"
+                      value={formData.incident_details}
+                      onChange={handleChange}
+                      onKeyDown={handleNewLine}
+                      rows={LINE_COUNT_LIMIT}
+                      className="ir-sb-textarea"
+                      style={{
+                        height: `${LINE_COUNT_LIMIT * 30}px`
+                      }}
                     />
                   </div>
+                </div>
 
-                  <div className="ir-sb-input-group flex-1">
-                    <span className="ir-sb-label">Date:</span>
-                    <input
-                      type="date"
-                      value={formData.actions?.warehouse?.date || ''}
-                      onChange={(e) => handleActionChange('warehouse', 'date', e.target.value)}
-                      className={`ir-sb-line-input ${!formData.actions?.warehouse?.date ? 'is-empty-print' : ''}`}
-                    />
+                {/* Section: Karagdagang Detalye[cite: 3] */}
+                <h3 className="ir-sb-section-head">OTHER DETAILS</h3>
+                <div className="ir-sb-yard-selector">
+                  <span className="ir-sb-label">Yarda :</span>
+                  <div className="ir-sb-checkbox-grid">
+                    {['Alphabase', 'Vasquez', 'Intercity', 'Lingunan', 'Geomax'].map(yard => (
+                      <label key={yard} className="ir-sb-check-item">
+                        <input type="checkbox" checked={formData.yard === yard} onChange={() => handleCheckbox(yard)} /> {yard}
+                      </label>
+                    ))}
+                    <div className="ir-sb-check-item span-all">
+                      <input type="checkbox" checked={formData.yard === 'Others'} onChange={() => handleCheckbox('Others')} /> Others:
+                      <input type="text" name="yardOthers" value={formData.yardOthers} onChange={handleChange} disabled={formData.yard !== 'Others'} className="ir-sb-line-input inline" />
+                    </div>
                   </div>
                 </div>
 
-              </div>
-
-              {/* Section: Diskripsyon ng Insidente[cite: 3] */}
-              <h3 className="ir-sb-section-head">INCIDENT DETAILS ({formData.irType?.toUpperCase()})</h3>
-
-              <div className="ir-sb-grid col-2">
-                <div className="ir-sb-input-group">
-
+                {/* Section: Detalye ng Nag Report[cite: 3] */}
+                <h3 className="ir-sb-section-head">REPORTER DETAILS</h3>
+                <div className="ir-sb-grid col-2">
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Reported By:</span><input type="text" name="reportName" value={formData.reportName} onChange={() => null} className="ir-sb-line-input" /></div>
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Position:</span><input type="text" name="reportPosition" value={formData.reportPosition} onChange={() => null} className="ir-sb-line-input" /></div>
                 </div>
-                <div className="ir-sb-input-group">
-                  <span className="ir-sb-label"><span className='no-print is-req'>* </span>Incident Date:</span><input type="date" value={formData.incident_date} name="incident_date" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_date ? 'is-empty-print' : ''}`} />
-                  <span className="ir-sb-label"><span className='no-print is-req'>* </span>Time:</span><input type="time" value={formData.incident_time} name="incident_time" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_time ? 'is-empty-print' : ''}`} />
+                <div className="ir-sb-grid col-2">
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Signed Date:</span><input type="date" name="reportDate" onChange={() => null} className="ir-sb-line-input" /></div>
+                  <div className="ir-sb-signature-box"><span className="ir-sb-label">Signature:</span><div className="line"></div></div>
                 </div>
               </div>
 
-              <div className="ir-sb-spacer"></div>
 
-              <div className="ir-sb-grid col-2">
-                <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Trip Ref No:</span>
-                  <input type="text" name="tripReferenceNo" value={formData.tripReferenceNo} onChange={() => null} className="ir-sb-line-input" />
+              <div className="ir-sb-page ir-sb-page-break">
+
+                <div className="ir-sb-print-page-header">
+                  <h2>GREAT SIERRA DEVELOPMENT CORPORATION — EVIDENCE ATTACHMENTS PAGE</h2>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#555' }}>
+                    References Document ID: <span style={{ fontWeight: 'bold' }}>{formData.irReferenceNo}</span> | Trip Ref: {formData.tripReferenceNo}
+                  </p>
                 </div>
-                <div className="ir-sb-input-group">
-                  <span className="ir-sb-label"><span className='no-print is-req'>* </span>Served Date:</span><input type="date" name="ServedDate" value={formData.ServedDate} onChange={handleChange} className="ir-sb-line-input" />
-                </div>
-              </div>
 
-              <div className="ir-sb-grid col-1">
-                <div className="ir-sb-input-group"><span className="ir-sb-label">Customer:</span><input type="text" name="Customer" value={formData.Customer} onChange={handleChange} className="ir-sb-line-input" /></div>
-              </div>
+                <h3 className="ir-sb-section-head">EVIDENCE & IMAGE ATTACHMENTS</h3>
 
-
-              <div className="ir-sb-grid col-1">
-                <div className="ir-sb-input-group"><span className="ir-sb-label">Source:</span><input type="text" name="Source" value={formData.Source} onChange={handleChange} className="ir-sb-line-input" /></div>          </div>
-
-              <div className="ir-sb-grid col-1">
-                <div className="ir-sb-input-group"><span className="ir-sb-label">Destination:</span><input type="text" name="Destination" value={formData.Destination} onChange={handleChange} className="ir-sb-line-input" /></div>
-              </div>
-
-              <div className="ir-sb-grid col-2">
-                <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Cement Type:</span><input type="text" name="CementType" value={formData.CementType} onChange={handleChange} className="ir-sb-line-input" />
-                  <span className="ir-sb-label">Trip Group:</span><input type="text" name="TripGroup" value={formData.TripGroup} onChange={handleChange} className="ir-sb-line-input" />
-                </div>
-                <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Withdrawn:</span><input type="text" name="QtyWithdrawn" value={formData.QtyWithdrawn} onChange={handleChange} className="ir-sb-line-input" />
-                  <span className="ir-sb-label">Delivered:</span><input type="text" name="QtyDelivered" value={formData.QtyDelivered} onChange={handleChange} className="ir-sb-line-input" />
-                </div>
-              </div>
-
-              <div className="ir-sb-grid col-2">
-                <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Short Bags:</span><input type="text" name="ShortBags" value={formData.ShortBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
-                </div>
-                <div className="ir-sb-input-group">
-                  <span className="ir-sb-label">Retrieved Bags:</span><input type="text" name="ShortBags" value={formData.RetrievedBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
-                </div>
-              </div>
-
-              <div className="ir-sb-grid col-1">
-                <div className="ir-sb-input-group full-width">
-                  <span className="ir-sb-label block"><span className='no-print is-req'>* </span>DESCRIPTION</span>
-                  <textarea
-                    name="incident_details"
-                    value={formData.incident_details}
-                    onChange={handleChange}
-                    onKeyDown={handleNewLine}
-                    rows={LINE_COUNT_LIMIT}
-                    className="ir-sb-textarea"
-                    style={{
-                      height: `${LINE_COUNT_LIMIT * 30}px`
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Section: Karagdagang Detalye[cite: 3] */}
-              <h3 className="ir-sb-section-head">OTHER DETAILS</h3>
-              <div className="ir-sb-yard-selector">
-                <span className="ir-sb-label">Yarda :</span>
-                <div className="ir-sb-checkbox-grid">
-                  {['Alphabase', 'Vasquez', 'Intercity', 'Lingunan', 'Geomax'].map(yard => (
-                    <label key={yard} className="ir-sb-check-item">
-                      <input type="checkbox" checked={formData.yard === yard} onChange={() => handleCheckbox(yard)} /> {yard}
-                    </label>
-                  ))}
-                  <div className="ir-sb-check-item span-all">
-                    <input type="checkbox" checked={formData.yard === 'Others'} onChange={() => handleCheckbox('Others')} /> Others:
-                    <input type="text" name="yardOthers" value={formData.yardOthers} onChange={handleChange} disabled={formData.yard !== 'Others'} className="ir-sb-line-input inline" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Section: Detalye ng Nag Report[cite: 3] */}
-              <h3 className="ir-sb-section-head">REPORTER DETAILS</h3>
-              <div className="ir-sb-grid col-2">
-                <div className="ir-sb-input-group"><span className="ir-sb-label">Reported By:</span><input type="text" name="reportName" value={formData.reportName} onChange={() => null} className="ir-sb-line-input" /></div>
-                <div className="ir-sb-input-group"><span className="ir-sb-label">Position:</span><input type="text" name="reportPosition" value={formData.reportPosition} onChange={() => null} className="ir-sb-line-input" /></div>
-              </div>
-              <div className="ir-sb-grid col-2">
-                <div className="ir-sb-input-group"><span className="ir-sb-label">Signed Date:</span><input type="date" name="reportDate" onChange={() => null} className="ir-sb-line-input" /></div>
-                <div className="ir-sb-signature-box"><span className="ir-sb-label">Signature:</span><div className="line"></div></div>
-              </div>
-            </div>
-
-
-            <div className="ir-sb-page ir-sb-page-break">
-
-              <div className="ir-sb-print-page-header">
-                <h2>GREAT SIERRA DEVELOPMENT CORPORATION — EVIDENCE ATTACHMENTS PAGE</h2>
-                <p style={{ margin: 0, fontSize: '11px', color: '#555' }}>
-                  References Document ID: <span style={{ fontWeight: 'bold' }}>{formData.irReferenceNo}</span> | Trip Ref: {formData.tripReferenceNo}
-                </p>
-              </div>
-
-              <h3 className="ir-sb-section-head">EVIDENCE & IMAGE ATTACHMENTS</h3>
-
-              {/* Screen Actions Area */}
-              <div
-                className={`ir-sb-upload-zone no-print ${isDragging ? 'is-dragging' : ''}`}
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setIsDragging(false);
-                  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                    Array.from(e.dataTransfer.files).forEach(file => {
-                      if (!file.type.startsWith('image/')) return;
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setFormData(prev => ({
-                          ...prev,
-                          attachedImages: [
-                            ...(prev.attachedImages || []),
-                            { src: reader.result as string, fileName: file.name, description: '' }
-                          ]
-                        }));
-                      };
-                      reader.readAsDataURL(file);
-                    });
-                  }
-                }}
-              >
-                <p className="upload-text">
-                  Drag and drop logistics incident evidence images here or <span className="browse-link">click to browse</span>
-                </p>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={async (e) => {
-                    if (!e.target.files || e.target.files.length === 0) return;
-
-                    // 1. Map each file to a promise that reads it as a DataURL base64 string
-                    const filePromises = Array.from(e.target.files).map(file => {
-                      return new Promise<{ src: string; fileName: string; description: string }>((resolve) => {
+                {/* Screen Actions Area */}
+                <div
+                  className={`ir-sb-upload-zone no-print ${isDragging ? 'is-dragging' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      Array.from(e.dataTransfer.files).forEach(file => {
+                        if (!file.type.startsWith('image/')) return;
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          resolve({
-                            src: reader.result as string,
-                            fileName: file.name,
-                            description: ''
-                          });
+                          setFormData(prev => ({
+                            ...prev,
+                            attachedImages: [
+                              ...(prev.attachedImages || []),
+                              { src: reader.result as string, fileName: file.name, description: '' }
+                            ]
+                          }));
                         };
                         reader.readAsDataURL(file);
                       });
-                    });
-
-                    // 2. Wait for all file loaders to fully execute simultaneously 
-                    const newLoadedImages = await Promise.all(filePromises);
-
-                    // 3. Save the completely computed nextState configuration object to a reusable const
-                    const nextState = {
-                      ...formData,
-                      attachedImages: [
-                        ...(formData.attachedImages || []),
-                        ...newLoadedImages
-                      ]
-                    };
-
-                    // 4. Safely execute your states and validation against the finalized snapshot
-                    setFormData(nextState);
-                    setError(validateForm(nextState));
+                    }
                   }}
-                />
-              </div>
+                >
+                  <p className="upload-text">
+                    Drag and drop logistics incident evidence images here or <span className="browse-link">click to browse</span>
+                  </p>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={async (e) => {
+                      if (!e.target.files || e.target.files.length === 0) return;
 
-              {/* Rendered Evidence Grid Array */}
-              {formData.attachedImages && formData.attachedImages.length > 0 ? (
-                <div className="ir-sb-print-image-container">
-                  {formData.attachedImages.map((imgItem, idx) => (
-                    <div key={idx} className="ir-sb-print-img-card">
+                      // 1. Map each file to a promise that reads it as a DataURL base64 string
+                      const filePromises = Array.from(e.target.files).map(file => {
+                        return new Promise<{ src: string; fileName: string; description: string }>((resolve) => {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            resolve({
+                              src: reader.result as string,
+                              fileName: file.name,
+                              description: ''
+                            });
+                          };
+                          reader.readAsDataURL(file);
+                        });
+                      });
 
-                      {/* Isolated Positioning Frame for the image asset and its floating triggers */}
-                      <div className="ir-sb-img-card-media-wrapper">
-                        <img
-                          src={imgItem.src}
-                          alt={`Evidence Asset Tracking Row ${idx + 1}`}
-                          className="no-print"
-                          style={{ cursor: 'zoom-in' }}
-                          onClick={() => {
-                            setSelectedPreviewImg({ src: imgItem.src, fileName: imgItem.fileName });
-                            handleModalReset();
-                          }}
-                        />
+                      // 2. Wait for all file loaders to fully execute simultaneously 
+                      const newLoadedImages = await Promise.all(filePromises);
 
-                        {/* Floating Upper-Right Corner Fullscreen Action Button */}
+                      // 3. Save the completely computed nextState configuration object to a reusable const
+                      const nextState = {
+                        ...formData,
+                        attachedImages: [
+                          ...(formData.attachedImages || []),
+                          ...newLoadedImages
+                        ]
+                      };
+
+                      // 4. Safely execute your states and validation against the finalized snapshot
+                      setFormData(nextState);
+                      setError(validateForm(nextState));
+                    }}
+                  />
+                </div>
+
+                {/* Rendered Evidence Grid Array */}
+                {formData.attachedImages && formData.attachedImages.length > 0 ? (
+                  <div className="ir-sb-print-image-container">
+                    {formData.attachedImages.map((imgItem, idx) => (
+                      <div key={idx} className="ir-sb-print-img-card">
+
+                        {/* Isolated Positioning Frame for the image asset and its floating triggers */}
+                        <div className="ir-sb-img-card-media-wrapper">
+                          <img
+                            src={imgItem.src}
+                            alt={`Evidence Asset Tracking Row ${idx + 1}`}
+                            className="no-print"
+                            style={{ cursor: 'zoom-in' }}
+                            onClick={() => {
+                              setSelectedPreviewImg({ src: imgItem.src, fileName: imgItem.fileName });
+                              handleModalReset();
+                            }}
+                          />
+
+                          {/* Floating Upper-Right Corner Fullscreen Action Button */}
+                          <button
+                            type="button"
+                            className="ir-sb-img-card-fullscreen-btn no-print"
+                            title="Open Image Workspace Viewer"
+                            onClick={() => {
+                              setSelectedPreviewImg({ src: imgItem.src, fileName: imgItem.fileName });
+                              handleModalReset();
+                            }}
+                          >
+                            <Maximize2 className='no-print' size={14} />
+                          </button>
+                        </div>
+
+                        {/* Individual Dynamic Description Box Area */}
+                        <div className="ir-sb-img-desc-box">
+
+                          {/* Screen View: File Name acts as the input field label */}
+                          <span
+                            className="ir-sb-label no-print ir-sb-filename-label"
+                            style={{
+                              fontSize: '11px',
+                              color: '#3a4efc',
+                            }}
+                          >
+                            <FileImage size={14} className='no-print' />
+                            <span className="ir-sb-filename-text no-print" title={imgItem.fileName}>
+                              {imgItem.fileName || `Attachment #${idx + 1}`}:
+                            </span>
+                          </span>
+
+                          {/* Screen Input Field */}
+                          <input
+                            type="text"
+                            className="ir-sb-line-input no-print"
+                            placeholder="Add custom descriptive notes for this image..."
+                            value={imgItem.description}
+                            onChange={(e) => {
+                              const updatedDescText = e.target.value;
+
+
+                              const safeImages = [...(formData.attachedImages || [])];
+                              safeImages[idx] = { ...safeImages[idx], description: updatedDescText };
+                              const nextState = { ...formData, attachedImages: safeImages };
+
+                              setFormData(nextState);
+                              setError(validateForm(nextState)); // validate
+
+                            }}
+                            style={{ fontSize: '12px', marginTop: '4px', width: '100%' }}
+                          />
+
+                          {/* Print-Only Layout */}
+                          <div className="print-only-text" style={{ margin: '8px 0 0 0', fontSize: '11px', textAlign: 'left', lineHeight: '1.4' }}>
+                            <p style={{ margin: '0', fontStyle: 'italic', color: '#222' }}>
+                              <strong style={{ fontStyle: 'normal', color: '#000080' }}>Notes:</strong> {imgItem.description || 'No descriptive comments logged.'}
+                            </p>
+                          </div>
+                        </div>
+
                         <button
                           type="button"
-                          className="ir-sb-img-card-fullscreen-btn no-print"
-                          title="Open Image Workspace Viewer"
+                          className="no-print"
+                          style={{ background: '#ff4d4d', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', marginTop: '10px', width: '100%' }}
                           onClick={() => {
-                            setSelectedPreviewImg({ src: imgItem.src, fileName: imgItem.fileName });
-                            handleModalReset();
+                            handleRemoveAttachedImage(idx);
                           }}
                         >
-                          <Maximize2 className='no-print' size={14} />
+                          Remove Image
                         </button>
                       </div>
-
-                      {/* Individual Dynamic Description Box Area */}
-                      <div className="ir-sb-img-desc-box">
-
-                        {/* Screen View: File Name acts as the input field label */}
-                        <span
-                          className="ir-sb-label no-print ir-sb-filename-label"
-                          style={{
-                            fontSize: '11px',
-                            color: '#3a4efc',
-                          }}
-                        >
-                          <FileImage size={14} className='no-print' />
-                          <span className="ir-sb-filename-text no-print" title={imgItem.fileName}>
-                            {imgItem.fileName || `Attachment #${idx + 1}`}:
-                          </span>
-                        </span>
-
-                        {/* Screen Input Field */}
-                        <input
-                          type="text"
-                          className="ir-sb-line-input no-print"
-                          placeholder="Add custom descriptive notes for this image..."
-                          value={imgItem.description}
-                          onChange={(e) => {
-                            const updatedDescText = e.target.value;
-
-
-                            const safeImages = [...(formData.attachedImages || [])];
-                            safeImages[idx] = { ...safeImages[idx], description: updatedDescText };
-                            const nextState = { ...formData, attachedImages: safeImages };
-
-                            setFormData(nextState);
-                            setError(validateForm(nextState)); // validate
-
-                          }}
-                          style={{ fontSize: '12px', marginTop: '4px', width: '100%' }}
-                        />
-
-                        {/* Print-Only Layout */}
-                        <div className="print-only-text" style={{ margin: '8px 0 0 0', fontSize: '11px', textAlign: 'left', lineHeight: '1.4' }}>
-                          <p style={{ margin: '0', fontStyle: 'italic', color: '#222' }}>
-                            <strong style={{ fontStyle: 'normal', color: '#000080' }}>Notes:</strong> {imgItem.description || 'No descriptive comments logged.'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="no-print"
-                        style={{ background: '#ff4d4d', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', marginTop: '10px', width: '100%' }}
-                        onClick={() => {
-                          handleRemoveAttachedImage(idx);
-                        }}
-                      >
-                        Remove Image
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#aaa', border: '1px dashed #ccc', borderRadius: '6px' }}>
-                  No incident validation imagery attached to this documentation index.
-                </div>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#aaa', border: '1px dashed #ccc', borderRadius: '6px' }}>
+                    No incident validation imagery attached to this documentation index.
+                  </div>
+                )}
+              </div>
             </div>
+
+
           </div>
+
+
+          {(!error?.valid || (error?.valid && error?.final)) && (
+            <div
+              className={`ir-sb-message-footer no-print ${error?.final ? 'to-complete' : ''}`}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <h3>{error?.valid ? (<CheckCircle />) : (<XCircle />)}</h3>
+              <p className="ir-sb-message-text" style={{ margin: 0 }}>
+                {error?.msg}
+              </p>
+            </div>
+          )}
 
 
         </div>
 
-
-        {(!error?.valid || (error?.valid && error?.final)) && (
-          <div
-            className={`ir-sb-message-footer no-print ${error?.final ? 'to-complete' : ''}`}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        {selectedPreviewImg && createPortal(
+          <Modal
+            onClose={() => setSelectedPreviewImg(null)}
+            width={'65%'}
+            height={'80%'}
+            hideX={true}
           >
-            <h3>{error?.valid ? (<CheckCircle />) : (<XCircle />)}</h3>
-            <p className="ir-sb-message-text" style={{ margin: 0 }}>
-              {error?.msg}
-            </p>
-          </div>
+            <div className="ir-sb-viewer-modal">
+              {/* Modal Header */}
+              <div className="ir-sb-viewer-header">
+                <div className="ir-sb-viewer-meta">
+                  <h3>Evidence Workspace View</h3>
+                  <p>{selectedPreviewImg.fileName}</p>
+                </div>
+                <button className="ir-sb-viewer-close-btn" onClick={() => setSelectedPreviewImg(null)}>×</button>
+              </div>
+
+              {/* Interactive Image Frame Canvas (Appends the Dynamic Theme Contrast Class) */}
+              <div
+                className={`ir-sb-viewer-frame ${isCanvasDarkMode ? 'canvas-dark-theme' : 'canvas-light-theme'} ${isDraggingImage ? 'is-dragging-canvas' : ''}`}
+                onMouseDown={handleImgMouseDown}
+                onMouseMove={handleImgMouseMove}
+                onMouseUp={handleImgMouseUpOrLeave}
+                onMouseLeave={handleImgMouseUpOrLeave}
+                onWheel={handleImgWheelZoom}
+              >
+                <div
+                  className="ir-sb-viewer-transform-container"
+                  style={{
+                    transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${previewZoom}) rotate(${previewRotation}deg)`,
+                    transition: isDraggingImage ? 'none' : 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                  }}
+                >
+                  <img src={selectedPreviewImg.src} alt="Inspected Logistics Asset" draggable={false} />
+                </div>
+              </div>
+
+              {/* Modal Toolbar Actions */}
+              <div className="ir-sb-viewer-toolbar">
+                <div className="toolbar-group">
+                  <button
+                    onClick={handleModalZoomOut}
+                    title="Zoom Out"
+                    disabled={previewZoom <= 0.5}
+                    className="ir-sb-btn-icon-inline"
+                  >
+                    <ZoomOut size={16} /> Zoom Out
+                  </button>
+
+                  <span className="zoom-badge">{Math.round(previewZoom * 100)}%</span>
+
+                  <button
+                    onClick={handleModalZoomIn}
+                    title="Zoom In"
+                    disabled={previewZoom >= 3}
+                    className="ir-sb-btn-icon-inline"
+                  >
+                    <ZoomIn size={16} /> Zoom In
+                  </button>
+                </div>
+
+                <div className="toolbar-divider" />
+
+                <div className="toolbar-group">
+                  <button
+                    onClick={handleModalRotate}
+                    title="Rotate 90°"
+                    className="ir-sb-btn-icon-inline"
+                  >
+                    <RotateCcw size={16} /> Rotate 90°
+                  </button>
+
+                  <button
+                    onClick={handleModalReset}
+                    title="Reset Controls"
+                    className="btn-reset ir-sb-btn-icon-inline"
+                  >
+                    <RotateCcw size={16} style={{ transform: 'scaleX(-1)' }} /> Reset View
+                  </button>
+                </div>
+
+                <div className="toolbar-divider" />
+
+                {/* THEME BACKGROUND TOGGLE GROUP */}
+                <div className="toolbar-group">
+                  <button
+                    type="button"
+                    onClick={() => setIsCanvasDarkMode(!isCanvasDarkMode)}
+                    title={isCanvasDarkMode ? "Switch to Light Canvas Background" : "Switch to Dark Canvas Background"}
+                    className="ir-sb-btn-icon-inline btn-theme-toggle"
+                  >
+                    {isCanvasDarkMode ? (
+                      <>
+                        <Sun size={16} /> Light View
+                      </>
+                    ) : (
+                      <>
+                        <Moon size={16} /> Dark View
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </Modal>,
+          document.body
         )}
 
 
-      </div>
 
-      {selectedPreviewImg && createPortal(
-        <Modal
-          onClose={() => setSelectedPreviewImg(null)}
-          width={'65%'}
-          height={'80%'}
-          hideX={true}
-        >
-          <div className="ir-sb-viewer-modal">
-            {/* Modal Header */}
-            <div className="ir-sb-viewer-header">
-              <div className="ir-sb-viewer-meta">
-                <h3>Evidence Workspace View</h3>
-                <p>{selectedPreviewImg.fileName}</p>
-              </div>
-              <button className="ir-sb-viewer-close-btn" onClick={() => setSelectedPreviewImg(null)}>×</button>
-            </div>
-
-            {/* Interactive Image Frame Canvas (Appends the Dynamic Theme Contrast Class) */}
-            <div
-              className={`ir-sb-viewer-frame ${isCanvasDarkMode ? 'canvas-dark-theme' : 'canvas-light-theme'} ${isDraggingImage ? 'is-dragging-canvas' : ''}`}
-              onMouseDown={handleImgMouseDown}
-              onMouseMove={handleImgMouseMove}
-              onMouseUp={handleImgMouseUpOrLeave}
-              onMouseLeave={handleImgMouseUpOrLeave}
-              onWheel={handleImgWheelZoom}
-            >
-              <div
-                className="ir-sb-viewer-transform-container"
-                style={{
-                  transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${previewZoom}) rotate(${previewRotation}deg)`,
-                  transition: isDraggingImage ? 'none' : 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}
-              >
-                <img src={selectedPreviewImg.src} alt="Inspected Logistics Asset" draggable={false} />
-              </div>
-            </div>
-
-            {/* Modal Toolbar Actions */}
-            <div className="ir-sb-viewer-toolbar">
-              <div className="toolbar-group">
-                <button
-                  onClick={handleModalZoomOut}
-                  title="Zoom Out"
-                  disabled={previewZoom <= 0.5}
-                  className="ir-sb-btn-icon-inline"
-                >
-                  <ZoomOut size={16} /> Zoom Out
-                </button>
-
-                <span className="zoom-badge">{Math.round(previewZoom * 100)}%</span>
-
-                <button
-                  onClick={handleModalZoomIn}
-                  title="Zoom In"
-                  disabled={previewZoom >= 3}
-                  className="ir-sb-btn-icon-inline"
-                >
-                  <ZoomIn size={16} /> Zoom In
-                </button>
-              </div>
-
-              <div className="toolbar-divider" />
-
-              <div className="toolbar-group">
-                <button
-                  onClick={handleModalRotate}
-                  title="Rotate 90°"
-                  className="ir-sb-btn-icon-inline"
-                >
-                  <RotateCcw size={16} /> Rotate 90°
-                </button>
-
-                <button
-                  onClick={handleModalReset}
-                  title="Reset Controls"
-                  className="btn-reset ir-sb-btn-icon-inline"
-                >
-                  <RotateCcw size={16} style={{ transform: 'scaleX(-1)' }} /> Reset View
-                </button>
-              </div>
-
-              <div className="toolbar-divider" />
-
-              {/* THEME BACKGROUND TOGGLE GROUP */}
-              <div className="toolbar-group">
-                <button
-                  type="button"
-                  onClick={() => setIsCanvasDarkMode(!isCanvasDarkMode)}
-                  title={isCanvasDarkMode ? "Switch to Light Canvas Background" : "Switch to Dark Canvas Background"}
-                  className="ir-sb-btn-icon-inline btn-theme-toggle"
-                >
-                  {isCanvasDarkMode ? (
-                    <>
-                      <Sun size={16} /> Light View
-                    </>
-                  ) : (
-                    <>
-                      <Moon size={16} /> Dark View
-                    </>
-                  )}
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </Modal>,
-        document.body
-      )}
-
-
-
-    </>
-  );
-};
+      </>
+    );
+  });

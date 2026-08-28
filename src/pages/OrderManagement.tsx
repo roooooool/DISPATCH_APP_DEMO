@@ -541,7 +541,7 @@ const OrderManagement: React.FC = () => {
     };
 
     const buFilter = (col: string) => {
-        return ['Coor'].includes(user?.Position || '') ? `and ${enc(col)} eq '${user?.BusinessUnit}'` : ''
+        return ['Coor', 'Supervisor'].includes(user?.Position || '') ? `and ${enc(col)} eq '${user?.BusinessUnit}'` : ''
     };
 
     const fetchTrips = useCallback(async (nocd: boolean = false) => {
@@ -825,7 +825,7 @@ const OrderManagement: React.FC = () => {
                 'Id'
             );
 
-            console.log('drivers3: ', result)
+            // console.log('drivers3: ', result)
 
             setDriverHelperList(result);
 

@@ -2192,7 +2192,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           setIsCreatingIR(true);
           setIsIncidentModalOpen(true); // Open modal instantly so user sees the loading state
 
-          const raw_data = await incidentFormRef.current.submit();
+          const raw_data = await incidentFormRef.current.onSave();
           const employee_details = driverOptions?.find((item) => item.label === formData.Driver)?.record
           const data = {
             ...raw_data,
@@ -2252,7 +2252,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
     // This function handles the absolute wipeout execution when they confirm "Yes"
-    const handleForceDiscardIR = () => {
+    const handleForceDiscardIR = async () => {
+      if (incidentFormRef.current) {
+        //@ts-ignore
+        const raw_data = await incidentFormRef.current.save();
+        console.log('forced saved: ', raw_data);
+      }
       setIsConfirmIRCloseOpen(false);
       setCreatedIR(null);
       setIsIncidentModalOpen(false);
@@ -4318,7 +4323,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 <IR_ShortBags_Form
                   incidentReportItem={createdIR as Partial<OP_IncidentReports>}
                   initialUser={editingUser ?? undefined}
-                  onClose={handleConfirmIRClose}
+                  onClose={() => { handleConfirmIRClose() }}
                   onSubmit={(data: any) => {
                     console.log("Submitted successfully");
                     handleForceCloseIR();

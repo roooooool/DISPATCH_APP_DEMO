@@ -1,5 +1,0 @@
-import { GSDC_AccountsService } from "./generated/services/GSDC_AccountsService";
-import type { GSDC_AccountsRead } from "./generated/models/GSDC_AccountsModel";
-
-can you check C:\Users\IT Dev\Desktop\GPS PROJECTS\POWER APPS BOYZ\GSDC_Dispatch_App_POWERAPPS\Src\login_test.fx.yaml and recreate it in my src\pages\ ? i already have connected a data source "GSDC_Accounts", use this import { GSDC_AccountsService } from "./generated/services/GSDC_AccountsService";
-import type { GSDC_AccountsRead } from "./generated/models/GSDC_AccountsModel";
