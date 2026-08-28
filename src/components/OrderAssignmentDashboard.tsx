@@ -22,13 +22,14 @@ import AutoDismissBanner from './ewul_Banner';
 
 
 //UTILS
-
-//Utils
 import {
 
     logDmsUpdate,
 
 } from '../utils/Ewul_GSDC_Utils';
+
+
+import OEDuplicateWarningModal from './OEDuplicateWarningModal';
 
 
 
@@ -103,6 +104,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     };
 
     const [buFilters, setBuFilters] = useState<Record<string, string>>({});
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleMetricClick = (buName: string, filterKey: string) => {
         setBuFilters(prev => ({
@@ -290,14 +292,15 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                 action: `Trip [${oenumber}] ${assignType === "Reassigned" ? `Reassigned from ${prevBu} ` : assignType} to ${bu}`,
                 value: bu,
                 bu: bu,
-                context: `Trip - ${assignType}`,
+                context: `Trip Distribution - ${assignType}`,
                 role: user?.Position || '',
             }
         );
     };
 
-    const [ShowOEDuplicateWarningModal, setShowOEDuplicateWarningModal] = useState(false);
-    console.log(ShowOEDuplicateWarningModal);
+    //@ts-ignore
+    const [duplicateOEValue, setDuplicateOEValue] = useState<string>('');
+    const [showOEDuplicateWarningModal, setShowOEDuplicateWarningModal] = useState(false);
     const handleConfirmChanges = async () => {
         // 1. Orders to Add or Update (All items currently dropped/moved into any BU card)
         const ordersToUpsert = Object.entries(buDroppedItems).flatMap(([buName, items]) =>
@@ -404,6 +407,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                         const table1 = duplicateCheck.data?.ResultSets?.Table1 as any[] | undefined;
                         if (table1 && table1.length > 0) {
                             if (table1[0].DoesExist) {
+                                setDuplicateOEValue(order.OE || '');
                                 setShowOEDuplicateWarningModal(true);
                                 throw new Error(`Duplicate OE detected: ${order.OE}`);
                             }
@@ -592,6 +596,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     };
 
 
+
     const hasLocalDrops = Object.values(buDroppedItems).some(
         (trips) => trips && trips.length > 0
     ) || removedOriginalKeys.size > 0;
@@ -733,6 +738,32 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                 </span>
                             )}
                         </h2>
+
+                        {/* 🔍 Search Input with Navy Blue + Red Gradient Border Imitation */}
+                        <div className="bu-search-wrapper">
+                            <div className="bu-search-inner">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#000080" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="15" height="15">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input
+                                    type="text"
+                                    placeholder="Search orders..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="bu-search-input"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        className="bu-search-clear"
+                                        onClick={() => setSearchQuery('')}
+                                        type="button"
+                                    >
+                                        ✕
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     {hasLocalDrops && (
@@ -774,13 +805,24 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
                         const filteredCardTrips = allCombinedTrips.filter(trip => {
                             const sourceObj = trip.rawData || trip;
-                            if (activeFilter === 'new') return trip._isLocal === true;
-                            if (activeFilter === 'plan') return sourceObj.TripProgress === 'Planned';
-                            // 'bal' handles what used to be 'assi'
-                            if (activeFilter === 'bal') return sourceObj.TripProgress === 'Assigned' && isEmptyStr(sourceObj.Driver) && isEmptyStr(sourceObj.Vehicle);
-                            // 'assi' now handles what used to be 'disp' (dispatched/in-progress trips)
-                            if (activeFilter === 'assi') return sourceObj.TripProgress !== 'Assigned' && sourceObj.TripProgress !== 'New Trip';
-                            return true; // 'all'
+
+                            // Filter 1: Status tab metrics
+                            if (activeFilter === 'new' && trip._isLocal !== true) return false;
+                            if (activeFilter === 'plan' && sourceObj.TripProgress !== 'Planned') return false;
+                            if (activeFilter === 'bal' && !(sourceObj.TripProgress === 'Assigned' && isEmptyStr(sourceObj.Driver) && isEmptyStr(sourceObj.Vehicle))) return false;
+                            if (activeFilter === 'assi' && (sourceObj.TripProgress === 'Assigned' || sourceObj.TripProgress === 'New Trip')) return false;
+
+                            // Filter 2: Search input query filter (Checks OE / Title, Source, Destination)
+                            if (searchQuery.trim() !== '') {
+                                const query = searchQuery.toLowerCase();
+                                const orderId = String(trip[displayMapping.titleField] || '').toLowerCase();
+                                const source = String(trip[displayMapping.routeStartField] || '').toLowerCase();
+                                const destination = String(trip[displayMapping.routeEndField] || '').toLowerCase();
+
+                                return orderId.includes(query) || source.includes(query) || destination.includes(query);
+                            }
+
+                            return true;
                         });
 
                         const totalCount = allCombinedTrips.length;
@@ -1168,6 +1210,14 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                     duration={2000}
                 />
             )}
+
+            {/* DUPLICATE OE WARNING MODAL */}
+            <OEDuplicateWarningModal
+                isOpen={showOEDuplicateWarningModal}
+                duplicateOE={duplicateOEValue}
+                onClose={() => setShowOEDuplicateWarningModal(false)}
+            />
+
         </div>
     );
 };

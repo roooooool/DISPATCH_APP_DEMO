@@ -1,0 +1,162 @@
+.oe-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 128, 0.2);
+    /* Navy transparent backdrop */
+    backdrop-filter: blur(1px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+/* Gradient border container */
+.oe-modal-gradient-wrapper {
+    position: relative;
+    background: linear-gradient(135deg, #000080 0%, #3a4efc 50%, #ff3333 100%);
+    padding: 2px;
+    /* Defines border thickness */
+    border-radius: 14px;
+    width: 90%;
+    max-width: 440px;
+    min-height: 180px;
+    /* Force minimum height so it won't collapse */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* The inner card where the text lives */
+.oe-modal-content {
+    background-color: #ffffff !important;
+    /* Force explicit white background */
+    border-radius: 12px;
+    padding: 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #000080;
+}
+
+/* Close Button */
+.oe-modal-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.oe-modal-close-btn:hover {
+    background-color: #f0f2f5;
+    color: #000080;
+}
+
+/* Header & Icon */
+.oe-modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.oe-modal-icon-badge {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(230, 57, 70, 0.15) 0%, rgba(255, 77, 77, 0.25) 100%);
+    color: #e63946;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.oe-modal-header h3 {
+    margin: 0;
+    color: #000080;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* Body Content */
+.oe-modal-body {
+    margin-bottom: 24px;
+}
+
+.oe-modal-body p {
+    margin: 0 0 8px 0;
+    color: #333333;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.oe-modal-body strong {
+    color: #e63946;
+}
+
+.oe-modal-subtext {
+    font-size: 0.85rem !important;
+    color: #666666 !important;
+}
+
+/* Footer Action */
+.oe-modal-footer {
+    width: 100%;
+}
+
+.oe-modal-confirm-btn {
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #000080 0%, #3a4efc 100%);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 4px 12px rgba(58, 78, 252, 0.25);
+}
+
+.oe-modal-confirm-btn:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.oe-modal-confirm-btn:active {
+    transform: translateY(0);
+}
+
+/* Animations */
+@keyframes oeModalFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes oeModalScaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

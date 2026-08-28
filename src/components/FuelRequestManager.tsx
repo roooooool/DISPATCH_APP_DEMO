@@ -656,7 +656,25 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                                     fetchAttachments(Number(record.Id) || 0);
                                     // When a row is clicked, map the data, switch to the form, and load it
                                     console.log('Row clicked with record:', record);
-                                    const mappedData = mapLiveRequestToFctFinal(record);
+                                    let mappedData = mapLiveRequestToFctFinal(record);
+
+
+                                    if (record.Frstatus = 'FR Disapproved') {
+                                        mappedData = {
+                                            ...mappedData,
+                                            Currentlocation: initialFormData?.Currentlocation || '',
+                                            Plate: initialFormData?.Plate || '',
+                                            Brand: initialFormData?.Brand || '',
+                                            Wheelertype: initialFormData?.Wheelertype || '',
+                                            Platetrailer: initialFormData?.Platetrailer || '',
+                                            Classification: initialFormData?.Classification || '',
+                                            Axle: initialFormData?.Axle || '',
+                                            Subengine: initialFormData?.Subengine || '',
+                                            Type: initialFormData?.Type || '',
+                                            Odometer: initialFormData?.Odometer || '',
+                                        };
+                                    }
+
                                     setFormData(mappedData);
 
                                     // Set the original odometer for validation

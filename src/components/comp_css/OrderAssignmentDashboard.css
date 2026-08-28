@@ -543,3 +543,67 @@
 .unassign-drop-zone:hover {
     background-color: color-mix(in srgb, #ef4444, transparent 70%);
 }
+
+
+/* Outer box creates the Navy Blue + Red gradient border imitation */
+.bu-search-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 1.5px;
+    /* Gradient border thickness */
+    background: linear-gradient(135deg, #000080 0%, #3a4efc 50%, #ff3333 100%);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin-left: 6px;
+}
+
+/* Inner container with white background */
+.bu-search-inner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #ffffff;
+    border-radius: 8.5px;
+    /* Fits seamlessly inside 10px outer radius */
+    padding: 4px 10px;
+    height: 32px;
+}
+
+.bu-search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.85rem;
+    color: #000080;
+    /* Navy Blue text */
+    width: 140px;
+    transition: width 0.25s ease;
+}
+
+.bu-search-input::placeholder {
+    color: #8a94a6;
+    font-size: 0.82rem;
+}
+
+.bu-search-input:focus {
+    width: 190px;
+    /* Gently expands when typing */
+}
+
+.bu-search-clear {
+    border: none;
+    background: none;
+    color: #8a94a6;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bu-search-clear:hover {
+    color: #ff3333;
+    /* Accent red hover */
+}
