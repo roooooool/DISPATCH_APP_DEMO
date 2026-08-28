@@ -1,13 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import PageTemplate from './template';
-import TableView, {type scrollToConfig} from '../components/ewul_TableFlex';
+import TableView, { type scrollToConfig } from '../components/ewul_TableFlex';
 import Modal from '../components/ewul_Modal';
 import IncidentReportForm, { type IncidentFormHandle } from '../components/CreateIncidentReportForm';
-import {IR_ShortBags_Form} from '../components/IR_ShortBags_Form';
+import { IR_ShortBags_Form } from '../components/IR_ShortBags_Form';
 import { RefreshCcw, Plus } from 'lucide-react';
 import DateRangePicker from '../components/ewul_DateRangePicker';
 
-import { 
+import {
     INCIDENT_TABLE_MODULE
 } from '../truth.config';
 import { useUser } from '../utils/useUser';
@@ -48,20 +48,20 @@ const IncidentManagement: React.FC = () => {
             return;
         }
         setLoadingFor(FETCH_LOADING_KEYS.incidentReports, true);
-        if (!canFetch(FETCH_LOADING_KEYS.incidentReports,2000)) {setLoadingFor(FETCH_LOADING_KEYS.incidentReports, false); return;}
+        if (!canFetch(FETCH_LOADING_KEYS.incidentReports, 2000)) { setLoadingFor(FETCH_LOADING_KEYS.incidentReports, false); return; }
 
         console.log("Fetching incident reports with date range:", selectedDateRange);
 
         const fromInt = ISOtoInt(selectedDateRange.from);
         const toInt = ISOtoInt(selectedDateRange.to);
-        const dateFilter = `IncidentDateAsInt ge ${fromInt} and IncidentDateAsInt le ${toInt}`;
+        const dateFilter = `IncidentDateAsInt ge ${fromInt} and IncidentDateAsInt le ${toInt} and OE_Reference ne null`;
 
         const options = {
             filter: dateFilter,
             orderBy: ["IncidentDateAsInt desc"],
         };
 
-        
+
         try {
             const result = await ewulFetchAll<any>(
                 OP_IncidentReportsService,
@@ -123,7 +123,7 @@ const IncidentManagement: React.FC = () => {
             >
                 <RefreshCcw size={18} /> Refresh
             </button>
-            { user?.Position === 'Developer' && (<button className="header-action-btn primary" onClick={() => {
+            {user?.Position === 'Developer' && (<button className="header-action-btn primary" onClick={() => {
                 setSelectedReport(null);
                 setIsModalOpen(true);
             }}>
@@ -148,7 +148,7 @@ const IncidentManagement: React.FC = () => {
                 return [...prev, { ...data, IncidentID: `temp-${Date.now()}` }]; // Assign temp ID for new reports
             }
         });
-        
+
     }
 
     const handleSave = (data: any) => {
@@ -172,7 +172,7 @@ const IncidentManagement: React.FC = () => {
     const handleDelete = (data: any) => { // Assuming data is of type OP_IncidentReports for better typing
         setSelectedReport(null);
         setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' }); // Reset scroll highlight
-        console.log("incident to be deleted: ",data );
+        console.log("incident to be deleted: ", data);
         setIncidentReports(prev => {
             // Filter out the report with the matching IncidentID
             return prev.filter(report => report.IncidentID !== data.IncidentID);
@@ -241,29 +241,29 @@ const IncidentManagement: React.FC = () => {
 
 
             {selectedReport && (
-                <Modal 
-                    onClose={() => setSelectedReport(null)} 
+                <Modal
+                    onClose={() => setSelectedReport(null)}
                     height="100%"
                     overlayBlur={4}
                     overlayColor="rgba(11, 19, 43, 0.4)" /* Deep custom navy overlay tint */
                     hideX={true} /* Hide the default close button since we have a custom cancel button in the form */
                 >
                     {(() => {
-                    switch (selectedReport.IncidentType) {
-                        case 'Short Bags':
-                        return (
-                            <IR_ShortBags_Form 
-                                incidentReportItem={selectedReport}
-                                initialUser={user ?? undefined}
-                                onClose={() => {setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' });}}
-                                onSubmit={handleSubmit}
-                                onSave={handleSave}
-                                onDelete={handleDelete}
-                            />
-                        );
-                        default:
-                        return (<div>{selectedReport.IRID || ''}</div>);
-                    }
+                        switch (selectedReport.IncidentType) {
+                            case 'Short Bags':
+                                return (
+                                    <IR_ShortBags_Form
+                                        incidentReportItem={selectedReport}
+                                        initialUser={user ?? undefined}
+                                        onClose={() => { setSelectedReport(null); setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'success' }); }}
+                                        onSubmit={handleSubmit}
+                                        onSave={handleSave}
+                                        onDelete={handleDelete}
+                                    />
+                                );
+                            default:
+                                return (<div>{selectedReport.IRID || ''}</div>);
+                        }
                     })()}
                 </Modal>
             )}
