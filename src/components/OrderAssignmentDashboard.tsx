@@ -21,6 +21,16 @@ import { useTaskWorker } from '../utils/TaskWorkerContext';
 import AutoDismissBanner from './ewul_Banner';
 
 
+//UTILS
+
+//Utils
+import {
+
+    logDmsUpdate,
+
+} from '../utils/Ewul_GSDC_Utils';
+
+
 
 interface OrderAssignmentDashboardProps {
     newOrdersList: any[];
@@ -271,6 +281,21 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
         }
     };
 
+    const recordActionLog = (oenumber: string, bu: string, assignType: "Assigned" | "Reassigned" | "Unassigned", prevBu?: string) => {
+        logDmsUpdate(
+            {
+                userName: user?.FullName || '',
+                userID: Number(user?.id) || 0,
+                inputOE: oenumber,
+                action: `Trip [${oenumber}] ${assignType === "Reassigned" ? `Reassigned from ${prevBu} ` : assignType} to ${bu}`,
+                value: bu,
+                bu: bu,
+                context: `Trip - ${assignType}`,
+                role: user?.Position || '',
+            }
+        );
+    };
+
     const [ShowOEDuplicateWarningModal, setShowOEDuplicateWarningModal] = useState(false);
     console.log(ShowOEDuplicateWarningModal);
     const handleConfirmChanges = async () => {
@@ -364,6 +389,10 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
                 // Create / Update Loop
                 for (const order of ordersToUpsert) {
+
+                    const oeNumber = order.OE || order.rawData?.OE || '';
+                    const newBu = order[displayMapping.buField];
+                    const prevBu = order.Buisness_x0020_Unit || order.rawData?.Buisness_x0020_Unit;
 
                     // If this is a NEW order dragged from New Orders
                     if (order._isLocal) {
@@ -483,6 +512,10 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                 Buisness_x0020_Unit: order.BU
                             });
 
+
+                            // LOG ASSIGNED
+                            recordActionLog(oeNumber, newBu, "Assigned");
+
                         }
                         else {
                             // ✅ FIXED: Safely placed outside the local conditional block
@@ -495,6 +528,9 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                     Buisness_x0020_Unit: order[displayMapping.buField]
                                 }
                             );
+
+                            // LOG REASSIGNED
+                            recordActionLog(oeNumber, newBu, "Reassigned", prevBu);
                         }
                     }
 
@@ -506,6 +542,16 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                 for (const id of ordersToDelete) {
                     console.log("Deleting database ID reference:", id);
                     await DMS_CEMService.delete(id.toString());
+
+                    const targetTrip = tripAssignedList.find(
+                        trip => (trip.rawData?.ID || trip.ID) === id
+                    );
+
+                    const oeNumber = targetTrip?.OE || targetTrip?.rawData?.OE || '';
+                    const prevBu = targetTrip?.Buisness_x0020_Unit || targetTrip?.rawData?.Buisness_x0020_Unit || '';
+
+                    // LOG UNASSIGNED
+                    recordActionLog(oeNumber, prevBu, "Unassigned", prevBu);
                 }
 
                 // Return the same payload structure for completeness

@@ -2257,7 +2257,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (irShortBagsForm.current?.save) {
         //@ts-ignore
         const raw_data = await irShortBagsForm.current.save();
-        console.log('forced saved: ', raw_data);
+        // console.log('forced saved: ', raw_data);
       }
       setIsConfirmIRCloseOpen(false);
       setCreatedIR(null);
