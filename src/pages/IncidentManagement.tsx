@@ -8,7 +8,7 @@ import { RefreshCcw, Plus } from 'lucide-react';
 import DateRangePicker from '../components/ewul_DateRangePicker';
 
 import {
-    INCIDENT_TABLE_MODULE
+    INCIDENT_TABLE_MODULE, STORAGE_KEY_PREFIX
 } from '../truth.config';
 import { useUser } from '../utils/useUser';
 import {
@@ -40,10 +40,50 @@ const IncidentManagement: React.FC = () => {
     const [scrollTo, setScrollTo] = useState<scrollToConfig | null>(null);
 
     const [incidentReports, setIncidentReports] = useState<any[]>([]);
-    const [selectedDateRange, setSelectedDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
+
+
+    // const handleDateRangeChange = useCallback((range: { from: string; to: string }) => {
+    //     setSelectedDateRange(range);
+    //     console.log("Selected Date Range:", range);
+    //     // fetchIncidentReports will be triggered by the useEffect due to selectedDateRange change
+    // }, []);
+
+    // 1. Initialize state from localStorage using a lazy initializer
+    const [selectedDateRange, setSelectedDateRange] = useState<{ from: string; to: string } | null>(() => {
+        if (!user?.id) return null;
+        try {
+            const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${user.id}`);
+            return saved ? JSON.parse(saved) : null;
+        } catch (error) {
+            console.error('Failed to parse saved date range from localStorage:', error);
+            return null;
+        }
+    });
+
+    // 2. Keep handleDateChange memoized and update state
+    const handleDateRangeChange = useCallback((range: { from: string; to: string }) => {
+        setSelectedDateRange(prev => {
+            if (prev?.from === range.from && prev?.to === range.to) {
+                return prev;
+            }
+            return range;
+        });
+    }, []);
+
+    // 3. Persist state updates to localStorage whenever selectedRange or user.ID changes
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const storageKey = `${STORAGE_KEY_PREFIX}${user.id}`;
+        if (selectedDateRange) {
+            localStorage.setItem(storageKey, JSON.stringify(selectedDateRange));
+        } else {
+            localStorage.removeItem(storageKey);
+        }
+    }, [selectedDateRange, user?.id]);
 
     const fetchIncidentReports = useCallback(async () => {
-        if (!selectedDateRange.from || !selectedDateRange.to) {
+        if (!selectedDateRange?.from || !selectedDateRange?.to) {
             console.log("No valid date range selected for incident reports fetch, skipping.");
             return;
         }
@@ -94,11 +134,8 @@ const IncidentManagement: React.FC = () => {
     }, [isModalOpen]);
 
 
-    const handleDateRangeChange = useCallback((range: { from: string; to: string }) => {
-        setSelectedDateRange(range);
-        console.log("Selected Date Range:", range);
-        // fetchIncidentReports will be triggered by the useEffect due to selectedDateRange change
-    }, []);
+
+
 
     const handleRowClick = (row: any) => {
         setSelectedReport(row);
@@ -112,6 +149,8 @@ const IncidentManagement: React.FC = () => {
             <DateRangePicker
                 allowedTypes={['Weekly', 'Monthly', 'Yearly', 'Custom']}
                 onFilterChange={handleDateRangeChange}
+                initialFrom={selectedDateRange?.from}
+                initialTo={selectedDateRange?.to}
                 opacity={1}
                 bgColor='var(--color-primary)'
                 hoverColor='var(--color-primary)'

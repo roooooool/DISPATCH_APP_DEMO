@@ -14,6 +14,7 @@ import {
     GSDC_NAVIGATE_TO_TRIP_key,
     // BUSINESS_UNITS,
     TRIP_GROUPS,
+    STORAGE_KEY_PREFIX,
 } from '../truth.config';
 import { RefreshCcw, Download, Maximize2, X, Menu, Eye, EyeOff } from 'lucide-react';
 
@@ -192,7 +193,6 @@ const OrderManagement: React.FC = () => {
         }
     };
 
-    const STORAGE_KEY_PREFIX = 'tripdispatchdaterange_';
 
     // 1. Initialize state from localStorage using a lazy initializer
     const [selectedRange, setSelectedRange] = useState<{ from: string; to: string } | null>(() => {
@@ -2015,6 +2015,30 @@ const OrderManagement: React.FC = () => {
                                                 execute: async () => {
                                                     try {
 
+                                                        const checkResult = await ewulFetchAll<any>(
+                                                            LiveDMSView_CEMService,
+                                                            { filter: `OE eq '${selectedChangeTripOE.OE}'`, orderBy: ["OEDateAsInt asc"] },
+                                                            1,
+                                                            'ID'
+                                                        );
+
+                                                        console.log('check change trip: ', checkResult, ' with fikter: ', `OE eq '${selectedChangeTripOE.OE}'`);
+
+                                                        // 1. Verify a record was actually returned
+                                                        if (!checkResult || checkResult.length === 0) {
+                                                            throw new Error(`OE ${selectedChangeTripOE.OE} not found in the DMS.`);
+                                                        }
+
+                                                        const targetRecord = checkResult[0];
+
+                                                        // console.log('targetRecord: ', targetRecord.Driver, ' record: ', targetRecord);
+
+                                                        // 2. Throw explicit Error when validation fails
+                                                        if (targetRecord.Driver || targetRecord.Helper) {
+                                                            throw new Error(`OE ${selectedChangeTripOE.OE} already has a driver or helper assigned.`);
+                                                        }
+
+
                                                         const result = await DMS_CEMService.update(
                                                             showChangeTripModal.record.ID.toString(),
                                                             changedTripRecord
@@ -2092,8 +2116,10 @@ const OrderManagement: React.FC = () => {
                                                             return [data, ...prevTrips];
                                                         }
                                                     });
+
+                                                    handleRefresh();
                                                 },
-                                                onFailure: () => { setSelectedOrder(original); },
+                                                onFailure: () => { setSelectedOrder(original); handleRefresh(); },
 
                                                 message: `Saving changes for trip ${selectedChangeTripOE.OE}...`,
                                                 message_success: `Trip ${selectedChangeTripOE.OE} saved successfully!`,

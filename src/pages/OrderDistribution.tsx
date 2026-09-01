@@ -43,6 +43,7 @@ import {
   cementTypeOptions,
   // frStatuses,
   TRIP_PROGRESS,
+  STORAGE_KEY_PREFIX,
 } from '../truth.config';
 
 const BUSINESS_UNITS = ['SBUO-1A', 'SBUO-1B'];
@@ -331,7 +332,41 @@ const OrderDistribution: React.FC = () => {
     }
   }, [activeMode, user?.id]);
 
-  const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{ from: string, to: string } | null>(null);
+  // 2. Keep handleDateChange memoized and update state
+  const handleDateChangeNewOrders = useCallback((range: { from: string; to: string }) => {
+    setSelectedRangeNewOrders(prev => {
+      if (prev?.from === range.from && prev?.to === range.to) {
+        return prev;
+      }
+      return range;
+    });
+  }, []);
+
+  // 1. Initialize state from localStorage using a lazy initializer
+  const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{ from: string; to: string } | null>(() => {
+    if (!user?.id) return null;
+    try {
+      const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${user.id}`);
+      return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+      console.error('Failed to parse saved date range from localStorage:', error);
+      return null;
+    }
+  });
+
+
+
+  // 3. Persist state updates to localStorage whenever selectedRange or user.ID changes
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const storageKey = `${STORAGE_KEY_PREFIX}${user.id}`;
+    if (selectedRangeNewOrders) {
+      localStorage.setItem(storageKey, JSON.stringify(selectedRangeNewOrders));
+    } else {
+      localStorage.removeItem(storageKey);
+    }
+  }, [selectedRangeNewOrders, user?.id]);
 
   const [stationOptions, setStationOptions] = useState<DropdownOption[]>([]);
   const [sourceOptions, setSourceOptions] = useState<DropdownOption[]>([]);
@@ -1048,12 +1083,8 @@ const OrderDistribution: React.FC = () => {
     }
   }, [selectedRangeNewOrders, activeMode, handleSync]);
 
-  const handleDateChangeNewOrders = useCallback((range: { from: string, to: string }) => {
-    setSelectedRangeNewOrders(prev => {
-      if (prev?.from === range.from && prev?.to === range.to) return prev;
-      return range;
-    });
-  }, []);
+
+
 
 
 
@@ -1283,6 +1314,8 @@ const OrderDistribution: React.FC = () => {
 
           <DateRangePicker
             allowedTypes={['Monthly', 'Yearly', 'Custom']}
+            initialFrom={selectedRangeNewOrders?.from}
+            initialTo={selectedRangeNewOrders?.to}
             onFilterChange={handleDateChangeNewOrders}
             opacity={1}
             bgColor='var(--color-primary)'

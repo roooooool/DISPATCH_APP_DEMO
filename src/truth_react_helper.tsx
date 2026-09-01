@@ -648,15 +648,18 @@ const STATUS_OPTIONS = [
 // Internal change handler
 //@ts-ignore
 const onRemarksStatusDropdownChange = (val: string, id: string, oe: string) => {
-  if (!id) return;
-  DMS_NewTrip_RemarksService.delete(id);
+  // if (!id) return;
+  // DMS_NewTrip_RemarksService.delete(id);
+  console.log('upserting remarks: ', val, ' id: ', id, ' oe: ', oe)
+  UpsertNewTripRemarksService.UpsertNewTripRemarks({ OE: oe, Remarks: val } as any);
 };
 
 // Internal removal handler
 //@ts-ignore
 const onRemarksStatusDropdownRemove = (id: string, oe: string) => {
   // Call your API or service to remove/clear the remark
-  UpsertNewTripRemarksService.UpsertNewTripRemarks({ OE: oe, Remarks: "" } as any);
+  // UpsertNewTripRemarksService.UpsertNewTripRemarks({ OE: oe, Remarks: "" } as any);
+  DMS_NewTrip_RemarksService.delete(id);
   // Or: RemoveNewTripRemarksService.RemoveNewTripRemarks({ OE: oe, ID: id });
 };
 
@@ -733,6 +736,7 @@ export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = (
   };
 
   const handleSelect = (option: string) => {
+    console.log('wew ups: ', option, ' id: ', id, ' oe: ', oe);
     setIsOpen(false);
 
     if (option === 'None') {

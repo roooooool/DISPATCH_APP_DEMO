@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.25.8"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.26.8"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -1904,7 +1904,7 @@ export const LATE_ATTENDANCE_REQUESTS: TableModuleConfig = {
 
 
 
-
+export const STORAGE_KEY_PREFIX = 'tripdispatchdaterange_';
 
 
 
