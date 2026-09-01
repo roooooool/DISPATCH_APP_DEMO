@@ -192,16 +192,41 @@ const OrderManagement: React.FC = () => {
         }
     };
 
-    const [selectedRange, setSelectedRange] = useState<{ from: string, to: string } | null>(null);
-    const handleDateChange = useCallback((range: { from: string, to: string }) => {
+    const STORAGE_KEY_PREFIX = 'tripdispatchdaterange_';
+
+    // 1. Initialize state from localStorage using a lazy initializer
+    const [selectedRange, setSelectedRange] = useState<{ from: string; to: string } | null>(() => {
+        if (!user?.id) return null;
+        try {
+            const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${user.id}`);
+            return saved ? JSON.parse(saved) : null;
+        } catch (error) {
+            console.error('Failed to parse saved date range from localStorage:', error);
+            return null;
+        }
+    });
+
+    // 2. Keep handleDateChange memoized and update state
+    const handleDateChange = useCallback((range: { from: string; to: string }) => {
         setSelectedRange(prev => {
-            // If the values are exactly the same, return the previous state to avoid a re-render
             if (prev?.from === range.from && prev?.to === range.to) {
                 return prev;
             }
             return range;
         });
     }, []);
+
+    // 3. Persist state updates to localStorage whenever selectedRange or user.ID changes
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const storageKey = `${STORAGE_KEY_PREFIX}${user.id}`;
+        if (selectedRange) {
+            localStorage.setItem(storageKey, JSON.stringify(selectedRange));
+        } else {
+            localStorage.removeItem(storageKey);
+        }
+    }, [selectedRange, user?.id]);
 
     const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{ from: string, to: string } | null>(null);
     const handleDateChangeNewOrders = useCallback((range: { from: string, to: string }) => {
@@ -535,6 +560,10 @@ const OrderManagement: React.FC = () => {
     const handleRequestChangeTrip = (tripData: any, action: 'Divert' | 'Change') => {
         let originalOESource = tripData?.Source || '';
         setSelectedChangeTripOE(null); // Reset selected OE when opening modal
+        // Sync the modal's date range filter with the main picked date
+        if (selectedRange) {
+            setSelectedRangeNewOrders(selectedRange);
+        }
         setShowChangeTripModal({ show: true, record: tripData, action, configChange: changeConfig(originalOESource) });
         // console.log("trip data: ", tripData);
         fetchNewOrders(); // Refresh orders to get the latest OEs for selection
@@ -1236,6 +1265,8 @@ const OrderManagement: React.FC = () => {
             <DateRangePicker
                 allowedTypes={['Today', 'Yesterday', 'Last Week', 'Weekly', 'Monthly'/*, 'Yearly', 'Custom'*/]}
                 initialType='Monthly'
+                initialFrom={selectedRange?.from}
+                initialTo={selectedRange?.to}
                 onFilterChange={(range) => { handleDateChange(range); }}
                 opacity={0.2}
                 bgColor='var(--color-primary)'
@@ -1525,7 +1556,14 @@ const OrderManagement: React.FC = () => {
             //     scrollTo={scrollToNewTrips}
             // />
             <TableView
-                data={displayData.filter((item: any) => ["Assigned", "Planned"].includes(item.TripProgress) && !["Preload", "Mobilization"].includes(item._tripGroup))}
+                data={
+                    displayData.filter((item: any) =>
+                        ["Assigned", "Planned"].includes(item.TripProgress) &&
+                        !["Preload", "Mobilization"].includes(item._tripGroup) &&
+                        (item.Driver === null || item.Driver === undefined) &&
+                        (item.Helper === null || item.Helper === undefined)
+                    )
+                }
                 config={changeConfig}
                 storageKey={`order_page_live_trips${user?.id}`}
                 searchCol={LIVE_DMS_TABLE_CONFIG.searchable_cols as string[]}
@@ -1956,6 +1994,7 @@ const OrderManagement: React.FC = () => {
                                             if (!selectedChangeTripOE) return;
                                             console.log(`${showChangeTripModal.action} Trip to:`, selectedChangeTripOE.OE);
                                             const original = selectedOrder;
+                                            const originalID = selectedChangeTripOE.ID.toString()
                                             const changedTripRecord =
                                             {
                                                 OE: selectedChangeTripOE.OE,
@@ -1981,7 +2020,7 @@ const OrderManagement: React.FC = () => {
                                                             changedTripRecord
                                                         );
 
-                                                        await DMS_CEMService.delete(selectedChangeTripOE.ID.toString())
+                                                        await DMS_CEMService.delete(originalID)
 
 
                                                         const result2 = await TripTicketsService.update(

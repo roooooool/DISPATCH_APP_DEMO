@@ -935,20 +935,30 @@ const OrderDistribution: React.FC = () => {
     removed: string[];
   }) => {
 
+    // Store references to trips being removed before updating assignedOrders
+    let removedTrips: any[] = [];
+
+    // 1. Update Assigned Orders
     setAssignedOrders(prev => {
+      // Collect the trip objects being removed so we can return them to newOrders
+      if (result.removed && result.removed.length > 0) {
+        removedTrips = prev.filter(row => {
+          const rowId = row.rawData?.ID || row.ID;
+          return rowId !== undefined && rowId !== null && result.removed.includes(rowId.toString());
+        });
+      }
+
       let next = [...prev];
 
-      // 1. Remove deleted/unassigned trips using database IDs instead of OE strings
+      // Remove deleted/unassigned trips using database IDs
       next = next.filter(row => {
         const rowId = row.rawData?.ID || row.ID;
-        // Stringify rowId to ensure type alignment with the incoming result strings
         return rowId === undefined || rowId === null || !result.removed.includes(rowId.toString());
       });
 
-      // 2. Update existing trips (Stays the same if tracking via OE works here)
+      // Update existing trips
       result.updated.forEach(updatedRow => {
         const index = next.findIndex(r => r.OE === updatedRow.OE);
-
         if (index >= 0) {
           next[index] = {
             ...next[index],
@@ -957,7 +967,7 @@ const OrderDistribution: React.FC = () => {
         }
       });
 
-      // 3. Add newly created trips
+      // Add newly created trips
       result.added.forEach(newRow => {
         if (!next.some(r => r.OE === newRow.OE)) {
           next.push(newRow);
@@ -965,6 +975,33 @@ const OrderDistribution: React.FC = () => {
       });
 
       return next;
+    });
+
+    // 2. Update New Orders (Remove newly assigned, Restore unassigned/removed)
+    setNewOrders(prev => {
+      let nextNewOrders = [...prev];
+
+      // A. Remove items that were assigned
+      if (result.added && result.added.length > 0) {
+        const addedOEs = new Set(result.added.map(item => item.OE).filter(Boolean));
+        nextNewOrders = nextNewOrders.filter(order => !addedOEs.has(order.OE));
+      }
+
+      // B. Restore items that were unassigned back into newOrders
+      if (removedTrips.length > 0) {
+        removedTrips.forEach(trip => {
+          // Unwrap rawData if it was stored inside a NormalizedOrder wrapper
+          const unassignedRecord = trip.rawData ? trip.rawData : trip;
+          const tripOE = unassignedRecord.OE || trip.OE;
+
+          // Prevent duplicate entries
+          if (!nextNewOrders.some(item => (item.OE || item.rawData?.OE) === tripOE)) {
+            nextNewOrders.unshift(unassignedRecord); // Add back to top of the list
+          }
+        });
+      }
+
+      return nextNewOrders;
     });
 
   }, []);

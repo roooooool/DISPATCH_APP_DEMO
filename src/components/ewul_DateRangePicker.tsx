@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar } from 'lucide-react';
 
 export type DateRangeType = 'Today' | 'Yesterday' | 'Weekly' | 'Last Week' | 'Last Month' | 'Monthly' | 'Yearly' | 'Custom';
@@ -15,6 +15,8 @@ interface DateRangeResult {
 interface DateRangePickerProps {
   allowedTypes?: DateRangeType[];
   initialType?: DateRangeType;
+  initialFrom?: string; // e.g. "YYYY-MM-DD"
+  initialTo?: string;   // e.g. "YYYY-MM-DD"
   // Now returns the raw date strings
   onFilterChange: (range: DateRangeResult) => void;
   opacity?: number, blur?: number;
@@ -24,47 +26,52 @@ interface DateRangePickerProps {
   disabled?: boolean; // Optional prop to disable the entire component
 }
 
-const DateRangePicker: React.FC<DateRangePickerProps> = ({ 
-  allowedTypes, 
+const DateRangePicker: React.FC<DateRangePickerProps> = ({
+  allowedTypes,
   onFilterChange,
   initialType = 'Monthly',
-  opacity = 0.75, 
+  initialFrom,
+  initialTo,
+  opacity = 0.75,
   blur = 10,
   bgColor = "var(--color-primary)", // Default Navy
   hoverColor = "rgba(255, 255, 255, 0.15)", // Default light glass
   disabled,
 }) => {
+  // Parse date from initialFrom if supplied, fallback to now
+  const parsedInitialDate = initialFrom ? new Date(initialFrom) : new Date();
+
   const [dateType, setDateType] = useState<string>(initialType);
-  // For Monthly: subValue = month (1-12), for Weekly: subValue = week (1-5)
+
   const [subValue, setSubValue] = useState<number>(() => {
-    const now = new Date();
-    if (initialType === 'Monthly') return now.getMonth() + 1;
-    if (initialType === 'Weekly') return Math.ceil(now.getDate() / 7);
+    if (initialType === 'Monthly') return parsedInitialDate.getMonth() + 1;
+    if (initialType === 'Weekly') return Math.ceil(parsedInitialDate.getDate() / 7);
     return 1;
   });
-  // For Weekly: monthValue = month (1-12)
+
   const [monthValue, setMonthValue] = useState<number>(() => {
-    const now = new Date();
-    if (initialType === 'Weekly') return now.getMonth() + 1;
-    if (initialType === 'Monthly') return now.getMonth() + 1;
-    return now.getMonth() + 1;
+    return parsedInitialDate.getMonth() + 1;
   });
-  const [yearValue, setYearValue] = useState<number>(new Date().getFullYear());
-  const [customDates, setCustomDates] = useState({ 
-    from: new Date().toISOString().split('T')[0], 
-    to: new Date().toISOString().split('T')[0] 
+
+  const [yearValue, setYearValue] = useState<number>(() => {
+    return parsedInitialDate.getFullYear();
+  });
+
+  const [customDates, setCustomDates] = useState({
+    from: initialFrom || new Date().toISOString().split('T')[0],
+    to: initialTo || new Date().toISOString().split('T')[0]
   });
 
   const types = allowedTypes || ['Today', 'Yesterday', 'Weekly', 'Monthly', 'Yearly', 'Custom'];
 
-  const calculateRange = useCallback((): DateRangeResult => {   
+  const calculateRange = useCallback((): DateRangeResult => {
     const now = new Date();
     let from = '';
     let to = '';
     const formatDate = (d: Date) => d.toLocaleDateString('en-CA');
 
     switch (dateType) {
-      case 'Today': 
+      case 'Today':
         from = to = formatDate(now); break;
       case 'Yesterday': {
         const yest = new Date();
@@ -120,11 +127,11 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
         to = formatDate(new Date(yearValue, subValue, 0));
         break;
       case 'Yearly':
-        from = `${yearValue}-01-01`; 
+        from = `${yearValue}-01-01`;
         to = `${yearValue}-12-31`;
         break;
       case 'Custom':
-        from = customDates.from; 
+        from = customDates.from;
         to = customDates.to;
         break;
       default:
@@ -132,7 +139,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
     }
     return { from, to };
   }, [dateType, subValue, yearValue, customDates, monthValue]);
-  
+
   // Emit the object whenever selections change
   useEffect(() => {
     const range = calculateRange();
@@ -163,21 +170,21 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const effectiveHover = hoverColor || bgColor;
 
   return (
-    <div 
-      className="date-filter-group" 
-      style={{ 
+    <div
+      className="date-filter-group"
+      style={{
         ["--local-bg" as any]: (
-          bgColor.startsWith('var') || 
-          bgColor.startsWith('#') || 
+          bgColor.startsWith('var') ||
+          bgColor.startsWith('#') ||
           bgColor === 'transparent'
-        ) 
-          ? bgColor 
+        )
+          ? bgColor
           : `rgba(${bgColor}, ${opacity})`,
 
         // 2. Use effectiveHover here instead of hoverColor
         ["--local-hover" as any]: (
-          effectiveHover.startsWith('var') || 
-          effectiveHover.startsWith('#') || 
+          effectiveHover.startsWith('var') ||
+          effectiveHover.startsWith('#') ||
           effectiveHover === 'transparent'
         )
           ? effectiveHover
@@ -206,7 +213,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
             ))}
           </select>
           <select disabled={disabled} value={subValue} onChange={e => setSubValue(Number(e.target.value))} className="date-select">
-            {[1,2,3,4,5].map(week => (
+            {[1, 2, 3, 4, 5].map(week => (
               <option key={week} value={week}>{`Week ${week}`}</option>
             ))}
           </select>

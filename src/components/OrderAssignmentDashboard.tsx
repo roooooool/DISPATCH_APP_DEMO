@@ -126,6 +126,12 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
     const flashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    const getTripKey = (trip: any): string => {
+        if (!trip) return '';
+        const key = trip.OE ?? trip.rawData?.OE ?? trip._rowId ?? trip.ID ?? trip.rawData?.ID ?? trip.id;
+        return key !== undefined && key !== null ? String(key) : '';
+    };
+
     // Group assigned trips by Business Unit for the card bodies, accounting for moved items
     const assignedByBU = useMemo(() => {
         const groups: Record<string, any[]> = {};
@@ -134,7 +140,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
         businessUnits.forEach(bu => {
             groups[bu] = tripAssignedList.filter(trip => {
                 if (trip[groupColumn] !== bu) return false;
-                const tripKey = trip.OE !== undefined && trip.OE !== null ? trip.OE : (trip._rowId || trip.id);
+                const tripKey = getTripKey(trip);
                 return !removedOriginalKeys.has(String(tripKey));
             });
         });
@@ -298,10 +304,14 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
         );
     };
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     //@ts-ignore
     const [duplicateOEValue, setDuplicateOEValue] = useState<string>('');
     const [showOEDuplicateWarningModal, setShowOEDuplicateWarningModal] = useState(false);
     const handleConfirmChanges = async () => {
+        if (isSubmitting) return; // Guard clause against double-clicks
+        setIsSubmitting(true);
         // 1. Orders to Add or Update (All items currently dropped/moved into any BU card)
         const ordersToUpsert = Object.entries(buDroppedItems).flatMap(([buName, items]) =>
             items.map(item => ({
@@ -328,10 +338,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
         const ordersToDelete = tripAssignedList
             .filter(trip => {
                 // Check root first, fallback to the nested rawData structure
-                const tripKey = trip.OE !== undefined && trip.OE !== null
-                    ? trip.OE
-                    : (trip.rawData?.OE || trip._rowId || trip.ID || trip.rawData?.ID);
-
+                const tripKey = getTripKey(trip);
                 // The item must be in removedOriginalKeys, but NOT re-assigned/dropped elsewhere
                 return removedOriginalKeys.has(String(tripKey)) && !allDroppedIds.has(String(tripKey));
             })
@@ -368,10 +375,6 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                 removed: removedRows,
             });
         }
-
-        // Capture staging state reference for error rollbacks, then clear immediately to unblock drag UI
-        setBuDroppedItems({});
-        setRemovedOriginalKeys(new Set());
 
 
 
@@ -570,6 +573,10 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
             checkSuccess: result => result.success === true,
 
             onSuccess: () => {
+                setIsSubmitting(false);
+                // Capture staging state reference for error rollbacks, then clear immediately to unblock drag UI
+                setBuDroppedItems({});
+                setRemovedOriginalKeys(new Set());
                 console.log("Finished.");
                 // if (onUpdateTripAssignedList) onUpdateTripAssignedList?.(result);
                 // Trigger UI refresh callbacks
@@ -583,7 +590,13 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                 setRemovedOriginalKeys(new Set());
             },
 
+
+
             onFailure: err => {
+                setIsSubmitting(false);
+                // Capture staging state reference for error rollbacks, then clear immediately to unblock drag UI
+                setBuDroppedItems({});
+                setRemovedOriginalKeys(new Set());
                 console.error(err);
 
                 if (onRefreshTrips) onRefreshTrips();
@@ -606,9 +619,9 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
         Object.values(buDroppedItems).forEach((trips) => {
             trips?.forEach((trip) => {
-                const tripKey = trip.OE !== undefined && trip.OE !== null ? trip.OE : (trip._rowId || trip.id);
-                if (tripKey !== undefined && tripKey !== null) {
-                    ids.add(String(tripKey));
+                const tripKey = getTripKey(trip);
+                if (tripKey) {
+                    ids.add(tripKey);
                 }
             });
         });
@@ -617,7 +630,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
     const filteredNewOrdersList = useMemo(() => {
         return newOrdersList.filter((order) => {
-            const orderKey = order.OE !== undefined && order.OE !== null ? order.OE : (order._rowId || order.id);
+            const orderKey = getTripKey(order);
             return orderKey !== undefined && orderKey !== null ? !locallyDroppedIds.has(String(orderKey)) : true;
         });
     }, [newOrdersList, locallyDroppedIds]);
@@ -770,15 +783,14 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                         <div className="header-actions-container">
                             <button
                                 className="btn-action-outline btn-confirm"
-                                onClick={() => { handleConfirmChanges() }}
+                                disabled={isSubmitting}
+                                onClick={() => { handleConfirmChanges(); }}
                             >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                                Confirm
+                                {isSubmitting ? 'Confirming...' : 'Confirm'}
                             </button>
 
                             <button
+                                disabled={isSubmitting}
                                 className="btn-action-outline btn-cancel"
                                 onClick={() => {
                                     setBuDroppedItems({});
@@ -796,9 +808,17 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                 </div>
                 <div className="bu-cards-grid">
                     {businessUnits.map((bu) => {
+                        // Replace lines 428–430 with this deduplicated array:
                         const originalBuTrips = assignedByBU[bu] || [];
                         const locallyDroppedTrips = buDroppedItems[bu] || [];
-                        const allCombinedTrips = [...originalBuTrips, ...locallyDroppedTrips];
+
+                        // Deduplicate by standard trip key
+                        const combinedMap = new Map<string, any>();
+                        [...originalBuTrips, ...locallyDroppedTrips].forEach(trip => {
+                            const key = getTripKey(trip);
+                            if (key) combinedMap.set(key, trip);
+                        });
+                        const allCombinedTrips = Array.from(combinedMap.values());
 
                         const activeFilter = buFilters[bu] || 'all';
 
@@ -1109,7 +1129,8 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                     ) : (
                                         <div className="assigned-orders-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             {filteredCardTrips.map((trip, idx) => {
-                                                const tripKey = trip.OE !== undefined && trip.OE !== null ? trip.OE : (trip._rowId || trip.id || idx);
+                                                const rawKey = getTripKey(trip);
+                                                const tripKey = rawKey ? `bu-${bu}-trip-${rawKey}` : `bu-${bu}-fallback-${idx}`;
                                                 const isNewDrop = String(tripKey) === recentDroppedId;
                                                 const isLocal = trip._isLocal === true;
 
