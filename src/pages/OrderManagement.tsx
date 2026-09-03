@@ -51,7 +51,7 @@ import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFM
 
 // Custom Components
 import TableView, { type ColumnConfig, type scrollToConfig } from '../components/ewul_TableFlex';
-import DateRangePicker from '../components/ewul_DateRangePicker';
+import DateRangePicker, { type DateRangeType } from '../components/ewul_DateRangePicker';
 import TripGroup_DonutChart, { type TripGroupDonutChartRef } from '../components/tripGroup_DonutChart';
 import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
 import Modal from '../components/ewul_Modal';
@@ -194,29 +194,54 @@ const OrderManagement: React.FC = () => {
     };
 
 
-    // 1. Initialize state from localStorage using a lazy initializer
-    const [selectedRange, setSelectedRange] = useState<{ from: string; to: string } | null>(() => {
+    // 1. Initialize state with type support & fallback for legacy entries
+    const [selectedRange, setSelectedRange] = useState<{
+        from: string;
+        to: string;
+        type?: string;
+    } | null>(() => {
         if (!user?.id) return null;
         try {
             const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${user.id}`);
-            return saved ? JSON.parse(saved) : null;
+            if (!saved) return null;
+
+            const parsed = JSON.parse(saved);
+            return {
+                from: parsed.from,
+                to: parsed.to,
+                type: parsed.type || parsed.dateType || 'Monthly', // Fallback for legacy items without a type
+            };
         } catch (error) {
             console.error('Failed to parse saved date range from localStorage:', error);
             return null;
         }
     });
 
-    // 2. Keep handleDateChange memoized and update state
-    const handleDateChange = useCallback((range: { from: string; to: string }) => {
-        setSelectedRange(prev => {
-            if (prev?.from === range.from && prev?.to === range.to) {
-                return prev;
-            }
-            return range;
-        });
-    }, []);
+    // 2. Updated memoized change handler
+    const handleDateChange = useCallback(
+        (range: { from: string; to: string; type?: string; dateType?: string }) => {
+            setSelectedRange(prev => {
+                const incomingType = range.type || range.dateType || 'Monthly';
 
-    // 3. Persist state updates to localStorage whenever selectedRange or user.ID changes
+                if (
+                    prev?.from === range.from &&
+                    prev?.to === range.to &&
+                    prev?.type === incomingType
+                ) {
+                    return prev;
+                }
+
+                return {
+                    from: range.from,
+                    to: range.to,
+                    type: incomingType,
+                };
+            });
+        },
+        []
+    );
+
+    // 3. Persist state to localStorage (automatically includes from, to, and type)
     useEffect(() => {
         if (!user?.id) return;
 
@@ -1263,8 +1288,8 @@ const OrderManagement: React.FC = () => {
                 <span>Fuel Requests</span>
             </button>*/}
             <DateRangePicker
-                allowedTypes={['Today', 'Yesterday', 'Last Week', 'Weekly', 'Monthly'/*, 'Yearly', 'Custom'*/]}
-                initialType='Monthly'
+                allowedTypes={['Today', 'Yesterday', 'Last Week', 'Weekly', 'Monthly'/*, 'Yearly'*/, 'Custom']}
+                initialType={(selectedRange?.type as DateRangeType) || 'Monthly'}
                 initialFrom={selectedRange?.from}
                 initialTo={selectedRange?.to}
                 onFilterChange={(range) => { handleDateChange(range); }}

@@ -10,6 +10,7 @@ import './comp_css/ewul_DateRangePicker.css';
 interface DateRangeResult {
   from: string; // "YYYY-MM-DD"
   to: string;   // "YYYY-MM-DD"
+  dateType?: string;
 }
 
 interface DateRangePickerProps {
@@ -42,6 +43,14 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const parsedInitialDate = initialFrom ? new Date(initialFrom) : new Date();
 
   const [dateType, setDateType] = useState<string>(initialType);
+
+  useEffect(() => {
+    if (initialType) {
+      // console.log('date type changed: ', initialType)
+      setDateType(initialType);
+    }
+  }, [initialType]);
+
 
   const [subValue, setSubValue] = useState<number>(() => {
     if (initialType === 'Monthly') return parsedInitialDate.getMonth() + 1;
@@ -137,7 +146,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
       default:
         from = to = formatDate(now);
     }
-    return { from, to };
+    return { from, to, dateType };
   }, [dateType, subValue, yearValue, customDates, monthValue]);
 
   // Emit the object whenever selections change

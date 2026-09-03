@@ -2,9 +2,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: var(--local-bg) !important; /* Navy Blue */
+  background-color: var(--local-bg) !important;
+  /* Navy Blue */
   padding: 6px 14px;
-  border-radius: 20px; /* Gentle rounded corners */
+  border-radius: 20px;
+  /* Gentle rounded corners */
   color: var(--local-bg);
   width: fit-content;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -13,7 +15,8 @@
 
 .date-filter-group:hover {
   opacity: 1 !important;
-  transform: translateY(-1px); /* A gentle lift instead of transparency */
+  transform: translateY(-1px);
+  /* A gentle lift instead of transparency */
   background-color: var(--local-hover) !important;
 }
 
@@ -39,7 +42,7 @@
   transition: background 0.2s;
 }
 
-.date-select:hover, 
+.date-select:hover,
 .year-input-inline:hover {
   background-color: rgba(255, 255, 255, 0.25) !important;
   color: var(--color-bg) !important;
@@ -49,8 +52,10 @@
 
 
 .date-select option {
-  background-color: var(--color-bg); /* Set a solid background for the dropdown list */
-  color: var(--color-text) !important; /* Ensure text is always readable */
+  background-color: var(--color-bg);
+  /* Set a solid background for the dropdown list */
+  color: var(--color-text) !important;
+  /* Ensure text is always readable */
 }
 
 /* Year Input */
@@ -75,12 +80,13 @@
 
 .custom-date-inputs input[type="date"] {
   background: var(--local-bg);
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 3px 8px;
   border-radius: 6px;
   font-size: 0.8rem;
   color: var(--color-text);
   outline: none;
+  color: var(--color-text-2);
 }
 
 /* Animation for appearing sub-menus */
@@ -96,6 +102,7 @@
     opacity: 0;
     transform: translateX(-5px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);

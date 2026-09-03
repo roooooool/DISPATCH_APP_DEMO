@@ -91,3 +91,19 @@
     background-color: #dc2626;
     color: #ffffff;
 }
+
+.dd-compact-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dd-compact-unsaved-badge {
+    font-size: 0.75rem;
+    font-style: italic;
+    color: #ef4444;
+    /* or your theme's red accent */
+    opacity: 0.85;
+    user-select: none;
+    white-space: nowrap;
+}

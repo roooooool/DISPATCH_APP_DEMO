@@ -7,7 +7,8 @@
   align-items: center;
   width: 100%;
   height: 100%;
-  position: relative; /* Anchor point for our absolute floating actions bar */
+  position: relative;
+  /* Anchor point for our absolute floating actions bar */
   box-sizing: border-box;
 }
 
@@ -15,9 +16,11 @@
 .ir-sb-document-wrapper {
   width: 100%;
   height: 100%;
-  max-height: calc(90vh - 40px); /* Matches modal height restrictions on screen */
+  max-height: calc(90vh - 40px);
+  /* Matches modal height restrictions on screen */
   overflow-y: auto;
-  padding: 45px 20px 20px 20px; /* Top padding keeps document content from slipping under the floating action buttons */
+  padding: 45px 20px 20px 20px;
+  /* Top padding keeps document content from slipping under the floating action buttons */
   display: flex;
   justify-content: center;
   box-sizing: border-box;
@@ -36,9 +39,11 @@
   z-index: 50;
   background: var(--color-bg);
   box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.08);
-  border-bottom-left-radius: 8px; /* Gentle design rounded corner profile preference */
-  padding: 4px 16px 4px 0; /* Left padding omitted to accommodate the handle */
-  
+  border-bottom-left-radius: 8px;
+  /* Gentle design rounded corner profile preference */
+  padding: 4px 16px 4px 0;
+  /* Left padding omitted to accommodate the handle */
+
   /* Smooth transform sliding interpolation transitions */
   transform: translateX(0);
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s ease;
@@ -46,7 +51,7 @@
 
 .ir-sb-actions-bar.collapsed {
   /* Shifts the entire container exactly past its width rightward, leaving the toggle handle visible */
-  transform: translateX(100%); 
+  transform: translateX(100%);
   background: transparent;
   box-shadow: none;
 }
@@ -63,20 +68,24 @@
 
 .ir-sb-actions-toggle-handle {
   position: absolute;
-  left: -32px; /* Positioned directly outside the left edge */
-  top: 50%;    /* 1. Push down to the middle of the parent bar */
-  transform: translateY(-50%); /* 2. Offset perfectly by its own height to anchor the dead-center */
-  
+  left: -32px;
+  /* Positioned directly outside the left edge */
+  top: 50%;
+  /* 1. Push down to the middle of the parent bar */
+  transform: translateY(-50%);
+  /* 2. Offset perfectly by its own height to anchor the dead-center */
+
   width: 32px;
-  height: 38px; /* 3. Use a clean fixed height instead of 100% stretching */
+  height: 38px;
+  /* 3. Use a clean fixed height instead of 100% stretching */
   cursor: pointer;
   background: var(--bg-2);
-  
+
   /* 4. Flex centering layout properties */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  
+
 
 }
 
@@ -98,20 +107,23 @@
 
 
 .ir-sb-btn {
-  display: inline-flex;   
-  align-items: center;    
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  gap: 6px;               
-  height: 28px; /* Compact profile */
-  padding: 0 14px;        
+  gap: 6px;
+  height: 28px;
+  /* Compact profile */
+  padding: 0 14px;
   font-weight: 600;
-  border-radius: 4px; /* Gentle corner rounding */
+  border-radius: 4px;
+  /* Gentle corner rounding */
   cursor: pointer;
   border: none;
   font-size: 0.78rem;
-  box-sizing: border-box; 
-  pointer-events: auto; /* Explicitly restores interactivity to the actual buttons */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  box-sizing: border-box;
+  pointer-events: auto;
+  /* Explicitly restores interactivity to the actual buttons */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .ir-sb-print-btn {
@@ -119,8 +131,9 @@
   color: white;
 }
 
-.ir-sb-print-btn:hover{
-  background: linear-gradient(135deg, var(--color-primary-2) 0%, var(--color-primary) 100%); /* Navy + Red brand gradient */
+.ir-sb-print-btn:hover {
+  background: linear-gradient(135deg, var(--color-primary-2) 0%, var(--color-primary) 100%);
+  /* Navy + Red brand gradient */
   color: white;
 }
 
@@ -132,7 +145,8 @@
 
 .ir-sb-close-btn:hover {
   background: var(--color-red);
-  color: var(--color-bg); /* Highlight close with red on hover */
+  color: var(--color-bg);
+  /* Highlight close with red on hover */
   border-color: var(--color-border-danger);
 }
 
@@ -141,8 +155,10 @@
    ========================================================================== */
 .ir-sb-document {
   width: 100%;
-  max-width: 816px; /* Fits comfortably inside wide modal screens */
-  min-height: 297mm; /* True A4 aspect sizing */
+  max-width: 816px;
+  /* Fits comfortably inside wide modal screens */
+  min-height: 297mm;
+  /* True A4 aspect sizing */
   background: transparent;
   /* box-shadow: 0 0 10px rgba(0,0,0,0.05); */
   box-sizing: border-box;
@@ -151,15 +167,17 @@
 
 .ir-sb-page {
   background-color: #ffffff;
-  padding: 50px 60px; /* Generous real-world padding */
+  padding: 50px 60px;
+  /* Generous real-world padding */
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
   width: 100%;
   position: relative;
-  
+
   /* CRITICAL: Fixes the height on screen so they look identical */
-  min-height: 1056px; /* Standard proportions ratio to 816px width */
+  min-height: 1056px;
+  /* Standard proportions ratio to 816px width */
   display: flex;
   flex-direction: column;
 }
@@ -174,7 +192,8 @@
   gap: 15px;
   width: 100%;
   margin-top: 20px;
-  flex-grow: 1; /* Pushes content down nicely inside the strict page boundary */
+  flex-grow: 1;
+  /* Pushes content down nicely inside the strict page boundary */
 }
 
 .ir-sb-header {
@@ -197,19 +216,37 @@
   font-weight: bold;
 }
 
-.ir-sb-company-info h1 { color: #d32f2f; font-size: 1.4rem; margin: 5px 0; }
-.ir-sb-company-info h2 { font-size: 1rem; margin: 0; color: #1a237e; font-weight: bold; }
-.ir-sb-company-info p { font-size: 0.75rem; margin: 0; color: #555; }
+.ir-sb-company-info h1 {
+  color: #d32f2f;
+  font-size: 1.4rem;
+  margin: 5px 0;
+}
+
+.ir-sb-company-info h2 {
+  font-size: 1rem;
+  margin: 0;
+  color: #1a237e;
+  font-weight: bold;
+}
+
+.ir-sb-company-info p {
+  font-size: 0.75rem;
+  margin: 0;
+  color: #555;
+}
 
 .ir-sb-company-info {
-  flex: 1;              /* Allows the container to grow and fill the remaining header space */
-  text-align: center;   /* Perfectly centers all internal h1, h2, and p text lines */
+  flex: 1;
+  /* Allows the container to grow and fill the remaining header space */
+  text-align: center;
+  /* Perfectly centers all internal h1, h2, and p text lines */
 }
 
 /* Optional: Balance the layout if needed */
 .ir-sb-header {
   display: flex;
-  align-items: center;  /* Vertically aligns the logo and centered text text perfectly */
+  align-items: center;
+  /* Vertically aligns the logo and centered text text perfectly */
   border-bottom: 2px solid #1a237e;
   padding-bottom: 10px;
   margin-bottom: 20px;
@@ -270,34 +307,48 @@
 }
 
 .ir-sb-textarea {
-    width: 100%;
-    border: none;
-    outline: none;
-    padding: 0;
-    overflow: hidden;
-    
-    /* 1. Set a fixed line height */
-    line-height: 30px; 
-    /* height: 90px; */
-    font-family: inherit;
-    resize: none;
-    
-    /* 2. Create the lines using a gradient */
-    background-image: linear-gradient(#e1e1e1 1px, transparent 1px);
-    background-size: 100% 30px; /* Must match line-height */
-    
-    /* 3. Ensure lines stay put when scrolling */
-    background-attachment: local;
-    
-    /* 4. Optional: Add a red left-margin line like real pad paper */
-    border-left: 2px solid rgba(255, 0, 0, 0.2);
-    padding-left: 10px;
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 0;
+  overflow: hidden;
+
+  /* 1. Set a fixed line height */
+  line-height: 30px;
+  /* height: 90px; */
+  font-family: inherit;
+  resize: none;
+
+  /* 2. Create the lines using a gradient */
+  background-image: linear-gradient(#e1e1e1 1px, transparent 1px);
+  background-size: 100% 30px;
+  /* Must match line-height */
+
+  /* 3. Ensure lines stay put when scrolling */
+  background-attachment: local;
+
+  /* 4. Optional: Add a red left-margin line like real pad paper */
+  border-left: 2px solid rgba(255, 0, 0, 0.2);
+  padding-left: 10px;
 }
 
-.ir-sb-grid { display: grid; gap: 15px; width: 100%; }
-.ir-sb-grid.col-2 { grid-template-columns: 1fr 1fr; }
-.ir-sb-grid.col-3 { grid-template-columns: 1fr 1fr 1fr; }
-.span-2 { grid-column: span 2; }
+.ir-sb-grid {
+  display: grid;
+  gap: 15px;
+  width: 100%;
+}
+
+.ir-sb-grid.col-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.ir-sb-grid.col-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.span-2 {
+  grid-column: span 2;
+}
 
 /* Checkbox Grid Elements */
 .ir-sb-yard-selector {
@@ -342,13 +393,14 @@
    4. Pure Print Overrides (Fixes Pagination and Viewport Clipping)
    ========================================================================== */
 @media print {
+
   /* Suppress custom portal overlay background framework elements */
-  .modal-overlay, 
+  .modal-overlay,
   .modal-close,
   .ir-sb-actions-bar {
     display: none !important;
   }
-  
+
   /* Strip out limits from parent wrappers so document can paginalize cleanly */
   .ir-sb-container,
   .ir-sb-document-wrapper {
@@ -358,7 +410,7 @@
     padding: 0 !important;
     background: transparent !important;
   }
-  
+
   .ir-sb-document {
     max-width: 100% !important;
     width: 100% !important;
@@ -393,13 +445,15 @@
     page-break-before: always !important;
     break-before: page !important;
     margin-top: 0 !important;
-    padding-top: 1.5cm !important; /* Spacing for the fresh sheet header */
+    padding-top: 1.5cm !important;
+    /* Spacing for the fresh sheet header */
   }
 
   /* Completely hide the page separation layout badges when printing on paper sheets */
   .ir-sb-page-break::before {
     display: none !important;
   }
+
   .ir-sb-page-1::before {
     display: none !important;
   }
@@ -413,7 +467,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  pointer-events: auto; /* Restores button triggers inside the transparent header block */
+  pointer-events: auto;
+  /* Restores button triggers inside the transparent header block */
 }
 
 .ir-sb-zoom-indicator {
@@ -426,7 +481,8 @@
 }
 
 .ir-sb-zoom-btn {
-  width: 28px; /* Perfectly square button for icons */
+  width: 28px;
+  /* Perfectly square button for icons */
   height: 28px;
   padding: 0 !important;
   background: #ffffff;
@@ -436,7 +492,8 @@
 
 .ir-sb-zoom-btn:hover:not(:disabled) {
   background: #f8f9fa;
-  color: #3a4efc; /* Primary theme Blue highlight on interaction */
+  color: #3a4efc;
+  /* Primary theme Blue highlight on interaction */
   border-color: #3a4efc;
 }
 
@@ -466,6 +523,7 @@
    Print Override Protection
    ========================================================================== */
 @media print {
+
   /* Force document to scale normally on physical papers regardless of modal display zoom */
   .ir-sb-document {
     transform: none !important;
@@ -482,77 +540,84 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0; /* Prevents the logo from getting squeezed horizontally */
+  flex-shrink: 0;
+  /* Prevents the logo from getting squeezed horizontally */
 }
 
 /* Logo image rendering logic */
 .ir-sb-logo-img {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* Ensures the logo keeps its proportions perfectly without distorting */
+  object-fit: contain;
+  /* Ensures the logo keeps its proportions perfectly without distorting */
 }
 
 .ir-sb-header-spacer {
-  width: 5rem; /* Matches the logo container width to balance the header layout */
-  flex-shrink: 0;/* Fills the remaining space to push the header content into a balanced layout */
+  width: 5rem;
+  /* Matches the logo container width to balance the header layout */
+  flex-shrink: 0;
+  /* Fills the remaining space to push the header content into a balanced layout */
 }
 
 .ir-sb-spacer {
-    width: 100%;
-    border: none;
-    height: 1px;
-    background: transparent; /* Muted line color */
-    margin: 16px 0; /* Creates an even, balanced vertical row cushion */
+  width: 100%;
+  border: none;
+  height: 1px;
+  background: transparent;
+  /* Muted line color */
+  margin: 16px 0;
+  /* Creates an even, balanced vertical row cushion */
 }
 
 
 /* Screen Layout View Overrides */
 .ir-sb-page-break {
-    margin-top: 50px;
-    border-top: 3px double #e1e1e1;
-    padding-top: 30px;
-    position: relative;
+  margin-top: 50px;
+  border-top: 3px double #e1e1e1;
+  padding-top: 30px;
+  position: relative;
 }
 
 /* Screen Layout Badge indicator showing where Page 2 starts on-screen */
 .ir-sb-page-break::before {
-    content: "PAGE 2: ATTACHMENTS";
-    position: absolute;
-    top: -12px;
-    left: 20px;
-    background: #ffffff;
-    padding: 0 10px;
-    font-size: 11px;
-    color: #3a4efc;
-    font-weight: bold;
-    letter-spacing: 1px;
+  content: "PAGE 2: ATTACHMENTS";
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  background: #ffffff;
+  padding: 0 10px;
+  font-size: 11px;
+  color: #3a4efc;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
 .ir-sb-page-1::before {
-    content: "PAGE 1: MAIN";
-    position: absolute;
-    top: -12px;
-    left: 20px;
-    background: #ffffff;
-    padding: 0 10px;
-    font-size: 11px;
-    color: #3a4efc;
-    font-weight: bold;
-    letter-spacing: 1px;
+  content: "PAGE 1: MAIN";
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  background: #ffffff;
+  padding: 0 10px;
+  font-size: 11px;
+  color: #3a4efc;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
 /* Hide UI interactive structures like buttons or upload dash pads entirely when printing */
 @media print {
-    .no-print {
-        display: none !important;
-    }
+  .no-print {
+    display: none !important;
+  }
 }
 
 
 
 /* Base Style for Upload Drop-Zone */
 .ir-sb-upload-zone {
-  position: relative; /* Targets absolute placement context for child input */
+  position: relative;
+  /* Targets absolute placement context for child input */
   padding: 30px 20px;
   border: 2px dashed #3a4efc;
   border-radius: 8px;
@@ -560,7 +625,7 @@
   margin: 15px 0;
   background: rgba(58, 78, 252, 0.02);
   cursor: pointer;
-  
+
   /* Smooth transform transitions for hover / clicking events */
   transition: all 0.25s ease-in-out;
 }
@@ -568,7 +633,8 @@
 /* 1. HOVER CUES: Brightens layout and pulses border slightly */
 .ir-sb-upload-zone:hover {
   background: rgba(58, 78, 252, 0.06);
-  border-color: #000080; /* Primary navy blue focus color */
+  border-color: #000080;
+  /* Primary navy blue focus color */
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(58, 78, 252, 0.08);
 }
@@ -582,7 +648,8 @@
 /* 2. DRAGGING STATE CUES: Triggers when dragging file directly above element canvas */
 .ir-sb-upload-zone.is-dragging {
   background: rgba(58, 78, 252, 0.12);
-  border-color: #ff4d4d; /* Changes color path to accent red */
+  border-color: #ff4d4d;
+  /* Changes color path to accent red */
   border-style: solid;
   transform: scale(1.015);
   box-shadow: 0 6px 16px rgba(58, 78, 252, 0.15);
@@ -611,7 +678,8 @@
   margin: 0;
   color: #555;
   font-size: 13px;
-  pointer-events: none; /* Passes mouse actions through down to the input file target */
+  pointer-events: none;
+  /* Passes mouse actions through down to the input file target */
 }
 
 .ir-sb-upload-zone .browse-link {
@@ -655,13 +723,13 @@
 /* 1. Force strict column limits on the grid container */
 .ir-sb-print-image-container {
   display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important; 
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 5px !important;
   width: 100% !important;
   margin-top: 20px !important;
-  
+
   /* CRITICAL: Remove flex-grow or heights from grid wrapper in print */
-  flex-grow: 0 !important; 
+  flex-grow: 0 !important;
   height: auto !important;
   max-height: none !important;
 }
@@ -672,13 +740,13 @@
   border-radius: 6px !important;
   padding: 10px !important;
   background-color: #fff !important;
-  
+
   /* CRITICAL: Override flexbox behaviors when printing to stop border extensions */
-  display: block !important; 
+  display: block !important;
   height: auto !important;
-  
+
   /* CRITICAL: Tell printer drivers explicitly never to sever this specific item box */
-  page-break-inside: avoid !important; 
+  page-break-inside: avoid !important;
   break-inside: avoid !important;
   page-break-after: auto !important;
   page-break-before: auto !important;
@@ -687,10 +755,12 @@
 /* 3. Constrain the raw content dimensions inside the card anchor */
 .ir-sb-print-img-card img {
   display: block !important;
-  width: 100% !important; /* Forces layout scaling bounded by the container column card */
+  width: 100% !important;
+  /* Forces layout scaling bounded by the container column card */
   max-width: 100% !important;
   height: auto !important;
-  max-height: 5.5cm !important; /* Slightly brought down to comfortably clear text notes and title margins */
+  max-height: 5.5cm !important;
+  /* Slightly brought down to comfortably clear text notes and title margins */
   object-fit: contain !important;
   margin: 0 auto !important;
 }
@@ -698,7 +768,8 @@
 /* 4. Fix description text container expansion */
 .ir-sb-img-desc-box {
   margin-top: 8px !important;
-  display: block !important; /* Keeps sizing layout predictable */
+  display: block !important;
+  /* Keeps sizing layout predictable */
   width: 100% !important;
 }
 
@@ -708,13 +779,15 @@
 @media print {
   .print-only-text {
     display: block !important;
-    word-break: break-all !important; /* Prevents text overflow breaks */
+    word-break: break-all !important;
+    /* Prevents text overflow breaks */
     font-size: 11px !important;
     margin-top: 6px !important;
   }
 
   .ir-sb-print-img-card {
-    border: 1px solid #999 !important; /* Flat dark rule for generic monochrome hardware printers */
+    border: 1px solid #999 !important;
+    /* Flat dark rule for generic monochrome hardware printers */
     background: #ffffff !important;
   }
 }
@@ -745,7 +818,8 @@
 .ir-sb-viewer-meta h3 {
   margin: 0;
   font-size: 15px;
-  color: #000080; /* Primary Navy Blue Title Accent */
+  color: #000080;
+  /* Primary Navy Blue Title Accent */
 }
 
 .ir-sb-viewer-meta p {
@@ -766,7 +840,8 @@
 }
 
 .ir-sb-viewer-close-btn:hover {
-  color: #ff4d4d; /* Red accent hover alert state */
+  color: #ff4d4d;
+  /* Red accent hover alert state */
 }
 
 /* Bounding Image Frame */
@@ -779,21 +854,22 @@
   flex: 1;
   transition: background-color 0.3s ease, background-image 0.3s ease;
 
-  background-image: 
-    linear-gradient(45deg, #e9ebf0 25%, transparent 25%), 
-    linear-gradient(-45deg, #e9ebf0 25%, transparent 25%), 
-    linear-gradient(45deg, transparent 75%, #e9ebf0 75%), 
+  background-image:
+    linear-gradient(45deg, #e9ebf0 25%, transparent 25%),
+    linear-gradient(-45deg, #e9ebf0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e9ebf0 75%),
     linear-gradient(-45deg, transparent 75%, #e9ebf0 75%);
   background-size: 20px 20px;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0;
 }
 
 .ir-sb-viewer-frame.canvas-dark-theme {
-  background-color: #1a1a24 !important; /* Rich Dark Charcoal Navy tint */
-  background-image: 
-    linear-gradient(45deg, #13131a 25%, transparent 25%), 
-    linear-gradient(-45deg, #13131a 25%, transparent 25%), 
-    linear-gradient(45deg, transparent 75%, #13131a 75%), 
+  background-color: #1a1a24 !important;
+  /* Rich Dark Charcoal Navy tint */
+  background-image:
+    linear-gradient(45deg, #13131a 25%, transparent 25%),
+    linear-gradient(-45deg, #13131a 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #13131a 75%),
     linear-gradient(-45deg, transparent 75%, #13131a 75%) !important;
   background-size: 20px 20px !important;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0 !important;
@@ -812,7 +888,7 @@
   max-width: 100%;
   max-height: 60vh;
   object-fit: contain;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   border-radius: 4px;
 }
 
@@ -842,7 +918,8 @@
 .ir-sb-viewer-toolbar button {
   background: #ffffff;
   border: 1px solid #c4cacf;
-  border-radius: 6px; /* Gentle design rounded corner profile preference */
+  border-radius: 6px;
+  /* Gentle design rounded corner profile preference */
   padding: 6px 14px;
   font-size: 12px;
   font-weight: 500;
@@ -852,7 +929,8 @@
 }
 
 .ir-sb-viewer-toolbar button:hover:not(:disabled) {
-  border-color: #3a4efc; /* Highlights your secondary blue on hover action checks */
+  border-color: #3a4efc;
+  /* Highlights your secondary blue on hover action checks */
   color: #3a4efc;
   background: rgba(58, 78, 252, 0.02);
 }
@@ -867,7 +945,8 @@
 }
 
 .ir-sb-viewer-toolbar .btn-reset:hover {
-  background-color: #000080 !important; /* Resets into clean standard Navy Blue */
+  background-color: #000080 !important;
+  /* Resets into clean standard Navy Blue */
   color: #ffffff !important;
   border-color: #000080 !important;
 }
@@ -948,7 +1027,7 @@
   top: 8px !important;
   right: 8px !important;
   z-index: 5;
-  
+
   /* Layout Sizing & Visuals matching your theme's gentle design style */
   display: inline-flex !important;
   align-items: center !important;
@@ -956,22 +1035,26 @@
   width: 28px !important;
   height: 28px !important;
   padding: 0 !important;
-  
+
   border: 1px solid rgba(58, 78, 252, 0.15) !important;
-  border-radius: 6px !important; /* Matches your rounded layout preferences */
+  border-radius: 6px !important;
+  /* Matches your rounded layout preferences */
   background: rgba(255, 255, 255, 0.9) !important;
-  color: #3a4efc !important; /* Secondary Primary Blue Accent */
-  
+  color: #3a4efc !important;
+  /* Secondary Primary Blue Accent */
+
   cursor: pointer !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-  opacity: 0.7; /* Sits quietly until actively engaged */
+  opacity: 0.7;
+  /* Sits quietly until actively engaged */
   transition: all 0.2s ease-in-out !important;
 }
 
 /* Hover style enhancements */
 .ir-sb-img-card-fullscreen-btn:hover {
   opacity: 1 !important;
-  background: color-mix(in srgb, var(--color-primary-2), transparent 30%) !important; /* Swaps to main Navy Blue on active target focus */
+  background: color-mix(in srgb, var(--color-primary-2), transparent 30%) !important;
+  /* Swaps to main Navy Blue on active target focus */
   color: #ffffff !important;
   border-color: var(--color-muted) !important;
   box-shadow: 0 4px 8px rgba(0, 0, 128, 0.2) !important;
@@ -994,18 +1077,20 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  
+
   /* Layout adjustments */
-  background: color-mix(in srgb, var(--color-bg-danger), transparent 30%); /* Navy blue theme background */
+  background: color-mix(in srgb, var(--color-bg-danger), transparent 30%);
+  /* Navy blue theme background */
   padding: 12px 24px;
   box-sizing: border-box;
-  z-index: 10; /* Sits cleanly over document contents */
-  
+  z-index: 10;
+  /* Sits cleanly over document contents */
+
   /* Gentle design profile */
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 
-  border: 1px solid  var(--color-border-danger);
+  border: 1px solid var(--color-border-danger);
 
   /* FROSTED GLASS BLUR EFFECT */
   backdrop-filter: blur(8px);
@@ -1014,7 +1099,7 @@
 
 .ir-sb-message-footer.to-complete {
   background: color-mix(in srgb, var(--color-bg-success), transparent 30%);
-  border: 1px solid  var(--color-border-success);
+  border: 1px solid var(--color-border-success);
 }
 
 .ir-sb-message-text {
@@ -1024,10 +1109,10 @@
   text-align: left;
 }
 
-.ir-sb-message-footer h3 { 
-  margin: 0; 
-  white-space: nowrap; 
-  font-weight: 800; 
+.ir-sb-message-footer h3 {
+  margin: 0;
+  white-space: nowrap;
+  font-weight: 800;
   color: var(--color-border-danger);
 }
 
@@ -1042,7 +1127,8 @@
 
 /* Ensure the scrollable document view doesn't get hidden behind the container */
 .ir-sb-document-wrapper {
-  padding-bottom: 60px !important; /* Offset by the approximate height of the message bar */
+  padding-bottom: 60px !important;
+  /* Offset by the approximate height of the message bar */
 }
 
 /* Container to help position custom arrow rules safely */
@@ -1057,8 +1143,10 @@
 select.ir-sb-dropdown {
   width: 100%;
   cursor: pointer;
-  padding-right: 24px; /* Leaves space for the dropdown arrow indicator */
-  appearance: none; /* Removes aggressive browser native dropdown skins */
+  padding-right: 24px;
+  /* Leaves space for the dropdown arrow indicator */
+  appearance: none;
+  /* Removes aggressive browser native dropdown skins */
   -webkit-appearance: none;
   -moz-appearance: none;
   background: transparent;
@@ -1068,10 +1156,12 @@ select.ir-sb-dropdown {
 .ir-sb-select-wrapper::after {
   content: "▼";
   font-size: 10px;
-  color: #3a4efc; /* Primary secondary theme blue */
+  color: #3a4efc;
+  /* Primary secondary theme blue */
   position: absolute;
   right: 8px;
-  pointer-events: none; /* Allows click events to pass directly through to the select node */
+  pointer-events: none;
+  /* Allows click events to pass directly through to the select node */
 }
 
 /* ==========================================================================
@@ -1082,19 +1172,22 @@ select.ir-sb-dropdown {
 .ir-sb-input-group.equal-split-row {
   display: flex !important;
   align-items: flex-end !important;
-  gap: 16px !important; /* Space between fields */
+  gap: 16px !important;
+  /* Space between fields */
 }
 
 /* 2. Force both the input and the select wrapper to expand to equal proportions */
 .ir-sb-input-group.equal-split-row .ir-sb-line-input:not(select),
 .ir-sb-input-group.equal-split-row .ir-sb-select-wrapper {
-  flex: 1 1 50% !important; /* Forces a perfect 50/50 layout split on the left side */
+  flex: 1 1 50% !important;
+  /* Forces a perfect 50/50 layout split on the left side */
   width: 50% !important;
 }
 
 /* 3. THE CRITICAL FIX: Force the inner select element to fill its wrapper completely */
 .ir-sb-select-wrapper select.ir-sb-dropdown {
-  width: 100% !important; /* Stretches the select box to match the wrapper's width */
+  width: 100% !important;
+  /* Stretches the select box to match the wrapper's width */
   display: block !important;
 }
 
@@ -1104,29 +1197,33 @@ select.ir-sb-dropdown {
    ========================================================================== */
 .ir-sb-button-badge {
   position: absolute;
-  top: -6px;    /* Pulls it slightly above the top border line */
-  right: -6px;  /* Pulls it slightly past the right border line */
-  
+  top: -6px;
+  /* Pulls it slightly above the top border line */
+  right: -6px;
+  /* Pulls it slightly past the right border line */
+
   width: 16px;
   height: 16px;
-  background-color: var(--color-red, #ff4d4d); /* Accent red color */
+  background-color: var(--color-red, #ff4d4d);
+  /* Accent red color */
   color: #ffffff;
-  
+
   /* Font layout positioning */
   font-size: 11px;
   font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   /* Gentle design profile rounding */
   border-radius: 50%;
   box-shadow: 0 2px 6px rgba(255, 77, 77, 0.4);
   z-index: 5;
-  
+
   /* Attach the pulsing keyframe animation */
   animation: badge-pulse 1.5s infinite ease-in-out;
-  pointer-events: none; /* Clicking the badge triggers the button behind it */
+  pointer-events: none;
+  /* Clicking the badge triggers the button behind it */
 }
 
 /* Print Protection: Ensure the badge gets stripped cleanly when printing */
@@ -1144,10 +1241,14 @@ select.ir-sb-dropdown {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7);
   }
+
   70% {
-    transform: scale(1.12); /* Subtle scale transformation change */
-    box-shadow: 0 0 0 6px rgba(255, 77, 77, 0); /* Expands out into a fading ripple ring */
+    transform: scale(1.12);
+    /* Subtle scale transformation change */
+    box-shadow: 0 0 0 6px rgba(255, 77, 77, 0);
+    /* Expands out into a fading ripple ring */
   }
+
   100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(255, 77, 77, 0);
@@ -1172,14 +1273,16 @@ select.ir-sb-dropdown {
   right: -18px;
   width: 18px;
   height: 18px;
-  background-color: #ff3b3b; /* Accent theme Red */
+  background-color: #ff3b3b;
+  /* Accent theme Red */
   color: #ffffff;
   font-size: 11px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%; /* Gentle rounded profile layout */
+  border-radius: 50%;
+  /* Gentle rounded profile layout */
   box-shadow: 0 0 0 0 rgba(255, 59, 59, 0.7);
   animation: ir-badge-pulse 1.6s infinite cubic-bezier(0.66, 0, 0, 1);
   cursor: default;
@@ -1193,12 +1296,108 @@ select.ir-sb-dropdown {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(255, 59, 59, 0.7);
   }
+
   70% {
     transform: scale(1);
     box-shadow: 0 0 0 6px rgba(255, 59, 59, 0);
   }
+
   100% {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(255, 59, 59, 0);
   }
+}
+
+
+/* Base button styles */
+.ir-sb-btn.btn-disapproved {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  /* Color theme */
+  background-color: var(--color-red);
+  color: var(--color-text-2);
+  /* White */
+  border: 1px solid var(--color-red);
+
+  /* Typography & Layout */
+  font-size: 0.875rem;
+  /* 14px */
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  /* Gentle rounded corners */
+  cursor: pointer;
+
+  /* Micro-interactions */
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+/* Hover state - subtle lift & brightness shift */
+.ir-sb-btn.btn-disapproved:hover {
+  background-color: color-mix(in srgb, var(--color-red) 85%, black);
+  border-color: color-mix(in srgb, var(--color-red) 85%, black);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+}
+
+/* Active / Pressed state */
+.ir-sb-btn.btn-disapproved:active {
+  transform: translateY(0);
+  box-shadow: none;
+  opacity: 0.9;
+}
+
+/* Focus state for accessibility */
+.ir-sb-btn.btn-disapproved:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-text-2), 0 0 0 4px var(--color-red);
+}
+
+/* Ensure SVG icon aligns properly */
+.ir-sb-btn.btn-disapproved svg {
+  flex-shrink: 0;
+  stroke-width: 2.2px;
+}
+
+
+
+
+/* Disabled state exclusively for elements with .actions-taken */
+.ir-sb-line-input.actions-taken:disabled,
+select.ir-sb-dropdown.actions-taken:disabled {
+  background-color: #f1f3f5 !important;
+  border-bottom: 1px dashed #aaa !important;
+  color: #888888 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+/* Mute custom arrow icon only if the dropdown inside has .actions-taken and is disabled */
+.ir-sb-select-wrapper:has(select.actions-taken:disabled)::after {
+  color: #aaa !important;
+}
+
+.ir-sb-textarea:disabled {
+  background-color: #f8f9fa !important;
+  color: #777777 !important;
+  /* Soften notebook lines */
+  background-image: linear-gradient(#eee 1px, transparent 1px) !important;
+  border-left-color: rgba(255, 0, 0, 0.08) !important;
+  cursor: not-allowed !important;
+  resize: none;
+}
+
+.ir-sb-check-item:has(input:disabled),
+.ir-sb-check-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  color: #888888;
+}
+
+.ir-sb-check-item input[type="checkbox"]:disabled {
+  cursor: not-allowed !important;
+  accent-color: #636262;
 }

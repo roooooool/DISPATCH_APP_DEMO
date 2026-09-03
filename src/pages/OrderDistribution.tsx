@@ -50,7 +50,7 @@ const BUSINESS_UNITS = ['SBUO-1A', 'SBUO-1B'];
 
 //COMPONENTS
 import TableView, { type ColumnConfig, type TableViewRef, type DragDropSignalData, encodeColumnName as enc } from '../components/ewul_TableFlex';
-import DateRangePicker from '../components/ewul_DateRangePicker';
+import DateRangePicker, { type DateRangeType } from '../components/ewul_DateRangePicker';
 import AutoDismissBanner from '../components/ewul_Banner';
 import OrderAssignmentDashboard from '../components/OrderAssignmentDashboard';
 // import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
@@ -333,27 +333,56 @@ const OrderDistribution: React.FC = () => {
   }, [activeMode, user?.id]);
 
   // 2. Keep handleDateChange memoized and update state
-  const handleDateChangeNewOrders = useCallback((range: { from: string; to: string }) => {
-    setSelectedRangeNewOrders(prev => {
-      if (prev?.from === range.from && prev?.to === range.to) {
-        return prev;
-      }
-      return range;
-    });
-  }, []);
+  const handleDateChangeNewOrders = useCallback(
+    (range: { from: string; to: string; type?: string; dateType?: string }) => {
+      console.log('changing type: ', range.dateType);
+      setSelectedRangeNewOrders(prev => {
+        // Resolve incoming type (handles dateType from component or direct type prop)
+        const incomingType = range.type || range.dateType || 'Monthly';
+
+        // Prevent redundant re-renders if values haven't changed
+        if (
+          prev?.from === range.from &&
+          prev?.to === range.to &&
+          prev?.type === incomingType
+        ) {
+          return prev;
+        }
+
+        return {
+          from: range.from,
+          to: range.to,
+          type: incomingType,
+        };
+      });
+    },
+    []
+  );
 
   // 1. Initialize state from localStorage using a lazy initializer
-  const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{ from: string; to: string } | null>(() => {
+  const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{
+    from: string;
+    to: string;
+    type?: string;
+  } | null>(() => {
     if (!user?.id) return null;
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${user.id}`);
-      return saved ? JSON.parse(saved) : null;
+      if (!saved) return null;
+
+      const parsed = JSON.parse(saved);
+
+      // Safely return both legacy { from, to } and updated { from, to, type }
+      return {
+        from: parsed.from,
+        to: parsed.to,
+        type: parsed.type || parsed.dateType || 'Monthly' // Fallback for legacy storage
+      };
     } catch (error) {
       console.error('Failed to parse saved date range from localStorage:', error);
       return null;
     }
   });
-
 
 
   // 3. Persist state updates to localStorage whenever selectedRange or user.ID changes
@@ -1314,6 +1343,7 @@ const OrderDistribution: React.FC = () => {
 
           <DateRangePicker
             allowedTypes={['Monthly', 'Yearly', 'Custom']}
+            initialType={(selectedRangeNewOrders?.type as DateRangeType) || 'Monthly'}
             initialFrom={selectedRangeNewOrders?.from}
             initialTo={selectedRangeNewOrders?.to}
             onFilterChange={handleDateChangeNewOrders}

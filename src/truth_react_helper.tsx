@@ -501,30 +501,38 @@ interface DDRemarksInputProps {
   placeholder?: string;
 }
 
+interface DDRemarksInputProps {
+  initialValue: string;
+  onSave: (newValue: string) => void;
+  placeholder?: string;
+}
+
 export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
   initialValue,
   onSave,
   placeholder = 'Add remarks...'
 }) => {
-  // Normalize undefined / null / empty to strictly a string ""
   const cleanInitial = initialValue ?? '';
 
   const [value, setValue] = useState<string>(cleanInitial);
   const [savedValue, setSavedValue] = useState<string>(cleanInitial);
   const [isFocused, setIsFocused] = useState<boolean>(false);
+
+  const valueRef = useRef<string>(cleanInitial);
+  const savedValueRef = useRef<string>(cleanInitial);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sync state if initialValue changes externally
+  valueRef.current = value;
+  savedValueRef.current = savedValue;
+
   useEffect(() => {
     const freshVal = initialValue ?? '';
     setValue(freshVal);
     setSavedValue(freshVal);
   }, [initialValue]);
 
-  // Strict string comparison ensures "" vs "something" works correctly
   const isEdited = value !== savedValue;
 
-  // Auto-resize logic
   useEffect(() => {
     if (textareaRef.current) {
       if (isFocused) {
@@ -537,29 +545,34 @@ export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
   }, [value, isFocused]);
 
   const handleCancel = () => {
-    // 1. Force value back to clean savedValue (even if it's "")
     setValue(savedValue);
-
-    // 2. Delay blur slightly so state updates before collapsing height
     setTimeout(() => {
       textareaRef.current?.blur();
     }, 0);
   };
 
-  const handleSave = () => {
-    onSave(value);
-    setSavedValue(value);
-
-    setTimeout(() => {
-      textareaRef.current?.blur();
-    }, 0);
+  const handleSave = (valToSave = value) => {
+    if (valToSave !== savedValueRef.current) {
+      onSave(valToSave);
+      setSavedValue(valToSave);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && isEdited) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSave();
-    } else if (e.key === 'Escape' && isEdited) {
+      textareaRef.current?.blur();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
       handleCancel();
+    }
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    if (valueRef.current !== savedValueRef.current) {
+      handleSave(valueRef.current);
     }
   };
 
@@ -573,31 +586,22 @@ export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onBlur={handleBlur}
         className="dd-compact-textarea"
       />
 
       {isEdited && (
         <div className="dd-compact-actions">
+          <span className="dd-compact-unsaved-badge">(Unsaved)</span>
           <button
             type="button"
-            onMouseDown={(e) => e.preventDefault()} // Prevents premature blur when clicking check
-            onClick={handleSave}
-            className="dd-compact-btn dd-compact-check"
-            title="Save (Ctrl + Enter)"
-            aria-label="Save"
-          >
-            ✓
-          </button>
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()} // Prevents premature blur when clicking cancel
+            onMouseDown={(e) => e.preventDefault()}
             onClick={handleCancel}
-            className="dd-compact-btn dd-compact-cancel"
-            title="Cancel (Esc)"
-            aria-label="Cancel"
+            className="dd-compact-btn dd-compact-undo"
+            title="Undo changes (Esc)"
+            aria-label="Undo changes"
           >
-            ✕
+            ↺
           </button>
         </div>
       )}
@@ -741,7 +745,7 @@ export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = (
 
     if (option === 'None') {
       // 1. Reset state to placeholder
-      setSelected(null);
+      setSelected('+ Add Remarks');
       // 2. Trigger removal handler
       onRemarksStatusDropdownRemove(id, oe || '');
     } else {

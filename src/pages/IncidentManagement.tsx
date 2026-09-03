@@ -5,7 +5,7 @@ import Modal from '../components/ewul_Modal';
 import IncidentReportForm, { type IncidentFormHandle } from '../components/CreateIncidentReportForm';
 import { IR_ShortBags_Form } from '../components/IR_ShortBags_Form';
 import { RefreshCcw, Plus } from 'lucide-react';
-import DateRangePicker from '../components/ewul_DateRangePicker';
+import DateRangePicker, { type DateRangeType } from '../components/ewul_DateRangePicker';
 
 import {
     INCIDENT_TABLE_MODULE, STORAGE_KEY_PREFIX
@@ -48,29 +48,54 @@ const IncidentManagement: React.FC = () => {
     //     // fetchIncidentReports will be triggered by the useEffect due to selectedDateRange change
     // }, []);
 
-    // 1. Initialize state from localStorage using a lazy initializer
-    const [selectedDateRange, setSelectedDateRange] = useState<{ from: string; to: string } | null>(() => {
+    // 1. Initialize state with type support & fallback for legacy entries
+    const [selectedDateRange, setSelectedDateRange] = useState<{
+        from: string;
+        to: string;
+        type?: string;
+    } | null>(() => {
         if (!user?.id) return null;
         try {
             const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}${user.id}`);
-            return saved ? JSON.parse(saved) : null;
+            if (!saved) return null;
+
+            const parsed = JSON.parse(saved);
+            return {
+                from: parsed.from,
+                to: parsed.to,
+                type: parsed.type || parsed.dateType || 'Monthly', // Fallback for existing items in storage
+            };
         } catch (error) {
             console.error('Failed to parse saved date range from localStorage:', error);
             return null;
         }
     });
 
-    // 2. Keep handleDateChange memoized and update state
-    const handleDateRangeChange = useCallback((range: { from: string; to: string }) => {
-        setSelectedDateRange(prev => {
-            if (prev?.from === range.from && prev?.to === range.to) {
-                return prev;
-            }
-            return range;
-        });
-    }, []);
+    // 2. Memoized handler that updates from, to, and type
+    const handleDateRangeChange = useCallback(
+        (range: { from: string; to: string; type?: string; dateType?: string }) => {
+            setSelectedDateRange(prev => {
+                const incomingType = range.type || range.dateType || 'Monthly';
 
-    // 3. Persist state updates to localStorage whenever selectedRange or user.ID changes
+                if (
+                    prev?.from === range.from &&
+                    prev?.to === range.to &&
+                    prev?.type === incomingType
+                ) {
+                    return prev;
+                }
+
+                return {
+                    from: range.from,
+                    to: range.to,
+                    type: incomingType,
+                };
+            });
+        },
+        []
+    );
+
+    // 3. Persist state to localStorage
     useEffect(() => {
         if (!user?.id) return;
 
@@ -94,7 +119,7 @@ const IncidentManagement: React.FC = () => {
 
         const fromInt = ISOtoInt(selectedDateRange.from);
         const toInt = ISOtoInt(selectedDateRange.to);
-        const dateFilter = `IncidentDateAsInt ge ${fromInt} and IncidentDateAsInt le ${toInt} and OE_Reference ne null`;
+        const dateFilter = `IncidentDateAsInt ge ${fromInt} and IncidentDateAsInt le ${toInt} and (OE_Reference ne null and OE_Reference ne '')`;
 
         const options = {
             filter: dateFilter,
@@ -149,6 +174,7 @@ const IncidentManagement: React.FC = () => {
             <DateRangePicker
                 allowedTypes={['Weekly', 'Monthly', 'Yearly', 'Custom']}
                 onFilterChange={handleDateRangeChange}
+                initialType={(selectedDateRange?.type as DateRangeType) || 'Monthly'}
                 initialFrom={selectedDateRange?.from}
                 initialTo={selectedDateRange?.to}
                 opacity={1}

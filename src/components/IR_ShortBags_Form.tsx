@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState, useImperativeHandle } from 'react';
+import React, { forwardRef, useEffect, useState, useImperativeHandle, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Printer, ZoomIn, ZoomOut, RotateCcw, FileImage, Maximize2, ChevronLeft, ChevronRight, ThumbsDown, Sun, Moon, DeleteIcon, CheckCheck, CheckCircle, XCircle } from 'lucide-react'; // Clear, modern utility icons
 import '../components/comp_css/IR_ShortBags_Form.css';
@@ -32,6 +32,7 @@ export type ActionEntry = {
 
 export type IR_Actions_Model = {
   operations: ActionEntry;
+  supervisor: ActionEntry;
   inspection: ActionEntry;
   yard: ActionEntry;
   warehouse: ActionEntry;
@@ -43,6 +44,7 @@ export type IR_ShortBags_Form_Model = {
   tripReferenceNo: string;
   irType: string;
   irAction: string;
+  irApproval?: string;
   actions?: IR_Actions_Model;
   dateResolved: string;
   date: string;
@@ -150,7 +152,11 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       RetrievedBags: jsonDetails.RetrievedBags,
       CementType: jsonDetails.CementType || '',
       ServedDate: jsonDetails.ServedDate ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10) : '',
-      incident_date: jsonDetails.incident_date ? new Date(jsonDetails.incident_date).toISOString().slice(0, 10) : '',
+      incident_date: jsonDetails?.incident_date
+        ? new Date(jsonDetails.incident_date).toISOString().slice(0, 10)
+        : jsonDetails?.ServedDate
+          ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10)
+          : '',
       incident_time: jsonDetails.incident_time || '',
       incident_details: jsonDetails.incident_details || '',
       yard: jsonDetails.yard || '',
@@ -171,10 +177,14 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
           action: incidentReportItem.ActionStatus || '',
           date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : ''
         },
+        supervisor: { name: '', action: '', date: '' },
         inspection: { name: '', action: '', date: '' },
         yard: { name: '', action: '', bags: '', date: '' },
-        warehouse: { name: '', action: '', bags: '', date: '' }
+        warehouse: { name: '', action: '', bags: '', date: '' },
+
       },
+
+      irApproval: jsonDetails.irApproval //new key
     });
 
     useImperativeHandle(ref, () => ({
@@ -205,25 +215,24 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
     const validateForm = (currentData = formData): errorInterface | null => {
 
       if (!currentData.incident_date) { return { valid: false, msg: "Incident date is required." }; }
-      if (!currentData.incident_time) { return { valid: false, msg: "Incident time is required (HH:MM AM/PM)." }; }
-      // Check Time Format
-      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
-      if (!timeRegex.test(currentData.incident_time)) {
-        return { valid: false, msg: "Please provide a valid 24-hour clock timestamp format (HH:MM AM/PM)." };
-      }
-      // Chech Time range
-      const [hours, minutes] = currentData.incident_time.split(':').map(Number);
-      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-        return { valid: false, msg: "The provided clock hour boundaries are outside permissible ranges." };
-      }
-
-
-      if (!currentData.incident_details || !currentData.incident_details.trim()) {
-        return { valid: false, msg: "Please provide an incident description overview." };
+      if (currentData.incident_time) {
+        // Check Time Format
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
+        if (!timeRegex.test(currentData.incident_time)) {
+          return { valid: false, msg: "Please provide a valid 24-hour clock timestamp format (HH:MM AM/PM)." };
+        }
+        // Chech Time range
+        const [hours, minutes] = currentData.incident_time.split(':').map(Number);
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+          return { valid: false, msg: "The provided clock hour boundaries are outside permissible ranges." };
+        }
       }
 
-      if (!currentData.attachedImages || currentData.attachedImages.length === 0) {
-        return { valid: false, msg: "You must append at least one asset picture file as documentation evidence." };
+
+      const sb = currentData.ShortBags || 0
+      const act = formData.actions?.operations?.action || ''
+      if ((!currentData.attachedImages || currentData.attachedImages.length === 0) && sb < -5.0 && act != 'PROCEED TO NEXT TRIP') {
+        return { valid: false, msg: "Short bags is greater than 5, You must append at least one asset picture file as documentation evidence." };
       }
 
       if (currentData.irAction !== 'Proceed Next Trip') { return { valid: false, msg: "All requirements completed! Set the Action to [Proceed Next Trip] to Complete & Close the IR.", final: true } }
@@ -248,12 +257,33 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       value: string | number
     ) => {
       setFormData(prev => {
+        // 1. Get current section data
+        const currentSection = prev.actions?.[section] || { name: '', action: '', date: '' };
+
+        // 2. Prepare base updates for the section
+        const sectionUpdates: Partial<ActionEntry> = {
+          ...currentSection,
+          [field]: value
+        };
+
+        // 3. If action selection changed, auto-fill current user name & today's date
+        if (field === 'action' && value) {
+          const todayISO = new Date().toISOString().slice(0, 10);
+
+          // Auto-fill name if not already filled
+          if (!currentSection.name && initialUser?.FullName) {
+            sectionUpdates.name = initialUser.FullName;
+          }
+
+          // Auto-fill date if not already set
+          if (!currentSection.date) {
+            sectionUpdates.date = todayISO;
+          }
+        }
+
         const updatedActions: IR_Actions_Model = {
           ...prev.actions,
-          [section]: {
-            ...prev.actions?.[section],
-            [field]: value
-          }
+          [section]: sectionUpdates
         } as IR_Actions_Model;
 
         // Maintain backwards compatibility with irAction if Operations action changes[cite: 1]
@@ -641,6 +671,23 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       return false;
     });
 
+
+
+    const isSectionEditable = (sectionName: string): boolean => {
+      const userPosition = initialUser?.Position || initialUser?.Position || '';
+
+      const permissions: Record<string, string[]> = {
+        Operations: ['Coor', 'OD', ''],
+        Supervisor: ['Supervisor', 'OD', 'Developer'],
+        Inspection: ['Inspection', 'Developer'],
+        Yard: ['Yard', 'Developer'],
+        Warehouse: ['Warehouse', 'Developer']
+      };
+
+      const allowedPositions = permissions[sectionName] || [];
+      return allowedPositions.includes(userPosition);
+    };
+
     const handleSave = () => {
       if (onSave) {
 
@@ -709,6 +756,53 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
         if (onClose) onClose();
       }
     };
+
+    const calculateIRStatus = (formData: Partial<IR_ShortBags_Form_Model>): 'Closed' | 'Open' => {
+      const opsAction = formData.actions?.operations?.action;
+      const supAction = formData.actions?.supervisor?.action;
+      const inspAction = formData.actions?.inspection?.action;
+      const yardAction = formData.actions?.yard?.action;
+
+      // Derive discrepancy (ShortBags)
+      const withdrawn = formData.QtyWithdrawn || 0;
+      const delivered = formData.QtyDelivered || 0;
+      const discrepancy = formData.ShortBags ?? (delivered - withdrawn);
+
+      // Check for attachments
+      const hasAttachments = Boolean(formData.attachedImages && formData.attachedImages.length > 0);
+
+      // 1. OPERATION WATERFALL RULE
+      if (opsAction === 'PROCEED TO NEXT TRIP' && discrepancy < 0 && discrepancy > -5.0) {
+        return 'Closed';
+      }
+
+      // 2. SUPERVISOR WATERFALL RULE
+      if (opsAction === 'PROCEED TO NEXT TRIP' && hasAttachments && supAction === 'APPROVED') {
+        return 'Closed';
+      }
+
+      // 3. INSPECTION WATERFALL RULE
+      if (opsAction === 'FOR BULK INSPECTION' && supAction === 'APPROVED' && inspAction === 'CLEARED') {
+        return 'Closed';
+      }
+
+      // 4. YARD WATERFALL RULE
+      if (
+        opsAction === 'FOR BULK INSPECTION' &&
+        supAction === 'APPROVED' &&
+        inspAction === 'FOR RETRIEVAL' &&
+        (yardAction === 'FOR WAREHOUSE TRANSFER' || yardAction === 'FOR DISPOSAL')
+      ) {
+        return 'Closed';
+      }
+
+      // Default fallback if no conditions match
+      return 'Open';
+    };
+
+    const calculatedStatus = useMemo(() => calculateIRStatus(formData), [formData]);
+
+
 
     const handleSubmit = () => {
       if (onSubmit) {
@@ -937,26 +1031,25 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
               <button type="button" onClick={handleSave} className="ir-sb-btn btn-save">
                 Save
               </button>
-              <button
+              {/*<button
                 type="button"
                 onClick={handleSubmit}
                 disabled={!error?.valid}
                 className="ir-sb-btn ir-sb-submit-btn btn-proceed"
-                style={{ position: 'relative' }} /* Anchor point for the absolute badge */
+                style={{ position: 'relative' }}
               >
-                <CheckCheck size={14} /> Complete
+                <CheckCheck size={14} /> Approve
 
-                {/* Render the pulsing badge only when error.valid is true */}
                 {error?.valid && (
                   <span className="ir-sb-button-badge">
                     !
                   </span>
                 )}
               </button>
-              <button type="button" onClick={handleReject} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
+              <button type="button" onClick={handleReject} className="ir-sb-btn ir-sb-submit-btn btn-disapproved">
                 <ThumbsDown size={14} />
-                Cancel IR
-              </button>
+                Disapprove
+              </button>*/}
               {initialUser?.Position === 'Developer' &&
                 (<button type="button" onClick={handleDelete} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
                   <DeleteIcon size={14} />
@@ -1000,28 +1093,28 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                 <div className="ir-sb-meta-row">
                   <div className="ir-sb-input-group flex-2">
                     <span className="ir-sb-label">IR Reference No:</span>
-                    <input type="text" name="irReferenceNo" value={formData.irReferenceNo} onChange={() => null} className="ir-sb-line-input" />
+                    <input type="text" disabled name="irReferenceNo" value={formData.irReferenceNo} onChange={() => null} className="ir-sb-line-input" />
                   </div>
                   <div className="ir-sb-input-group flex-1">
                     <span className="ir-sb-label">Report Date:</span>
-                    <input type="date" name="date" value={formData.date} onChange={() => null} className={`ir-sb-line-input ${!formData.date ? 'is-empty-print' : ''}`} />
+                    <input type="date" disabled name="date" value={formData.date} onChange={() => null} className={`ir-sb-line-input ${!formData.date ? 'is-empty-print' : ''}`} />
                   </div>
                 </div>
 
                 <div className="ir-sb-meta-row">
                   <div className="ir-sb-input-group flex-2">
-                    <span className="ir-sb-label">Completed By:</span><input type="text" name="resolvedBy" value={initialUser?.FullName} onChange={() => null} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Completed By:</span><input disabled type="text" name="resolvedBy" value={initialUser?.FullName} onChange={() => null} className="ir-sb-line-input" />
                   </div>
                   <div className="ir-sb-input-group flex-1">
                     <span className="ir-sb-label">Completed Date:</span>
-                    <input type="text" name="dateResolved" onChange={() => null} className={`ir-sb-line-input`} />
+                    <input type="text" disabled name="dateResolved" onChange={() => null} className={`ir-sb-line-input`} />
                   </div>
                 </div>
 
                 <div className="ir-sb-meta-row">
                   <div className="ir-sb-input-group flex-2 equal-split-row">
                     <span className="ir-sb-label">Incident Type:</span>
-                    <input type="text" name="irType" value={formData.irType} onChange={() => null} className="ir-sb-line-input" />
+                    <input type="text" name="irType" value={formData.irType} disabled onChange={() => null} className="ir-sb-line-input" />
                     {/* <span className="ir-sb-label">Action Taken:</span>
                   <div className="ir-sb-select-wrapper">
                     {error && !error.valid && error.final && (<span className='ir-pulse-badge no-print'>!</span>)}
@@ -1045,8 +1138,9 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                     <input
                       type="text"
                       name=""
-                      value={incidentReportItem.IRStatus}
+                      value={calculatedStatus /*incidentReportItem.IRStatus*/}
                       onChange={() => null}
+                      disabled
                       className="ir-sb-line-input"
                       style={getStatusColor(incidentReportItem.IRStatus || '')}
                     />
@@ -1059,23 +1153,23 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                 <div className="ir-sb-grid col-2">
                   <div className="ir-sb-input-group">
                     <span className="ir-sb-label">Name:</span>
-                    <input type="text" name="empName" value={formData.empName} onChange={handleChange} className="ir-sb-line-input" />
+                    <input type="text" disabled name="empName" value={formData.empName} onChange={handleChange} className="ir-sb-line-input" />
                   </div>
                   <div className="ir-sb-input-group">
                     <span className="ir-sb-label">Position:</span>
-                    <input type="text" name="empPosition" value={formData.empPosition} onChange={handleChange} className="ir-sb-line-input" />
+                    <input type="text" disabled name="empPosition" value={formData.empPosition} onChange={handleChange} className="ir-sb-line-input" />
                     {/* <div className="ir-sb-input-group">
                   <span className="ir-sb-label">Business Unit:</span>
                   <input type="text" name="businessUnit" value={formData.businessUnit} onChange={handleChange} className="ir-sb-line-input" />
                 </div> */}
                     <span className="ir-sb-label">BU:</span>
-                    <input type="text" name="businessUnit" value={formData.businessUnit} onChange={handleChange} className="ir-sb-line-input" />
+                    <input type="text" disabled name="businessUnit" value={formData.businessUnit} onChange={handleChange} className="ir-sb-line-input" />
                   </div>
                   <div className="ir-sb-input-group span-2">
                     <span className="ir-sb-label">Tractor:</span>
-                    <input type="text" name="truck_full" value={formData.truck_full} onChange={handleChange} className="ir-sb-line-input" />
+                    <input type="text" disabled name="truck_full" value={formData.truck_full} onChange={handleChange} className="ir-sb-line-input" />
                     <span className="ir-sb-label">Trailer:</span>
-                    <input type="text" name="trailer_full" value={formData.trailer_full} onChange={handleChange} className="ir-sb-line-input" />
+                    <input type="text" disabled name="trailer_full" value={formData.trailer_full} onChange={handleChange} className="ir-sb-line-input" />
                   </div>
                 </div>
 
@@ -1093,19 +1187,21 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         placeholder="Name..."
                         value={formData.actions?.operations?.name || ''}
                         onChange={(e) => handleActionChange('operations', 'name', e.target.value)}
-                        className="ir-sb-line-input"
+                        disabled={!isSectionEditable('Operations')}
+                        className="ir-sb-line-input actions-taken"
                       />
                     </div>
 
                     <div className="ir-sb-input-group flex-2">
                       <span className="ir-sb-label">Action:</span>
                       <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
-                        {error && !error.valid && error.final && (<span className='ir-pulse-badge no-print'>!</span>)}
+                        {/*error && !error.valid && error.final*/ isSectionEditable('Operations') && (<span className='ir-pulse-badge no-print'>!</span>)}
                         <select
                           name="operationsAction"
                           value={formData.actions?.operations?.action || ''}
                           onChange={(e) => handleActionChange('operations', 'action', e.target.value)}
-                          className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.operations?.action ? 'is-empty-print' : ''}`}
+                          disabled={!isSectionEditable('Operations')}
+                          className={`ir-sb-line-input actions-taken ir-sb-dropdown ${!formData.actions?.operations?.action ? 'is-empty-print' : ''}`}
                         >
                           <option value="" disabled>-- Select Action --</option>
                           {getSectionActionOptions('Operations').map(option => (
@@ -1123,7 +1219,55 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         type="date"
                         value={formData.actions?.operations?.date || ''}
                         onChange={(e) => handleActionChange('operations', 'date', e.target.value)}
-                        className={`ir-sb-line-input ${!formData.actions?.operations?.date ? 'is-empty-print' : ''}`}
+                        disabled={!isSectionEditable('Operations')}
+                        className={`ir-sb-line-input actions-taken ${!formData.actions?.operations?.date ? 'is-empty-print' : ''}`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Supervisor */}
+                  <div className="ir-sb-meta-row" style={{ alignItems: 'center', marginBottom: 0, gap: '12px' }}>
+                    <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="ir-sb-label" style={{ fontWeight: 'bold' }}>Supervisor:</span>
+                      <input
+                        type="text"
+                        placeholder="Name..."
+                        value={formData.actions?.supervisor?.name || ''}
+                        onChange={(e) => handleActionChange('supervisor', 'name', e.target.value)}
+                        disabled={!isSectionEditable('Supervisor')}
+                        className="ir-sb-line-input actions-taken"
+                      />
+                    </div>
+
+                    <div className="ir-sb-input-group flex-2">
+                      <span className="ir-sb-label">Action:</span>
+                      <div className="ir-sb-select-wrapper" style={{ flex: 1 }}>
+                        {isSectionEditable('Supervisor') && (<span className='ir-pulse-badge no-print'>!</span>)}
+                        <select
+                          name="supervisorAction"
+                          value={formData.actions?.supervisor?.action || ''}
+                          onChange={(e) => handleActionChange('supervisor', 'action', e.target.value)}
+                          disabled={!isSectionEditable('Supervisor')}
+                          className={`ir-sb-line-input actions-taken ir-sb-dropdown ${!formData.actions?.supervisor?.action ? 'is-empty-print' : ''}`}
+                        >
+                          <option value="" disabled>-- Select Action --</option>
+                          {getSectionActionOptions('Supervisor').map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="ir-sb-input-group flex-1">
+                      <span className="ir-sb-label">Date:</span>
+                      <input
+                        type="date"
+                        value={formData.actions?.supervisor?.date || ''}
+                        onChange={(e) => handleActionChange('supervisor', 'date', e.target.value)}
+                        disabled={!isSectionEditable('Supervisor')}
+                        className={`ir-sb-line-input actions-taken ${!formData.actions?.supervisor?.date ? 'is-empty-print' : ''}`}
                       />
                     </div>
                   </div>
@@ -1137,7 +1281,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         placeholder="Name..."
                         value={formData.actions?.inspection?.name || ''}
                         onChange={(e) => handleActionChange('inspection', 'name', e.target.value)}
-                        className="ir-sb-line-input"
+                        disabled={!isSectionEditable('Inspection')}
+                        className="ir-sb-line-input actions-taken"
                       />
                     </div>
 
@@ -1148,7 +1293,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                           name="inspectionAction"
                           value={formData.actions?.inspection?.action || ''}
                           onChange={(e) => handleActionChange('inspection', 'action', e.target.value)}
-                          className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.inspection?.action ? 'is-empty-print' : ''}`}
+                          disabled={!isSectionEditable('Inspection')}
+                          className={`ir-sb-line-input actions-taken ir-sb-dropdown ${!formData.actions?.inspection?.action ? 'is-empty-print' : ''}`}
                         >
                           <option value="">-- Select Action --</option>
                           {getSectionActionOptions('Inspection').map(option => (
@@ -1166,7 +1312,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         type="date"
                         value={formData.actions?.inspection?.date || ''}
                         onChange={(e) => handleActionChange('inspection', 'date', e.target.value)}
-                        className={`ir-sb-line-input ${!formData.actions?.inspection?.date ? 'is-empty-print' : ''}`}
+                        disabled={!isSectionEditable('Inspection')}
+                        className={`ir-sb-line-input actions-taken ${!formData.actions?.inspection?.date ? 'is-empty-print' : ''}`}
                       />
                     </div>
                   </div>
@@ -1180,7 +1327,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         placeholder="Name..."
                         value={formData.actions?.yard?.name || ''}
                         onChange={(e) => handleActionChange('yard', 'name', e.target.value)}
-                        className="ir-sb-line-input"
+                        disabled={!isSectionEditable('Yard')}
+                        className="ir-sb-line-input actions-taken"
                       />
                     </div>
 
@@ -1191,7 +1339,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                           name="yardAction"
                           value={formData.actions?.yard?.action || ''}
                           onChange={(e) => handleActionChange('yard', 'action', e.target.value)}
-                          className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.yard?.action ? 'is-empty-print' : ''}`}
+                          disabled={!isSectionEditable('Yard')}
+                          className={`ir-sb-line-input actions-taken ir-sb-dropdown ${!formData.actions?.yard?.action ? 'is-empty-print' : ''}`}
                         >
                           <option value="">-- Select Action --</option>
                           {getSectionActionOptions('Yard').map(option => (
@@ -1207,7 +1356,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         style={{ width: '60px', flex: 'none' }}
                         value={formData.actions?.yard?.bags || ''}
                         onChange={(e) => handleActionChange('yard', 'bags', e.target.value)}
-                        className="ir-sb-line-input"
+                        disabled={!isSectionEditable('Yard')}
+                        className="ir-sb-line-input actions-taken"
                       />
                     </div>
 
@@ -1217,7 +1367,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         type="date"
                         value={formData.actions?.yard?.date || ''}
                         onChange={(e) => handleActionChange('yard', 'date', e.target.value)}
-                        className={`ir-sb-line-input ${!formData.actions?.yard?.date ? 'is-empty-print' : ''}`}
+                        disabled={!isSectionEditable('Yard')}
+                        className={`ir-sb-line-input actions-taken ${!formData.actions?.yard?.date ? 'is-empty-print' : ''}`}
                       />
                     </div>
                   </div>
@@ -1231,7 +1382,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         placeholder="Name..."
                         value={formData.actions?.warehouse?.name || ''}
                         onChange={(e) => handleActionChange('warehouse', 'name', e.target.value)}
-                        className="ir-sb-line-input"
+                        disabled={!isSectionEditable('Warehouse')}
+                        className="ir-sb-line-input actions-taken"
                       />
                     </div>
 
@@ -1242,7 +1394,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                           name="warehouseAction"
                           value={formData.actions?.warehouse?.action || ''}
                           onChange={(e) => handleActionChange('warehouse', 'action', e.target.value)}
-                          className={`ir-sb-line-input ir-sb-dropdown ${!formData.actions?.warehouse?.action ? 'is-empty-print' : ''}`}
+                          disabled={!isSectionEditable('Warehouse')}
+                          className={`ir-sb-line-input actions-taken ir-sb-dropdown ${!formData.actions?.warehouse?.action ? 'is-empty-print' : ''}`}
                         >
                           <option value="">-- Select Action --</option>
                           {getSectionActionOptions('Warehouse').map(option => (
@@ -1258,7 +1411,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         style={{ width: '60px', flex: 'none' }}
                         value={formData.actions?.warehouse?.bags || ''}
                         onChange={(e) => handleActionChange('warehouse', 'bags', e.target.value)}
-                        className="ir-sb-line-input"
+                        disabled={!isSectionEditable('Warehouse')}
+                        className="ir-sb-line-input actions-taken"
                       />
                     </div>
 
@@ -1268,7 +1422,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         type="date"
                         value={formData.actions?.warehouse?.date || ''}
                         onChange={(e) => handleActionChange('warehouse', 'date', e.target.value)}
-                        className={`ir-sb-line-input ${!formData.actions?.warehouse?.date ? 'is-empty-print' : ''}`}
+                        disabled={!isSectionEditable('Warehouse')}
+                        className={`ir-sb-line-input actions-taken ${!formData.actions?.warehouse?.date ? 'is-empty-print' : ''}`}
                       />
                     </div>
                   </div>
@@ -1284,7 +1439,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                   </div>
                   <div className="ir-sb-input-group">
                     <span className="ir-sb-label"><span className='no-print is-req'>* </span>Incident Date:</span><input type="date" value={formData.incident_date} name="incident_date" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_date ? 'is-empty-print' : ''}`} />
-                    <span className="ir-sb-label"><span className='no-print is-req'>* </span>Time:</span><input type="time" value={formData.incident_time} name="incident_time" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_time ? 'is-empty-print' : ''}`} />
+                    <span className="ir-sb-label">Time:</span><input type="time" value={formData.incident_time} name="incident_time" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_time ? 'is-empty-print' : ''}`} />
                   </div>
                 </div>
 
@@ -1293,43 +1448,41 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                 <div className="ir-sb-grid col-2">
                   <div className="ir-sb-input-group">
                     <span className="ir-sb-label">Trip Ref No:</span>
-                    <input type="text" name="tripReferenceNo" value={formData.tripReferenceNo} onChange={() => null} className="ir-sb-line-input" />
+                    <input type="text" disabled name="tripReferenceNo" value={formData.tripReferenceNo} onChange={() => null} className="ir-sb-line-input" />
                   </div>
                   <div className="ir-sb-input-group">
-                    <span className="ir-sb-label"><span className='no-print is-req'>* </span>Served Date:</span><input type="date" name="ServedDate" value={formData.ServedDate} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Served Date:</span><input disabled type="date" name="ServedDate" value={formData.ServedDate} onChange={handleChange} className="ir-sb-line-input" />
                   </div>
                 </div>
 
                 <div className="ir-sb-grid col-1">
-                  <div className="ir-sb-input-group"><span className="ir-sb-label">Customer:</span><input type="text" name="Customer" value={formData.Customer} onChange={handleChange} className="ir-sb-line-input" /></div>
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Customer:</span><input type="text" disabled name="Customer" value={formData.Customer} onChange={handleChange} className="ir-sb-line-input" /></div>
                 </div>
 
 
                 <div className="ir-sb-grid col-1">
-                  <div className="ir-sb-input-group"><span className="ir-sb-label">Source:</span><input type="text" name="Source" value={formData.Source} onChange={handleChange} className="ir-sb-line-input" /></div>          </div>
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Source:</span><input type="text" disabled name="Source" value={formData.Source} onChange={handleChange} className="ir-sb-line-input" /></div>          </div>
 
                 <div className="ir-sb-grid col-1">
-                  <div className="ir-sb-input-group"><span className="ir-sb-label">Destination:</span><input type="text" name="Destination" value={formData.Destination} onChange={handleChange} className="ir-sb-line-input" /></div>
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Destination:</span><input type="text" disabled name="Destination" value={formData.Destination} onChange={handleChange} className="ir-sb-line-input" /></div>
                 </div>
 
                 <div className="ir-sb-grid col-2">
                   <div className="ir-sb-input-group">
-                    <span className="ir-sb-label">Cement Type:</span><input type="text" name="CementType" value={formData.CementType} onChange={handleChange} className="ir-sb-line-input" />
-                    <span className="ir-sb-label">Trip Group:</span><input type="text" name="TripGroup" value={formData.TripGroup} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Cement Type:</span><input type="text" disabled name="CementType" value={formData.CementType} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Trip Group:</span><input type="text" disabled name="TripGroup" value={formData.TripGroup} onChange={handleChange} className="ir-sb-line-input" />
                   </div>
                   <div className="ir-sb-input-group">
-                    <span className="ir-sb-label">Withdrawn:</span><input type="text" name="QtyWithdrawn" value={formData.QtyWithdrawn} onChange={handleChange} className="ir-sb-line-input" />
-                    <span className="ir-sb-label">Delivered:</span><input type="text" name="QtyDelivered" value={formData.QtyDelivered} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Withdrawn:</span><input type="text" disabled name="QtyWithdrawn" value={formData.QtyWithdrawn} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Delivered:</span><input type="text" disabled name="QtyDelivered" value={formData.QtyDelivered} onChange={handleChange} className="ir-sb-line-input" />
                   </div>
                 </div>
 
                 <div className="ir-sb-grid col-2">
                   <div className="ir-sb-input-group">
-                    <span className="ir-sb-label">Short Bags:</span><input type="text" name="ShortBags" value={formData.ShortBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
+                    <span className="ir-sb-label">Short Bags:</span><input type="text" disabled name="ShortBags" value={formData.ShortBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
                   </div>
-                  <div className="ir-sb-input-group">
-                    <span className="ir-sb-label">Retrieved Bags:</span><input type="text" name="ShortBags" value={formData.RetrievedBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
-                  </div>
+
                 </div>
 
                 <div className="ir-sb-grid col-1">
@@ -1369,8 +1522,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                 {/* Section: Detalye ng Nag Report[cite: 3] */}
                 <h3 className="ir-sb-section-head">REPORTER DETAILS</h3>
                 <div className="ir-sb-grid col-2">
-                  <div className="ir-sb-input-group"><span className="ir-sb-label">Reported By:</span><input type="text" name="reportName" value={formData.reportName} onChange={() => null} className="ir-sb-line-input" /></div>
-                  <div className="ir-sb-input-group"><span className="ir-sb-label">Position:</span><input type="text" name="reportPosition" value={formData.reportPosition} onChange={() => null} className="ir-sb-line-input" /></div>
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Reported By:</span><input type="text" disabled name="reportName" value={formData.reportName} onChange={() => null} className="ir-sb-line-input" /></div>
+                  <div className="ir-sb-input-group"><span className="ir-sb-label">Position:</span><input type="text" disabled name="reportPosition" value={formData.reportPosition} onChange={() => null} className="ir-sb-line-input" /></div>
                 </div>
                 <div className="ir-sb-grid col-2">
                   <div className="ir-sb-input-group"><span className="ir-sb-label">Signed Date:</span><input type="date" name="reportDate" onChange={() => null} className="ir-sb-line-input" /></div>
