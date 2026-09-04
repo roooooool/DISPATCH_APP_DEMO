@@ -70,9 +70,15 @@ export type IR_ShortBags_Form_Model = {
   QtyWithdrawn: number;
   QtyDelivered: number;
   ShortBags: number;
+  ActualQtyWithdrawn: number;
+  ActualQtyDelivered: number;
+  ActualShortBags: number;
   RetrievedBags: number;
   CementType: string;
   ServedDate: string;
+
+  ServedBy: string;
+  VerifiedBy: string;
 
   incident_date: string;
   incident_time: string;
@@ -172,7 +178,12 @@ export const mapIncidentReportToFormModel = (
     TripGroup: jsonDetails.TripGroup || '',
     QtyWithdrawn: jsonDetails.QtyWithdrawn || 0,
     QtyDelivered: jsonDetails.QtyDelivered || 0,
-    ShortBags: jsonDetails.QtyWithdrawn ? (jsonDetails.QtyDelivered || 0) - jsonDetails.QtyWithdrawn : 0,
+    ShortBags: jsonDetails.ShortBags || (jsonDetails.QtyWithdrawn ? (jsonDetails.QtyDelivered || 0) - jsonDetails.QtyWithdrawn : 0),
+    ActualQtyDelivered: jsonDetails.ActualQtyDelivered || 0,
+    ActualQtyWithdrawn: jsonDetails.ActualQtQtyWithdrawn || 0,
+    ActualShortBags: jsonDetails.ActualShortBags || 0,
+    ServedBy: jsonDetails.ServedBy || '',
+    VerifiedBy: jsonDetails.VerifiedBy || '',
     RetrievedBags: jsonDetails.RetrievedBags,
     CementType: jsonDetails.CementType || '',
     ServedDate: jsonDetails.ServedDate ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10) : '',
@@ -763,7 +774,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
     };
 
     const handleSave = () => {
-      if (onSave) {
+      if (onSave && !isReadOnly) {
         addTask({
           id: `saveir-${incidentReportItem.IRID}`,
           name: `Saving Incident Details for ${incidentReportItem.IRID}`,
@@ -1704,17 +1715,17 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
                 <div className="ir-sb-grid col-1">
                   <div className="ir-sb-input-group">
-                    <span className="ir-sb-label">Actual Withdrawn:</span><input type="text" disabled name="QtyWithdrawn" value={formData.QtyWithdrawn} onChange={handleChange} className="ir-sb-line-input" />
-                    <span className="ir-sb-label">ActualDelivered:</span><input type="text" disabled name="QtyDelivered" value={formData.QtyDelivered} onChange={handleChange} className="ir-sb-line-input" />
-                    <span className="ir-sb-label">Actual Short Bags:</span><input type="text" disabled name="ShortBags" value={formData.ShortBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
+                    <span className="ir-sb-label">Actual Withdrawn:</span><input type="text" disabled name="ActualQtyWithdrawn" value={formData.ActualQtyWithdrawn} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Actual Delivered:</span><input type="text" disabled name="ActualQtyDelivered" value={formData.ActualQtyDelivered} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Actual Short Bags:</span><input type="text" disabled name="ActualShortBags" value={formData.ActualShortBags} onChange={handleChange} className="ir-sb-line-input" /><span> bag/s</span>
                   </div>
                 </div>
 
                 <div className="ir-sb-grid col-2">
                   <div className="ir-sb-input-group">
-                    <span className="ir-sb-label">Served By:</span><input type="text" disabled name="" value={""} onChange={handleChange} className="ir-sb-line-input" />                  </div>
+                    <span className="ir-sb-label">Served By:</span><input type="text" disabled name="ServedBy" value={formData.ServedBy} onChange={handleChange} className="ir-sb-line-input" />                  </div>
                   <div className="ir-sb-input-group">
-                    <span className="ir-sb-label">Verified By:</span><input type="text" disabled name="" value={""} onChange={handleChange} className="ir-sb-line-input" />
+                    <span className="ir-sb-label">Verified By:</span><input type="text" disabled name="VerifiedBy" value={formData.VerifiedBy} onChange={handleChange} className="ir-sb-line-input" />
                   </div>
                 </div>
 

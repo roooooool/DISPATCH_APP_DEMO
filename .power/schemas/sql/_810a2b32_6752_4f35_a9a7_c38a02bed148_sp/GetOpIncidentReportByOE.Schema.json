@@ -1,0 +1,33 @@
+{
+  "name": "[dbo].[GetOpIncidentReportByOE]",
+  "title": "[dbo].[GetOpIncidentReportByOE]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "OE": {
+          "title": "OE",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

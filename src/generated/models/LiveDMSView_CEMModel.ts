@@ -96,4 +96,6 @@ export interface LiveDMSView_CEM {
   HelperUnloaderType?: string;
   CIFME_OE?: string;
   CIFME_DESTINATION?: string;
+  IRID?: string;
+  IRStatus?: string;
 }

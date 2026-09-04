@@ -2206,7 +2206,25 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           setIsCreatingIR(true);
           setIrFormVisible(false);
 
-          const raw_data = await incidentFormRef.current.submit();
+          //check if IR already exist on this OE first
+          const exisistingIR = await ewulFetchAll<any>(
+            OP_IncidentReportsService,
+            { filter: `OE_Reference eq '${currentFormData.OE}'` },
+            1,
+            'IncidentID'
+          );
+
+          let raw_data = null
+
+          console.log('Existing IR: ', exisistingIR);
+          if (exisistingIR?.length > 0) {
+            console.log('IR Already Exist');
+            raw_data = exisistingIR[0];
+          } else {
+            raw_data = await incidentFormRef.current.submit();
+          }
+
+
           const employee_details = driverOptions?.find((item) => item.label === currentFormData.Driver)?.record
 
           let data = {
@@ -2239,7 +2257,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             });
           }
 
-          console.log('Created IR: ', data);
+          // console.log('Created IR: ', JSON.parse(data.reportJSON || ''));
 
           setCreatedIR(data);
 
@@ -3041,17 +3059,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       </a>
                       <a
                         href="#"
-                        className={!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') ? 'disabled' : ''}
+                        className={(!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') || isCreatingIR) ? 'disabled' : ''}
                         onClick={(e) => {
                           e.preventDefault();
-                          if (!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done')) return;
+                          if (!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') || isCreatingIR) return;
                           handleTripCreateIR(formData);
                           // setIsIncidentModalOpen(false);
                           // setShowIncidentPrompt(true);
                         }}>
                         <FileSpreadsheet size={16} />
-                        Create IR
-                        {((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) && (formData.TripProgress === 'Done') && <span className="unsaved-indicator">!</span>}
+                        {formData.IRID ? `View IR` : `Create IR`} {isCreatingIR && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}
+                        {(((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) && (formData.TripProgress === 'Done') && (formData.IRStatus != 'Closed')) && <span className="unsaved-indicator">!</span>}
                       </a>
 
                     </div>
@@ -4390,9 +4408,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 Source: formData.Source,
                 Destination: formData.Destination,
                 ServedDate: new Date(servedDate).toISOString(),
-                QtyDelivered: formData.QTYDelivered_Actual ? formData.QTYDelivered_Actual : formData.QTYDelivered,
-                QtyWithdrawn: formData.QTYWithdrawn_Actual ? formData.QTYWithdrawn_Actual : formData.QTYWithdrawn,
-                ShortBags: actualDiscrepancy ? actualDiscrepancy : discrepancy,
+                QtyDelivered: formData.QTYDelivered,
+                QtyWithdrawn: formData.QTYWithdrawn,
+                ShortBags: discrepancy,
+                ActualQtyWithdrawn: formData.QTYWithdrawn_Actual,
+                ActualQtyDelivered: formData.QTYDelivered_Actual,
+                ActualShortBags: actualDiscrepancy,
+                ServedBy: editingUser?.FullName,
+                VerifiedBy: formData.Verified_x0020_By,
               } as IR_ShortBags_Form_Model}
             />
           </div>
@@ -4423,7 +4446,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   ref={irShortBagsForm}
                   incidentReportItem={createdIR as Partial<OP_IncidentReports>}
                   initialUser={editingUser ?? undefined}
-                  onClose={(skip?: boolean) => { handleConfirmIRClose(skip) }}
+                  onClose={(skip?: boolean) => {
+                    if (createdIR?.ResolvedDate) handleConfirmIRClose(true);
+                    else handleConfirmIRClose(skip)
+                  }}
                   onSubmit={(data: any) => {
                     console.log("Submitted successfully");
                     handleForceCloseIR();

@@ -1232,6 +1232,18 @@ export const dataSourcesInfo = {
           }
         ]
       },
+      "GetOpIncidentReportByOE": {
+        "path": "/dbo.GetOpIncidentReportByOE",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "OE",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
       "OnFCTDivert": {
         "path": "/dbo.OnFCTDivert",
         "method": "POST",
