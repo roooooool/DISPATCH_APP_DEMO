@@ -95,6 +95,7 @@ interface OrdersModuleProps {
   mode: ViewMode;
   newOrders: any[];
   assignedOrders: any[];
+  onRecordChange: (updatedRecord: any) => void;
   isLoadingNew: boolean;
   isLoadingAssigned: boolean;
   fetchNewOrders: () => Promise<void>;
@@ -122,6 +123,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
   mode,
   newOrders,
   assignedOrders,
+  onRecordChange,
   isLoadingNew,
   isLoadingAssigned,
   // @ts-ignore 
@@ -233,6 +235,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
             onDragDrop={handleRowDragDrop}
             isArrangementMode={isArrangementMode} // Binds the parent state
             onArrangementModeChange={onArrangementModeChange}
+            onRecordChange={onRecordChange}
           />
         </div>
 
@@ -510,6 +513,27 @@ const OrderDistribution: React.FC = () => {
   // LIFTED ARCHITECTURE: State tracking for both tables is managed here
   const [newOrders, setNewOrders] = useState<any[]>([]);
   const [assignedOrders, setAssignedOrders] = useState<any[]>([]);
+
+  // 1. Define the optimistic update handler
+  const handleRecordChangeAssigned = useCallback((updatedRecord: any) => {
+    setAssignedOrders((prevOrders) =>
+      prevOrders.map((row) => {
+        // Unique identifier matching (ID or OE)
+        const rowId = row.ID ?? row.rawData?.ID;
+        const updatedId = updatedRecord.ID ?? updatedRecord.rawData?.ID;
+
+        if (rowId && updatedId && rowId === updatedId) {
+          return { ...row, ...updatedRecord };
+        }
+
+        if (row.OE && updatedRecord.OE && row.OE === updatedRecord.OE) {
+          return { ...row, ...updatedRecord };
+        }
+
+        return row;
+      })
+    );
+  }, []);
 
   const [isLoadingNew, setIsLoadingNew] = useState<boolean>(false);
   const [isLoadingAssigned, setIsLoadingAssigned] = useState<boolean>(false);
@@ -1510,6 +1534,7 @@ const OrderDistribution: React.FC = () => {
                   mode={activeMode}
                   newOrders={newOrders}
                   assignedOrders={assignedOrders}
+                  onRecordChange={handleRecordChangeAssigned}
                   isLoadingNew={isLoadingNew}
                   isLoadingAssigned={isLoadingAssigned}
                   fetchNewOrders={fetchNewOrders}

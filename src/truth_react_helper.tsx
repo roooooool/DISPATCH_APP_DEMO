@@ -613,6 +613,8 @@ const saveODMRemarks = async (newRemarks: string, recordID: string) => {
   await DMS_CEMService.update(recordID, { [enc('Planning')]: newRemarks });
 };
 
+
+
 export const renderDDRemarksInput = (
   value: string,
   id: string
@@ -630,15 +632,15 @@ export const renderDDRemarksInput = (
 
 
 
-
-
-// NEW TRIPS DD REMARKS
 // NEW TRIPS DD REMARKS
 interface DDRemarksStatusDropdownProps {
   id: string;
   value?: string | null;
   placeholder?: string;
   oe?: string;
+  row: any;
+  onRecordChange?: (updatedRecord: any) => void;
+  fontSize?: number;
 }
 
 const STATUS_OPTIONS = [
@@ -651,20 +653,55 @@ const STATUS_OPTIONS = [
 
 // Internal change handler
 //@ts-ignore
-const onRemarksStatusDropdownChange = (val: string, id: string, oe: string) => {
-  // if (!id) return;
-  // DMS_NewTrip_RemarksService.delete(id);
-  console.log('upserting remarks: ', val, ' id: ', id, ' oe: ', oe)
-  UpsertNewTripRemarksService.UpsertNewTripRemarks({ OE: oe, Remarks: val } as any);
+const onRemarksStatusDropdownChange = (
+  val: string,
+  id: string,
+  oe: string,
+  row: any,
+  onRecordChange?: (updatedRecord: any) => void
+) => {
+  console.log('upserting remarks: ', val, ' id: ', id, ' oe: ', oe);
+
+  // 1. Immediately update UI state
+  if (onRecordChange) {
+    onRecordChange({
+      ...row,
+      ODMRemarks: val,
+    });
+  }
+
+  // 2. Fire request in background
+  UpsertNewTripRemarksService.UpsertNewTripRemarks({ OE: oe, Remarks: val } as any)
+    .catch((error) => {
+      console.error('Failed to persist remarks change:', error);
+      // Optional: rollback state if request fails
+    });
 };
 
 // Internal removal handler
 //@ts-ignore
-const onRemarksStatusDropdownRemove = (id: string, oe: string) => {
-  // Call your API or service to remove/clear the remark
-  // UpsertNewTripRemarksService.UpsertNewTripRemarks({ OE: oe, Remarks: "" } as any);
-  DMS_NewTrip_RemarksService.delete(id);
-  // Or: RemoveNewTripRemarksService.RemoveNewTripRemarks({ OE: oe, ID: id });
+const onRemarksStatusDropdownRemove = (
+  id: string,
+  //@ts-ignore
+  oe: string,
+  row: any,
+  onRecordChange?: (updatedRecord: any) => void
+) => {
+  // 1. Immediately update parent table state (Optimistic)
+  if (onRecordChange) {
+    onRecordChange({
+      ...row,
+      ODMRemarks: null,
+      remarksID: null,
+    });
+  }
+
+  // 2. Fire delete in background
+  DMS_NewTrip_RemarksService.delete(id)
+    .catch((error) => {
+      console.error('Failed to delete remarks:', error);
+      // Optional: Handle error
+    });
 };
 
 export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = ({
@@ -672,15 +709,19 @@ export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = (
   value = null,
   placeholder = '+ Add Remarks',
   oe,
+  row,
+  onRecordChange,
+  fontSize,
 }) => {
-  // Local optimistic state
   const [selected, setSelected] = useState<string | null>(value ?? null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
 
-  // Sync local state when external value prop changes
+  // Convert numeric multiplier (e.g. 0.85, 1, 1.2) or px value to valid inline style
+  const fontStyle = fontSize ? { fontSize: typeof fontSize === 'number' ? `${fontSize}rem` : fontSize } : undefined;
+
   useEffect(() => {
     setSelected(value ?? null);
   }, [value]);
@@ -740,19 +781,14 @@ export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = (
   };
 
   const handleSelect = (option: string) => {
-    console.log('wew ups: ', option, ' id: ', id, ' oe: ', oe);
     setIsOpen(false);
 
     if (option === 'None') {
-      // 1. Reset state to placeholder
       setSelected('+ Add Remarks');
-      // 2. Trigger removal handler
-      onRemarksStatusDropdownRemove(id, oe || '');
+      onRemarksStatusDropdownRemove(id, oe || '', row, onRecordChange);
     } else {
-      // 1. Optimistic UI update
       setSelected(option);
-      // 2. Trigger change handler
-      onRemarksStatusDropdownChange(option, id, oe || '');
+      onRemarksStatusDropdownChange(option, id, oe || '', row, onRecordChange);
     }
   };
 
@@ -761,6 +797,7 @@ export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = (
       <button
         ref={triggerRef}
         type="button"
+        style={fontStyle}
         className={`dd-status-pill-trigger ${getStatusClass(selected)} ${isOpen ? 'is-open' : ''}`}
         onClick={toggleOpen}
       >
@@ -778,12 +815,14 @@ export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = (
               position: 'absolute',
               top: `${coords.top}px`,
               left: `${coords.left}px`,
+              ...fontStyle,
             }}
           >
             {STATUS_OPTIONS.map((option) => (
               <li key={option}>
                 <button
                   type="button"
+                  style={fontStyle}
                   className={`dd-status-option-pill ${getStatusClass(option)} ${selected === option ? 'is-selected' : ''
                     }`}
                   onClick={() => handleSelect(option)}
@@ -799,17 +838,28 @@ export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = (
   );
 };
 
-export const renderDDRemarksStatusDropdown = (id: any, value?: any, oe?: string) => {
+export const renderDDRemarksStatusDropdown = (
+  onRecordChange: ((updatedRecord: any) => void) | undefined,
+  row: any,
+  fontSize?: number
+) => {
+  const id = row['remarksID'];
+  const value = row['ODMRemarks'];
+  const oe = row['OE'];
+
   const safeId = String(id ?? '');
   const safeValue = value ? String(value) : null;
 
   return (
     <DDRemarksStatusDropdown
-      key={safeId}
+      key={`${safeId}-${safeValue}`}
       id={safeId}
       value={safeValue}
       oe={oe}
       placeholder={safeValue || '+ Add Remarks'}
+      row={row}
+      onRecordChange={onRecordChange}
+      fontSize={fontSize}
     />
   );
 };

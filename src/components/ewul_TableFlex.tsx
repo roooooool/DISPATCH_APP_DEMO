@@ -105,7 +105,14 @@ export interface ColumnConfig {
   calculate?: (row: any) => any;
   useCalculatedSort?: boolean;
   cellStyle?: (row: any) => React.CSSProperties;
-  render?: (val: any, row: any, searchTerm: string, addTask?: (task: Omit<Task, 'id'>) => void, fontSize?: number) => React.ReactNode;
+  render?: (
+    val: any,
+    row: any,
+    searchTerm: string,
+    addTask?: (task: Omit<Task, 'id'>) => void,
+    fontSize?: number,
+    onRecordChange?: (updatedRecord: any) => void
+  ) => React.ReactNode;
   defaultShow?: boolean;
   hidden?: boolean;
   noRender?: boolean;
@@ -163,6 +170,7 @@ interface TableViewProps {
   emptyHint?: EmptyHintConfig;
   rowActionMode?: 'selection' | 'dragndrop';
   density?: 'tight' | 'normal' | 'relaxed';
+  onRecordChange?: (updatedRecord: any) => void;
 }
 
 export const encodeColumnName = (name: string): string => {
@@ -624,6 +632,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   emptyHint,
   rowActionMode,
   density,
+  onRecordChange,
 }, ref) => {
 
   // Arrangement state fallbacks if parent does not pass controller values
@@ -1775,7 +1784,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
           return (
             <td key={colIndex} style={{ ...columnStyles[column.col], ...conditionalStyle }} className={`cell ${(isSticky && isScrolledX) ? 'cell-blur' : ''}`}>
               {column.render
-                ? column.render(cellValue, row, searchTerm, addTask, (fontSizePercent / 100))
+                ? column.render(cellValue, row, searchTerm, addTask, (fontSizePercent / 100), onRecordChange)
                 : neonCell?.rowId === row._rowId && neonCell?.colKey === column.col ? (
                   <span className="text-glow-wrapper">
                     <HighlightText text={cellValue} highlight={searchTerm} isSearchable={isSearchable} />

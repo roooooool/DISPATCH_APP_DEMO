@@ -1045,8 +1045,8 @@ export const NEW_TRIPS_UNFILTERED_TABLE_CONFIG: TableModuleConfig = {
     {
       col: "_odmddremarks", alias: "Remarks", portion: 1,
       //@ts-ignore
-      render: (val: any, row: any, searchTerm: string) => {
-        return renderDDRemarksStatusDropdown(row['remarksID'], row['ODMRemarks'], row['OE']);
+      render: (val: any, row: any, searchTerm: string, addTask: any, fontSize: any, onRecordChange: any) => {
+        return renderDDRemarksStatusDropdown(onRecordChange, row, fontSize);
       },
       calculate: (row: any) => {
         const val = row['ODMRemarks']

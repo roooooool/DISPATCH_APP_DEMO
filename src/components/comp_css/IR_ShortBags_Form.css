@@ -47,6 +47,7 @@
   /* Smooth transform sliding interpolation transitions */
   transform: translateX(0);
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s ease;
+
 }
 
 .ir-sb-actions-bar.collapsed {
@@ -85,6 +86,7 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+
 
 
 }
@@ -1266,6 +1268,35 @@ select.ir-sb-dropdown {
   width: 100%;
 }
 
+
+
+
+/* Pulsing Badge formatting layer for Save Button */
+.ir-pulse-badge-save-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  background-color: #ff3b3b;
+  /* Accent theme Red */
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  /* Gentle rounded profile layout */
+  box-shadow: 0 0 0 0 rgba(255, 59, 59, 0.7);
+  animation: ir-badge-pulse 1.6s infinite cubic-bezier(0.66, 0, 0, 1);
+  cursor: default;
+  z-index: 10;
+  user-select: none;
+  pointer-events: none;
+  /* Allows button clicks through the badge */
+}
+
 /* Pulsing Badge formatting layer */
 .ir-pulse-badge {
 
@@ -1400,4 +1431,87 @@ select.ir-sb-dropdown.actions-taken:disabled {
 .ir-sb-check-item input[type="checkbox"]:disabled {
   cursor: not-allowed !important;
   accent-color: #636262;
+}
+
+
+
+
+
+
+
+/* Dim & lockout interactive fields inside read-only container */
+.ir-sb-container.is-readonly input:disabled,
+.ir-sb-container.is-readonly select:disabled,
+.ir-sb-container.is-readonly textarea:disabled,
+.ir-sb-container.is-readonly .ir-sb-check-item {
+  background-color: #f1f5f9;
+  color: #000000;
+  border-color: #cbd5e1;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* Red accent indicators for locked inputs */
+.ir-sb-container.is-readonly .ir-sb-line-input:disabled {
+  /* border-bottom: 2px solid rgba(239, 68, 68, 0.4); */
+  /* Gentle red accent line */
+  background: transparent;
+}
+
+
+
+/* Read-Only Top Banner Header */
+.ir-sb-readonly-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  margin: -1px -1px 16px -1px;
+  /* Fit flush against container border */
+  border-radius: 0 0 10px 10px;
+
+  /* Navy Blue -> #3a4efc gradient with Red accent border */
+  background: linear-gradient(135deg, #0b132b 0%, #1c2541 60%, #3a4efc 100%);
+  color: #ffffff;
+  border-bottom: 3px solid #ef4444;
+  /* Theme Red accent line */
+  font-size: 13px;
+  font-weight: 500;
+}
+
+
+/* Upload Zone base styles */
+.ir-sb-upload-zone {
+  position: relative;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+/* Disabled State Visuals */
+.ir-sb-upload-zone.is-disabled {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  border-style: solid;
+  /* Changes dashed border to solid to indicate locked state */
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.ir-sb-upload-zone.is-disabled input[type="file"] {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.ir-sb-upload-disabled-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
 }
