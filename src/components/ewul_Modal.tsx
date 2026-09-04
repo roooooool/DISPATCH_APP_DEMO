@@ -12,9 +12,21 @@ interface ModalProps {
   overlayBlur?: number; // e.g., 5
   overlayColor?: string; // e.g., 'rgba(0, 8, 45, 0.85)'
   hideX?: boolean;
+  hidden?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ onClose, children, width, height, contentClassName, contentStyle, overlayBlur, overlayColor, hideX = false }) => {
+const Modal: React.FC<ModalProps> = ({
+  onClose,
+  children,
+  width,
+  height,
+  contentClassName,
+  contentStyle,
+  overlayBlur,
+  overlayColor,
+  hideX = false,
+  hidden = false
+}) => {
   const modalRoot = document.getElementById('modal-root') || document.body;
 
   const modalStyle: React.CSSProperties = {
@@ -30,12 +42,18 @@ const Modal: React.FC<ModalProps> = ({ onClose, children, width, height, content
   if (overlayBlur) {
     overlayStyle.backdropFilter = `blur(${overlayBlur}px)`;
   }
-
+  if (hidden) {
+    overlayStyle.display = 'none';
+  }
 
   return createPortal(
-    <div className="modal-overlay" style={overlayStyle} onClick={onClose}>
-      <div 
-        className={`modal-content ${contentClassName || ''}`} 
+    <div
+      className={`modal-overlay ${hidden ? 'is-hidden' : ''}`}
+      style={overlayStyle}
+      onClick={onClose}
+    >
+      <div
+        className={`modal-content ${contentClassName || ''}`}
         style={modalStyle}
         onClick={e => e.stopPropagation()}
       >

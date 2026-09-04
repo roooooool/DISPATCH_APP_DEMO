@@ -1779,7 +1779,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           onRefreshDriverHelpers?.();
           handleUpdateTripTaskTracker({ ...formData, TripProgress: progress_next }, !!updatedData.Completed_x0020_Date);
 
-          if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT) setShowIncidentPrompt(true);
+          if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT) {
+            setIrFormVisible(false);
+            handleTripCreateIR(formData);
+          }
 
         },
         onFailure: () => { setIsSubmitting(false); onRefreshTrips?.(); },
@@ -2184,32 +2187,68 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       }
     };
 
+
+
+
     const [createdIR, setCreatedIR] = useState<OP_IncidentReports | null | undefined>(null);
     const [isCreatingIR, setIsCreatingIR] = useState<boolean>(false);
-    const handleTripCreateIR = async () => {
+    const [irFormVisible, setIrFormVisible] = useState<boolean>(false);
+    const [validationIR, setValidationIR] = useState<{
+      valid: boolean;
+      msg: string;
+      final?: boolean;
+      status: 'Closed' | 'Open';
+    } | null>(null);
+    const handleTripCreateIR = async (currentFormData: LiveDMSView_CEM) => {
       if (incidentFormRef.current) {
         try {
           console.log("Pre-Creating IR...");
           setIsCreatingIR(true);
-          setIsIncidentModalOpen(true); // Open modal instantly so user sees the loading state
+          setIrFormVisible(false);
 
           const raw_data = await incidentFormRef.current.submit();
-          const employee_details = driverOptions?.find((item) => item.label === formData.Driver)?.record
-          const data = {
+          const employee_details = driverOptions?.find((item) => item.label === currentFormData.Driver)?.record
+
+          let data = {
             ...raw_data,
-            OE_Reference: formData.OE,
-            EmployeeName: formData.Driver,
+            OE_Reference: currentFormData.OE,
+            EmployeeName: currentFormData.Driver,
             EmployeeID: employee_details.Id || '',
             EmployeeBU: employee_details.BU || 'Unknown BU',
-            EmployeeTractor: formData.Head_Full,
-            EmployeeTrailer: formData.BO_Full,
-            flexValue: (actualDiscrepancy || discrepancy).toString()
+            EmployeeTractor: currentFormData.Head_Full,
+            EmployeeTrailer: currentFormData.BO_Full,
+            flexValue: (actualDiscrepancy || discrepancy).toString(),
           } as OP_IncidentReports
 
+          if (discrepancy > -5 && discrepancy < 0) {
+            // Safe JSON parse fallback
+            const parsedJSON = JSON.parse(raw_data?.reportJSON || '{}');
+
+            // Properly merge actions into the parsed JSON payload
+            data.reportJSON = JSON.stringify({
+              ...parsedJSON,
+              actions: {
+                ...parsedJSON.actions,
+                operations: {
+                  ...parsedJSON.actions?.operations,
+                  name: editingUser?.FullName || '',
+                  action: 'PROCEED TO NEXT TRIP',
+                  date: new Date().toISOString().slice(0, 10)
+                },
+              },
+            });
+          }
 
           console.log('Created IR: ', data);
 
           setCreatedIR(data);
+
+
+          setShowIncidentPrompt(true);
+          setIsIncidentModalOpen(true);
+          setIsCreatingIR(false);
+
+
         } catch (e) {
           setIsIncidentModalOpen(false);
           setCreatedIR(null);
@@ -2219,17 +2258,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           handleTripAnnounce(
             'TRIP INCIDENT REPORT',
             `
-              <p>A [Short-Bags] Incident report has been created for trip <strong>[${formData.OE}]</strong> with the following details:</p>
+              <p>A [Short-Bags] Incident report has been created for trip <strong>[${currentFormData.OE}]</strong> with the following details:</p>
               <br />
               <ul style="list-style-type: none; padding-left: 0; margin: 0; font-family: sans-serif; line-height: 1.6;">
                 <li style="margin-bottom: 6px;">
-                  <strong>OE:</strong> ${formData.OE || '---'}
+                  <strong>OE:</strong> ${currentFormData.OE || '---'}
                 </li>
                 <li style="margin-bottom: 6px;">
-                  <strong>Employee:</strong> ${formData.Driver || '---'}
+                  <strong>Employee:</strong> ${currentFormData.Driver || '---'}
                 </li>
                 <li style="margin-bottom: 6px;">
-                  <strong>Unit:</strong> ${formData.Vehicle || '---'} / ${formData.BO || '---'}
+                  <strong>Unit:</strong> ${currentFormData.Vehicle || '---'} / ${currentFormData.BO || '---'}
                 </li>
                 <li style="margin-bottom: 6px;">
                   <strong>Short-Bags:</strong> ${actualDiscrepancy || discrepancy || '0'}
@@ -2248,7 +2287,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const [isConfirmIRCloseOpen, setIsConfirmIRCloseOpen] = useState<boolean>(false);
 
     // This function now just raises our secondary modal instead of halting thread execution
-    const handleConfirmIRClose = () => {
+    const handleConfirmIRClose = (skip?: boolean) => {
+      if (skip) {
+        setIsConfirmIRCloseOpen(false);
+        setIsIncidentModalOpen(false);
+        setIrFormVisible(false);
+        setShowIncidentPrompt(false);
+        setCreatedIR(null);
+        return;
+      }
       setIsConfirmIRCloseOpen(true);
     };
 
@@ -2262,13 +2309,23 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       setIsConfirmIRCloseOpen(false);
       setCreatedIR(null);
       setIsIncidentModalOpen(false);
+      setIrFormVisible(false);
     };
 
     const handleForceCloseIR = () => {
       setIsConfirmIRCloseOpen(false);
       setCreatedIR(null);
       setIsIncidentModalOpen(false);
+      setIrFormVisible(false);
     };
+
+    const handleDeleteIR = () => {
+      setIsConfirmIRCloseOpen(false);
+      setIsIncidentModalOpen(false);
+      setIrFormVisible(false);
+      setShowIncidentPrompt(false);
+      setCreatedIR(null);
+    }
 
 
 
@@ -2988,8 +3045,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         onClick={(e) => {
                           e.preventDefault();
                           if (!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done')) return;
-                          setIsIncidentModalOpen(false);
-                          setShowIncidentPrompt(true);
+                          handleTripCreateIR(formData);
+                          // setIsIncidentModalOpen(false);
+                          // setShowIncidentPrompt(true);
                         }}>
                         <FileSpreadsheet size={16} />
                         Create IR
@@ -4209,27 +4267,95 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           )}
 
           {showIncidentPrompt && (
-            <Modal onClose={() => { setIsIncidentModalOpen(false); setShowIncidentPrompt(false); }} width={'35%'} height={'30%'}>
+            <Modal
+              onClose={() => { setIsIncidentModalOpen(false); setShowIncidentPrompt(false); }}
+              width={'38%'}
+              height={'auto'}
+            >
               <div className="incident-report-prompt-modal">
-                <h3>Create Short-bags Incident Report?</h3>
-                <p>The selected trip has been detected with short-bags. Would you like to create an incident report now?</p>
-                <span className="modal-hint-text">
+                <h3>
+                  Short-bags Incident Report Created
+                  {createdIR?.IRID && <span className="ir-id-badge"> ( {createdIR.IRID} )</span>}
+                </h3>
+
+                <p>The selected trip has been detected with short-bags and an IR has been created. Would you like to process the incident report now?</p>
+
+                {/* Overview Card: Final Status & Pending Requirements */}
+                <div
+                  className="ir-summary-card"
+                  style={{
+                    margin: '12px 0',
+                    padding: '12px 14px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}
+                >
+                  {/* Target/Final Status Display */}
+                  {/* Target/Final Status Display */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>
+                      Final Status:
+                    </span>
+                    <span
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        backgroundColor: validationIR?.status === 'Closed' ? '#e6f4ea' : '#e8ebd0',
+                        color: validationIR?.status === 'Closed' ? '#137333' : '#3a4efc'
+                      }}
+                    >
+                      {validationIR?.status || 'Open'}
+                    </span>
+                  </div>
+
+                  {/* To Do / Pending Validation Requirements */}
+                  {validationIR && (
+                    <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '8px', marginTop: '2px' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>
+                        To do:
+                      </span>
+                      <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: validationIR.valid ? '#16a34a' : '#d97706' }}>
+                        {validationIR.valid
+                          ? '✓ All required fields and attachments are complete.'
+                          : (validationIR.msg || 'Complete missing fields/attachments before submitting.')
+                        }
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {validationIR?.status === 'Closed' && (<span className="modal-hint-text">
                   * You can still file this report anytime via the trip's action history or details panel.
-                </span>
+                </span>)}
+
                 <div className="incident-report-prompt-modal-actions">
-                  {/* Soft, neutral button for dismissing for now */}
                   <button
                     className="btn-later"
-                    onClick={() => { setIsIncidentModalOpen(false); setShowIncidentPrompt(false); }}
+                    onClick={() => {
+                      setIsIncidentModalOpen(false);
+                      setShowIncidentPrompt(false);
+                      handleForceDiscardIR();
+                      setIrFormVisible(false);
+                    }}
                   >
-                    I'll do it later
+                    {validationIR?.status === 'Closed' ? `Complete & Close` : `I'll do it later`}
                   </button>
-                  {/* Primary action button using your accent styling */}
                   <button
                     className="btn-create-now"
-                    onClick={() => { setIsIncidentModalOpen(true); setShowIncidentPrompt(false); handleTripCreateIR(); }}
+                    onClick={() => {
+                      setIsIncidentModalOpen(true);
+                      setShowIncidentPrompt(false);
+                      setIrFormVisible(true);
+                      irShortBagsForm.current?.validate();
+                    }}
                   >
-                    Create Now
+                    {validationIR?.status === 'Closed' ? `View Report` : `Process Now`}
                   </button>
                 </div>
               </div>
@@ -4272,48 +4398,20 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           </div>
 
 
-          {isIncidentModalOpen && (
-            <Modal
-              onClose={() => {
-                setCreatedIR(null);
-                setIsIncidentModalOpen(false);
-              }}
-              height="100%"
-              overlayBlur={4}
-              overlayColor="rgba(11, 19, 43, 0.4)" /* Deep custom navy overlay tint */
-              hideX={true} /* Hide default close button */
-            >
-              {isCreatingIR ? (
-                <div className="ir-modal-loading-container">
-                  <div className="ir-modal-loading-spinner" />
-                  <p className="ir-modal-loading-text">
-                    Fetching Incident Report, please wait...
-                  </p>
-                </div>
-              ) : (
-                /* --- ACTUAL FORM CONTENT --- */
-                <IR_ShortBags_Form
-                  incidentReportItem={createdIR as Partial<OP_IncidentReports>}
-                  initialUser={editingUser ?? undefined}
-                  onClose={() => {
-                    setCreatedIR(null);
-                    setIsIncidentModalOpen(false);
-                  }}
-                />
-              )}
-            </Modal>
-          )}
+
 
           {/* ==========================================================================
           PRIMARY WORKSPACE WORKFLOW MODAL
           ========================================================================== */}
           {isIncidentModalOpen && (
+
             <Modal
               onClose={handleConfirmIRClose}
               height="100%"
               overlayBlur={4}
               overlayColor="rgba(11, 19, 43, 0.4)"
               hideX={true}
+              hidden={!irFormVisible}
             >
               {isCreatingIR ? (
                 <div className="ir-modal-loading-container">
@@ -4325,7 +4423,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   ref={irShortBagsForm}
                   incidentReportItem={createdIR as Partial<OP_IncidentReports>}
                   initialUser={editingUser ?? undefined}
-                  onClose={() => { handleConfirmIRClose() }}
+                  onClose={(skip?: boolean) => { handleConfirmIRClose(skip) }}
                   onSubmit={(data: any) => {
                     console.log("Submitted successfully");
                     handleForceCloseIR();
@@ -4336,11 +4434,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     handleForceCloseIR();
                     handleUpdateTruckTrailerIRdetails(data);
                   }}
-
+                  onDelete={() => { handleDeleteIR(); }}
+                  onValidateReady={(validationResult) => { setValidationIR(validationResult); console.log('test valid: ', validationResult) }}
                 />
               )}
 
             </Modal>
+
           )}
 
           {isConfirmIRCloseOpen && (

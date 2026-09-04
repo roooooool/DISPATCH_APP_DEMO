@@ -101,22 +101,116 @@ export type IR_ShortBags_Form_Model = {
 
 };
 
+export interface StatusValidationState {
+  valid: boolean;
+  msg: string;
+  final?: boolean;
+  status: 'Closed' | 'Open';
+}
+
 export interface IR_ShortBags_FormRef {
   save: () => Promise<Partial<IR_ShortBags_Form_Model>>;
   submit: () => Promise<Partial<IR_ShortBags_Form_Model>>;
+  validate: (
+    externalData?: Partial<IR_ShortBags_Form_Model> | OP_IncidentReports
+  ) => StatusValidationState | null;
 }
 
 interface IR_ShortBags_Props {
   initialUser?: FormUserInfo | UserInfo;
   incidentReportItem: Partial<OP_IncidentReports>;
-  onClose?: () => void;
+  onClose?: (skip?: boolean) => void;
   onSubmit?: (data: Partial<IR_ShortBags_Form_Model>) => void; // Updated type
   onSave?: (data: Partial<IR_ShortBags_Form_Model>) => void; // Added for save functionality
   onDelete?: (data: Partial<IR_ShortBags_Form_Model>) => void;
+  onValidateReady?: (result: StatusValidationState | null) => void;
 }
 
+export const mapIncidentReportToFormModel = (
+  incidentReportItem?: Partial<OP_IncidentReports> | null
+): Partial<IR_ShortBags_Form_Model> => {
+  // Safe fallback if incidentReportItem is null/undefined
+  if (!incidentReportItem) {
+    return {};
+  }
+
+  // Safely parse reportJSON string
+  let jsonDetails: any = {};
+  try {
+    jsonDetails = incidentReportItem.reportJSON
+      ? JSON.parse(incidentReportItem.reportJSON)
+      : {};
+  } catch (e) {
+    console.error("Failed to parse reportJSON in validator mapper", e);
+  }
+
+  const actions = jsonDetails.actions;
+
+  return {
+    irReferenceNo: incidentReportItem.IRID || '',
+    tripReferenceNo: incidentReportItem.OE_Reference || jsonDetails.tripReferenceNo || '',
+    irType: incidentReportItem.IncidentType || '',
+    irAction: incidentReportItem.ActionStatus || '',
+    dateResolved: incidentReportItem.IRStatus === 'Resolved' && incidentReportItem.ResolvedDate
+      ? new Date(incidentReportItem.ResolvedDate).toISOString().slice(0, 10)
+      : '',
+    date: incidentReportItem.CreatedDateTime
+      ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10)
+      : '',
+
+    empName: incidentReportItem.EmployeeName || '',
+    empId: incidentReportItem.EmployeeID || '',
+    empPosition: incidentReportItem.EmployeePosition || '',
+    businessUnit: incidentReportItem.EmployeeBU || '',
+    buHead: incidentReportItem.EmployeeBUHead || '',
+    truck_full: incidentReportItem.EmployeeTractor || '',
+    trailer_full: incidentReportItem.EmployeeTrailer || '',
+
+    Customer: jsonDetails.Customer || '',
+    Source: jsonDetails.Source || '',
+    Destination: jsonDetails.Destination || '',
+    TripGroup: jsonDetails.TripGroup || '',
+    QtyWithdrawn: jsonDetails.QtyWithdrawn || 0,
+    QtyDelivered: jsonDetails.QtyDelivered || 0,
+    ShortBags: jsonDetails.QtyWithdrawn ? (jsonDetails.QtyDelivered || 0) - jsonDetails.QtyWithdrawn : 0,
+    RetrievedBags: jsonDetails.RetrievedBags,
+    CementType: jsonDetails.CementType || '',
+    ServedDate: jsonDetails.ServedDate ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10) : '',
+    incident_date: jsonDetails?.incident_date
+      ? new Date(jsonDetails.incident_date).toISOString().slice(0, 10)
+      : jsonDetails?.ServedDate
+        ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10)
+        : '',
+    incident_time: jsonDetails.incident_time || '',
+    incident_details: jsonDetails.incident_details || '',
+    yard: jsonDetails.yard || '',
+    yardOthers: jsonDetails.yardOthers || '',
+    reportDate: jsonDetails.reportDate || '',
+    reportName: incidentReportItem.ReportedBy || '',
+    reportPosition: incidentReportItem.ReporterPosition,
+    reportDept: '',
+    resolvedBy: incidentReportItem.ResolvedBy,
+
+    attachedImages: jsonDetails.attachedImages || [],
+
+    actions: actions || {
+      operations: {
+        name: incidentReportItem.ReportedBy || '',
+        action: actions?.operations?.action || '',
+        date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : ''
+      },
+      supervisor: { name: '', action: '', date: '' },
+      inspection: { name: '', action: '', date: '' },
+      yard: { name: '', action: '', bags: '', date: '' },
+      warehouse: { name: '', action: '', bags: '', date: '' },
+    },
+
+    irApproval: jsonDetails.irApproval
+  };
+};
+
 const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Props>(
-  ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete }, ref) => {
+  ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete, onValidateReady }, ref) => {
 
     const { addTask } = useTaskWorker();
     const incidentReportItem = item || {};
@@ -125,68 +219,14 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       ? (JSON.parse(incidentReportItem.reportJSON) as Partial<IR_ShortBags_Form_Model>)
       : ({} as Partial<IR_ShortBags_Form_Model>);
 
-    const [formData, setFormData] = useState<Partial<IR_ShortBags_Form_Model>>({
-      // Prefill
-      irReferenceNo: incidentReportItem.IRID || '',
-      tripReferenceNo: incidentReportItem.OE_Reference || jsonDetails.tripReferenceNo || '',
-      irType: incidentReportItem.IncidentType || '', // Ensure it's a string
-      irAction: incidentReportItem.ActionStatus || '', // Ensure it's a string
-      dateResolved: incidentReportItem.IRStatus === 'Resolved' && incidentReportItem.ResolvedDate ? new Date(incidentReportItem.ResolvedDate).toISOString().slice(0, 10) : '',
-      date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : '',
+    const actions = jsonDetails.actions;
+    useEffect(() => {
+      console.log('Mounted - actions:', actions);
+    }, []);
 
-      // Initialize other form fields as empty or default
-      empName: incidentReportItem.EmployeeName || '',
-      empId: incidentReportItem.EmployeeID || '',
-      empPosition: incidentReportItem.EmployeePosition || '',
-      businessUnit: incidentReportItem.EmployeeBU || '',
-      buHead: incidentReportItem.EmployeeBUHead || '',
-      truck_full: incidentReportItem.EmployeeTractor || '',
-      trailer_full: incidentReportItem.EmployeeTrailer || '',
-
-      Customer: jsonDetails.Customer || '',
-      Source: jsonDetails.Source || '',
-      Destination: jsonDetails.Destination || '',
-      TripGroup: jsonDetails.TripGroup || '',
-      QtyWithdrawn: jsonDetails.QtyWithdrawn || 0,
-      QtyDelivered: jsonDetails.QtyDelivered || 0,
-      ShortBags: jsonDetails.QtyWithdrawn ? (jsonDetails.QtyDelivered || 0) - jsonDetails.QtyWithdrawn : 0,
-      RetrievedBags: jsonDetails.RetrievedBags,
-      CementType: jsonDetails.CementType || '',
-      ServedDate: jsonDetails.ServedDate ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10) : '',
-      incident_date: jsonDetails?.incident_date
-        ? new Date(jsonDetails.incident_date).toISOString().slice(0, 10)
-        : jsonDetails?.ServedDate
-          ? new Date(jsonDetails.ServedDate).toISOString().slice(0, 10)
-          : '',
-      incident_time: jsonDetails.incident_time || '',
-      incident_details: jsonDetails.incident_details || '',
-      yard: jsonDetails.yard || '',
-      yardOthers: jsonDetails.yardOthers || '',
-      reportDate: jsonDetails.reportDate || '',
-      reportName: incidentReportItem.ReportedBy || '',
-      reportPosition: incidentReportItem.ReporterPosition,
-      reportDept: '',
-      resolvedBy: incidentReportItem.ResolvedBy,
-
-
-      attachedImages: jsonDetails.attachedImages || [],
-
-
-      actions: jsonDetails.actions || {
-        operations: {
-          name: incidentReportItem.ReportedBy || '', // Defaults to ReportedBy
-          action: incidentReportItem.ActionStatus || '',
-          date: incidentReportItem.CreatedDateTime ? new Date(incidentReportItem.CreatedDateTime).toISOString().slice(0, 10) : ''
-        },
-        supervisor: { name: '', action: '', date: '' },
-        inspection: { name: '', action: '', date: '' },
-        yard: { name: '', action: '', bags: '', date: '' },
-        warehouse: { name: '', action: '', bags: '', date: '' },
-
-      },
-
-      irApproval: jsonDetails.irApproval //new key
-    });
+    const [formData, setFormData] = useState<Partial<IR_ShortBags_Form_Model>>(
+      mapIncidentReportToFormModel(incidentReportItem)
+    );
 
 
     // 1. Create a reference to store the initial snapshot
@@ -200,21 +240,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
     // 3. State to control the discard confirmation modal
     const [showDiscardModal, setShowDiscardModal] = useState(false);
 
-    useImperativeHandle(ref, () => ({
-      save: async () => {
-        // Return the current form state directly or perform saving logic
-        if (onSave) {
-          handleSave(); // Triggers the existing TaskWorker save flow
-        }
-        return formData;
-      },
-      submit: async () => {
-        if (handleSubmit) {
-          handleSubmit();
-        }
-        return formData;
-      }
-    }), [formData, onSave]);
+
 
     // Filter options matching section type OR options without a specific type (accessible to all)
     const getSectionActionOptions = (sectionType: string) => {
@@ -248,27 +274,36 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       const att = currentData.attachedImages;
 
       // OPERATIONS
+      if (!act.trim()) return { valid: false, msg: "Operation action is required." };
+
       if ((!att || att.length === 0) && sb < -5.0 && act == 'PROCEED TO NEXT TRIP') {
         return { valid: false, msg: "Short bags is greater than 5, You must append at least one asset picture file as documentation evidence." };
       }
 
       //Supervisor
-      if (["Supervisor", "Developer"].includes(pos) && currentData.actions?.supervisor?.action == null) {
+      if (["Supervisor"].includes(pos) && currentData.actions?.supervisor?.action == null) {
         return { valid: false, msg: "Supervisor action is required" };
       }
 
 
-      if (currentData.irAction !== 'Proceed Next Trip') { return { valid: false, msg: "All requirements completed! You may now saved all changes.", final: true } }
-      else { { return { valid: true, msg: "You may now save your changes.", final: true } } }
+      return { valid: true, msg: "You may now save your changes.", final: true }
 
-      return null
     };
 
     useEffect(() => {
       // Validate initial formData once on component mount
-      console.log('test form: ', formData.actions)
-      setError(validateForm(formData));
-    }, []); // Empty dependency array ensures this runs exactly once after mounting
+      const result = validateForm(formData);
+      setError(result);
+
+      const statusResult: StatusValidationState = {
+        valid: result?.valid ?? false,
+        msg: result?.msg ?? '',
+        final: result?.final,
+        status: calculateIRStatus(formData),
+      };
+
+      onValidateReady?.(statusResult);
+    }, []); // Empty dependency array ensures this runs exactly once after mountin
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
@@ -1080,7 +1115,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
           message_failure: `Failed to delete Incident Report for ${incidentReportItem.IRID}`,
 
         })
-        if (onClose) onClose();
+        if (onClose) onClose(true);
       }
     };
 
@@ -1094,6 +1129,46 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
         setShowDiscardModal(true);
       }
     };
+
+    useImperativeHandle(ref, () => ({
+      save: async () => {
+        // Return the current form state directly or perform saving logic
+        if (onSave) {
+          handleSave(); // Triggers the existing TaskWorker save flow
+        }
+        return formData;
+      },
+      submit: async () => {
+        if (handleSubmit) {
+          handleSubmit();
+        }
+        return formData;
+      },
+      validate: (externalData?: Partial<IR_ShortBags_Form_Model> | OP_IncidentReports) => {
+        let targetData: Partial<IR_ShortBags_Form_Model>;
+
+        if (!externalData) {
+          // 1. Fall back to internal state
+          targetData = formData;
+        } else if ('IRID' in externalData || 'OE_Reference' in externalData || 'reportJSON' in externalData) {
+          // 2. If it's OP_IncidentReports, map it to Form Model
+          targetData = mapIncidentReportToFormModel(externalData as OP_IncidentReports);
+        } else {
+          // 3. It's already Partial<IR_ShortBags_Form_Model>
+          targetData = externalData as Partial<IR_ShortBags_Form_Model>;
+        }
+
+        // Run validation on normalized form data
+        const validationResult = validateForm(targetData);
+
+        if (!validationResult) return null;
+
+        return {
+          ...validationResult,
+          status: calculateIRStatus(targetData),
+        };
+      }
+    }), [formData, onSave, handleSave, handleSubmit, validateForm]);
 
 
     useEffect(() => {

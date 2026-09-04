@@ -1542,12 +1542,14 @@ export const IR_ACTION_OPTIONS = [
   { value: 'DISPOSED', label: 'Disposed', color: 'var(--color-border-success)', type: 'Warehouse', isProceed: true },
 ];
 
+
+
 export const SHORT_BAGS_LIMIT = 0;
 
 const ir_status_option = [
-  { value: "Open", label: "Open" },
-  { value: "Cancelled", label: "Cancelled" },
-  { value: "Closed", label: "Closed" },
+  { value: "Open", label: "Open", color: 'var(--color-border-info)' },
+  { value: "Cancelled", label: "Cancelled", color: 'var(--color-border-warning)' },
+  { value: "Closed", label: "Closed", color: 'var(--color-border-success)' },
 ];
 
 export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
@@ -1583,36 +1585,36 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
         }
       },
     },
-    {
-      col: "ActionStatus",
-      alias: "Action",
-      filter: { type: "dropdown-multiple", options: IR_ACTION_OPTIONS },
-      render: (val: any) => {
-        const actionOption = IR_ACTION_OPTIONS.find(option => option.value === val);
-        const pillColor = actionOption?.color || 'var(--color-border-info)';
+    // {
+    //   col: "IRStatus",
+    //   alias: "Action",
+    //   // filter: { type: "dropdown-multiple", options: ir_status_option },
+    //   render: (val: any) => {
+    //     const actionOption = ir_status_option.find(option => option.value === val);
+    //     const pillColor = actionOption?.color || 'var(--color-border-info)';
 
-        return (
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            padding: '3px 12px',
-            borderRadius: '999px', // Perfect pill/capsule shape
-            fontSize: '12px',
-            fontWeight: '600',
-            color: pillColor,
-            // Mixes the CSS variable color with 12% opacity against a white background
-            backgroundColor: `color-mix(in srgb, ${pillColor} 12%, white)`,
-            // Creates a matching slightly darker border line
-            border: `1px solid color-mix(in srgb, ${pillColor} 30%, white)`,
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            whiteSpace: 'nowrap'
-          }}>
-            {val}
-          </span>
-        );
-      }
-    },
+    //     return (
+    //       <span style={{
+    //         display: 'inline-flex',
+    //         alignItems: 'center',
+    //         padding: '3px 12px',
+    //         borderRadius: '999px', // Perfect pill/capsule shape
+    //         fontSize: '12px',
+    //         fontWeight: '600',
+    //         color: pillColor,
+    //         // Mixes the CSS variable color with 12% opacity against a white background
+    //         backgroundColor: `color-mix(in srgb, ${pillColor} 12%, white)`,
+    //         // Creates a matching slightly darker border line
+    //         border: `1px solid color-mix(in srgb, ${pillColor} 30%, white)`,
+    //         textTransform: 'uppercase',
+    //         letterSpacing: '0.5px',
+    //         whiteSpace: 'nowrap'
+    //       }}>
+    //         {val}
+    //       </span>
+    //     );
+    //   }
+    // },
     { col: "Remarks", alias: "Quick Remarks", portion: 2 },
     { col: "ReportedBy", alias: "Reported By", portion: 1.2, filter: { type: "dropdown-multiple" }, },
     { col: "CreatedDateTime", alias: "Reported Date", portion: 1, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "datetime" }) },

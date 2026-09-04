@@ -1,3 +1,5 @@
+/* src/components/comp_css/DDRemarksInput.css */
+
 .dd-compact-wrapper {
     position: relative;
     width: 100%;
@@ -6,6 +8,8 @@
     border-bottom: 1.5px solid #e2e8f0;
     transition: border-color 0.2s ease;
     background-color: transparent;
+    font-size: inherit;
+    /* Ensure wrapper inherits dynamic table fontSize */
 }
 
 .dd-compact-wrapper.is-edited {
@@ -16,22 +20,26 @@
     border-bottom-color: #0b132b;
 }
 
-/* Base Textarea Style (Unfocused state: single line with ellipsis) */
+/* Base Textarea Style */
 .dd-compact-textarea {
     width: 100%;
     border: none;
     outline: none;
     background: transparent;
     color: #0b132b;
-    font-size: 0.85rem;
+    font-size: inherit;
+    /* Inherit dynamic fontSize */
     font-family: inherit;
-    padding: 4px 0;
+    padding: 0.2em 0;
+    /* em-based padding scales with font size */
     line-height: 1.3;
+    /* line-height will dynamically scale height */
     resize: none;
     box-sizing: border-box;
 
     /* Single line truncation rules */
-    height: 24px;
+    height: 1.8em;
+    /* Replacing fixed 24px with 1.8em to auto-fit any fontSize */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -41,13 +49,14 @@
 .dd-compact-wrapper.is-focused .dd-compact-textarea {
     white-space: pre-wrap;
     overflow-y: auto;
-    max-height: 160px;
-    /* Max height limit before internal scrolling */
+    max-height: 12em;
+    /* Scalable max-height based on ems */
 }
 
 /* Padding reserve when action buttons are visible */
 .dd-compact-wrapper.is-edited .dd-compact-textarea {
-    padding-right: 48px;
+    padding-right: 3.5em;
+    /* Scalable reserve space for actions */
 }
 
 .dd-compact-actions {
@@ -56,7 +65,7 @@
     right: 0;
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
     background-color: #ffffff;
     padding-left: 4px;
     z-index: 2;
@@ -65,10 +74,11 @@
 .dd-compact-btn {
     border: none;
     background: transparent;
-    font-size: 0.75rem;
+    font-size: 0.9em;
+    /* Scales relative to textarea font-size */
     font-weight: 700;
     cursor: pointer;
-    padding: 2px 4px;
+    padding: 0.15em 0.35em;
     border-radius: 3px;
     line-height: 1;
     transition: background-color 0.15s ease, color 0.15s ease;
@@ -92,17 +102,11 @@
     color: #ffffff;
 }
 
-.dd-compact-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
 .dd-compact-unsaved-badge {
-    font-size: 0.75rem;
+    font-size: 0.85em;
+    /* Scales proportionally relative to container */
     font-style: italic;
     color: #ef4444;
-    /* or your theme's red accent */
     opacity: 0.85;
     user-select: none;
     white-space: nowrap;

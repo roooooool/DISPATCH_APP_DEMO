@@ -2,24 +2,24 @@ import { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import SearchableDropdown, { type DropdownOption } from './SearchableDropdown';
 
-import { 
+import {
     IR_REPORT_TYPES,
-    IR_ACTION_OPTIONS 
+    IR_ACTION_OPTIONS
 } from '../truth.config';
 
 import '../components/comp_css/OrderDistributionForm.css'; // Reusing for container styles
 
 //power apps
-import {OP_IncidentReportsService} from '../generated/services/OP_IncidentReportsService';
-import {type OP_IncidentReports} from '../generated/models/OP_IncidentReportsModel';
-import {GenerateIRIDService} from '../generated/services/GenerateIRIDService';
+import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
+import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
+import { GenerateIRIDService } from '../generated/services/GenerateIRIDService';
 
 //utils
 import { useTaskWorker } from '../utils/TaskWorkerContext';
 
 
 //incident forms model
-import {type IR_ShortBags_Form_Model} from './IR_ShortBags_Form';
+import { type IR_ShortBags_Form_Model } from './IR_ShortBags_Form';
 
 
 export interface IncidentFormHandle {
@@ -69,7 +69,7 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
     const [formData, setFormData] = useState<Partial<OP_IncidentReports>>({
         OE_Reference: OE || '', // Pre-fill with OE if provided
         IncidentType: REPORT_TYPES[0].value,
-        ActionStatus: ACTION_OPTIONS[0].value,
+        // ActionStatus: ACTION_OPTIONS[0].value,
         ReportedBy: ReportBy || '',
         ReporterPosition: ReporterPosition || '',
         Remarks: '',
@@ -117,8 +117,8 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
                         }
 
                         result = await OP_IncidentReportsService.create({
-                            ...submittedData, 
-                            IRID: table1[0].NewIRID || 'NA', 
+                            ...submittedData,
+                            IRID: table1[0].NewIRID || 'NA',
                             reportJSON: JSON.stringify(preFill)
                         });
 
@@ -183,7 +183,7 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
             console.log("prefill: ", preFill)
             // 2. Await the Creation Service
             const result = await OP_IncidentReportsService.create({
-                ...submittedData, 
+                ...submittedData,
                 IRID: table1[0].NewIRID || 'NA',
                 reportJSON: JSON.stringify(preFill)
             });
@@ -202,7 +202,7 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
         } catch (error) {
             console.error("Failed to upload attendance records:", error);
             return null; // Gracefully pass back null if things break down
-            
+
         } finally {
             // 3. Clean up interaction states after operations conclude
             setIsSubmitting(false);
@@ -227,21 +227,21 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
     }));
 
     return (
-        <div className="wew" style={{ display: 'flex', flexDirection: 'column', height: '100%'}}>
+        <div className="wew" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div className="order-dist-container create-incident-container">
                 <div className="scrollable-body">
-                    
+
                     <div className="input-group-group">
                         <div className="form-row" style={{ padding: '14px' }}>
                             <div className="input-group">
                                 <label>OE Reference (Trip)</label>
                                 <div className="share-gradient-wrapper">
-                                    <input 
-                                        className="share-textarea" 
+                                    <input
+                                        className="share-textarea"
                                         style={{ height: '40px' }}
-                                        value={formData.OE_Reference} 
-                                        onChange={(e) => updateField('OE_Reference', e.target.value)} 
-                                        placeholder="OE-XXXXX" 
+                                        value={formData.OE_Reference}
+                                        onChange={(e) => updateField('OE_Reference', e.target.value)}
+                                        placeholder="OE-XXXXX"
                                     />
                                 </div>
                             </div>
@@ -270,17 +270,17 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
 
                             <div className="input-group">
                                 <label>Created By</label>
-                            <div className="share-gradient-wrapper">
+                                <div className="share-gradient-wrapper">
                                     <input
                                         className="share-textarea"
                                         style={{ height: '40px' }}
                                         value={formData.ReportedBy}
                                         placeholder="Your Name"
                                         readOnly // Made read-only as it's auto-filled
-                                />
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
 
                         <div className="input-group" style={{ padding: '0 14px 14px 14px' }}>
                             <label>Quick Remarks</label>
@@ -291,13 +291,13 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
                                     onChange={(e) => updateField('Remarks', e.target.value)}
                                     rows={5}
                                 />
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            </div>
                 <div className="sticky-footer order-dist-footer create-incident-footer">
                     <button disabled={isSubmitting} className="btn-cancel" onClick={onClose}>Cancel</button>
-                    <button disabled={isSubmitting} className="btn-proceed" onClick={() => {handleSubmit(formData); setIsSubmitting(true);}}>
+                    <button disabled={isSubmitting} className="btn-proceed" onClick={() => { handleSubmit(formData); setIsSubmitting(true); }}>
                         <Save size={18} /> Create Incident Report
                     </button>
                 </div>
