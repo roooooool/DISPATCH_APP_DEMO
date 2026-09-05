@@ -13,12 +13,13 @@
 .dd-status-pill-trigger {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
+    gap: 0.3em;
+    /* Use em to scale padding & gap dynamically */
+    padding: 0.2em 0.8em;
     border-radius: 9999px;
-    /* Pill Shape */
     border: 1px solid transparent;
-    font-size: 0.8rem;
+    font-size: 1rem;
+    /* Default to 1rem; inline style will override this */
     font-weight: 600;
     cursor: pointer;
     outline: none;
@@ -34,11 +35,13 @@
 
 .dd-status-label {
     white-space: nowrap;
-    font-size: 0.75rem;
+    font-size: 0.9em;
+    /* Scales relative to trigger font size */
 }
 
 .dd-status-arrow {
-    font-size: 0.55rem;
+    font-size: 0.7em;
+    /* Scales relative to trigger font size */
     transition: transform 0.2s ease;
     opacity: 0.7;
 }
@@ -69,10 +72,11 @@
 .dd-status-option-pill {
     width: 100%;
     text-align: left;
-    padding: 3px 6px;
+    padding: 0.3em 0.6em;
     border: 1px solid transparent;
     border-radius: 9999px;
-    font-size: 0.8rem;
+    font-size: 0.9em;
+    /* Scales relative to list container */
     font-weight: 600;
     cursor: pointer;
     outline: none;

@@ -1205,77 +1205,70 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
             </div>
           )}
 
-          {/* Screen-Only Action Header inside Modal[cite: 3] */}
+
+          {/* Screen-Only Action Header inside Modal */}
           <div className={`ir-sb-actions-bar no-print ${!isActionsBarExpanded ? 'collapsed' : ''}`}>
-            {/* The Toggle Toggle Handle Bar Button */}
+            {/* The Toggle Handle Button */}
             <button
               type="button"
               className="ir-sb-actions-toggle-handle"
               onClick={() => setIsActionsBarExpanded(!isActionsBarExpanded)}
               title={isActionsBarExpanded ? "Collapse Controls" : "Expand Controls"}
             >
-              {isActionsBarExpanded ? <ChevronRight size={18} strokeWidth={3} color='var(--color-primary)' /> : <ChevronLeft size={18} color='var(--color-text-2)' strokeWidth={3} />}
+              {isActionsBarExpanded ? (
+                <ChevronRight size={18} strokeWidth={3} color='var(--color-primary)' />
+              ) : (
+                <ChevronLeft size={18} color='var(--color-text-2)' strokeWidth={3} />
+              )}
             </button>
 
-            {/* Wrapped controls inside a dedicated inner container to manage spacing transitions neatly */}
+            {/* Wrapped controls inside a dedicated inner container */}
             <div className="ir-sb-actions-inner-content">
-              {/* Zoom Control Group */}
-              <div className="ir-sb-zoom-controls">
-                {zoom !== 1.0 && (
-                  <button type="button" onClick={handleResetZoom} className="ir-sb-btn ir-sb-zoom-btn reset" title="Reset Zoom">
-                    <RotateCcw size={13} />
+              {/* Collapsible Action Group */}
+              {isActionsBarExpanded && (
+                <>
+                  {/* Zoom Control Group */}
+                  <div className="ir-sb-zoom-controls">
+                    {zoom !== 1.0 && (
+                      <button type="button" onClick={handleResetZoom} className="ir-sb-btn ir-sb-zoom-btn reset" title="Reset Zoom">
+                        <RotateCcw size={13} />
+                      </button>
+                    )}
+                    <button type="button" onClick={handleZoomOut} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom Out" disabled={zoom <= 0.7}>
+                      <ZoomOut size={14} />
+                    </button>
+                    <span className="ir-sb-zoom-indicator">{Math.round(zoom * 100)}%</span>
+                    <button type="button" onClick={handleZoomIn} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom In" disabled={zoom >= 1.5}>
+                      <ZoomIn size={14} />
+                    </button>
+                  </div>
+
+                  <span className="ir-sb-actions-divider">|</span>
+
+                  {/* Action Button Group */}
+                  <button type="button" onClick={handlePrint} className="ir-sb-btn ir-sb-print-btn">
+                    <Printer size={14} /> Print Report
                   </button>
-                )}
-                <button type="button" onClick={handleZoomOut} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom Out" disabled={zoom <= 0.7}>
-                  <ZoomOut size={14} />
-                </button>
-                <span className="ir-sb-zoom-indicator">{Math.round(zoom * 100)}%</span>
-                <button type="button" onClick={handleZoomIn} className="ir-sb-btn ir-sb-zoom-btn" title="Zoom In" disabled={zoom >= 1.5}>
-                  <ZoomIn size={14} />
-                </button>
-              </div>
+                  <button disabled={!error?.valid || isReadOnly} type="button" onClick={handleSave} className="ir-sb-btn btn-save">
+                    {(error?.valid && !isReadOnly) && <span className='ir-pulse-badge-save-btn no-print'>!</span>}
+                    Save
+                  </button>
 
-              <span className="ir-sb-actions-divider">|</span>
+                  {initialUser?.Position === 'Developer' && (
+                    <button type="button" onClick={handleDelete} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
+                      <DeleteIcon size={14} /> Delete
+                    </button>
+                  )}
 
-              {/* Action Button Group */}
-              <button type="button" onClick={handlePrint} className="ir-sb-btn ir-sb-print-btn">
-                <Printer size={14} /> Print Report
-              </button>
-              <button disabled={!error?.valid} type="button" onClick={handleSave} className="ir-sb-btn btn-save">
-                {error?.valid && <span className='ir-pulse-badge-save-btn no-print'>!</span>}
-                Save
-              </button>
+                  {(initialUser?.Position === 'Developer' && isReadOnly) && (
+                    <button type="button" onClick={handleReOpen} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
+                      Re-Open
+                    </button>
+                  )}
+                </>
+              )}
 
-              {/*<button
-                type="button"
-                onClick={handleSubmit}
-                disabled={!error?.valid}
-                className="ir-sb-btn ir-sb-submit-btn btn-proceed"
-                style={{ position: 'relative' }}
-              >
-                <CheckCheck size={14} /> Approve
-
-                {error?.valid && (
-                  <span className="ir-sb-button-badge">
-                    !
-                  </span>
-                )}
-              </button>
-              <button type="button" onClick={handleReject} className="ir-sb-btn ir-sb-submit-btn btn-disapproved">
-                <ThumbsDown size={14} />
-                Disapprove
-              </button>*/}
-              {initialUser?.Position === 'Developer' &&
-                (<button type="button" onClick={handleDelete} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
-                  <DeleteIcon size={14} />
-                  Delete
-                </button>)
-              }
-              {(initialUser?.Position === 'Developer' && isReadOnly) &&
-                (<button type="button" onClick={handleReOpen} className="ir-sb-btn ir-sb-submit-btn btn-cancel">
-                  Re-Open
-                </button>)
-              }
+              {/* Close button remains visible regardless of collapse state */}
               {onClose && (
                 <button type="button" onClick={handleCloseAttempt} className="ir-sb-btn ir-sb-close-btn">
                   Close
@@ -1286,6 +1279,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
           {/* Scrollable Document Wrapper[cite: 3] */}
           <div className="ir-sb-document-wrapper">
+
             <div
               className="ir-sb-document"
               style={{
@@ -1979,7 +1973,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
           </div>
 
 
-          {(!error?.valid || (error?.valid && error?.final)) && (
+          {((!error?.valid || (error?.valid && error?.final)) && !isReadOnly) && (
             <div
               className={`ir-sb-message-footer no-print ${error?.final ? 'to-complete' : ''}`}
               style={{ display: 'flex', alignItems: 'center', gap: '8px' }}

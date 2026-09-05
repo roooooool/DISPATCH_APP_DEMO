@@ -448,7 +448,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                 TripProgress: 'Assigned',
                                 Tagged_x0020_Date: new Date().toISOString(),
                                 Ordered_x0020_Date: order.Ordered_x0020_Date || new Date().toISOString(),
-                                Needed_x0020_Date: order.Needed_x0020_Date || new Date().toISOString(),
+                                Needed_x0020_Date: order.NeededDate || new Date().toISOString(),
 
                                 Customer: order.Customer,
                                 Source: order.SourceName,

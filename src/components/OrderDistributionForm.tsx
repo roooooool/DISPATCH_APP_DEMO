@@ -2257,6 +2257,26 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             });
           }
 
+          //WHEN VERIFIED
+          if (actualDiscrepancy < 0) {
+            // Safe JSON parse fallback
+            const parsedJSON = JSON.parse(data?.reportJSON || '{}');
+
+            // Properly merge actions into the parsed JSON payload
+            data.reportJSON = JSON.stringify({
+              ...parsedJSON,
+              ActualQtyDelivered: currentFormData.QTYDelivered_Actual,
+              ActualQtyWithdrawn: currentFormData.QTYWithdrawn_Actual,
+              ActualShortBags: actualDiscrepancy,
+              ServedBy: editingUser?.FullName || 'Unkown User',
+            });
+          }
+
+
+
+
+
+
           // console.log('Created IR: ', JSON.parse(data.reportJSON || ''));
 
           setCreatedIR(data);
@@ -4461,7 +4481,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     handleUpdateTruckTrailerIRdetails(data);
                   }}
                   onDelete={() => { handleDeleteIR(); }}
-                  onValidateReady={(validationResult) => { setValidationIR(validationResult); console.log('test valid: ', validationResult) }}
+                  onValidateReady={(validationResult) => { setValidationIR(validationResult); }}
                 />
               )}
 

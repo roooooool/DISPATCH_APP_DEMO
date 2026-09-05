@@ -119,7 +119,7 @@ const IncidentManagement: React.FC = () => {
 
         const fromInt = ISOtoInt(selectedDateRange.from);
         const toInt = ISOtoInt(selectedDateRange.to);
-        const dateFilter = `IncidentDateAsInt ge ${fromInt} and IncidentDateAsInt le ${toInt} and (OE_Reference ne null and OE_Reference ne '')`;
+        const dateFilter = `IncidentDateAsInt ge ${fromInt} and IncidentDateAsInt le ${toInt} and (OE_Reference ne null and OE_Reference ne '' and flexValue ne '0')`;
 
         const options = {
             filter: dateFilter,

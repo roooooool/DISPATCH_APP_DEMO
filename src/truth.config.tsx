@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.26.11"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.27.11"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -417,6 +417,7 @@ export const ATTENDANCE_STATUSES = [
   { seq: 0.0, Status: 'ABSENT', Alias: 'ABSENT', onduty: false, sort: 1.0 }, // ABSENT
   { seq: 1.1, Status: "PRESENT", Alias: "PRESENT", onduty: true, sort: 0.0 },
 
+
   //if has OE
   { seq: 2.1, Status: "ON TRIP", Alias: "ON TRIP", onduty: true, sort: 2.0 },
   { seq: 2.2, Status: "IN TRANSIT", Alias: "IN TRANSIT", onduty: true, sort: 2.1 },
@@ -424,7 +425,7 @@ export const ATTENDANCE_STATUSES = [
   { seq: 2.4, Status: "SERVED", Alias: "SERVED", onduty: true, sort: 0.1 },
 
   //if NO TRIP
-  { seq: 3.1, Status: "REST DAY", Alias: "REST DAY", onduty: false, sort: 1.1 },
+  { seq: 3.1, Status: "REST DAY", Alias: "REST DAY", onduty: false, sort: 996 },
   { seq: 3.2, Status: "LEAVE", Alias: "LEAVE", onduty: false, sort: 997 },
   { seq: 3.3, Status: "AWOL", Alias: "AWOL", onduty: false, sort: 998 },
   { seq: 3.4, Status: "SUSPENDED", Alias: "SUSPENDED", onduty: false, sort: 999 },

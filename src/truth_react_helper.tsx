@@ -1,4 +1,4 @@
-import React, { useState, useImperativeHandle, forwardRef, useRef, useEffect } from 'react';
+import React, { useState, useImperativeHandle, forwardRef, useRef, useEffect, useMemo } from 'react';
 import { Wrench, Fuel } from 'lucide-react';
 import { createPortal } from "react-dom";
 import { HighlightText, encodeColumnName as enc } from './components/ewul_TableFlex';
@@ -720,7 +720,15 @@ export const DDRemarksStatusDropdown: React.FC<DDRemarksStatusDropdownProps> = (
   const menuRef = useRef<HTMLUListElement>(null);
 
   // Convert numeric multiplier (e.g. 0.85, 1, 1.2) or px value to valid inline style
-  const fontStyle = fontSize ? { fontSize: typeof fontSize === 'number' ? `${fontSize}rem` : fontSize } : undefined;
+  const fontStyle = useMemo(() => {
+    if (!fontSize) return undefined;
+    // If number is small (e.g. <= 3), treat as rem multiplier; if large (e.g. > 3), treat as px
+    const fontSizeValue = typeof fontSize === 'number'
+      ? (fontSize <= 3 ? `${fontSize}rem` : `${fontSize}px`)
+      : fontSize;
+
+    return { fontSize: fontSizeValue };
+  }, [fontSize]);
 
   useEffect(() => {
     setSelected(value ?? null);

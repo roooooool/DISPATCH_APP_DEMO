@@ -648,17 +648,30 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     }, 1000); // 2000ms = 2 seconds
   };
 
-  const getFilteredStatuses = (oe: string) => {
+  const getFilteredStatuses = (oe: string, dateStr: string) => {
+    const isPastDate = dateStr < todayStr;
+
+    // 1. IF PAST DATE: Return all statuses EXCEPT "SERVED"
+    if (isPastDate) {
+      return ATTENDANCE_STATUSES
+        .filter((opt) => opt.Status !== 'SERVED') // <--- Excludes SERVED
+        .sort((a, b) => a.sort - b.sort);
+    }
+
+    // 2. IF TODAY OR FUTURE: Apply liveOE filtering logic
     const hasOE = oe && oe !== '---' && oe.trim() !== '';
 
-    return ATTENDANCE_STATUSES.filter(opt => {
-      // Basic types are always available (seq 0.x and 1.x)
+    return ATTENDANCE_STATUSES.filter((opt) => {
+      // ALWAYS exclude SERVED across all paths
+      if (opt.Status === 'SERVED') return false; // <--- Excludes SERVED
+
+      // Basic types (seq 0.x and 1.x)
       if (opt.seq < 2.0) return true;
 
-      // If they have an OE, show trip statuses (seq 2.x)
+      // Trip statuses (seq 2.x) if OE exists
       if (hasOE) return opt.seq >= 2.0 && opt.seq < 3.0;
 
-      // If they DON'T have an OE, show off-trip statuses (seq 3.x)
+      // Off-trip statuses (seq 3.x) if no OE
       return opt.seq >= 3.0;
     }).sort((a, b) => a.sort - b.sort);
   };
@@ -2034,7 +2047,10 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
           </div>
           <hr />
           <div className="context-options-list">
-            {getFilteredStatuses(activeMenu.oeValue).map((statusObj) => {
+            {getFilteredStatuses(
+              activeMenu.liveOE, // if dateStr is not today (from previous days) automatically show all statuses else default to liveOE check logic
+              activeMenu.dateStr
+            ).map((statusObj) => {
               const isCurrentlySelected = activeMenu.currentStatus?.toUpperCase() === statusObj.Status?.toUpperCase();
               return (
                 <button
