@@ -495,26 +495,51 @@ export const renderFuelRequestIcon = (hasFuelRequest: boolean, hasFuelPO: boolea
 }
 
 
+
+//REMARKS INPUT
+// Props matching DDRemarksStatusDropdown structure
 interface DDRemarksInputProps {
-  initialValue: string;
-  onSave: (newValue: string) => void;
+  row: any;
+  value?: string | null;
   placeholder?: string;
+  fieldKey?: string; // Target property name (defaults to 'Planning')
+  onRecordChange?: (updatedRecord: any) => void;
 }
 
-interface DDRemarksInputProps {
-  initialValue: string;
-  onSave: (newValue: string) => void;
-  placeholder?: string;
-}
+// 1. Optimistic Save Handler (Fire & Forget in background)
+const onRemarksInputSave = (
+  newVal: string,
+  row: any,
+  fieldKey: string,
+  onRecordChange?: (updatedRecord: any) => void
+) => {
+  const recordId = row?.ID || row?.id;
+
+  // A. Immediate Optimistic UI Update
+  if (onRecordChange) {
+    onRecordChange({
+      ...row,
+      [fieldKey]: newVal,
+    });
+  }
+
+  // B. Background API Call
+  saveODMRemarks(newVal, recordId).catch((error) => {
+    console.error('Failed to persist input remarks:', error);
+    // Optional: add rollback handler here if needed
+  });
+};
 
 export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
-  initialValue,
-  onSave,
-  placeholder = 'Add remarks...'
+  row,
+  value = null,
+  placeholder = 'Add remarks...',
+  fieldKey = 'Planning',
+  onRecordChange,
 }) => {
-  const cleanInitial = initialValue ?? '';
+  const cleanInitial = value ?? '';
 
-  const [value, setValue] = useState<string>(cleanInitial);
+  const [currentVal, setCurrentVal] = useState<string>(cleanInitial);
   const [savedValue, setSavedValue] = useState<string>(cleanInitial);
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
@@ -522,17 +547,19 @@ export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
   const savedValueRef = useRef<string>(cleanInitial);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  valueRef.current = value;
+  valueRef.current = currentVal;
   savedValueRef.current = savedValue;
 
+  // Sync state with upstream table row updates
   useEffect(() => {
-    const freshVal = initialValue ?? '';
-    setValue(freshVal);
+    const freshVal = value ?? '';
+    setCurrentVal(freshVal);
     setSavedValue(freshVal);
-  }, [initialValue]);
+  }, [value]);
 
-  const isEdited = value !== savedValue;
+  const isEdited = currentVal !== savedValue;
 
+  // Auto-resize height based on focus state
   useEffect(() => {
     if (textareaRef.current) {
       if (isFocused) {
@@ -542,19 +569,19 @@ export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
         textareaRef.current.style.height = '';
       }
     }
-  }, [value, isFocused]);
+  }, [currentVal, isFocused]);
 
   const handleCancel = () => {
-    setValue(savedValue);
+    setCurrentVal(savedValue);
     setTimeout(() => {
       textareaRef.current?.blur();
     }, 0);
   };
 
-  const handleSave = (valToSave = value) => {
+  const handleSave = (valToSave = currentVal) => {
     if (valToSave !== savedValueRef.current) {
-      onSave(valToSave);
       setSavedValue(valToSave);
+      onRemarksInputSave(valToSave, row, fieldKey, onRecordChange);
     }
   };
 
@@ -581,9 +608,9 @@ export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
       <textarea
         ref={textareaRef}
         rows={1}
-        value={value}
+        value={currentVal}
         placeholder={placeholder}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => setCurrentVal(e.target.value)}
         onKeyDown={handleKeyDown}
         onFocus={() => setIsFocused(true)}
         onBlur={handleBlur}
@@ -609,30 +636,35 @@ export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
   );
 };
 
+// Standard service caller
 const saveODMRemarks = async (newRemarks: string, recordID: string) => {
-  await DMS_CEMService.update(recordID, { [enc('Planning')]: newRemarks });
+  return DMS_CEMService.update(recordID, { [enc('Planning')]: newRemarks });
 };
 
-
-
+// Renderer accepting (onRecordChange, row) matching DDRemarksStatusDropdown structure
 export const renderDDRemarksInput = (
-  value: string,
-  id: string
+  onRecordChange: ((updatedRecord: any) => void) | undefined,
+  row: any,
+  fieldKey: string = 'Planning'
 ) => {
-  const safeValue = value ?? '';
+  const value = row[fieldKey];
+  const safeValue = value ? String(value) : null;
+  const recordId = row?.ID || row?.id || row?._rowId;
 
   return (
     <DDRemarksInputCompact
-      key={`${id}-${safeValue}`} // Forces React to reset component state if table data changes
-      initialValue={safeValue}
-      onSave={(newValue) => saveODMRemarks(newValue, id)}
+      key={`${recordId}-${safeValue}`}
+      row={row}
+      value={safeValue}
+      fieldKey={fieldKey}
+      onRecordChange={onRecordChange}
     />
   );
 };
 
 
 
-// NEW TRIPS DD REMARKS
+// NEW TRIPS Dropdown REMARKS
 interface DDRemarksStatusDropdownProps {
   id: string;
   value?: string | null;

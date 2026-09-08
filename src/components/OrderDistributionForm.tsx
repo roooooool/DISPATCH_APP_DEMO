@@ -1523,6 +1523,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       let confirmedAttDate: string | undefined = undefined;
       //check for assignment changes
       const doDeselect = progress_next === 'Assigned'; // Deselect if moving back to Assigned
+
       if (!doDeselect && formData.TripProgress !== 'Done') {
         const { canProceed, attdate } = await checkAssignmentChanges({ ...formData, TripProgress: progress_next });
         if (!canProceed) { setIsSubmitting(false); return; } // Stop if user cancels changes
@@ -1674,7 +1675,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
             } as Partial<LiveDMSView_CEM>;
 
-            console.log('awdwadawd: ', updatedData);
 
             // Set to true if you want to deselect the trip after verification
             if (formData.Completed_x0020_Date) {
@@ -2674,7 +2674,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       //     addToTemp("Helper", hlp, "", { kmMult: 1, tiMult: 1 });
       // }
 
-      console.log('served Date:', servedDate);
+      // console.log('served Date:', servedDate);
       const finalPayload = colTemp.map(item => ({
         OE: formData.OE,
         TripKM: item.TripKM,
@@ -4252,7 +4252,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               <div className="assignment-changes-modal-actions">
 
                 {/* Label and Date Picker Container */}
-                <div className="served-date-container">
+                {prog_next == 'Done' && (<div className="served-date-container">
                   <label className="served-date-label">
                     Served Date:
                   </label>
@@ -4272,7 +4272,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       />
                     </div>
                   </div>
-                </div>
+                </div>)}
 
 
 

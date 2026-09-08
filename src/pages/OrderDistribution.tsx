@@ -516,24 +516,19 @@ const OrderDistribution: React.FC = () => {
 
   // 1. Define the optimistic update handler
   const handleRecordChangeAssigned = useCallback((updatedRecord: any) => {
+    const id = updatedRecord.ID ?? updatedRecord.OE;
+    if (!id) return;
+
+
+    // Optimistically update current view state
     setAssignedOrders((prevOrders) =>
       prevOrders.map((row) => {
-        // Unique identifier matching (ID or OE)
-        const rowId = row.ID ?? row.rawData?.ID;
-        const updatedId = updatedRecord.ID ?? updatedRecord.rawData?.ID;
-
-        if (rowId && updatedId && rowId === updatedId) {
-          return { ...row, ...updatedRecord };
-        }
-
-        if (row.OE && updatedRecord.OE && row.OE === updatedRecord.OE) {
-          return { ...row, ...updatedRecord };
-        }
-
-        return row;
+        const rowId = row.ID ?? row.OE;
+        return rowId === id ? { ...row, ...updatedRecord } : row;
       })
     );
   }, []);
+
 
   const [isLoadingNew, setIsLoadingNew] = useState<boolean>(false);
   const [isLoadingAssigned, setIsLoadingAssigned] = useState<boolean>(false);
@@ -920,6 +915,10 @@ const OrderDistribution: React.FC = () => {
           )
         `;
       const result = await ewulFetchAll<any>(LiveDMSView_CEMService, { filter: dateFilter, orderBy: ["OEDateAsInt desc"] }, 10000, 'ID');
+
+
+
+
       console.log('awda: ', result[0]);
       setAssignedOrders(result || []);
     } catch (err) {

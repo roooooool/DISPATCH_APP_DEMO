@@ -943,6 +943,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
     });
   }, [rawData, rowKey]);
 
+
+
   const paddingMap = {
     tight: '6px 8px',
     normal: '14px 16px',
@@ -1356,7 +1358,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
         return val && String(val).toLowerCase().includes(lowerSearch);
       })
     );
-  }, [data, searchTerm, searchCol, columns, activeFilters]);
+  }, [data, rawData, searchTerm, searchCol, columns, activeFilters]);
 
 
   //SORT

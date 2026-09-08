@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.27.11"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.28.11"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -909,8 +909,8 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
     {
       col: "Planning", alias: "ODM Remarks",
       //@ts-ignore
-      render: (val: any, row: any, searchTerm: string) => {
-        return renderDDRemarksInput(val, row['ID'])
+      render: (val: any, row: any, searchTerm: string, addTask: any, fontSize: any, onRecordChange: any) => {
+        return renderDDRemarksInput(onRecordChange, row, 'Planning')
       },
 
     },
