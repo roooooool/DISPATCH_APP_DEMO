@@ -19,7 +19,7 @@ export class Sp_fetchAttendanceCalendarService {
       {
         connectorOperation: {
           tableName: Sp_fetchAttendanceCalendarService.dataSourceName,
-          operationName: 'sp_fetchAttendanceCalendar',
+          operationName: 'Sp_fetchAttendanceCalendar',
           parameters: params
         },
       });

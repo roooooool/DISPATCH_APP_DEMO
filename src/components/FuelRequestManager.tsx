@@ -681,6 +681,7 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                                     if (record.Frstatus = 'FR Disapproved') {
                                         mappedData = {
                                             ...mappedData,
+                                            Status: initialFormData?.Status || 'Empty',
                                             Currentlocation: initialFormData?.Currentlocation || '',
                                             Plate: initialFormData?.Plate || '',
                                             Brand: initialFormData?.Brand || '',
@@ -690,7 +691,7 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                                             Axle: initialFormData?.Axle || '',
                                             Subengine: initialFormData?.Subengine || '',
                                             Type: initialFormData?.Type || '',
-                                            Odometer: initialFormData?.Odometer || '',
+                                            // Odometer: initialFormData?.Odometer || '',
                                         };
                                     }
 

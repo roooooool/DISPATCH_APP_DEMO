@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.29.11"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.30.12"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths

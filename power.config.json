@@ -162,7 +162,8 @@
       "id": "/providers/Microsoft.PowerApps/apis/shared_sql",
       "displayName": "SQL Server",
       "dataSources": [
-        "fctfinal"
+        "fctfinal",
+        "changelog2"
       ],
       "authenticationType": "windowsAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/aa7b4e76c3b448aaa2a0ea48162d590b",
@@ -171,6 +172,9 @@
           "dataSources": {
             "fctfinal": {
               "tableName": "[dbo].[fctFinal]"
+            },
+            "changelog2": {
+              "tableName": "[dbo].[changelog2]"
             }
           }
         }

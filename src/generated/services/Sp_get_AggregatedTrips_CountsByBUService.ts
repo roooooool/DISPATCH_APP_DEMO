@@ -19,7 +19,7 @@ export class Sp_get_AggregatedTrips_CountsByBUService {
       {
         connectorOperation: {
           tableName: Sp_get_AggregatedTrips_CountsByBUService.dataSourceName,
-          operationName: 'sp_get_AggregatedTrips_CountsByBU',
+          operationName: 'Sp_get_AggregatedTrips_CountsByBU',
           parameters: params
         },
       });

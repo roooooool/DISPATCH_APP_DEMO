@@ -5,6 +5,7 @@
 
 // Models
 export * as Action_Logs_HistoryModel from './models/Action_Logs_HistoryModel';
+export * as Changelog2Model from './models/Changelog2Model';
 export * as ChatMessagesModel from './models/ChatMessagesModel';
 export * as CheckIfOEExistsModel from './models/CheckIfOEExistsModel';
 export * as CIFMETripsView_CEM_unfilteredModel from './models/CIFMETripsView_CEM_unfilteredModel';
@@ -63,6 +64,7 @@ export * as Vw_SOURCE_LIST_CEMModel from './models/Vw_SOURCE_LIST_CEMModel';
 
 // Services
 export * from './services/Action_Logs_HistoryService';
+export * from './services/Changelog2Service';
 export * from './services/ChatMessagesService';
 export * from './services/CheckIfOEExistsService';
 export * from './services/CIFMETripsView_CEM_unfilteredService';

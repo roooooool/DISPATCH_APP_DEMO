@@ -814,6 +814,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "changelog2": {
+    "tableId": "changelog2",
+    "version": "v2",
+    "primaryKey": "id_primary",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "chatmessages": {
     "tableId": "ChatMessages",
     "version": "v2",

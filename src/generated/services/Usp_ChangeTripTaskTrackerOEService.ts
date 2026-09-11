@@ -19,7 +19,7 @@ export class Usp_ChangeTripTaskTrackerOEService {
       {
         connectorOperation: {
           tableName: Usp_ChangeTripTaskTrackerOEService.dataSourceName,
-          operationName: 'usp_ChangeTripTaskTrackerOE',
+          operationName: 'Usp_ChangeTripTaskTrackerOE',
           parameters: params
         },
       });

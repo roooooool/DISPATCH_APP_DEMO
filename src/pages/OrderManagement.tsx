@@ -46,6 +46,9 @@ import { TripTicketsService } from '../generated/services/TripTicketsService';
 import { Usp_ChangeTripTaskTrackerOEService } from '../generated/services/Usp_ChangeTripTaskTrackerOEService';
 import { OnFCTDivertService } from '../generated/services/OnFCTDivertService';
 import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFMETripsView_CEM_unfilteredService';
+import { Changelog2Service } from '../generated/services/Changelog2Service';
+import { type Changelog2 } from '../generated/models/Changelog2Model';
+
 
 
 
@@ -549,20 +552,33 @@ const OrderManagement: React.FC = () => {
                         });
                     }
 
-                    console.log("Update result:", result);
+                    // console.log("Update result:", result);
                     if (!result?.success) {
                         throw new Error("Failed to submit fuel request.");
                     }
 
+                    return { success: true, data: result.data };
+
                 } catch (err) {
                     console.error("Error submitting fuel request:", err);
                     return { success: false, data: null };
-                } finally {
-                    return { success: true, data: null };
                 }
             },
-            checkSuccess: (result: { success: boolean }) => result.success,
-            onSuccess: () => { null },
+            checkSuccess: (result: { success: boolean; data: any }) => result.success,
+            onSuccess: (result) => {
+                console.log('fct2 changelog: ', result);
+                let changelogData: Changelog2 = {
+                    Title: result.data.Orderentryref || '',
+                    Name: user?.FullName || 'Unknown User',
+                    Ts: new Date().toISOString(),
+                    Status: isCreate ? result.data.Frstatus : 'Re-Submit',
+                    Fctid: result.data.SQLID
+                }
+
+                console.log('fct2 to log: ', changelogData);
+                //update change log
+                Changelog2Service.create(changelogData);
+            },
             onFailure: () => { null },
             message: `Submitting fuel request for OE ${formData.Orderentryref}...`,
             message_success: `Fuel request for OE ${formData.Orderentryref} submitted successfully.`,

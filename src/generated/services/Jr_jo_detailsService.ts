@@ -10,7 +10,7 @@ import { dataSourcesInfo } from '../../../.power/schemas/appschemas/dataSourcesI
 import { getClient } from '@microsoft/power-apps/data';
 
 export class Jr_jo_detailsService {
-  private static readonly dataSourceName = 'app.jr_jo_details';
+  private static readonly dataSourceName = 'jr_jo_details';
 
   private static readonly client = getClient(dataSourcesInfo);
 

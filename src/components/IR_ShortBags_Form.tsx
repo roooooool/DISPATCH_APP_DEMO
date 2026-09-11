@@ -1292,7 +1292,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
               )}
 
               {/* Close button remains visible regardless of collapse state */}
-              {(onClose && !hideCloseBtn) && (
+              {(onClose && (!hideCloseBtn || isReadOnly)) && (
                 <button type="button" onClick={handleCloseAttempt} className="ir-sb-btn ir-sb-close-btn">
                   Close
                 </button>
