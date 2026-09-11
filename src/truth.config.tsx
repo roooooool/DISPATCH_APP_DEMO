@@ -1516,13 +1516,15 @@ export const IR_REPORT_TYPES = [
 ];
 
 export const IR_ACTION_OPTIONS = [
-  { value: 'PROCEED TO NEXT TRIP', label: 'Proceed Next Trip', color: 'var(--color-border-success)', type: 'Operations', isProceed: true }, //anyone can use
+  { value: 'PROCEED TO NEXT TRIP', label: 'Proceed Next Trip', color: 'var(--color-border-success)', type: 'Operations', isProceed: true },
   { value: 'FOR BULK INSPECTION', label: 'For BULK Inspection', color: 'var(--color-border-warning)', type: 'Operations', isProceed: false },
-  { value: 'NO REPORTED SB', label: 'No Reported SB / Wrong Discrepancy', color: 'var(--color-border-warning)', type: 'Operations', isProceed: true },
+  { value: 'NO REPORTED SB', label: 'No Reported SB / Wrong Discrepancy', color: 'var(--color-border-warning)', type: 'Operations', isProceed: true, hide: true },
+  { value: 'FOR CLEANING', label: 'For Cleaning', color: 'var(--color-border-warning)', type: 'Operations', isProceed: true, hide: true },
   // { value: 'Empty', label: 'Empty bulk proceed to backload (photo empty bulk)', color: 'var(--color-border-success)', type: 'Operations', isProceed: true },
   // { value: 'LessThanFive', label: 'Proceed Next Trip - Less than five', color: 'var(--color-border-success)', type: 'Operations', isProceed: true },
   // { value: 'NoDriver', label: 'No attachment driver failed to report', color: 'var(--color-border-danger)', type: 'Operations', isProceed: false },
 
+  { value: 'PROCEED TO NEXT TRIP', label: 'Proceed Next Trip', color: 'var(--color-border-success)', type: 'Supervisor', isProceed: true, hide: true },
   { value: 'APPROVED', label: 'Approved', color: 'var(--color-border-success)', type: 'Supervisor', isProceed: false },
   { value: 'DISAPPROVED', label: 'Disapproved', color: 'var(--color-border-danger)', type: 'Supervisor', isProceed: false },
   { value: 'FOR RETRIEVAL', label: 'For Retrieval', color: 'var(--color-border-info)', type: 'Supervisor', isProceed: true },

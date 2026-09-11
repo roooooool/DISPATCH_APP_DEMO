@@ -125,6 +125,7 @@ export interface IR_ShortBags_FormRef {
 interface IR_ShortBags_Props {
   initialUser?: FormUserInfo | UserInfo;
   incidentReportItem: Partial<OP_IncidentReports>;
+  hideCloseBtn?: boolean;
   onClose?: (skip?: boolean) => void;
   onSubmit?: (data: Partial<IR_ShortBags_Form_Model>) => void; // Updated type
   onSave?: (data: Partial<IR_ShortBags_Form_Model>) => void; // Added for save functionality
@@ -221,7 +222,7 @@ export const mapIncidentReportToFormModel = (
 };
 
 const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Props>(
-  ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete, onValidateReady }, ref) => {
+  ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete, onValidateReady, hideCloseBtn }, ref) => {
 
     const { addTask } = useTaskWorker();
     const incidentReportItem = item || {};
@@ -279,7 +280,9 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       }
 
 
-      const sb = currentData.ShortBags || 0;
+      const sb = initialUser?.Position == 'Coor'
+        ? (currentData.ShortBags ?? 0)
+        : (currentData.ActualShortBags ?? currentData.ShortBags ?? 0);
       const act = currentData.actions?.operations?.action || '';
       const pos = initialUser?.Position || '';
       const att = currentData.attachedImages;
@@ -287,7 +290,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       // OPERATIONS
       if (!act.trim()) return { valid: false, msg: "Operation action is required." };
 
-      if ((!att || att.length === 0) && sb < -5.0 && act == 'PROCEED TO NEXT TRIP') {
+      if (["Coor"].includes(pos) && (!att || att.length === 0) && sb < -5.0 && act == 'PROCEED TO NEXT TRIP') {
         return { valid: false, msg: "Short bags is greater than 5, You must append at least one asset picture file as documentation evidence." };
       }
 
@@ -968,6 +971,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
         return 'Closed';
       }
 
+      if (opsAction == "FOR CLEANING") return 'Closed';
+
       // Default fallback if no conditions match
       return 'Open';
     };
@@ -1287,7 +1292,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
               )}
 
               {/* Close button remains visible regardless of collapse state */}
-              {onClose && (
+              {(onClose && !hideCloseBtn) && (
                 <button type="button" onClick={handleCloseAttempt} className="ir-sb-btn ir-sb-close-btn">
                   Close
                 </button>
@@ -1444,11 +1449,18 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                           className={`ir-sb-line-input actions-taken ir-sb-dropdown ${!formData.actions?.operations?.action ? 'is-empty-print' : ''}`}
                         >
                           <option value="" disabled>-- Select Action --</option>
-                          {getSectionActionOptions('Operations').map(option => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
+                          {getSectionActionOptions('Operations').map(option => {
+                            // Disabling logic: If ShortBags is 0, only enable 'FOR CLEANING'; otherwise, use option.hide
+                            const isOptionDisabled = formData.ShortBags === 0
+                              ? option.value !== 'FOR CLEANING'
+                              : option.hide;
+
+                            return (
+                              <option disabled={isOptionDisabled} key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            );
+                          })}
                         </select>
                       </div>
                     </div>
@@ -1492,7 +1504,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         >
                           <option value="" disabled>-- Select Action --</option>
                           {getSectionActionOptions('Supervisor').map(option => (
-                            <option key={option.value} value={option.value}>
+                            <option disabled={option.hide} key={option.value} value={option.value}>
                               {option.label}
                             </option>
                           ))}
@@ -1539,7 +1551,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         >
                           <option value="">-- Select Action --</option>
                           {getSectionActionOptions('Inspection').map(option => (
-                            <option key={option.value} value={option.value}>
+                            <option disabled={option.hide} key={option.value} value={option.value}>
                               {option.label}
                             </option>
                           ))}
@@ -1586,7 +1598,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         >
                           <option value="">-- Select Action --</option>
                           {getSectionActionOptions('Yard').map(option => (
-                            <option key={option.value} value={option.value}>
+                            <option disabled={option.hide} key={option.value} value={option.value}>
                               {option.label}
                             </option>
                           ))}
@@ -1642,7 +1654,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                         >
                           <option value="">-- Select Action --</option>
                           {getSectionActionOptions('Warehouse').map(option => (
-                            <option key={option.value} value={option.value}>
+                            <option disabled={option.hide} key={option.value} value={option.value}>
                               {option.label}
                             </option>
                           ))}

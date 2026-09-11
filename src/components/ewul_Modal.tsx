@@ -13,6 +13,7 @@ interface ModalProps {
   overlayColor?: string; // e.g., 'rgba(0, 8, 45, 0.85)'
   hideX?: boolean;
   hidden?: boolean;
+  preventClickOutside?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -25,7 +26,8 @@ const Modal: React.FC<ModalProps> = ({
   overlayBlur,
   overlayColor,
   hideX = false,
-  hidden = false
+  hidden = false,
+  preventClickOutside = false
 }) => {
   const modalRoot = document.getElementById('modal-root') || document.body;
 
@@ -46,11 +48,17 @@ const Modal: React.FC<ModalProps> = ({
     overlayStyle.display = 'none';
   }
 
+  const handleOverlayClick = () => {
+    if (!preventClickOutside) {
+      onClose();
+    }
+  };
+
   return createPortal(
     <div
       className={`modal-overlay ${hidden ? 'is-hidden' : ''}`}
       style={overlayStyle}
-      onClick={onClose}
+      onClick={handleOverlayClick}
     >
       <div
         className={`modal-content ${contentClassName || ''}`}

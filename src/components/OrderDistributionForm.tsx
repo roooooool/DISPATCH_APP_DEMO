@@ -2245,6 +2245,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const [createdIR, setCreatedIR] = useState<OP_IncidentReports | null | undefined>(null);
     const [isCreatingIR, setIsCreatingIR] = useState<boolean>(false);
     const [irFormVisible, setIrFormVisible] = useState<boolean>(false);
+    const [isExistingIR, setIsExistingIR] = useState<boolean>(false);
     const [validationIR, setValidationIR] = useState<{
       valid: boolean;
       msg: string;
@@ -2268,12 +2269,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           let raw_data = null
 
-          console.log('Existing IR: ', exisistingIR);
+          // console.log('Existing IR: ', exisistingIR);
           if (exisistingIR?.length > 0) {
             console.log('IR Already Exist');
             raw_data = exisistingIR[0];
+            setIsExistingIR(true);
           } else {
             raw_data = await incidentFormRef.current.submit();
+            setIsExistingIR(false);
           }
 
 
@@ -2309,18 +2312,29 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             });
           }
 
-          //WHEN VERIFIED
+          // WHEN VERIFIED
           if (actualDiscrepancy < 0) {
             // Safe JSON parse fallback
             const parsedJSON = JSON.parse(data?.reportJSON || '{}');
 
-            // Properly merge actions into the parsed JSON payload
             data.reportJSON = JSON.stringify({
               ...parsedJSON,
               ActualQtyDelivered: currentFormData.QTYDelivered_Actual,
               ActualQtyWithdrawn: currentFormData.QTYWithdrawn_Actual,
               ActualShortBags: actualDiscrepancy,
-              VerifiedBy: editingUser?.FullName || 'Unkown User',
+              VerifiedBy: editingUser?.FullName || 'Unknown User',
+
+              // Spread actions conditionally only if discrepancy < 0
+              ...(discrepancy < 0 && {
+                actions: {
+                  ...parsedJSON.actions,
+                  operations: {
+                    ...parsedJSON.actions?.operations,
+                    action: 'NO REPORTED SB',
+                    date: new Date().toISOString().slice(0, 10),
+                  },
+                },
+              }),
             });
           }
 
@@ -3131,10 +3145,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       </a>
                       <a
                         href="#"
-                        className={(!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') || isCreatingIR) ? 'disabled' : ''}
+                        className={(!formData.OE || /*((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || */ (formData.TripProgress !== 'Done') || isCreatingIR) ? 'disabled' : ''}
                         onClick={(e) => {
                           e.preventDefault();
-                          if (!formData.OE || ((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || (formData.TripProgress !== 'Done') || isCreatingIR) return;
+                          if (!formData.OE || /*((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) ||*/ (formData.TripProgress !== 'Done') || isCreatingIR) return;
                           handleTripCreateIR(formData);
                           // setIsIncidentModalOpen(false);
                           // setShowIncidentPrompt(true);
@@ -3143,7 +3157,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         {formData.IRID ? `View IR` : `Create IR`} {isCreatingIR && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}
                         {( /* ((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) &&*/ (formData.TripProgress === 'Done') && (formData.IRStatus != 'Closed')) && <span className="unsaved-indicator">!</span>}
                       </a>
-
                     </div>
                   )}
                 </div>
@@ -4364,11 +4377,23 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             >
               <div className="incident-report-prompt-modal">
                 <h3>
-                  Short-bags Incident Report Created
+                  {/* Dynamic Header */}
+                  {isExistingIR ? 'Ongoing Incident Report' : 'Short-bags Incident Report Created'}
                   {createdIR?.IRID && <span className="ir-id-badge"> ( {createdIR.IRID} )</span>}
                 </h3>
 
-                <p>The selected trip has been detected with short-bags and an IR has been created. Would you like to process the incident report now?</p>
+                {/* Dynamic Main Body Text */}
+                <p>
+                  {isExistingIR ? (
+                    <>
+                      An Open Short-Bags Incident Report <strong>({createdIR?.IRID})</strong> already exists for this trip ({formData.OE}). Would you like to review or process it now?
+                    </>
+                  ) : (
+                    <>
+                      The selected trip has been detected with short-bags and an IR has been created. Would you like to process the incident report now?
+                    </>
+                  )}
+                </p>
 
                 {/* Overview Card: Final Status & Pending Requirements */}
                 <div
@@ -4384,7 +4409,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     gap: '8px'
                   }}
                 >
-                  {/* Target/Final Status Display */}
                   {/* Target/Final Status Display */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>
@@ -4420,22 +4444,26 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   )}
                 </div>
 
-                {validationIR?.status === 'Closed' && (<span className="modal-hint-text">
-                  * You can still file this report anytime via the trip's action history or details panel.
-                </span>)}
+                {validationIR?.status === 'Closed' && (
+                  <span className="modal-hint-text">
+                    * You can still file this report anytime via the trip's action history or details panel.
+                  </span>
+                )}
 
                 <div className="incident-report-prompt-modal-actions">
-                  <button
-                    className="btn-later"
-                    onClick={() => {
-                      setIsIncidentModalOpen(false);
-                      setShowIncidentPrompt(false);
-                      handleForceDiscardIR();
-                      setIrFormVisible(false);
-                    }}
-                  >
-                    {validationIR?.status === 'Closed' ? `Complete & Close` : `I'll do it later`}
-                  </button>
+                  {validationIR?.status !== 'Closed' && (
+                    <button
+                      className="btn-later"
+                      onClick={() => {
+                        setIsIncidentModalOpen(false);
+                        setShowIncidentPrompt(false);
+                        handleForceDiscardIR();
+                        setIrFormVisible(false);
+                      }}
+                    >
+                      {`Complete & Close`}
+                    </button>
+                  )}
                   <button
                     className="btn-create-now"
                     onClick={() => {
@@ -4507,6 +4535,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               overlayColor="rgba(11, 19, 43, 0.4)"
               hideX={true}
               hidden={!irFormVisible}
+              preventClickOutside={true}
             >
               {isCreatingIR ? (
                 <div className="ir-modal-loading-container">
@@ -4518,6 +4547,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   ref={irShortBagsForm}
                   incidentReportItem={createdIR as Partial<OP_IncidentReports>}
                   initialUser={editingUser ?? undefined}
+                  hideCloseBtn={true}
                   onClose={(skip?: boolean) => {
                     if (createdIR?.ResolvedDate) handleConfirmIRClose(true);
                     else handleConfirmIRClose(skip)
