@@ -13,9 +13,9 @@ export class UpsertAttendanceLogService {
 
   private static readonly client = getClient(dataSourcesInfo);
 
-  public static async UpsertAttendanceLog(EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string, ModifiedBy?: string, ApprovedBy?: string, Approved?: string, TCVC?: string): Promise<IOperationResult<UpsertAttendanceLogResponse>> {
-    const params: { EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string, ModifiedBy?: string, ApprovedBy?: string, Approved?: string, TCVC?: string } = { EmployeeName, EmployeeID, AttendanceDate, AttendanceStatus, OE, ModifiedBy, ApprovedBy, Approved, TCVC };
-    const result = await UpsertAttendanceLogService.client.executeAsync<{ EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string, ModifiedBy?: string, ApprovedBy?: string, Approved?: string, TCVC?: string }, UpsertAttendanceLogResponse>(
+  public static async UpsertAttendanceLog(EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string, TripKM?: number, SD?: string, SecondTrip?: string, TripIndex?: number, TransactionType?: string, Position?: string, TCVC?: string, ModifiedBy?: string, ApprovedBy?: string, Approved?: string, SpID?: string): Promise<IOperationResult<UpsertAttendanceLogResponse>> {
+    const params: { EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string, TripKM?: number, SD?: string, SecondTrip?: string, TripIndex?: number, TransactionType?: string, Position?: string, TCVC?: string, ModifiedBy?: string, ApprovedBy?: string, Approved?: string, SpID?: string } = { EmployeeName, EmployeeID, AttendanceDate, AttendanceStatus, OE, TripKM, SD, SecondTrip, TripIndex, TransactionType, Position, TCVC, ModifiedBy, ApprovedBy, Approved, SpID };
+    const result = await UpsertAttendanceLogService.client.executeAsync<{ EmployeeName?: string, EmployeeID?: string, AttendanceDate?: string, AttendanceStatus?: string, OE?: string, TripKM?: number, SD?: string, SecondTrip?: string, TripIndex?: number, TransactionType?: string, Position?: string, TCVC?: string, ModifiedBy?: string, ApprovedBy?: string, Approved?: string, SpID?: string }, UpsertAttendanceLogResponse>(
       {
         connectorOperation: {
           tableName: UpsertAttendanceLogService.dataSourceName,

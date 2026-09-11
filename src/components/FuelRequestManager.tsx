@@ -477,41 +477,60 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
     };
 
     const attachmentDropFile = useRef<CustomFileAttachmentRef>(null);
+    const [isFetchingAttachment, setIsFetchingAttachment] = useState<boolean>(false);
+    //@ts-ignore
+    const [attachmentID, setAttachmentID] = useState<string | undefined>(undefined);
     const fetchAttachments = async (fuelrequestSPID: number) => {
         console.log("Fetching attachments for fuel request ID:", fuelrequestSPID);
+        setIsFetchingAttachment(true);
 
-        const records = await ewulFetchAll<any>(
+        try {
+            const records = await ewulFetchAll<any>(
 
-            Fct2Service,
+                Fct2Service,
 
-            {
+                {
 
-                filter: `ID eq ${fuelrequestSPID}`,
+                    filter: `ID eq ${fuelrequestSPID}`,
 
-                orderBy: ['Created desc'],
+                    orderBy: ['Created desc'],
 
-            },
+                },
 
-            50
+                50
 
-        );
+            );
 
-        console.log("Fetched attachment records:", records);
+            console.log("Fetched attachment records:", records);
 
 
-        const metadata = await fetchSharepointAttachments({
-            metadataRecords: records,
-            listName: 'fct2',
-            siteAddress: "https://gsdcph.sharepoint.com",
-            onUpdate: setAttachments // Passing the state setter directly
-        });
-        console.log("Fetched attachments metadata:", metadata);
+            const metadata = await fetchSharepointAttachments({
+                metadataRecords: records,
+                listName: 'fct2',
+                siteAddress: "https://gsdcph.sharepoint.com",
+                onUpdate: setAttachments // Passing the state setter directly
+            });
+            console.log("Fetched attachments metadata:", metadata);
+
+            if (records) {
+                setAttachmentID(
+                    records[0]?.ID?.toString()
+                );
+                console.log('fetched attachment id: ', records[0]?.ID?.toString());
+            }
+        } catch (error) {
+            console.error("Error fetching attachments:", error);
+        } finally {
+            setIsFetchingAttachment(false);
+        }
+
+
+
     };
 
     const uploadAttachments = async (files: File[], itemID: string | undefined) => {
-        if (files.length === 0) {
-            return { success: true, message: `No new attachment files to upload.` };
-        }
+        console.log('to be uploaded files: ', files, ' id: ', itemID);
+        if (files.length === 0) return { success: true, message: `No new attachment files to upload.` };
 
         const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1319,10 +1338,10 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                                                 <button
                                                     type="submit"
                                                     className={`fuel-manager-form-btn-primary`}
-                                                    disabled={!!validationMessage || hasSubmitted || !formData.Orderentryref}
+                                                    disabled={!!validationMessage || hasSubmitted || !formData.Orderentryref || isFetchingAttachment}
                                                     style={{ flexDirection: 'row', display: 'flex', alignItems: 'center', gap: '8px' }}
                                                 >
-                                                    {isEditing ? 'Update Fuel Request' : 'Submit Fuel Request'}
+                                                    {isFetchingAttachment ? 'Loading Attachments...' : isEditing ? 'Update Fuel Request' : 'Submit Fuel Request'}
                                                     {hasSubmitted && (<Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />)}
                                                 </button>
                                             </>

@@ -25,6 +25,34 @@
           "title": "OE",
           "type": "string"
         },
+        "TripKM": {
+          "title": "TripKM",
+          "type": "number"
+        },
+        "SD": {
+          "title": "SD",
+          "type": "string"
+        },
+        "SecondTrip": {
+          "title": "SecondTrip",
+          "type": "string"
+        },
+        "TripIndex": {
+          "title": "TripIndex",
+          "type": "number"
+        },
+        "TransactionType": {
+          "title": "TransactionType",
+          "type": "string"
+        },
+        "Position": {
+          "title": "Position",
+          "type": "string"
+        },
+        "TCVC": {
+          "title": "TCVC",
+          "type": "string"
+        },
         "ModifiedBy": {
           "title": "ModifiedBy",
           "type": "string"
@@ -37,8 +65,8 @@
           "title": "Approved",
           "type": "string"
         },
-        "TCVC": {
-          "title": "TCVC",
+        "SpID": {
+          "title": "SpID",
           "type": "string"
         }
       }

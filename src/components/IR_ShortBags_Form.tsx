@@ -180,7 +180,7 @@ export const mapIncidentReportToFormModel = (
     QtyDelivered: jsonDetails.QtyDelivered || 0,
     ShortBags: jsonDetails.ShortBags || (jsonDetails.QtyWithdrawn ? (jsonDetails.QtyDelivered || 0) - jsonDetails.QtyWithdrawn : 0),
     ActualQtyDelivered: jsonDetails.ActualQtyDelivered || 0,
-    ActualQtyWithdrawn: jsonDetails.ActualQtQtyWithdrawn || 0,
+    ActualQtyWithdrawn: jsonDetails.ActualQtyWithdrawn || 0,
     ActualShortBags: jsonDetails.ActualShortBags || 0,
     ServedBy: jsonDetails.ServedBy || '',
     VerifiedBy: jsonDetails.VerifiedBy || '',
@@ -335,33 +335,52 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
         // 1. Get current section data
         const currentSection = prev.actions?.[section] || { name: '', action: '', date: '' };
 
-        // 2. Prepare base updates for the section
+        // 2. Prepare base updates for the current section
         const sectionUpdates: Partial<ActionEntry> = {
           ...currentSection,
           [field]: value
         };
 
-        // 3. If action selection changed, auto-fill current user name & today's date
-        if (field === 'action' && value) {
-          const todayISO = new Date().toISOString().slice(0, 10);
+        const todayISO = new Date().toISOString().slice(0, 10);
 
-          // Auto-fill name if not already filled
+        // Auto-fill supervisor name & date if action changed
+        if (field === 'action' && value) {
           if (!currentSection.name && initialUser?.FullName) {
             sectionUpdates.name = initialUser.FullName;
           }
-
-          // Auto-fill date if not already set
           if (!currentSection.date) {
             sectionUpdates.date = todayISO;
           }
         }
 
-        const updatedActions: IR_Actions_Model = {
+        // 3. Build updated actions map
+        let updatedActions: IR_Actions_Model = {
           ...prev.actions,
           [section]: sectionUpdates
         } as IR_Actions_Model;
 
-        // Maintain backwards compatibility with irAction if Operations action changes[cite: 1]
+        // Check what value getSectionActionOptions('Inspection') actually uses:
+        const inspectionRetrievalOption = getSectionActionOptions('Inspection')
+          .find(opt => opt.value.toUpperCase().includes('RETRIEVAL'));
+
+        const targetValue = inspectionRetrievalOption ? inspectionRetrievalOption.value : 'FOR RETRIEVAL';
+
+        if (section === 'supervisor' && field === 'action' && value === 'FOR RETRIEVAL') {
+          console.log('syncing inspec too!', targetValue);
+          const currentInspection = prev.actions?.inspection || { name: '', action: '', date: '' };
+
+          updatedActions = {
+            ...updatedActions,
+            inspection: {
+              ...currentInspection,
+              action: targetValue, // Uses the exact value key from Inspection options
+              date: currentInspection.date || todayISO,
+              name: currentInspection.name || ''
+            }
+          };
+        }
+
+        // Maintain backwards compatibility with irAction if Operations action changes
         const updatedIrAction = section === 'operations' && field === 'action'
           ? String(value)
           : prev.irAction;
@@ -375,7 +394,6 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
         setError(validateForm(nextState));
         return nextState;
       });
-
     };
 
     const handleCheckbox = (yardName: string) => {
@@ -1664,7 +1682,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                   </div>
                   <div className="ir-sb-input-group">
                     <span className="ir-sb-label"><span className='no-print is-req'>* </span>Incident Date:</span><input disabled={isReadOnly} type="date" value={formData.incident_date} name="incident_date" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_date ? 'is-empty-print' : ''}`} />
-                    <span className="ir-sb-label">Time:</span><input disabled={isReadOnly} type="time" value={formData.incident_time} name="incident_time" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_time ? 'is-empty-print' : ''}`} />
+                    {/* <span className="ir-sb-label">Time:</span><input disabled={isReadOnly} type="time" value={formData.incident_time} name="incident_time" onChange={handleChange} className={`ir-sb-line-input ${!formData.incident_time ? 'is-empty-print' : ''}`} /> */}
                   </div>
                 </div>
 

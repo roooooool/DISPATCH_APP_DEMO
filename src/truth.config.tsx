@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.28.11"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.29.11"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -196,7 +196,7 @@ export const NAV_DESTINATIONS = [
   {
     label: "Incident Reports",
     path: "/incidents",
-    whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC', 'Inspection'],
+    whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC', 'Inspection', 'Supervisor'],
     noSpecialAccess: false,
     hidden: false
   },
@@ -1518,17 +1518,18 @@ export const IR_REPORT_TYPES = [
 export const IR_ACTION_OPTIONS = [
   { value: 'PROCEED TO NEXT TRIP', label: 'Proceed Next Trip', color: 'var(--color-border-success)', type: 'Operations', isProceed: true }, //anyone can use
   { value: 'FOR BULK INSPECTION', label: 'For BULK Inspection', color: 'var(--color-border-warning)', type: 'Operations', isProceed: false },
+  { value: 'NO REPORTED SB', label: 'No Reported SB / Wrong Discrepancy', color: 'var(--color-border-warning)', type: 'Operations', isProceed: true },
   // { value: 'Empty', label: 'Empty bulk proceed to backload (photo empty bulk)', color: 'var(--color-border-success)', type: 'Operations', isProceed: true },
   // { value: 'LessThanFive', label: 'Proceed Next Trip - Less than five', color: 'var(--color-border-success)', type: 'Operations', isProceed: true },
   // { value: 'NoDriver', label: 'No attachment driver failed to report', color: 'var(--color-border-danger)', type: 'Operations', isProceed: false },
 
   { value: 'APPROVED', label: 'Approved', color: 'var(--color-border-success)', type: 'Supervisor', isProceed: false },
   { value: 'DISAPPROVED', label: 'Disapproved', color: 'var(--color-border-danger)', type: 'Supervisor', isProceed: false },
-  { value: 'FOR RETRIEVAL', label: 'For Inspection Retrieval', color: 'var(--color-border-info)', type: 'Supervisor', isProceed: true },
+  { value: 'FOR RETRIEVAL', label: 'For Retrieval', color: 'var(--color-border-info)', type: 'Supervisor', isProceed: true },
 
   { value: 'PENDING', label: 'Pending Inspection', color: 'var(--color-border-warning)', type: 'Inspection', isProceed: false },
-  { value: 'FOR RETRIEVAL', label: 'For Yard Retrieval', color: 'var(--color-border-info)', type: 'Inspection ', isProceed: false },
-  { value: 'CLEARED', label: 'Cleared', color: 'var(--color-border-success)', type: 'Inspection ', isProceed: true },
+  { value: 'FOR RETRIEVAL', label: 'For Retrieval', color: 'var(--color-border-info)', type: 'Inspection', isProceed: false },
+  { value: 'CLEARED', label: 'Cleared', color: 'var(--color-border-success)', type: 'Inspection', isProceed: true },
 
   { value: 'PENDING', label: 'Pending Retrieval', color: 'var(--color-border-warning)', type: 'Yard', isProceed: false },
   { value: 'ONGOING RETRIEVAL', label: 'Ongoing Retrieval', color: 'var(--color-border-info)', type: 'Yard', isProceed: false },

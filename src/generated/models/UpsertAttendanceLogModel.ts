@@ -9,10 +9,17 @@ export interface UpsertAttendanceLogRequest {
   AttendanceDate?: string;
   AttendanceStatus?: string;
   OE?: string;
+  TripKM?: number;
+  SD?: string;
+  SecondTrip?: string;
+  TripIndex?: number;
+  TransactionType?: string;
+  Position?: string;
+  TCVC?: string;
   ModifiedBy?: string;
   ApprovedBy?: string;
   Approved?: string;
-  TCVC?: string;
+  SpID?: string;
 }
 
 export interface UpsertAttendanceLogResponse {

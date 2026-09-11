@@ -21,4 +21,7 @@ export interface Late_Attendance_Requests {
   attendanceID?: string;
   attendance_approval?: string;
   spID?: string;
+  isEmailed?: string;
+  request_approved_at?: string;
+  employee_id?: string;
 }

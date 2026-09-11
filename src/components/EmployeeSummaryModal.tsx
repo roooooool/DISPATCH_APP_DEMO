@@ -7,7 +7,8 @@ import { type AttendanceRecord } from './ewul_AttendanceSheet';
 import {
     type UserInfo,
     ATTENDANCE_STATUSES,
-    SP_ATTENDANCE_STATUS_KEY_MAP
+    SP_ATTENDANCE_STATUS_KEY_MAP,
+    ATTENDANCE_SERVED_COUNTS_INITIAL
 } from '../truth.config';
 
 import './comp_css/EmployeeSummaryModal.css';
@@ -54,6 +55,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     onRecordsUpdate,
     allowedDateClick,
 }) => {
+
 
     const { addTask } = useTaskWorker();
 
@@ -126,6 +128,12 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             });
     }, [localRecords, employeeName, selectedCutoff]);
 
+    // Keep local records in sync when parent prop updates
+    useEffect(() => {
+        console.log('records: ', filteredRecords);
+    }, [filteredRecords]);
+
+
 
     // console.log("awdaw: ", filteredRecords)
 
@@ -138,6 +146,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         distance: 100,
         score: 90,
         tranType: 130,
+        secondTrip: 110,       // <--- Add
+        requestId: 110,        // <--- Add
+        requestStatus: 120,    // <--- Add
         approval: 130,
         ModifiedAt: 110,
         modifiedBy: 130,
@@ -145,6 +156,32 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         coorApp: 100,
         actions: 90,
     });
+
+    const getOrdinalTrip = (val?: string | null): string => {
+        if (!val || val === '---') return '---';
+
+        // Find 1-based index
+        const index = ATTENDANCE_SERVED_COUNTS_INITIAL.findIndex(
+            (char) => char.toUpperCase() === val.trim().toUpperCase()
+        );
+
+        if (index === -1) return '---';
+
+        const num = index + 1;
+
+        // Determine suffix (handles 11th, 12th, 13th edge cases)
+        const lastTwo = num % 100;
+        if (lastTwo >= 11 && lastTwo <= 13) {
+            return `${num}th`;
+        }
+
+        switch (num % 10) {
+            case 1: return `${num}st`;
+            case 2: return `${num}nd`;
+            case 3: return `${num}rd`;
+            default: return `${num}th`;
+        }
+    };
 
     // 2. Mouse drag handler for resizing
     const handleResizeMouseDown = (colKey: string, e: React.MouseEvent) => {
@@ -845,6 +882,18 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                             Transaction
                                             <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('tranType', e)} />
                                         </th>
+                                        <th style={{ width: colWidths.secondTrip }}>
+                                            Second Trip
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('secondTrip', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.requestId }}>
+                                            Request ID
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('requestId', e)} />
+                                        </th>
+                                        <th style={{ width: colWidths.requestStatus }}>
+                                            Request Status
+                                            <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('requestStatus', e)} />
+                                        </th>
                                         <th style={{ width: colWidths.approval }}>
                                             Approval
                                             <div className="col-resizer" onMouseDown={(e) => handleResizeMouseDown('approval', e)} />
@@ -909,6 +958,15 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                         {rec.tripIndex !== null && rec.tripIndex !== undefined ? rec.tripIndex : '---'}
                                                     </td>
                                                     <td className="font-mono font-bold">{rec.TransactionType || rec.tripIndex ? 'Full Trip' : '---'}</td>
+                                                    <td className="font-mono">
+                                                        {getOrdinalTrip(rec.secondTrip)}
+                                                    </td>
+                                                    <td className="font-mono">{rec.requestID || '---'}</td>
+                                                    <td>
+                                                        <span className={`emp-summ-status-pill ${(rec.requestStatus || '').toLowerCase().replace(/\s+/g, '-')}`}>
+                                                            {rec.requestStatus || '---'}
+                                                        </span>
+                                                    </td>
                                                     <td>
                                                         <div className="approval-btn-wrapper">
                                                             <button

@@ -1435,6 +1435,25 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         // 💡 CHANGE 4: Use the fresh records directly returned from the modal promise resolve action
         const recordsToUpload = finalPayloadToUpload;
 
+
+        // // console.log('served Date:', servedDate);
+        // const finalPayload = colTemp.map(item => ({
+        //   OE: formData.OE,
+        //   TripKM: item.TripKM,
+        //   SD: formData.SD,
+        //   Date: servedDate ? new Date(servedDate).toISOString() : new Date().toISOString(),
+        //   AttendanceDetail: item.TripIndex,
+        //   SecondTrip: item.TripCount,
+        //   Creator: userName,
+        //   TCVC: formData.OE?.startsWith("SOTC") ? "TC" : "VC",
+        //   In: servedDate ? new Date(servedDate).toISOString() : new Date().toISOString(),
+        //   Position: item.Role,
+        //   TransactionType: item.Position,
+        //   EmployeeName: item.SName,
+        //   hrID: getPersonnelIdByName(item.SName, item.Role)
+        // })) as GSDC_AttendanceBase[];
+
+
         if (recordsToUpload.length > 0) {
           addTask({
             name: 'Uploading attendance records to Coor Apps.',
@@ -1449,7 +1468,36 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     // Date: servedDate ? servedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 
                     // In: servedDate ? servedDate.toISOString() : new Date().toISOString(),
                   });
+
+                  // 2. Sync to SQL via UpsertAttendanceLogService
+                  const mappedDate = record.Date || servedDate;
+                  const formattedDate = mappedDate
+                    ? new Date(mappedDate).toISOString().split('T')[0]
+                    : new Date().toISOString().split('T')[0];
+
+
+                  const fpayload = {
+                    EmployeeName: record.EmployeeName || '',
+                    EmployeeID: record.hrID || '',
+                    AttendanceDate: formattedDate,
+                    AttendanceStatus: 'SERVED',
+                    OE: record.OE || formData.OE || '',
+
+                    TripKM: Number(record.TripKM) || 0,
+                    TripIndex: Number(record.AttendanceDetail) || 0,
+                    SD: record.SD || formData?.SD || '',
+                    SecondTrip: ATTENDANCE_SERVED_COUNTS_INITIAL[record.SecondTrip ? Math.max(Number(record.SecondTrip), 0) : 0],
+                    TransactionType: record.TransactionType || '',
+                    Position: record.Position || '',
+                    TCVC: record.TCVC || '',
+
+                    ModifiedBy: editingUser?.FullName || 'Unknown User'
+                  } as any;
+
+                  await UpsertAttendanceLogService.UpsertAttendanceLog(fpayload);
+
                   console.log(`Successfully logged attendance for: ${record.EmployeeName}`);
+                  console.log('wew att: ', fpayload);
                 }
               } catch (error) {
                 console.error("Failed to upload attendance records:", error);
@@ -1676,7 +1724,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             } as Partial<LiveDMSView_CEM>;
 
 
-            // Set to true if you want to deselect the trip after verification
             if (formData.Completed_x0020_Date) {
               updatedData.Verified_x0020_By = editingUser?.FullName || '';
               updatedData.Documented_x0020_Date = formData.Documented_x0020_Date || new Date().toISOString();
@@ -1734,7 +1781,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
             if (progress_next === 'Assigned' && result.data.ID) await DMS_CEMService.update(result.data.ID.toString(), { tripID: result.data.ID });
 
-            if (formData.TripProgress !== 'Done' || !attendanceStatus) { // dont update attendance when trip is already done or no attendance status inputted
+            if (progress_next == 'Done') {
+              console.log('serving trip, attendance already handled');
+            } else if ((formData.TripProgress !== 'Done' || !attendanceStatus)) { // dont update attendance when trip is already done or no attendance status inputted
               handleUpdateAttendance(formData.Driver || '', driverOptions?.find(option => option.label === formData.Driver)?.record.Id, 'Driver', attendanceStatus || 'ON TRIP', false, confirmedAttDate);
               handleUpdateAttendance(formData.Helper || '', helperOptions?.find(option => option.label === formData.Helper)?.record.Id, 'Helper', attendanceStatus || 'ON TRIP', false, confirmedAttDate);
             }
@@ -1780,6 +1829,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           handleUpdateTripTaskTracker({ ...formData, TripProgress: progress_next }, !!updatedData.Completed_x0020_Date);
 
           if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT) {
+            setIrFormVisible(false);
+            handleTripCreateIR(formData);
+          } else if ((progress_next === 'Done' && updatedData.Completed_x0020_Date) && (actualDiscrepancy < SHORT_BAGS_LIMIT || updatedData.IRID)) {
             setIrFormVisible(false);
             handleTripCreateIR(formData);
           }
@@ -2268,7 +2320,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               ActualQtyDelivered: currentFormData.QTYDelivered_Actual,
               ActualQtyWithdrawn: currentFormData.QTYWithdrawn_Actual,
               ActualShortBags: actualDiscrepancy,
-              ServedBy: editingUser?.FullName || 'Unkown User',
+              VerifiedBy: editingUser?.FullName || 'Unkown User',
             });
           }
 
@@ -3089,7 +3141,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         }}>
                         <FileSpreadsheet size={16} />
                         {formData.IRID ? `View IR` : `Create IR`} {isCreatingIR && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}
-                        {(((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) && (formData.TripProgress === 'Done') && (formData.IRStatus != 'Closed')) && <span className="unsaved-indicator">!</span>}
+                        {( /* ((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) &&*/ (formData.TripProgress === 'Done') && (formData.IRStatus != 'Closed')) && <span className="unsaved-indicator">!</span>}
                       </a>
 
                     </div>

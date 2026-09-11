@@ -1453,6 +1453,48 @@ export const dataSourcesInfo = {
             "type": "string"
           },
           {
+            "name": "TripKM",
+            "in": "body",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "name": "SD",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "SecondTrip",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "TripIndex",
+            "in": "body",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "name": "TransactionType",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Position",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "TCVC",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
             "name": "ModifiedBy",
             "in": "body",
             "required": false,
@@ -1471,7 +1513,7 @@ export const dataSourcesInfo = {
             "type": "string"
           },
           {
-            "name": "TCVC",
+            "name": "SpID",
             "in": "body",
             "required": false,
             "type": "string"

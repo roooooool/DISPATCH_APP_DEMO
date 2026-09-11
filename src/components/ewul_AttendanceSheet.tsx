@@ -134,6 +134,7 @@ const AttendanceCell = React.memo(({
     requestID?: string | null,
     requestStatus?: string | null,
     spID?: string,
+    SD?: string,
   ) => void;
   isActiveMenuCell?: boolean;
   isBoundaryCell?: boolean;
@@ -222,6 +223,7 @@ const AttendanceCell = React.memo(({
                       entry.requestID ?? entry.request_id,
                       entry.requestStatus ?? entry.request_status,
                       entry.spID ?? entry.spID,
+                      entry.SD ?? entry.SD
                     );
                   }}
                   onMouseEnter={(e) => {
@@ -293,6 +295,7 @@ const AttendanceCell = React.memo(({
                   null,
                   null,
                   undefined,
+                  undefined,
                 );
               }}
             >
@@ -346,6 +349,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     requestID?: string | null;
     requestStatus?: string | null;
     spID?: string;
+    SD?: string;
   } | null>(null);
 
   const { addTask } = useTaskWorker();
@@ -693,6 +697,8 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     remarks: '',
     attendanceID: '',
     spID: '',
+    EmployeeID: '',
+    SD: '',
   });
   const [showRequestsModal, setShowRequestsModal] = useState(false);
   const [lateAttendanceRequests, setLateAttendanceRequests] = useState<any[]>([]);
@@ -775,6 +781,9 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       attendanceID: requestFormData.attendanceID,
       attendance_approval: requestFormData.Approval === 'Approved' ? 'Approved' : null,
       spID: requestFormData.spID || null,
+      employee_id: requestFormData.EmployeeID,
+      SD: requestFormData.SD
+
     } as Partial<Late_Attendance_Requests>;
 
     // 3. Close modal instantly for seamless UI response
@@ -846,7 +855,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
         CutoffStartDay: 5,
         CutoffEndDay: 4
       } as any);
-      // console.log('fetching attendance successfull...', res)
+      console.log('fetching attendance successfull...', res)
       const rawData = (res.data?.ResultSets?.Table1 || []) as any;
 
 
@@ -891,6 +900,8 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
         ModifiedBy: item.ModifiedBy ?? null,
         ApprovedBy: item.ApprovedBy ?? null,
         attendanceID: item.attendanceID ?? null,
+        requestID: item.request_id ?? null,
+        requestStatus: item.request_status ?? null,
       }));
 
       setRawAttendanceData(formattedRecords);
@@ -1392,8 +1403,12 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     attendanceID?: string,
     requestID?: string | null,
     requestStatus?: string | null,
-    spID?: string
+    spID?: string,
+    SD?: string,
   ) => {
+
+    console.log('clicked! : ', SD);
+
     // Prevent menu from opening for future dates
     if (dateStr > todayStr) {
       handleBannerMessage("Cannot log or modify attendance for future dates.");
@@ -1430,6 +1445,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       requestID: requestID || null,
       requestStatus: requestStatus || null,
       spID: spID,
+      SD: SD,
     });
   }, [todayStr]); // Added todayStr to dependencies
 
@@ -2035,6 +2051,8 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
                       remarks: '',
                       attendanceID: activeMenu.attendanceID,
                       spID: activeMenu.spID || "",
+                      EmployeeID: activeMenu.empId,
+                      SD: activeMenu.SD || "",
                     });
                     setShowCreateRequestModal(true);
                   }
@@ -2158,11 +2176,15 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
                     disabled={requestFormData.RequestDeletion}
                     onChange={(e) => setRequestFormData(prev => ({ ...prev, Attendance: e.target.value }))}
                   >
-                    {ATTENDANCE_STATUSES.map((status) => (
-                      <option key={status.Status} value={status.Status}>
-                        {status.Alias || status.Status}
-                      </option>
-                    ))}
+                    {ATTENDANCE_STATUSES
+                      .filter((status) =>
+                        requestFormData.Attendance === 'SERVED' || status.Status !== 'SERVED'
+                      )
+                      .map((status) => (
+                        <option key={status.Status} value={status.Status}>
+                          {status.Alias || status.Status}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
@@ -2175,6 +2197,19 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
                     type="text"
                     className="form-control"
                     value={requestFormData.Trip || '---'}
+                    disabled
+                  />
+                </div>
+              </div>
+
+              {/* Trip (Disabled) */}
+              <div className="form-group">
+                <label className="form-label">SD</label>
+                <div className="form-input-wrapper disabled">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={requestFormData.SD || '---'}
                     disabled
                   />
                 </div>
