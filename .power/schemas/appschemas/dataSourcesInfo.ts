@@ -842,6 +842,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "dispatchedassetpairingstate": {
+    "tableId": "DispatchedAssetPairingState",
+    "version": "v2",
+    "primaryKey": "PairingID",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "dms_attendancelogs": {
     "tableId": "DMS_AttendanceLogs",
     "version": "v2",
@@ -1635,6 +1642,84 @@ export const dataSourcesInfo = {
           },
           {
             "name": "TripJSON",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      },
+      "Upsert_DispatchedAssetPairing": {
+        "path": "/dbo.Upsert_DispatchedAssetPairing",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "OE",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Truck",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "TruckPlate",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Trailer",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "TrailerPlate",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Driver",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "DriverID",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Helper",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "HelperID",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "PairingStatus",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "UpdatedBy",
+            "in": "body",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Action",
             "in": "body",
             "required": false,
             "type": "string"

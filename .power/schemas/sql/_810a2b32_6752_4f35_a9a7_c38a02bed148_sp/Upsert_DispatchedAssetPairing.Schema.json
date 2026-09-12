@@ -1,0 +1,77 @@
+{
+  "name": "[dbo].[Upsert_DispatchedAssetPairing]",
+  "title": "[dbo].[Upsert_DispatchedAssetPairing]",
+  "schema": {
+    "inputparameters": {
+      "type": "object",
+      "properties": {
+        "OE": {
+          "title": "OE",
+          "type": "string"
+        },
+        "Truck": {
+          "title": "Truck",
+          "type": "string"
+        },
+        "TruckPlate": {
+          "title": "TruckPlate",
+          "type": "string"
+        },
+        "Trailer": {
+          "title": "Trailer",
+          "type": "string"
+        },
+        "TrailerPlate": {
+          "title": "TrailerPlate",
+          "type": "string"
+        },
+        "Driver": {
+          "title": "Driver",
+          "type": "string"
+        },
+        "DriverID": {
+          "title": "DriverID",
+          "type": "string"
+        },
+        "Helper": {
+          "title": "Helper",
+          "type": "string"
+        },
+        "HelperID": {
+          "title": "HelperID",
+          "type": "string"
+        },
+        "PairingStatus": {
+          "title": "PairingStatus",
+          "type": "string"
+        },
+        "UpdatedBy": {
+          "title": "UpdatedBy",
+          "type": "string"
+        },
+        "Action": {
+          "title": "Action",
+          "type": "string"
+        }
+      }
+    },
+    "procedureresultschema": {
+      "type": "object",
+      "properties": {
+        "returncode": {
+          "title": "ReturnCode",
+          "type": "integer"
+        },
+        "outputparameters": {
+          "title": "OutputParameters",
+          "type": "object"
+        },
+        "resultsets": {
+          "title": "ResultSets",
+          "type": "object"
+        }
+      }
+    },
+    "type": "object"
+  }
+}

@@ -19,6 +19,7 @@ import { Action_Logs_HistoryService } from '../generated/services/Action_Logs_Hi
 import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
 import { GetEmployeeServedCountService } from '../generated/services/GetEmployeeServedCountService';
 import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
+import { Upsert_DispatchedAssetPairingService } from '../generated/services/Upsert_DispatchedAssetPairingService';
 
 //CSS
 import './comp_css/OrderDistributionForm.css';
@@ -122,6 +123,49 @@ export interface OrderDistributionFormRef {
   runValidation: (data: LiveDMSView_CEM) => { isValid: boolean; message: string };
 }
 
+/**
+ * Builds the payload for DispatchedAssetPairingState compatible with SP: [dbo].[Upsert_DispatchedAssetPairing]
+ */
+export const buildAssetPairingPayload = (
+  formData: LiveDMSView_CEM,
+  driverOptions?: DropdownOption[],
+  helperOptions?: DropdownOption[],
+  truckOptions?: DropdownOption[],
+  trailerOptions?: DropdownOption[],
+  updatedBy?: string,
+  action: 'UPSERT' | 'DELETE' = 'UPSERT'
+) => {
+  // Extract driver details (Check opt.value or opt.label depending on your dropdown setup)
+  const driverRecord = driverOptions?.find(opt => opt.value === formData.Driver || opt.label === formData.Driver)?.record;
+  const driverID = driverRecord?.Id ? String(driverRecord.Id) : undefined;
+
+  // Extract helper details
+  const helperRecord = helperOptions?.find(opt => opt.value === formData.Helper || opt.label === formData.Helper)?.record;
+  const helperID = helperRecord?.Id ? String(helperRecord.Id) : undefined;
+
+  // Extract truck details & plate
+  const truckRecord = truckOptions?.find(opt => opt.value === formData.Vehicle || opt.record?.Head === formData.Vehicle)?.record;
+  const truckPlate = truckRecord?.PlateNumber || truckRecord?.Plate || undefined;
+
+  // Extract trailer details & plate
+  const trailerRecord = trailerOptions?.find(opt => opt.value === formData.BO || opt.label === formData.BO)?.record;
+  const trailerPlate = trailerRecord?.PlateNumber || trailerRecord?.Plate || undefined;
+
+  return {
+    OE: formData.OE || null,
+    Truck: formData.Vehicle || null,
+    TruckPlate: truckPlate || null,
+    Trailer: formData.BO || null,
+    TrailerPlate: trailerPlate || null,
+    Driver: formData.Driver || null,
+    DriverID: driverID || null,
+    Helper: formData.Helper || null,
+    HelperID: helperID || null,
+    PairingStatus: 'ACTIVE', // Status stored in DB record
+    Action: action,         // Control action for the SP ('UPSERT' | 'DELETE')
+    UpdatedBy: updatedBy || 'System'
+  };
+};
 
 
 // Mapping initialFormData to match the LiveDMSView_CEM model properties
@@ -1428,6 +1472,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (changes.newVehicle) _logupdate(newData.Vehicle || 'None', 'Truck');
       if (changes.newBO) _logupdate(newData.BO || 'None', 'Trailer');
 
+
+
       // 💡 CHANGE 3: Check only for 'Done' status. Don't use the stale coorApps_AttendancePayload check here
       if (newData.TripProgress === 'Done') {
         console.log("Starting Attendance Log Upload...");
@@ -1774,7 +1820,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-
             if (result.error) {
               throw new Error(result.error.message);
             }
@@ -1828,6 +1873,19 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           onRefreshDriverHelpers?.();
           handleUpdateTripTaskTracker({ ...formData, TripProgress: progress_next }, !!updatedData.Completed_x0020_Date);
 
+          try {
+            const assetPairingPayload = buildAssetPairingPayload(formData, driverOptions, helperOptions, truckOptions, trailerOptions, editingUser?.FullName || 'Unkown User');
+            if (progress_next == 'Done') {
+              Upsert_DispatchedAssetPairingService.Upsert_DispatchedAssetPairing({ ...assetPairingPayload, Action: 'DELETE' } as any)
+            } else {
+              Upsert_DispatchedAssetPairingService.Upsert_DispatchedAssetPairing(assetPairingPayload as any)
+            }
+          } catch (error) {
+            console.error('Failed to update asset pairing:', error);
+          }
+
+
+
           if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT) {
             setIrFormVisible(false);
             handleTripCreateIR(formData);
@@ -1835,6 +1893,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             setIrFormVisible(false);
             handleTripCreateIR(formData);
           }
+
 
         },
         onFailure: () => { setIsSubmitting(false); onRefreshTrips?.(); },
@@ -1933,6 +1992,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               throw new Error(result.error.message);
             }
 
+
+
             return { success: true, data: result.data };
 
           } catch (error) {
@@ -1958,6 +2019,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             context: `Trip - Saved`,
             role: editingUser?.Position || '',
           });
+          try {
+            const assetPairingPayload = buildAssetPairingPayload(formData, driverOptions, helperOptions, truckOptions, trailerOptions, editingUser?.FullName || 'Unkown User');
+            Upsert_DispatchedAssetPairingService.Upsert_DispatchedAssetPairing(assetPairingPayload as any);
+          } catch (error) {
+            console.error('Failed to update asset pairing:', error);
+          }
+
         },
         onFailure: () => { setIsSubmitting(false); onRefreshTrips?.(); },
 

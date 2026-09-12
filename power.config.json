@@ -39,7 +39,8 @@
         "cifmetripsview_cem_unfiltered",
         "late_attendance_requests",
         "dispapp_bu_capacity_summary",
-        "dms_newtrip_remarks"
+        "dms_newtrip_remarks",
+        "dispatchedassetpairingstate"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -121,6 +122,9 @@
             },
             "dms_newtrip_remarks": {
               "tableName": "[dbo].[DMS_NewTrip_Remarks]"
+            },
+            "dispatchedassetpairingstate": {
+              "tableName": "[dbo].[DispatchedAssetPairingState]"
             }
           }
         }

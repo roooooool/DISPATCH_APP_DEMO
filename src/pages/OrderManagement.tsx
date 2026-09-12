@@ -131,7 +131,21 @@ const OrderManagement: React.FC = () => {
     const [activeView, setActiveView] = useState<'dashboard' | 'form'>('dashboard');
 
     const [sidebarVisible, setSidebarVisible] = useState(false);
-    const [showCharts, setShowCharts] = useState<boolean>(true);
+    const [showCharts, setShowCharts] = useState<boolean>(() => {
+        if (!user?.id) return true; // Default fallback if user is not loaded yet
+        try {
+            const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}showCharts_${user.id}`);
+            return saved !== null ? JSON.parse(saved) : true;
+        } catch (error) {
+            console.error('Failed to parse saved showCharts state from localStorage:', error);
+            return true;
+        }
+    });
+    useEffect(() => {
+        if (!user?.id) return;
+        const storageKey = `${STORAGE_KEY_PREFIX}showCharts_${user.id}`;
+        localStorage.setItem(storageKey, JSON.stringify(showCharts));
+    }, [showCharts, user?.id]);
     const [showNewTripModal, setShowNewTripModal] = useState(false);
     const [showFuelRequestModal, setShowFuelRequestModal] = useState<FuelRequestModalState | null>(null);
     const [lastOdometer, setLastOdometer] = useState<string | null>(null);
@@ -566,16 +580,16 @@ const OrderManagement: React.FC = () => {
             },
             checkSuccess: (result: { success: boolean; data: any }) => result.success,
             onSuccess: (result) => {
-                console.log('fct2 changelog: ', result);
+                // console.log('fct2 changelog: ', result);
                 let changelogData: Changelog2 = {
                     Title: result.data.Orderentryref || '',
                     Name: user?.FullName || 'Unknown User',
                     Ts: new Date().toISOString(),
                     Status: isCreate ? result.data.Frstatus : 'Re-Submit',
-                    Fctid: result.data.SQLID
+                    Fctid: result.data.Id || '' // use attachment ID dito
                 }
 
-                console.log('fct2 to log: ', changelogData);
+                // console.log('fct2 to log: ', changelogData);
                 //update change log
                 Changelog2Service.create(changelogData);
             },
