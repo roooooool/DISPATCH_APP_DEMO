@@ -94,9 +94,9 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     // 1. Create a local variable for the base options
     // If the passed options are empty, use the hardcoded defaults
     const baseOptions = (options && options.length > 0) ? options : [
-      { value: 'Apple', label: 'Apple', type: 'multi', subtext: 'ID: F-001 | Available (12)' },
-      { value: 'Banana', label: 'Banana', type: 'multi', subtext: 'ID: F-002 | Available (23)' },
-      { value: 'Cherry', label: 'Cherry', type: 'multi', subtext: 'ID: F-003 | Out of Stock' },
+      // { value: 'Apple', label: 'Apple', type: 'multi', subtext: 'ID: F-001 | Available (12)' },
+      // { value: 'Banana', label: 'Banana', type: 'multi', subtext: 'ID: F-002 | Available (23)' },
+      // { value: 'Cherry', label: 'Cherry', type: 'multi', subtext: 'ID: F-003 | Out of Stock' },
     ] as DropdownOption[];
 
     // 2. Use baseOptions instead of 'options' in the rest of the function

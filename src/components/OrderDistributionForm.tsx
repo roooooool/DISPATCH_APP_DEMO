@@ -145,11 +145,11 @@ export const buildAssetPairingPayload = (
 
   // Extract truck details & plate
   const truckRecord = truckOptions?.find(opt => opt.value === formData.Vehicle || opt.record?.Head === formData.Vehicle)?.record;
-  const truckPlate = truckRecord?.PlateNumber || truckRecord?.Plate || undefined;
+  const truckPlate = truckRecord?.PlateNo || truckRecord?.Plate || undefined;
 
   // Extract trailer details & plate
   const trailerRecord = trailerOptions?.find(opt => opt.value === formData.BO || opt.label === formData.BO)?.record;
-  const trailerPlate = trailerRecord?.PlateNumber || trailerRecord?.Plate || undefined;
+  const trailerPlate = trailerRecord?.TPlateNo || trailerRecord?.Plate || undefined;
 
   return {
     OE: formData.OE || null,
