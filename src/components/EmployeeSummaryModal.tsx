@@ -296,9 +296,8 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             return;
         }
 
-        console.log('taeg: ', targetRecord);
-
-        const groupKey = `${targetRecord.AttendanceDate?.split('T')[0]}_${targetRecord.OE || ''}`;
+        // FIX 1: Use attendanceID for groupKey consistency across all actions
+        const groupKey = targetRecord.attendanceID || `${targetRecord.AttendanceDate?.split('T')[0]}_${targetRecord.OE || ''}`;
 
         const currentRecord = localRecords.find(
             (rec) => rec.attendanceID === targetRecord.attendanceID
@@ -307,19 +306,18 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         // Toggle between 'Approved' and undefined
         const newStatus: 'Approved' | undefined = currentRecord?.Approved === 'Approved' ? undefined : 'Approved';
 
-        // Construct full updated record object
-        const updatedRecord: AttendanceRecord = {
+        // FIX 2: Preserve isDeleted flag if present
+        const updatedRecord: AttendanceRecord & { isDeleted?: boolean } = {
             ...(currentRecord || targetRecord),
             Approved: newStatus,
+            isDeleted: currentRecord?.isDeleted,
         };
-
-        // console.log('wasd: ', updatedRecord);
 
         // Update optimistic local records for UI/KPIs
         setLocalRecords((prev) =>
             prev.map((rec) =>
                 rec.attendanceID === targetRecord.attendanceID
-                    ? { ...rec, Approved: newStatus }
+                    ? updatedRecord
                     : rec
             )
         );
@@ -332,11 +330,15 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                 (rec) => rec.attendanceID === targetRecord.attendanceID
             );
 
-            // Normalize baseline status to 'Approved' or undefined
+            // Normalize baseline values to compare against
             const originalStatus = originalRec?.Approved === 'Approved' ? 'Approved' : undefined;
+            const originalIsDeleted = Boolean((originalRec as any)?.isDeleted);
 
             // Revert back to baseline if toggled back to original state
-            if (newStatus === originalStatus) {
+            if (
+                newStatus === originalStatus &&
+                Boolean(updatedRecord.isDeleted) === originalIsDeleted
+            ) {
                 delete updated[groupKey];
             } else {
                 updated[groupKey] = updatedRecord;
@@ -350,8 +352,14 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     // Toggle removal/deletion locally & track in pendingChanges
     const handleToggleDelete = (targetRecord: AttendanceRecord & { isDeleted?: boolean }) => {
-        const dateStr = targetRecord.AttendanceDate?.split('T')[0] || '';
-        const groupKey = `${dateStr}_${targetRecord.OE || ''}`;
+
+        // Block approval changes if record date is outside ALLOWED_DATE_CLICK
+        if (!isDateClickAllowed(targetRecord.AttendanceDate)) {
+            console.warn("Editing approval for this date is locked by ALLOWED_DATE_CLICK policy.");
+            return;
+        }
+
+        const groupKey = targetRecord.attendanceID || `${targetRecord.AttendanceDate?.split('T')[0]}_${targetRecord.OE || ''}`;
 
         const currentRecord = localRecords.find(
             (rec) => rec.attendanceID === targetRecord.attendanceID
@@ -359,19 +367,23 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
         const newIsDeleted = !currentRecord?.isDeleted;
 
-        const updatedRecord = {
+        // Reset approval status if marking as deleted, otherwise keep current status
+        const updatedRecord: AttendanceRecord & { isDeleted?: boolean } = {
             ...(currentRecord || targetRecord),
             isDeleted: newIsDeleted,
+            Approved: newIsDeleted ? undefined : (currentRecord?.Approved || targetRecord.Approved),
         };
 
+        // Update optimistic local records for UI/KPIs
         setLocalRecords((prev) =>
             prev.map((rec) =>
                 rec.attendanceID === targetRecord.attendanceID
-                    ? { ...rec, isDeleted: newIsDeleted }
+                    ? updatedRecord
                     : rec
             )
         );
 
+        // Update pending changes tracking
         setPendingChanges((prev) => {
             const updated = { ...prev };
 
@@ -382,7 +394,11 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
             const originalStatus = originalRec?.Approved === 'Approved' ? 'Approved' : undefined;
             const originalIsDeleted = Boolean((originalRec as any)?.isDeleted);
 
-            if (newIsDeleted === originalIsDeleted && (updatedRecord.Approved === originalStatus)) {
+            // Revert back to original state if user toggles back
+            if (
+                newIsDeleted === originalIsDeleted &&
+                updatedRecord.Approved === originalStatus
+            ) {
                 delete updated[groupKey];
             } else {
                 updated[groupKey] = updatedRecord;
@@ -408,8 +424,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         }
 
         const deleteRecords = pendingArray.filter((rec) => rec.isDeleted);
-        const updateRecords = pendingArray.filter((rec) => rec.spID);
-        const createRecords = pendingArray.filter((rec) => !rec.spID);
+        const activeRecords = pendingArray.filter((rec) => !rec.isDeleted);
+        const updateRecords = activeRecords.filter((rec) => rec.spID);
+        const createRecords = activeRecords.filter((rec) => !rec.spID);
 
         console.log('To be updated in Sharepoint:', updateRecords);
         console.log('To be created in Sharepoint:', createRecords);
@@ -624,9 +641,8 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     };
 
-    // 4. Cancel handler to revert back to original records
     const handleCancelChanges = () => {
-        setLocalRecords(allRecords);
+        setLocalRecords(normalizeRecords(allRecords));
         setPendingChanges({});
     };
 
@@ -967,11 +983,11 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                             {rec.requestStatus || '---'}
                                                         </span>
                                                     </td>
-                                                    <td>
+                                                    <td className="font-mono">
                                                         <div className="approval-btn-wrapper">
                                                             <button
                                                                 type="button"
-                                                                disabled={!canEditApproval || !dateAllowed}
+                                                                disabled={!canEditApproval || !dateAllowed || isDeleted} // <-- Disables button when marked for deletion
                                                                 className={`emp-summ-approve-btn ${isApproved ? 'emp-summ-approved' : 'emp-summ-not-approved'} ${isModified ? 'btn-modified' : ''}`}
                                                                 onClick={() => handleToggleApproval(rec)}
                                                             >

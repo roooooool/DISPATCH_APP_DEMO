@@ -11,12 +11,13 @@ export interface Vw_LiveDMS_TruckDriverHelper_Pairing {
   BU?: string;
   D_UserID?: string;
   H_UserID?: string;
-  PairID?: number;
-  isPaired?: string;
+  PairID: number;
+  isPaired?: number;
   AttendanceD?: string;
   AttendanceH?: string;
   Remarks?: number;
-  TruckFull?: string;
+  TruckFull: string;
+  TrailerFull: string;
   OE?: string;
   dmsID?: number;
   Source?: string;
@@ -49,5 +50,8 @@ export interface Vw_LiveDMS_TruckDriverHelper_Pairing {
   TrailerJO_ETR?: string;
   TractorJO_Activity?: string;
   TrailerJO_Activity?: string;
+  TractorDivertJR?: string;
+  TrailerDivertJR?: string;
   FromList: string;
+  CompletenessScore?: number;
 }
