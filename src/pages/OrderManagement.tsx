@@ -417,7 +417,7 @@ const OrderManagement: React.FC = () => {
             );
 
             setFuelRequests(requestsResults);
-            setLoadingFor(`${FETCH_LOADING_KEYS.fuelRequests}`, false);
+            setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, false);
 
             console.log("fetching last Odometer:");
             const resOdo = await GetLastLiquidatedOdometerService.GetLastLiquidatedOdometer({

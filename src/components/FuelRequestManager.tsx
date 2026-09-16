@@ -646,7 +646,7 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
                         </button>
                     </div>
                     <span className="utility-tabs-message">
-                        {(isLoading && fuelRequests.length === 0) ? 'Fuel requests are being fetched... Please wait before creating a new request.' : ''}{countOnGoingRequests() > 0 ? `There are still ongoing requests. You will not be able to create a new request until they are completed.` : ''}{tripData?.TripProgress === 'Done' && tripData.OE !== lastFuelRequestOE ? `This trip is already concluded and is no longer the current trip for this vehicle. [${lastFuelRequestOE}]` : ''}
+                        {(isLoading /*&& fuelRequests.length === 0*/) ? `Fuel requests are being fetched... Please wait before creating${fuelRequests.length === 0 ? '/editing ' : ''} a ${fuelRequests.length === 0 ? 'fuel ' : 'new '} request.` : ''}{countOnGoingRequests() > 0 ? `There are still ongoing requests. You will not be able to create a new request until they are completed.` : ''}{tripData?.TripProgress === 'Done' && tripData.OE !== lastFuelRequestOE ? `This trip is already concluded and is no longer the current trip for this vehicle. [${lastFuelRequestOE}]` : ''}
                     </span>
                     {activeTab === 'form' && (<h3 className='fuel-manager-form-status'>Status: <span className='fuel-manager-form-status-value' style={{ color: frStatuses.find((status) => status.value === formData.Frstatus)?.color }}>{formData.Frstatus}</span></h3>)}
                 </div>

@@ -2944,6 +2944,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
     const handlePrintDMS = () => {
+
       if (!formData.tripID) {
         console.log("No trip selected, cannot print DMS.");
         return;
