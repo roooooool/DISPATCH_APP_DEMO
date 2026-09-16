@@ -724,7 +724,8 @@ const OrderManagement: React.FC = () => {
                 value: 'Apple',
                 label: 'Apple',
                 type: 'multi',
-                subtext: 'TESTING'
+                subtext: 'TESTING',
+                record: { Head: 'Apple', PairedTrailer: 'Berry', PlateNo: '4Px2L3', TPlateNo: 'TAppl3-0' }
             };
 
             // 3. Update dropdown states
@@ -779,7 +780,8 @@ const OrderManagement: React.FC = () => {
             value: 'Apple',
             label: 'Apple',
             type: 'multi',
-            subtext: 'TESTING'
+            subtext: 'TESTING',
+            record: { Head: 'Apple', PairedTrailer: 'Berry', PlateNo: '4Px2L3', TPlateNo: 'TAppl3-0' }
         };
 
 

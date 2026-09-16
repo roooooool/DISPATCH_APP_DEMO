@@ -148,8 +148,10 @@ export const buildAssetPairingPayload = (
   const truckPlate = truckRecord?.PlateNo || truckRecord?.Plate || undefined;
 
   // Extract trailer details & plate
-  const trailerRecord = trailerOptions?.find(opt => opt.value === formData.BO || opt.label === formData.BO)?.record;
+  const trailerRecord = trailerOptions?.find(opt => opt.value === formData.BO || opt.record?.PairedTrailer === formData.BO)?.record;
   const trailerPlate = trailerRecord?.TPlateNo || trailerRecord?.Plate || undefined;
+
+  console.log('found truck record: ', truckRecord);
 
   return {
     OE: formData.OE || null,
