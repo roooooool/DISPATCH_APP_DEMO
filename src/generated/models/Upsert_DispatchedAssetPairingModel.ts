@@ -16,6 +16,7 @@ export interface Upsert_DispatchedAssetPairingRequest {
   PairingStatus?: string;
   UpdatedBy?: string;
   Action?: string;
+  PairType?: string;
 }
 
 export interface Upsert_DispatchedAssetPairingResponse {

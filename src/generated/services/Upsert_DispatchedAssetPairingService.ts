@@ -13,9 +13,9 @@ export class Upsert_DispatchedAssetPairingService {
 
   private static readonly client = getClient(dataSourcesInfo);
 
-  public static async Upsert_DispatchedAssetPairing(OE?: string, Truck?: string, TruckPlate?: string, Trailer?: string, TrailerPlate?: string, Driver?: string, DriverID?: string, Helper?: string, HelperID?: string, PairingStatus?: string, UpdatedBy?: string, Action?: string): Promise<IOperationResult<Upsert_DispatchedAssetPairingResponse>> {
-    const params: { OE?: string, Truck?: string, TruckPlate?: string, Trailer?: string, TrailerPlate?: string, Driver?: string, DriverID?: string, Helper?: string, HelperID?: string, PairingStatus?: string, UpdatedBy?: string, Action?: string } = { OE, Truck, TruckPlate, Trailer, TrailerPlate, Driver, DriverID, Helper, HelperID, PairingStatus, UpdatedBy, Action };
-    const result = await Upsert_DispatchedAssetPairingService.client.executeAsync<{ OE?: string, Truck?: string, TruckPlate?: string, Trailer?: string, TrailerPlate?: string, Driver?: string, DriverID?: string, Helper?: string, HelperID?: string, PairingStatus?: string, UpdatedBy?: string, Action?: string }, Upsert_DispatchedAssetPairingResponse>(
+  public static async Upsert_DispatchedAssetPairing(OE?: string, Truck?: string, TruckPlate?: string, Trailer?: string, TrailerPlate?: string, Driver?: string, DriverID?: string, Helper?: string, HelperID?: string, PairingStatus?: string, UpdatedBy?: string, Action?: string, PairType?: string): Promise<IOperationResult<Upsert_DispatchedAssetPairingResponse>> {
+    const params: { OE?: string, Truck?: string, TruckPlate?: string, Trailer?: string, TrailerPlate?: string, Driver?: string, DriverID?: string, Helper?: string, HelperID?: string, PairingStatus?: string, UpdatedBy?: string, Action?: string, PairType?: string } = { OE, Truck, TruckPlate, Trailer, TrailerPlate, Driver, DriverID, Helper, HelperID, PairingStatus, UpdatedBy, Action, PairType };
+    const result = await Upsert_DispatchedAssetPairingService.client.executeAsync<{ OE?: string, Truck?: string, TruckPlate?: string, Trailer?: string, TrailerPlate?: string, Driver?: string, DriverID?: string, Helper?: string, HelperID?: string, PairingStatus?: string, UpdatedBy?: string, Action?: string, PairType?: string }, Upsert_DispatchedAssetPairingResponse>(
       {
         connectorOperation: {
           tableName: Upsert_DispatchedAssetPairingService.dataSourceName,

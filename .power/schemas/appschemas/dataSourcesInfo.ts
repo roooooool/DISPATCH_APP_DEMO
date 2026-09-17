@@ -1723,6 +1723,12 @@ export const dataSourcesInfo = {
             "in": "body",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "PairType",
+            "in": "body",
+            "required": false,
+            "type": "string"
           }
         ]
       },

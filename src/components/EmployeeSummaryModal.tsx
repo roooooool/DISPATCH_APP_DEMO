@@ -73,6 +73,19 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         }));
     };
 
+    useEffect(() => {
+        const specificRecords = allRecords.filter((rec) => {
+            const targetDate = rec.AttendanceDate ? rec.AttendanceDate.split('T')[0] : '';
+
+            return (
+                rec.EmployeeName === 'Oreña, Joel Briz' &&
+                (targetDate === '2026-09-15' || targetDate === '2026-09-16')
+            );
+        });
+
+        console.log('specific rec: ', specificRecords);
+    }, [allRecords]);
+
     // 1. Local state for optimistic updates
     const [localRecords, setLocalRecords] = useState<(AttendanceRecord & { isDeleted?: boolean })[]>(
         () => normalizeRecords(allRecords)
@@ -1021,6 +1034,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                                     <td className="action-cell" style={{ textAlign: 'center' }}>
                                                         <button
                                                             type="button"
+                                                            disabled={!dateAllowed}
                                                             className={`emp-summ-action-btn ${isDeleted ? 'btn-delete-active' : ''}`}
                                                             onClick={() => handleToggleDelete(rec)}
                                                             title={isDeleted ? "Restore Record" : "Remove Record"}

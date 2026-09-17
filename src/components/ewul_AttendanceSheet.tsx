@@ -875,6 +875,20 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       // }
       // // --- DEBUG LOG END ---
 
+      // --- DEBUG: Filter and inspect specific records ---
+      // const specificRecords = rawData.filter((rec: any) => {
+      //   const targetDate = rec.AttendanceDate ? rec.AttendanceDate.split('T')[0] : '';
+
+      //   return (
+      //     rec.EmployeeName === 'Oreña, Joel Briz' &&
+      //     (targetDate === '2026-09-15' || targetDate === '2026-09-16')
+      //   );
+      // });
+
+      // console.log('--- DEBUG: Filtered Specific Records Count ---', specificRecords);
+      //console.table(specificRecords);
+      // --------------------------------------------------
+
       setData(rawData as any);
 
       const formattedRecords: AttendanceRecord[] = rawData.map((item: any) => ({
