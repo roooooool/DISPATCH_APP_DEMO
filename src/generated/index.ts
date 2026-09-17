@@ -15,6 +15,7 @@ export * as DispatchedAssetPairingStateModel from './models/DispatchedAssetPairi
 export * as DMS_AttachmentsModel from './models/DMS_AttachmentsModel';
 export * as DMS_AttendanceLogsModel from './models/DMS_AttendanceLogsModel';
 export * as DMS_CEMModel from './models/DMS_CEMModel';
+export * as DMS_DebugLogsModel from './models/DMS_DebugLogsModel';
 export * as DMS_divertTripModel from './models/DMS_divertTripModel';
 export * as DMS_NewTrip_RemarksModel from './models/DMS_NewTrip_RemarksModel';
 export * as DMS_TripFuelRequestsListModel from './models/DMS_TripFuelRequestsListModel';
@@ -75,6 +76,7 @@ export * from './services/DispatchedAssetPairingStateService';
 export * from './services/DMS_AttachmentsService';
 export * from './services/DMS_AttendanceLogsService';
 export * from './services/DMS_CEMService';
+export * from './services/DMS_DebugLogsService';
 export * from './services/DMS_divertTripService';
 export * from './services/DMS_NewTrip_RemarksService';
 export * from './services/DMS_TripFuelRequestsListService';

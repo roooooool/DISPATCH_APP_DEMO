@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import AttendanceSheet, { type AttendanceSheetRef } from '../components/ewul_AttendanceSheet';
 import PageTemplate from './template';
 import GSDCMap, { type GSDCMapHandle, type HighlightConfig } from '../components/ewul_Maps';
+
+//@ts-ignore
 import { Calendar, Fuel, Settings, FileDown, MapIcon, RefreshCw, MapPin, Lock, Unlock, TruckIcon, Map, Fullscreen } from 'lucide-react';
 import './css/FleetMonitoring.css';
 import { GlobalFleetModal } from '../truth_react_helper';
@@ -501,9 +503,9 @@ const FleetMonitoring: React.FC = () => {
                         <button className={`fleet-action-btn ${modalOpen === 'fuel' ? 'active-highlight' : 'primary-solid'}`} onClick={() => { changeModule('fuel'); fetchFuelRequests(); }}>
                             <Fuel size={14} /> <span>Fuel Request</span>
                         </button>
-                        <button className={`fleet-action-btn ${modalOpen === 'fleet' ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule('fleet')}>
+                        {/* <button className={`fleet-action-btn ${modalOpen === 'fleet' ? 'active-highlight' : 'primary-solid'}`} onClick={() => changeModule('fleet')}>
                             <Settings size={14} /> <span>Fleet Manage</span>
-                        </button>
+                        </button> */}
                         <button className="fleet-action-btn primary-solid" title="Refresh Data" onClick={handleManualRefresh} disabled={ewul_isAnythingLoading()}>
                             <RefreshCw size={14} className={((ewul_isAnythingLoading() && modalOpen == null) || isAttendanceSheetLoading) ? 'spin-refresh' : ''} /> <span>Refresh</span>
                         </button>

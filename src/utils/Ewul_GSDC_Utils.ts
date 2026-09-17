@@ -2,8 +2,10 @@
 import type { IOperationResult } from '@microsoft/power-apps/data';
 import type { IGetAllOptions } from '../generated/models/CommonModels';
 import { DMS_updatedService } from '../generated/services/DMS_updatedService';
-import { DMS_ATTACHMENTS_ENDPOINT } from '../truth.config';
+import { DMS_ATTACHMENTS_ENDPOINT, type UserInfo } from '../truth.config';
 import MD5 from 'crypto-js/md5';
+import { DMS_DebugLogsService } from '../generated/services/DMS_DebugLogsService';
+import { type DMS_DebugLogs } from '../generated/models/DMS_DebugLogsModel';
 
 /**
  * Bypasses the standard 2,000-row delegation limit of Power Apps/OData services 
@@ -698,3 +700,91 @@ export const generateAttendanceID = (
   // 4. Compute MD5 Hash & convert to uppercase 32-char hex string
   return MD5(rawInput).toString().toUpperCase();
 };
+
+
+
+
+
+
+
+/**
+ * Parameters for creating a debug log entry using `logDebug`.
+ */
+export interface DebugLogParams {
+  /** User information object used to automatically resolve user identity and current navigation page. */
+  userInfo?: UserInfo | null;
+  /** Categorization label or module name for the event (e.g., 'AttendanceModule', 'CheckoutFlow'). */
+  contextType?: string;
+  /** The error encountered; accepts an Error instance, string, or unknown object. */
+  error?: unknown;
+  /** Additional structured contextual metadata to be serialized into JSON. */
+  details?: Record<string, unknown> | string;
+  /** Operational trip identifier if applicable. */
+  tripOE?: string;
+  /** Overrides `userInfo.CurrentNav` or `window.location.pathname`. */
+  nav?: string;
+  /** Overrides user identifier resolved from `userInfo`. */
+  user?: string;
+}
+
+/**
+ * Constructs a structured log payload and calls `DMS_DebugLogsService.create` to transmit the debug log.
+ *
+ * @param params Configuration options and contextual metadata for the debug log.
+ * @returns A promise that resolves when the logging API call completes.
+ */
+export async function logDebug(params: DebugLogParams): Promise<void> {
+  console.log("Logging error details...");
+  try {
+    const { userInfo } = params;
+
+    // 1. Resolve User (prefer explicit user -> FullName -> FirstName/LastName -> id)
+    const resolvedUser =
+      params.user ??
+      userInfo?.FullName ??
+      (userInfo?.FirstName ? `${userInfo.FirstName} ${userInfo.LastName}`.trim() : undefined) ??
+      userInfo?.id;
+
+    // 2. Resolve Nav (prefer explicit nav -> CurrentNav -> window location fallback)
+    const resolvedNav =
+      params.nav ??
+      userInfo?.CurrentNav ??
+      (typeof window !== 'undefined' ? window.location.pathname : undefined);
+
+    // 3. Format ErrorMsg from string or Error object
+    let errorMsg: string | undefined;
+    if (params.error instanceof Error) {
+      errorMsg = `${params.error.name}: ${params.error.message}\n${params.error.stack ?? ''}`;
+    } else if (typeof params.error === 'string') {
+      errorMsg = params.error;
+    } else if (params.error !== undefined) {
+      errorMsg = JSON.stringify(params.error);
+    }
+
+    // 4. Ensure DetailsJSON is a valid JSON string
+    let detailsJson: string | undefined;
+    if (typeof params.details === 'object' && params.details !== null) {
+      detailsJson = JSON.stringify(params.details);
+    } else if (typeof params.details === 'string') {
+      detailsJson = params.details;
+    }
+
+    // 5. Build payload explicitly typed with Omit<DMS_DebugLogs, 'LogID'>
+    const payload: Omit<DMS_DebugLogs, 'LogID'> = {
+      TimeOccured: new Date().toISOString(), // Required string in generated model
+      Nav: resolvedNav,
+      ContextType: params.contextType,
+      ErrorMsg: errorMsg,
+      DetailsJSON: detailsJson,
+      User: resolvedUser,
+      TripOE: params.tripOE,
+    };
+
+    console.log('error payload: ', payload);
+
+    const result = await DMS_DebugLogsService.create({ ...payload });
+    console.log('error log result: ', result);
+  } catch (loggingError) {
+    console.error('Failed to send debug log payload:', loggingError);
+  }
+}

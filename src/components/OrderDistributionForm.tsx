@@ -39,6 +39,7 @@ import {
   SPECIAL_POSITIONS,
   GSDC_ANNOUNCEMENT_ENDPOINT,
   BUSINESS_UNITS,
+  ORDER_DIST_FORM_ALLOWED
 } from '../truth.config';
 
 
@@ -60,8 +61,8 @@ import {
   formatDate,
   logDmsUpdate,
   fetchSharepointAttachments,
-  type FormatDateOptions,
   convertFormDataToHtmlTable,
+  logDebug, type DebugLogParams
 } from '../utils/Ewul_GSDC_Utils';
 import { useTaskWorker } from '../utils/TaskWorkerContext';
 
@@ -277,6 +278,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const [shareOE, setShareOE] = useState<string>("");
     const [shareComment, setShareComment] = useState("");
 
+    const isReadOnly = !editingUser?.Position || !ORDER_DIST_FORM_ALLOWED.includes(editingUser.Position);
 
     const mappedBusinessUnits: DropdownOption[] = BUSINESS_UNITS.map((unit) => ({
       value: unit.Title, // Unique identifier used when selected
@@ -423,6 +425,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       } catch (error) {
         console.error('Error fetching attachments:', error);
+        handleLogError(error, `attachments.fetch`, 'Trip - Fetch Attachments', {});
       }
     };
 
@@ -1509,13 +1512,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               try {
                 for (const record of recordsToUpload) {
                   console.log(`Uploading attendance for ${record.EmployeeName} with status ${record.OE}...`);
-                  await GSDC_AttendanceService.create({
-                    ...record,
-                    SecondTrip: ATTENDANCE_SERVED_COUNTS_INITIAL[record.SecondTrip ? Math.max(Number(record.SecondTrip), 0) : 0],
-                    // // 💡 CHANGE 5: Read directly from the stateful servedDate reference to preserve picker inputs
-                    // Date: servedDate ? servedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 
-                    // In: servedDate ? servedDate.toISOString() : new Date().toISOString(),
-                  });
 
                   // 2. Sync to SQL via UpsertAttendanceLogService
                   const mappedDate = record.Date || servedDate;
@@ -1542,13 +1538,30 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     ModifiedBy: editingUser?.FullName || 'Unknown User'
                   } as any;
 
-                  await UpsertAttendanceLogService.UpsertAttendanceLog(fpayload);
+                  const sppayload = {
+                    ...record,
+                    SecondTrip: ATTENDANCE_SERVED_COUNTS_INITIAL[record.SecondTrip ? Math.max(Number(record.SecondTrip), 0) : 0],
+                  }
+
+                  try {
+                    await GSDC_AttendanceService.create(sppayload);
+                  } catch (error) {
+                    handleLogError(error, `spattendance.served`, 'Trip - SP Attendance', sppayload);
+                  }
+
+                  try {
+                    await UpsertAttendanceLogService.UpsertAttendanceLog(fpayload);
+                  } catch (error) {
+                    handleLogError(error, `attendance.served`, 'Trip - Attendance', fpayload);
+                  }
+
 
                   console.log(`Successfully logged attendance for: ${record.EmployeeName}`);
                   console.log('wew att: ', fpayload);
                 }
               } catch (error) {
                 console.error("Failed to upload attendance records:", error);
+                handleLogError(error, `attendance.served`, 'Trip - Attendance');
                 return { success: false, error };
               } finally {
                 console.log("Attendance log upload process completed.");
@@ -1570,35 +1583,38 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
     const handleUpdateTripTaskTracker = async (wouldbeformData: LiveDMSView_CEM, deleteAnyways?: boolean) => {
+
+      const progress = wouldbeformData.TripProgress;
+      if (!progress) return;
+
+      console.log("Syncing TripTaskTracker with data progress:", wouldbeformData.TripProgress, " deleteAnyways flag:", deleteAnyways);
+
+      const deleteIfComplete: boolean = !!((TRIP_PROGRESS ? TRIP_PROGRESS.find(p => p.Progress === progress)?.idx ?? 0 : 0) >= 2 && wouldbeformData.OE);
+      const payload: UpsertTripTaskTrackerRequest = {
+        OE: wouldbeformData.OE || '',
+        TripProgress: progress,
+        AssignedDriver: !!wouldbeformData.Driver,
+        AssignedUnit: !!wouldbeformData.Vehicle,
+        HasATW: !!wouldbeformData.ATW_x002f_LO_x0023_,
+        HasSO: !!wouldbeformData.SO_x0023_,
+
+        UpdateOnly: false, // always create or update the record regardless of progress for better tracking of changes
+
+        deleteIfComplete: deleteIfComplete, // Only delete if the trip is progressing to Done (or beyond) and has a valid OE. This prevents premature deletion of the tracker record for trips that are still in progress or don't have an OE assigned yet.
+        deleteAnyways: !!deleteAnyways,
+
+        EditorName: editingUser?.FullName || 'Unknown User',
+
+        TripJSON: JSON.stringify({
+          SourceName: formData.Source,
+          TripGroup: formData._tripGroup,
+          CementType: formData.cementType
+        })
+
+      };
+
       try {
-        const progress = wouldbeformData.TripProgress;
-        if (!progress) return;
 
-        console.log("Syncing TripTaskTracker with data progress:", wouldbeformData.TripProgress, " deleteAnyways flag:", deleteAnyways);
-
-        const deleteIfComplete: boolean = !!((TRIP_PROGRESS ? TRIP_PROGRESS.find(p => p.Progress === progress)?.idx ?? 0 : 0) >= 2 && wouldbeformData.OE);
-        const payload: UpsertTripTaskTrackerRequest = {
-          OE: wouldbeformData.OE || '',
-          TripProgress: progress,
-          AssignedDriver: !!wouldbeformData.Driver,
-          AssignedUnit: !!wouldbeformData.Vehicle,
-          HasATW: !!wouldbeformData.ATW_x002f_LO_x0023_,
-          HasSO: !!wouldbeformData.SO_x0023_,
-
-          UpdateOnly: false, // always create or update the record regardless of progress for better tracking of changes
-
-          deleteIfComplete: deleteIfComplete, // Only delete if the trip is progressing to Done (or beyond) and has a valid OE. This prevents premature deletion of the tracker record for trips that are still in progress or don't have an OE assigned yet.
-          deleteAnyways: !!deleteAnyways,
-
-          EditorName: editingUser?.FullName || 'Unknown User',
-
-          TripJSON: JSON.stringify({
-            SourceName: formData.Source,
-            TripGroup: formData._tripGroup,
-            CementType: formData.cementType
-          })
-
-        };
 
         console.log('trip task update: ', payload);
 
@@ -1606,6 +1622,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       } catch (error) {
         console.error("Failed to sync TripTaskTracker:", error);
+        handleLogError(error, `synctriptask`, 'Trip - Sync Trip Task', payload);
         // Optional: add a notification task to the worker here
       }
     };
@@ -1841,6 +1858,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           } catch (error) {
             console.error('Failed to progress trip:', error);
+            handleLogError(error, `tripproceed.${progress_next}`, 'Trip - Trip Progress');
             return { success: false, error };
           }
         },
@@ -1884,6 +1902,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             }
           } catch (error) {
             console.error('Failed to update asset pairing:', error);
+            handleLogError(error, `updatepair`, 'Trip - Update Pair');
           }
 
 
@@ -2000,6 +2019,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           } catch (error) {
             console.error('Failed to save trip:', error);
+            handleLogError(error, `tripsave.${formData.TripProgress}`, 'Trip - Trip Save');
             return { success: false, error };
           }
         },
@@ -2103,6 +2123,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             return { success: true };
           } catch (error) {
             console.error('Failed to cancel trip:', error);
+            handleLogError(error, `tripcancel`, 'Trip - Cancel');
             return { success: false, error };
           }
         },
@@ -2179,6 +2200,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           } catch (error) {
             console.error('Failed to revert trip:', error);
+            handleLogError(error, `triprevert`, 'Trip - Revert');
             return { success: false, error };
           }
         },
@@ -2267,16 +2289,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
       console.log(`Broadcasting announcement for Trip [${formData.OE}]...`);
 
-      const customOptions: FormatDateOptions = {
-        format: {
-          month: 'long',
-          day: '2-digit',
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-        },
-        alreadyLocal: false
-      };
+      const formatted = new Date(now).toLocaleTimeString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).replace(' at ', ' at '); // Returns "September 17 at 5:27 AM"
 
       try {
         // 2. Perform the direct native fetch call
@@ -2287,7 +2306,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           },
           body: JSON.stringify({
             chat: chat,
-            messageTitle: `${title} - ${formData.OE} - ${formatDate(now, customOptions).replace(',', ' ')}`,
+            messageTitle: `${title} - ${formData.OE} - ${formatted}`,
             message: message,
             messagedBy: editingUser?.FullName,
             referenceLink: hasDeepLink ? deepLink : '',
@@ -2608,7 +2627,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           } catch (error) {
             console.error("An error occurred during the upload process:", error);
-            // Re-throw to be caught by the outer try-catch of the worker
+            handleLogError(error, `attachment.upload`, 'Trip - Attachment', { ...plantDrFiles, ...wsFiles });
             throw error;
           }
         },
@@ -2652,6 +2671,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         setTripLogs(result); // Use real data when available, fallback to sample data
       } catch (error) {
         console.error("Failed to fetch trip logs:", error);
+        handleLogError(error, `actionlogsview`, 'Trip - Action Logs', { filter: `OE eq '${OE}' or tripID eq '${formData.tripID}'` });
       } finally {
         setIsLoadingLogs(false);
       }
@@ -2836,6 +2856,21 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
 
+    const handleLogError = (error: unknown, action: string, context: string, jsonDetails?: any) => {
+
+      const err: DebugLogParams = {
+        contextType: context,
+        user: editingUser?.FullName,
+        nav: `ordrdistform.${action}`,
+        error: error,
+        details: jsonDetails ? jsonDetails : formData as any,
+        tripOE: formData.OE,
+      }
+      logDebug(err);
+
+
+    }
+
 
     const handleUpdateAttendance = (
       name: string,
@@ -2863,28 +2898,34 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         name: `Employee Attendance Update`,
         execute: async () => {
 
+          const upsertAtt = {
+            EmployeeName: name,
+            EmployeeID: empId,
+            AttendanceDate: attdate ? new Date(attdate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            AttendanceStatus: attendance || 'PRESENT',
+            OE: formData.OE || '',
+
+            tripKM: tripKM,
+            SD: SD,
+            SecondTrip: secondTrip,
+            AttendanceDetail: tripIndex,
+            TransactionType: TransactionType,
+            Position: Position,
+            TCVC: TCVC,
+
+            ModifiedBy: editingUser?.FullName
+
+          };
+
           try {
-            UpsertAttendanceLogService.UpsertAttendanceLog({
-              EmployeeName: name,
-              EmployeeID: empId,
-              AttendanceDate: attdate ? new Date(attdate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-              AttendanceStatus: attendance || 'PRESENT',
-              OE: formData.OE || '',
 
-              tripKM: tripKM,
-              SD: SD,
-              SecondTrip: secondTrip,
-              AttendanceDetail: tripIndex,
-              TransactionType: TransactionType,
-              Position: Position,
-              TCVC: TCVC,
 
-              ModifiedBy: editingUser?.FullName
+            UpsertAttendanceLogService.UpsertAttendanceLog(upsertAtt as any);
 
-            } as any);
             return { success: true };
           } catch (error) {
             console.error("Fetch error:", error);
+            handleLogError(error, `attendance.${attendance}`, 'Trip - Attendance', upsertAtt);
             return { success: false, error };
           }
 
@@ -2934,6 +2975,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           } catch (error) {
             console.error("Failed to recalculate served count allocations:", error);
+            handleLogError(error, `attendance.count`, 'Trip - Attendance Count');
           }
         };
 
@@ -3044,6 +3086,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           } catch (error) {
             console.error('Failed to print DMS:', error);
+            handleLogError(error, `printdms`, 'Trip - Print DMS');
             return { success: false, error };
           }
         },
@@ -3140,12 +3183,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
 
-    const disabledDstGrp = prog_verified || prog_idx < getProgIdxByProgress("Dispatched To Destination") || !validateOE(formData).isValid;
-    const disabledSrcGrp = prog_verified || prog_idx < getProgIdxByProgress("Dispatched To Source") || !validateOE(formData).isValid;
-    const disabledAssGrp = prog_verified || prog_idx < getProgIdxByProgress("Assigned") || !validateOE(formData).isValid;
-    const disabledOEDetGrp = prog_verified || !validateOE(formData).isValid;
-    const disabledOEEntGrp = prog_verified;
-    const disabledDoneGrp = prog_verified || prog_idx < getProgIdxByProgress("Done") || !validateOE(formData).isValid;
+    const disabledDstGrp = prog_verified || prog_idx < getProgIdxByProgress("Dispatched To Destination") || !validateOE(formData).isValid || isReadOnly;
+    const disabledSrcGrp = prog_verified || prog_idx < getProgIdxByProgress("Dispatched To Source") || !validateOE(formData).isValid || isReadOnly;
+    const disabledAssGrp = prog_verified || prog_idx < getProgIdxByProgress("Assigned") || !validateOE(formData).isValid || isReadOnly;
+    const disabledOEDetGrp = prog_verified || !validateOE(formData).isValid || isReadOnly;
+    const disabledOEEntGrp = prog_verified || isReadOnly;
+    const disabledDoneGrp = prog_verified || prog_idx < getProgIdxByProgress("Done") || !validateOE(formData).isValid || isReadOnly;
 
     const discrepancy = formData.QTYDelivered == null || formData.QTYWithdrawn == null ? 0 : formData.QTYDelivered - formData.QTYWithdrawn;
     const actualDiscrepancy = formData.QTYDelivered_Actual == null || formData.QTYWithdrawn_Actual == null ? 0 : formData.QTYDelivered_Actual - formData.QTYWithdrawn_Actual;
@@ -3185,14 +3228,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   </button>
                   {isMoreOptionsOpen && (
                     <div className="more-options-dropdown">
-                      <a href="#" className={(!formData.Vehicle || formData.TripProgress === 'New Trip') ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.Vehicle || formData.TripProgress === 'New Trip') return; onShowFuelRequest?.(formData); setMoreOptionsOpen(false); }}><Fuel size={16} /> Fuel Request {!canChangeTrip && !fuelFetching && <span className="unsaved-indicator">!</span>}{fuelFetching && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}</a>
-                      <a href="#" className={!formData.Latlong ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); setMoreOptionsOpen(false); }}><MapPin size={16} /> Check GPS</a>
-                      <a href="#" className={!formData.tripID ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.tripID) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
-                      <a href="#" className={!formData.tripID || !canChangeTrip ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.tripID || !canChangeTrip) { handleCannotChangeTrip(); return; } onRequestChangeTrip?.(formData, progress_idx() > 2 ? 'Divert' : 'Change'); setMoreOptionsOpen(false); }}><Replace size={16} /> {`${progress_idx() > 2 ? 'Divert' : 'Change'} Trip`}</a>
-                      <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip /*|| formData.TripProgress === 'Done'*/) && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || '')) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if ((!formData.tripID || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || ''))) { handleCannotChangeTrip(); return; } setCancelRemarks(""); setAttachedCancellationImage(null); setSkipBroadcast(false); setShowCancelConfirmModal(true); setMoreOptionsOpen(false); }}><Ban size={16} /> Cancel Trip</a>
+                      <a href="#" className={(!formData.Vehicle || formData.TripProgress === 'New Trip' || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.Vehicle || isReadOnly || formData.TripProgress === 'New Trip') return; onShowFuelRequest?.(formData); setMoreOptionsOpen(false); }}><Fuel size={16} /> Fuel Request {!canChangeTrip && !fuelFetching && <span className="unsaved-indicator">!</span>}{fuelFetching && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}</a>
+                      <a href="#" className={(!formData.Latlong) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); setMoreOptionsOpen(false); }}><MapPin size={16} /> Check GPS</a>
+                      <a href="#" className={(!formData.tripID || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.tripID || isReadOnly) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
+                      <a href="#" className={(!formData.tripID || !canChangeTrip || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (isReadOnly) { return; } if (!formData.tripID || !canChangeTrip) { handleCannotChangeTrip(); return; } onRequestChangeTrip?.(formData, progress_idx() > 2 ? 'Divert' : 'Change'); setMoreOptionsOpen(false); }}><Replace size={16} /> {`${progress_idx() > 2 ? 'Divert' : 'Change'} Trip`}</a>
+                      <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip /*|| formData.TripProgress === 'Done'*/ || isReadOnly) && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || '')) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if ((!formData.tripID || isReadOnly || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || ''))) { handleCannotChangeTrip(); return; } setCancelRemarks(""); setAttachedCancellationImage(null); setSkipBroadcast(false); setShowCancelConfirmModal(true); setMoreOptionsOpen(false); }}><Ban size={16} /> Cancel Trip</a>
                       <a
                         href="#"
-                        className={!formData.OE ? 'disabled' : ''}
+                        className={(!formData.OE) ? 'disabled' : ''}
                         onClick={(e) => {
                           e.preventDefault();
                           if (formData.OE) {
@@ -3205,7 +3248,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       </a>
                       <a
                         href="#"
-                        className={!formData.OE ? 'disabled' : ''}
+                        className={(!formData.OE) ? 'disabled' : ''}
                         onClick={(e) => {
                           e.preventDefault();
                           handleViewTripHistory(formData.OE || '');
@@ -3216,10 +3259,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       </a>
                       <a
                         href="#"
-                        className={(!formData.OE || /*((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || */ (formData.TripProgress !== 'Done') || isCreatingIR) ? 'disabled' : ''}
+                        className={(!formData.OE || /*((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) || */ (formData.TripProgress !== 'Done') || isCreatingIR || isReadOnly) ? 'disabled' : ''}
                         onClick={(e) => {
                           e.preventDefault();
-                          if (!formData.OE || /*((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) ||*/ (formData.TripProgress !== 'Done') || isCreatingIR) return;
+                          if (!formData.OE || isReadOnly || /*((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) ||*/ (formData.TripProgress !== 'Done') || isCreatingIR || isReadOnly) return;
                           handleTripCreateIR(formData);
                           // setIsIncidentModalOpen(false);
                           // setShowIncidentPrompt(true);
@@ -3947,7 +3990,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
             {!prog_verified && (
               <>
-                <button className="btn-save" onClick={() => { if (isSubmitting) return; handleTripSave(); }} disabled={isSubmitting || prog_verified}>
+                <button className="btn-save" onClick={() => { if (isSubmitting || isReadOnly) return; handleTripSave(); }} disabled={isSubmitting || prog_verified || isReadOnly}>
                   {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
                   <SaveIcon size={'var(--font-size-vlg)'} />
                   Save
@@ -3955,10 +3998,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 <button
                   className="btn-proceed"
                   onClick={() => {
-                    if (isSubmitting) return;
+                    if (isSubmitting || isReadOnly) return;
                     handleTripProceed(shouldTagAsPlanned ? 'Planned' : prog_next);
                   }}
-                  disabled={!validation.isValid || isSubmitting || prog_verified}
+                  disabled={!validation.isValid || isSubmitting || prog_verified || isReadOnly}
                 >
                   {shouldTagAsPlanned ? <Milestone size={16} /> : prog_icon}
                   {shouldTagAsPlanned ? 'Plan Trip' : prog_verified ? 'Verified' : prog_next.replace('ed', '')}

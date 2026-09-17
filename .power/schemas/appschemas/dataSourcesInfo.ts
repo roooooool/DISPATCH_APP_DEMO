@@ -863,6 +863,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "dms_debuglogs": {
+    "tableId": "DMS_DebugLogs",
+    "version": "v2",
+    "primaryKey": "LogID",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "dms_newtrip_remarks": {
     "tableId": "DMS_NewTrip_Remarks",
     "version": "v2",

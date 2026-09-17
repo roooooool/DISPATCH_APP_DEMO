@@ -40,7 +40,8 @@
         "late_attendance_requests",
         "dispapp_bu_capacity_summary",
         "dms_newtrip_remarks",
-        "dispatchedassetpairingstate"
+        "dispatchedassetpairingstate",
+        "dms_debuglogs"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -125,6 +126,9 @@
             },
             "dispatchedassetpairingstate": {
               "tableName": "[dbo].[DispatchedAssetPairingState]"
+            },
+            "dms_debuglogs": {
+              "tableName": "[dbo].[DMS_DebugLogs]"
             }
           }
         }

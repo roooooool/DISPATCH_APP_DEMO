@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.36.16"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.36.17"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -166,37 +166,38 @@ export type StatusKey = keyof typeof ATTENDANCE_STATUS_COLORS;
 export const ATTENDANCE_SERVED_COUNTS_INITIAL = ["N", "Y", "X", "Z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "O", "P", "Q", "R", "S", "T", "U", "V", "W"];
 
 export const SPECIAL_POSITIONS = ['Developer', 'Admin', 'Execom', "Manager", "IT SUPPORT"]; // Positions that bypass whitelist
+export const ORDER_DIST_FORM_ALLOWED = ["Developer", "IT SUPPORT", "OD", "Coor", "Supervisor"];
 export const NAV_DESTINATIONS = [
   {
     label: "Dashboard",
     path: "/dash",
-    whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC'],
+    whiteList: ["Admin", "Manager", "OD", "Coor"],
     noSpecialAccess: false,
     hidden: false
   },
   {
     label: "Order Distribution",
     path: "/order-dist",
-    whiteList: ["OD", 'DCC', 'LCC'],
+    whiteList: ["OD"],
     hidden: false
   },
   {
     label: "Trip Dispatch",
     path: "/order",
-    whiteList: ["OD", "Coor", 'DCC', 'LCC', "Supervisor"],
+    whiteList: ["OD", "Coor", "Supervisor", "Sales"],
     hidden: false
   },
   {
     label: "Fleet Monitoring",
     path: "/fleet",
-    whiteList: ["Driver", "OD", "Coor", 'DCC', 'LCC', "Supervisor"],
+    whiteList: ["Driver", "OD", "Coor", "Supervisor"],
     noSpecialAccess: false,
     hidden: false
   },
   {
     label: "Incident Reports",
     path: "/incidents",
-    whiteList: ["Admin", "Manager", "OD", "Coor", 'DCC', 'LCC', 'Inspection', 'Supervisor'],
+    whiteList: ["Admin", "Manager", "OD", "Coor", 'Inspection', 'Supervisor'],
     noSpecialAccess: false,
     hidden: false
   },
@@ -693,8 +694,18 @@ export const LIVE_DMS_TABLE_CONFIG: TableModuleConfig = {
     },
     { col: "Driver", cellStyle: () => { return { textAlign: 'left' } } },
     { col: "Helper", cellStyle: () => { return { textAlign: 'left' } } },
-    { col: "Vehicle", alias: "Truck" },
-    { col: "BO", alias: "Trailer" },
+    {
+      col: "Vehicle", alias: "Truck", render(val, row, _searchTerm, _addTask, _fontSize) {
+        const full = row[enc("Head_Full")]
+        return full ? full : val;
+      },
+    },
+    {
+      col: "BO", alias: "Trailer", render(val, row, _searchTerm, _addTask, _fontSize) {
+        const full = row[enc("BO_Full")]
+        return full ? full : val;
+      },
+    },
     {
       col: 'HasFuelRequest', alias: 'FR',
       render(_val, row, _searchTerm, _addTask, fontSize) {
