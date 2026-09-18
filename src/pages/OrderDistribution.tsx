@@ -729,7 +729,7 @@ const OrderDistribution: React.FC = () => {
 
   const generateAdditionalOE = async (type: 'Preload' | 'Mobilization') => {
     //if (selectedOrder && ['Preload', 'Mobilization'].some(t => t === selectedOrder._tripGroup) ) return;
-
+    console.log("generating manual: ", type);
 
     setLoadingFor(FETCH_LOADING_KEYS.generateAddOE, true);
 
@@ -812,6 +812,7 @@ const OrderDistribution: React.FC = () => {
 
   // Helper to generate a unique ID for a specific row and trigger its API fetch
   const addNewRow = async (taskType: 'Preload' | 'Mobilization') => {
+    console.log("generating manual: ", taskType);
     if (bulkRows.length >= 10) return; // Enforce the 10-batch upper limit safely
 
     const rowId = Math.random().toString(36).substring(2, 9);

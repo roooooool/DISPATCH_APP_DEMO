@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, Eye, EyeOff  } from 'lucide-react';
+import { Filter, Eye, EyeOff } from 'lucide-react';
 import LoadingOverlay from './LoadingOverlay_navblue';
-import { Sp_get_AggregatedTrips_CountsByBUService } from '../generated/services/Sp_get_AggregatedTrips_CountsByBUService';
+import { Get_AggregatedTrips_CountsByBUService } from '../generated/services/Get_AggregatedTrips_CountsByBUService';
 import { TRIP_STATUSES } from '../truth.config';
 import './comp_css/tripStatus_BarChart.css';
 
@@ -14,9 +14,9 @@ interface BarChartProps {
 
 const getBarColor = (index: number) => {
   const colors = [
-    '#000080', '#f59e0b', '#10b981', '#3a4efc', '#f43f5e', 
-    '#8b5cf6', '#fbbf24', '#334155', '#0ea5e9', '#b91c1c', 
-    '#065f46', '#a78bfa', '#ea580c', '#60a5fa', '#d946ef', 
+    '#000080', '#f59e0b', '#10b981', '#3a4efc', '#f43f5e',
+    '#8b5cf6', '#fbbf24', '#334155', '#0ea5e9', '#b91c1c',
+    '#065f46', '#a78bfa', '#ea580c', '#60a5fa', '#d946ef',
     '#06b6d4', '#7f1d1d', '#84cc16', '#4338ca', '#64748b'
   ];
   return colors[index % colors.length] || '#000080';
@@ -27,13 +27,13 @@ const TripStatus_BarChart: React.FC<BarChartProps> = ({ BU, fromStr, toStr, onBa
   const [loading, setLoading] = useState<boolean>(false);
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [showAllCounts, setShowAllCounts] = useState<boolean>(true);
-  
+
   // Initialize visibility state: Hide "Served" by default
   const [visibleStatuses, setVisibleStatuses] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     TRIP_STATUSES.forEach(s => {
-        // "Show if it's NOT Served AND it's NOT AssignedTrips"
-        initial[s.Status] = s.Status !== "Served" && s.Status !== "AssignedTrips";
+      // "Show if it's NOT Served AND it's NOT AssignedTrips"
+      initial[s.Status] = s.Status !== "Served" && s.Status !== "AssignedTrips";
     });
     return initial;
   });
@@ -41,7 +41,7 @@ const TripStatus_BarChart: React.FC<BarChartProps> = ({ BU, fromStr, toStr, onBa
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await Sp_get_AggregatedTrips_CountsByBUService.Sp_get_AggregatedTrips_CountsByBU({
+      const res = await Get_AggregatedTrips_CountsByBUService.Get_AggregatedTrips_CountsByBU({
         colToGet: "*",
         ...(BU && { BU }),
         FROM: fromStr,
@@ -83,17 +83,17 @@ const TripStatus_BarChart: React.FC<BarChartProps> = ({ BU, fromStr, toStr, onBa
     .map(s => totals[s.Status] || 0);
 
   const rawMax = Math.max(...visibleTotals, 10);
-    
+
   const maxVal = rawMax * 1.10;
 
   return (
     <div className={`status-bar-container ${showFilters ? 'is-scrollable' : 'is-fixed'}`}>
       {loading && (
         <div className="grid-loader-wrapper">
-          <LoadingOverlay 
-            message="Fetching Trip Counts..." 
-            bgColor="rgba(255, 255, 255, 0.2)" 
-            blur={2} 
+          <LoadingOverlay
+            message="Fetching Trip Counts..."
+            bgColor="rgba(255, 255, 255, 0.2)"
+            blur={2}
             size="md"
           />
         </div>
@@ -106,28 +106,28 @@ const TripStatus_BarChart: React.FC<BarChartProps> = ({ BU, fromStr, toStr, onBa
           <span className="live-text">Live Data</span>
         </div>
       </div>
-      
+
       {/* Horizontal Filter Controls */}
       <div className={`filter-section-wrapper ${showFilters ? 'is-open' : 'is-closed'}`}>
         <div className="filter-controls-horizontal">
           {/* New Toggle for Counts inside the filter row */}
           <div className="count-toggle-area">
-             <button 
-                className={`toggle-minimal ${showAllCounts ? 'active' : ''}`}
-                onClick={() => setShowAllCounts(!showAllCounts)}
-                title="Toggle Permanent Counts"
-             >
-               {showAllCounts ? <Eye size={14} /> : <EyeOff size={14} />}
-               <span>{showAllCounts ? "Hide Labels" : "Show Labels"}</span>
-             </button>
+            <button
+              className={`toggle-minimal ${showAllCounts ? 'active' : ''}`}
+              onClick={() => setShowAllCounts(!showAllCounts)}
+              title="Toggle Permanent Counts"
+            >
+              {showAllCounts ? <Eye size={14} /> : <EyeOff size={14} />}
+              <span>{showAllCounts ? "Hide Labels" : "Show Labels"}</span>
+            </button>
           </div>
 
           <div className="checkbox-group">
             {TRIP_STATUSES.map((s, idx) => (
               <label key={`filter-${idx}`} className={`filter-chip ${visibleStatuses[s.Status] ? 'active' : ''}`}>
-                <input 
-                  type="checkbox" 
-                  checked={visibleStatuses[s.Status]} 
+                <input
+                  type="checkbox"
+                  checked={visibleStatuses[s.Status]}
                   onChange={() => toggleStatus(s.Status)}
                   className="hidden-checkbox"
                 />
@@ -147,8 +147,8 @@ const TripStatus_BarChart: React.FC<BarChartProps> = ({ BU, fromStr, toStr, onBa
       {/* Floating Buttons when filters are hidden */}
       {!showFilters && (
         <div className="floating-controls-right">
-          <button 
-            className={`expand-filter-pill ${showAllCounts ? 'active-blue' : ''}`} 
+          <button
+            className={`expand-filter-pill ${showAllCounts ? 'active-blue' : ''}`}
             onClick={() => setShowAllCounts(!showAllCounts)}
           >
             {showAllCounts ? <Eye size={12} /> : <EyeOff size={12} />}
@@ -162,25 +162,25 @@ const TripStatus_BarChart: React.FC<BarChartProps> = ({ BU, fromStr, toStr, onBa
       <div className={`bar-grid ${loading ? 'grid-blur' : ''}`}>
         {TRIP_STATUSES.map((statusItem, index) => {
           if (!visibleStatuses[statusItem.Status]) return null;
-          
+
 
           const count = totals[statusItem.Status] || 0;
           const barHeight = (count / maxVal) * 100;
 
           return (
-            <div 
-                key={`${statusItem.Status}-${index}`} 
-                className="bar-column group"
-                onClick={() => {
-                  if (onBarClick) {
-                    onBarClick({ status: statusItem.Status, count: count });
-                  }
-                }}
-              >
+            <div
+              key={`${statusItem.Status}-${index}`}
+              className="bar-column group"
+              onClick={() => {
+                if (onBarClick) {
+                  onBarClick({ status: statusItem.Status, count: count });
+                }
+              }}
+            >
               <div className="bar-track">
-                <div 
-                  className="bar-fill" 
-                  style={{ 
+                <div
+                  className="bar-fill"
+                  style={{
                     height: `${barHeight}%`,
                     backgroundColor: count > 0 ? getBarColor(index) : '#f1f5f9',
                   }}

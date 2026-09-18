@@ -419,12 +419,13 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                             // 2. Generate Trip Ticket if missing
                             let tripTicketID = order.TripTicketID;
                             if (!tripTicketID) {
-                                const ticketResult = await GenerateNewTripTicketService.GenerateNewTripTicket(order.OE);
+                                const ticketResult = await GenerateNewTripTicketService.GenerateNewTripTicket({ OE: order.OE } as any);
                                 const table1 = ticketResult.data?.ResultSets?.Table1 as any[] | undefined;
                                 if (table1 && table1.length > 0) {
                                     tripTicketID = table1[0].TripTicketID;
                                 }
                             }
+                            console.log("generated trip ticket: ", tripTicketID);
 
                             console.log("confirming manual OE");
                             // 3. Generate Additional OE if needed (Preload / Mobilization)

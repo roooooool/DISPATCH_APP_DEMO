@@ -6,16 +6,16 @@
 import { dataSourcesInfo } from '../../../.power/schemas/appschemas/dataSourcesInfo';
 import type { IOperationResult } from '@microsoft/power-apps/data';
 import { getClient } from '@microsoft/power-apps/data';
-import type { FetchAttendanceCalendarResponse } from '../models/FetchAttendanceCalendarModel';
+import type { FetchAttendanceCalendarRequest, FetchAttendanceCalendarResponse } from '../models/FetchAttendanceCalendarModel';
 
 export class FetchAttendanceCalendarService {
-  private static readonly dataSourceName = '_810a2b32_6752_4f35_a9a7_c38a02bed148_sp';
+  private static readonly dataSourceName = 'fetchattendancecalendar';
 
   private static readonly client = getClient(dataSourcesInfo);
 
-  public static async FetchAttendanceCalendar(Year?: number, Month?: number, BU?: string, CutoffStartDay?: number, CutoffEndDay?: number): Promise<IOperationResult<FetchAttendanceCalendarResponse>> {
-    const params: { Year?: number, Month?: number, BU?: string, CutoffStartDay?: number, CutoffEndDay?: number } = { Year, Month, BU, CutoffStartDay, CutoffEndDay };
-    const result = await FetchAttendanceCalendarService.client.executeAsync<{ Year?: number, Month?: number, BU?: string, CutoffStartDay?: number, CutoffEndDay?: number }, FetchAttendanceCalendarResponse>(
+  public static async FetchAttendanceCalendar(inputParameters: FetchAttendanceCalendarRequest): Promise<IOperationResult<FetchAttendanceCalendarResponse>> {
+    const params: { inputParameters: FetchAttendanceCalendarRequest } = { inputParameters };
+    const result = await FetchAttendanceCalendarService.client.executeAsync<{ inputParameters: FetchAttendanceCalendarRequest }, FetchAttendanceCalendarResponse>(
       {
         connectorOperation: {
           tableName: FetchAttendanceCalendarService.dataSourceName,

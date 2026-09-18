@@ -41,7 +41,12 @@
         "dms_newtrip_remarks",
         "dispatchedassetpairingstate",
         "dms_debuglogs",
-        "livedmsview_cem"
+        "livedmsview_cem",
+        "get_aggregatedtrips_countsbybu",
+        "get_aggregatedassigned_countsbybu",
+        "fetchattendancecalendar",
+        "generateadditionaloe_id2",
+        "generatenewtripticket"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -129,7 +134,12 @@
             },
             "livedmsview_cem": {
               "tableName": "[dbo].[LiveDMSView_CEM]"
-            }
+            },
+            "get_aggregatedtrips_countsbybu": {},
+            "get_aggregatedassigned_countsbybu": {},
+            "fetchattendancecalendar": {},
+            "generateadditionaloe_id2": {},
+            "generatenewtripticket": {}
           }
         }
       }

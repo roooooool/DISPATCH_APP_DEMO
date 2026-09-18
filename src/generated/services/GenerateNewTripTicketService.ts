@@ -6,16 +6,16 @@
 import { dataSourcesInfo } from '../../../.power/schemas/appschemas/dataSourcesInfo';
 import type { IOperationResult } from '@microsoft/power-apps/data';
 import { getClient } from '@microsoft/power-apps/data';
-import type { GenerateNewTripTicketResponse } from '../models/GenerateNewTripTicketModel';
+import type { GenerateNewTripTicketRequest, GenerateNewTripTicketResponse } from '../models/GenerateNewTripTicketModel';
 
 export class GenerateNewTripTicketService {
-  private static readonly dataSourceName = '_810a2b32_6752_4f35_a9a7_c38a02bed148_sp';
+  private static readonly dataSourceName = 'generatenewtripticket';
 
   private static readonly client = getClient(dataSourcesInfo);
 
-  public static async GenerateNewTripTicket(OE?: string): Promise<IOperationResult<GenerateNewTripTicketResponse>> {
-    const params: { OE?: string } = { OE };
-    const result = await GenerateNewTripTicketService.client.executeAsync<{ OE?: string }, GenerateNewTripTicketResponse>(
+  public static async GenerateNewTripTicket(inputParameters: GenerateNewTripTicketRequest): Promise<IOperationResult<GenerateNewTripTicketResponse>> {
+    const params: { inputParameters: GenerateNewTripTicketRequest } = { inputParameters };
+    const result = await GenerateNewTripTicketService.client.executeAsync<{ inputParameters: GenerateNewTripTicketRequest }, GenerateNewTripTicketResponse>(
       {
         connectorOperation: {
           tableName: GenerateNewTripTicketService.dataSourceName,

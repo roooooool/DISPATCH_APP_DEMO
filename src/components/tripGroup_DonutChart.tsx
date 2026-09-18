@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Loader2, MoreVertical } from 'lucide-react';
-import LoadingOverlay from './LoadingOverlay_navblue'; 
+import LoadingOverlay from './LoadingOverlay_navblue';
 import './comp_css/tripGroup_DonutChart.css';
 
 
-import { Sp_get_AggregatedAssigned_CountsByBUService } from '../generated/services/Sp_get_AggregatedAssigned_CountsByBUService';
+import { Get_AggregatedAssigned_CountsByBUService } from '../generated/services/Get_AggregatedAssigned_CountsByBUService';
 
 // TRUTH LIST
 import { TRIP_GROUPS, STATUS_COLORS } from '../truth.config';
@@ -23,10 +23,10 @@ const DonutChart = ({ total, segments, isLoading }: { total: number; segments: {
           cumulativePercent += percent;
           return (
             <circle
-              key={i} cx="18" cy="18" r="15.9" fill="transparent" 
-              stroke={isLoading ? '#e2e8f0' : seg.color} 
+              key={i} cx="18" cy="18" r="15.9" fill="transparent"
+              stroke={isLoading ? '#e2e8f0' : seg.color}
               strokeWidth="3.8"
-              strokeDasharray={`${percent} ${100 - percent}`} 
+              strokeDasharray={`${percent} ${100 - percent}`}
               strokeDashoffset={offset}
               transform="rotate(-90 18 18)"
               style={{ transition: 'all 1s cubic-bezier(0.4, 0, 0.2, 1)' }}
@@ -61,11 +61,11 @@ interface GridProps {
   showScrollY?: boolean;
   defaultView?: 'simple' | 'detailed';
   highlight?: string | null;
-  onChartClick?: (data: { 
-    tripgroup: string | null; 
-    tripgroup_total: number | null; 
-    tripprogress: string | null; 
-    tripprogress_count: number | null 
+  onChartClick?: (data: {
+    tripgroup: string | null;
+    tripgroup_total: number | null;
+    tripprogress: string | null;
+    tripprogress_count: number | null
   }) => void;
   defaultFilterOptions?: {
     assigned?: boolean;
@@ -127,12 +127,12 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
     console.log("fetching donut chart data")
     setLoading(true);
     try {
-      const res = await Sp_get_AggregatedAssigned_CountsByBUService.Sp_get_AggregatedAssigned_CountsByBU({ 
-        colToGet: "*", 
+      const res = await Get_AggregatedAssigned_CountsByBUService.Get_AggregatedAssigned_CountsByBU({
+        colToGet: "*",
         // Use conditional spread to avoid passing BU: null
-        ...(BU && { BU: BU }), 
-        FROM: fromStr, 
-        TO: toStr, 
+        ...(BU && { BU: BU }),
+        FROM: fromStr,
+        TO: toStr,
         transpose: false
       } as any);
       console.log("Fetched donut stats:", res.data);
@@ -162,7 +162,7 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
 
     const handleOutsideClick = (event: MouseEvent) => {
       const target = event.target as Node;
-      
+
       // Check if the click happened outside both the trigger button and the portal menu layout
       if (
         buttonRef.current && !buttonRef.current.contains(target) &&
@@ -224,47 +224,47 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
     overflowX: showScrollX ? 'auto' : 'hidden',
     overflowY: showScrollY ? 'auto' : 'hidden',
     // Force nowrap behavior if horizontal scrolling is requested explicitly on a grid layout
-    flexWrap: showScrollX ? 'nowrap' : 'wrap', 
+    flexWrap: showScrollX ? 'nowrap' : 'wrap',
     height: 'max-content',
   };
 
   return (
     <div className={`donut-grid-container-relative`} style={containerStyle}>
 
-        <div className="chart-settings-wrapper">
-          <button
-            ref={buttonRef}
-            className="chart-settings-button"
-            onClick={toggleSettingsMenu} 
-            aria-label="Chart view settings"
-          >
-            <MoreVertical size={16} strokeWidth={2} color='var(--color-primary)' />
-          </button>
+      <div className="chart-settings-wrapper">
+        <button
+          ref={buttonRef}
+          className="chart-settings-button"
+          onClick={toggleSettingsMenu}
+          aria-label="Chart view settings"
+        >
+          <MoreVertical size={16} strokeWidth={2} color='var(--color-primary)' />
+        </button>
 
-          {showSettings && createPortal(
-          <div 
+        {showSettings && createPortal(
+          <div
             ref={menuRef}
-            className="chart-settings-dropdown-portal" 
+            className="chart-settings-dropdown-portal"
             style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="settings-section-title">View Mode</div>
             <button
               className={`chart-settings-option ${viewMode === 'detailed' ? 'active' : ''}`}
-              onClick={() => { setViewMode('detailed');  }}
+              onClick={() => { setViewMode('detailed'); }}
             >
               Detailed
             </button>
             <button
               className={`chart-settings-option ${viewMode === 'simple' ? 'active' : ''}`}
-              onClick={() => { setViewMode('simple');  }}
+              onClick={() => { setViewMode('simple'); }}
             >
               Simple
             </button>
 
             <div className="settings-divider"></div>
             <div className="settings-section-title" style={{ color: 'var(--color-primary)' }}>Filter Status</div>
-            
+
             {(['assigned', 'source', 'destination', 'done'] as const).map((status) => {
               const labelMap = { assigned: 'Assigned', source: 'To Source', destination: 'To Dest', done: 'Done' };
               return (
@@ -281,20 +281,19 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
           </div>,
           document.body // Appends the menu cleanly outside your relative grid containers
         )}
-    </div>
-      
-   
+      </div>
+
+
 
       {loading && (
         <div className="grid-loader-wrapper">
-           <LoadingOverlay message="Generating Chart Data..." bgColor="rgba(255, 255, 255, 0.2)" blur={2} size="md" />
+          <LoadingOverlay message="Generating Chart Data..." bgColor="rgba(255, 255, 255, 0.2)" blur={2} size="md" />
         </div>
       )}
 
-      <div 
-        className={`matrix-grid ${loading ? 'grid-blur' : ''} grid-${orientation} ${
-          viewMode === 'simple' ? 'grid-simple-row' : ''
-        }`}
+      <div
+        className={`matrix-grid ${loading ? 'grid-blur' : ''} grid-${orientation} ${viewMode === 'simple' ? 'grid-simple-row' : ''
+          }`}
         style={gridStyle}
       >
         {tripGroups.map((group) => {
@@ -311,7 +310,7 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
             destination: visibleStatuses.destination ? realDst : 0,
             done: visibleStatuses.done ? realDone : 0,
           };
-          
+
           // Calculate total dynamically using only active status items
           const total = stats.assigned + stats.source + stats.destination + stats.done;
 
@@ -348,13 +347,11 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
           const hasAnyHighlight = activeHighlight !== null;
 
           return (
-            <div 
-              key={group.id} 
-              className={`analytic-card ${
-                viewMode === 'simple' ? 'analytic-card-simple' : 'analytic-card-detailed'
-              } ${isHighlighted ? 'highlighted' : ''} ${
-                hasAnyHighlight && !isHighlighted ? 'dimmed' : ''
-              }`}
+            <div
+              key={group.id}
+              className={`analytic-card ${viewMode === 'simple' ? 'analytic-card-simple' : 'analytic-card-detailed'
+                } ${isHighlighted ? 'highlighted' : ''} ${hasAnyHighlight && !isHighlighted ? 'dimmed' : ''
+                }`}
             >
               {viewMode === 'detailed' ? (
                 <>
@@ -362,40 +359,40 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
                     {/* 3. Conditionally render standard label lists if checked */}
                     {visibleStatuses.assigned && (
                       <div className="card-stat clickable" onClick={() => handleClick("Assigned", stats.assigned)}>
-                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.assigned }}></span>Assigned</span> 
+                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.assigned }}></span>Assigned</span>
                         <b>{stats.assigned}</b>
                       </div>
                     )}
                     {visibleStatuses.source && (
                       <div className="card-stat clickable" onClick={() => handleClick("Dispatched To Source", stats.source)}>
-                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.source }}></span>To Source</span> 
+                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.source }}></span>To Source</span>
                         <b>{stats.source}</b>
                       </div>
                     )}
                     {visibleStatuses.destination && (
                       <div className="card-stat clickable" onClick={() => handleClick("Dispatched To Destination", stats.destination)}>
-                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.destination }}></span>To Dest</span> 
+                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.destination }}></span>To Dest</span>
                         <b>{stats.destination}</b>
                       </div>
                     )}
                     {visibleStatuses.done && (
                       <div className="card-stat clickable" onClick={() => handleClick("Done", stats.done)}>
-                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.done }}></span>Done</span> 
+                        <span><span className="dot" style={{ backgroundColor: STATUS_COLORS.done }}></span>Done</span>
                         <b>{stats.done}</b>
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="card-content clickable" onClick={() => handleClick(null, null)}>
-                    <DonutChart 
-                      isLoading={loading} 
-                      total={total} 
+                    <DonutChart
+                      isLoading={loading}
+                      total={total}
                       segments={[
                         { value: stats.assigned, color: STATUS_COLORS.assigned },
                         { value: stats.source, color: STATUS_COLORS.source },
                         { value: stats.destination, color: STATUS_COLORS.destination },
                         { value: stats.done, color: STATUS_COLORS.done }
-                      ]} 
+                      ]}
                     />
                     <h3>{group.label}</h3>
                   </div>
@@ -406,15 +403,15 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
                   <div className="simple-card-title">
                     <h3>{group.label}</h3>
                   </div>
-                  <DonutChart 
-                    isLoading={loading} 
-                    total={total} 
+                  <DonutChart
+                    isLoading={loading}
+                    total={total}
                     segments={[
                       { value: stats.assigned, color: STATUS_COLORS.assigned },
                       { value: stats.source, color: STATUS_COLORS.source },
                       { value: stats.destination, color: STATUS_COLORS.destination },
                       { value: stats.done, color: STATUS_COLORS.done }
-                    ]} 
+                    ]}
                   />
                 </div>
               )}

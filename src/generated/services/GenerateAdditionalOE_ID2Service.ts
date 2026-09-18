@@ -6,16 +6,16 @@
 import { dataSourcesInfo } from '../../../.power/schemas/appschemas/dataSourcesInfo';
 import type { IOperationResult } from '@microsoft/power-apps/data';
 import { getClient } from '@microsoft/power-apps/data';
-import type { GenerateAdditionalOE_ID2Response } from '../models/GenerateAdditionalOE_ID2Model';
+import type { GenerateAdditionalOE_ID2Request, GenerateAdditionalOE_ID2Response } from '../models/GenerateAdditionalOE_ID2Model';
 
 export class GenerateAdditionalOE_ID2Service {
-  private static readonly dataSourceName = '_810a2b32_6752_4f35_a9a7_c38a02bed148_sp';
+  private static readonly dataSourceName = 'generateadditionaloe_id2';
 
   private static readonly client = getClient(dataSourcesInfo);
 
-  public static async GenerateAdditionalOE_ID2(Type?: string): Promise<IOperationResult<GenerateAdditionalOE_ID2Response>> {
-    const params: { Type?: string } = { Type };
-    const result = await GenerateAdditionalOE_ID2Service.client.executeAsync<{ Type?: string }, GenerateAdditionalOE_ID2Response>(
+  public static async GenerateAdditionalOE_ID2(inputParameters: GenerateAdditionalOE_ID2Request): Promise<IOperationResult<GenerateAdditionalOE_ID2Response>> {
+    const params: { inputParameters: GenerateAdditionalOE_ID2Request } = { inputParameters };
+    const result = await GenerateAdditionalOE_ID2Service.client.executeAsync<{ inputParameters: GenerateAdditionalOE_ID2Request }, GenerateAdditionalOE_ID2Response>(
       {
         connectorOperation: {
           tableName: GenerateAdditionalOE_ID2Service.dataSourceName,

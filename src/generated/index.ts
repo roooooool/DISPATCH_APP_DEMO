@@ -33,6 +33,8 @@ export * as GenerateNewTripTicketModel from './models/GenerateNewTripTicketModel
 export * as GetEmployeeServedCountModel from './models/GetEmployeeServedCountModel';
 export * as GetLastLiquidatedOdometerModel from './models/GetLastLiquidatedOdometerModel';
 export * as GetOpIncidentReportByOEModel from './models/GetOpIncidentReportByOEModel';
+export * as Get_AggregatedAssigned_CountsByBUModel from './models/Get_AggregatedAssigned_CountsByBUModel';
+export * as Get_AggregatedTrips_CountsByBUModel from './models/Get_AggregatedTrips_CountsByBUModel';
 export * as HeadToSheetModel from './models/HeadToSheetModel';
 export * as Jr_jo_detailsModel from './models/Jr_jo_detailsModel';
 export * as Jr_jo_details_testModel from './models/Jr_jo_details_testModel';
@@ -94,6 +96,8 @@ export * from './services/GenerateNewTripTicketService';
 export * from './services/GetEmployeeServedCountService';
 export * from './services/GetLastLiquidatedOdometerService';
 export * from './services/GetOpIncidentReportByOEService';
+export * from './services/Get_AggregatedAssigned_CountsByBUService';
+export * from './services/Get_AggregatedTrips_CountsByBUService';
 export * from './services/HeadToSheetService';
 export * from './services/Jr_jo_detailsService';
 export * from './services/Jr_jo_details_testService';

@@ -1,15 +1,16 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+//@ts-ignore
 import { RefreshCw, Download, ArrowLeft, ArrowBigUp } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import 'react-day-picker/dist/style.css';
 
 // Power apps services
-import { LiveDMSView_CEMService} from '../generated/services/LiveDMSView_CEMService';
+import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMService';
 
 
 // Global Component imports
-import Navbar from '../components/Navbar'; 
-import TripGroup_DonutChart from '../components/tripGroup_DonutChart'; 
+import Navbar from '../components/Navbar';
+import TripGroup_DonutChart from '../components/tripGroup_DonutChart';
 import TripStatus_BarChart from '../components/tripStatus_BarChart';
 import TableView from '../components/ewul_TableFlex';
 import GSDCMap, { type GSDCMapHandle } from '../components/ewul_Maps';
@@ -24,9 +25,9 @@ import '../theme.css';
 import { BUSINESS_UNITS, SPECIAL_POSITIONS, LIVE_DMS_TABLE_CONFIG, TRIP_GROUPS } from '../truth.config';
 
 // Utilities
-import {encodeColumnName as enc} from '../components/ewul_TableFlex';
-import {ewulFetchAll} from '../utils/Ewul_GSDC_Utils';
-import {useUser} from '../utils/useUser';
+import { encodeColumnName as enc } from '../components/ewul_TableFlex';
+import { ewulFetchAll } from '../utils/Ewul_GSDC_Utils';
+import { useUser } from '../utils/useUser';
 
 
 
@@ -229,7 +230,7 @@ const LandingPage: React.FC = () => {
 
       <main className="dashboard-main" ref={mainScrollRef}>
         <div className="dashboard-grid-layout">
-          
+
           {/* PANEL LEFT (0.5 + 2 Ratio) */}
           <div className="panel-left">
             <div className="panel-content-inner">
@@ -238,68 +239,68 @@ const LandingPage: React.FC = () => {
                 <p>Data Range: {from} to {to}</p>
 
                 {/* GSDC Map */}
-                
+
                 <div className="gsdc-map-container" style={{ flex: 1, minHeight: 0 }}>
-                  <GSDCMap 
+                  <GSDCMap
                     ref={mapRef}
-                    data={filteredData} 
+                    data={filteredData}
                     latCol="Latitude"
-                    lngCol="Longitude" 
-                    labelCol="Vehicle" 
+                    lngCol="Longitude"
+                    labelCol="Vehicle"
                   />
                 </div>
-                
-                  
+
+
               </div>
             </div>
           </div>
 
           {/* PANEL RIGHT (1.5 Ratio) */}
           <div className="panel-right">
-            
+
             {/* CONSOLIDATED HEADER: Title + BU + Filters + Refresh */}
             <div className="content-top-bar">
               <div className="top-bar-left">
                 <button onClick={() => navigate(-1)} className="content-back-btn">
-                    <ArrowLeft size={18} />
+                  <ArrowLeft size={18} />
                 </button>
                 <h1 className="page-main-title">
-                    FLEET ANALYTICS 
-                    <span className="accent-slash"> / </span> 
-                    {canChangeBU ? (
-                      /* EDITABLE MODE: Show the Dropdown */
-                      <select 
-                        className="bu-dropdown-title"
-                        value={selectedBU}
-                        onChange={(e) => {
-                          const newVal = e.target.value;
-                          setSelectedBU(newVal);
-                        }}
-                      >
-                        {BU_TITLES.map((title) => (
-                          <option key={title} value={title}>
-                            {title}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      /* READ-ONLY MODE: Show static text */
-                      <span className="bu-display-static">{selectedBU}</span>
-                    )}
+                  FLEET ANALYTICS
+                  <span className="accent-slash"> / </span>
+                  {canChangeBU ? (
+                    /* EDITABLE MODE: Show the Dropdown */
+                    <select
+                      className="bu-dropdown-title"
+                      value={selectedBU}
+                      onChange={(e) => {
+                        const newVal = e.target.value;
+                        setSelectedBU(newVal);
+                      }}
+                    >
+                      {BU_TITLES.map((title) => (
+                        <option key={title} value={title}>
+                          {title}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    /* READ-ONLY MODE: Show static text */
+                    <span className="bu-display-static">{selectedBU}</span>
+                  )}
                 </h1>
               </div>
 
               <div className="top-bar-right">
-                <DateRangePicker 
-                  initialType="Today"
-                  onFilterChange={handleDateChange} 
+                <DateRangePicker
+                  initialType="Weekly"
+                  onFilterChange={handleDateChange}
                   opacity={0}
                   bgColor="transparent"
                   hoverColor='transparent'
                   blur={5}
                 />
-                <button 
-                  onClick={handleManualRefresh} 
+                <button
+                  onClick={handleManualRefresh}
                   className={`content-refresh-btn ${isSpinning ? 'spinning' : ''}`}
                 >
                   <RefreshCw size={18} />
@@ -309,7 +310,7 @@ const LandingPage: React.FC = () => {
 
             <div className="panel-right-top">
               <div className="panel-content-inner">
-                <div className="analytic-card-full"> 
+                <div className="analytic-card-full">
                   <div className="card-header-flex">
                     <div>
                       <h3 className="navy-title">Fleet Status Update</h3>
@@ -323,11 +324,11 @@ const LandingPage: React.FC = () => {
                   </div>
 
                   <div className="chart-wrapper-main">
-                    <TripStatus_BarChart 
+                    <TripStatus_BarChart
                       key={refreshKey}
                       BU={selectedBU === "ALL" ? BUSINESS_UNITS.map(unit => unit.Title).join(', ') : selectedBU}
-                      fromStr={dateRange.from} 
-                      toStr={dateRange.to} 
+                      fromStr={dateRange.from}
+                      toStr={dateRange.to}
                       onBarClick={handleChartSelection}
                     />
                   </div>
@@ -336,14 +337,14 @@ const LandingPage: React.FC = () => {
             </div>
 
             <div className="panel-right-bottom">
-                <TripGroup_DonutChart 
-                  key={refreshKey}
-                  BU={selectedBU === "ALL" ? null : selectedBU}
-                  fromStr={dateRange.from} 
-                  toStr={dateRange.to} 
-                  onChartClick={handleDonutInteraction}
-                  orientation='horizontal'
-                />
+              <TripGroup_DonutChart
+                key={refreshKey}
+                BU={selectedBU === "ALL" ? null : selectedBU}
+                fromStr={dateRange.from}
+                toStr={dateRange.to}
+                onChartClick={handleDonutInteraction}
+                orientation='horizontal'
+              />
             </div>
           </div>
 
@@ -358,22 +359,22 @@ const LandingPage: React.FC = () => {
                 <h2 className="navy-title">Detailed View</h2>
                 <span className="details-subtitle">{detailTitle}</span>
               </div>
-              <button 
-                className="close-details-btn" 
+              <button
+                className="close-details-btn"
                 onClick={() => setShowDetails(false)}
               >
                 x
               </button>
             </div>
-            
+
             <div className="details-body">
-              <TableView 
-                data={filteredData} 
-                config={tableConfig} 
+              <TableView
+                data={filteredData}
+                config={tableConfig}
                 storageKey={`landing_page${user?.id}`}
-                isLoading={isLoading} 
+                isLoading={isLoading}
                 triggerScroll={scrollToTable}
-                searchCol={searchcols}  
+                searchCol={searchcols}
                 overflowY={true}
                 overflowX={true}
                 loadingNoPreventAction={true}
@@ -389,12 +390,12 @@ const LandingPage: React.FC = () => {
 
 
 
-        
-      </main>
 
+      </main>
+      {/* 
       <footer className="footer-status">
         <p>SYSTEM STATUS: ONLINE | DATA RANGE: {from} TO {to}</p>
-        
+
         <div className="footer-actions">
 
           <button className="btn-export" onClick={() => window.print()}>
@@ -403,15 +404,15 @@ const LandingPage: React.FC = () => {
 
         </div>
 
-      </footer>
+      </footer> */}
 
-      <button 
-        className={`floating-scroll-btn ${showTopBtn ? 'show-btn' : ''}`} 
+      <button
+        className={`floating-scroll-btn ${showTopBtn ? 'show-btn' : ''}`}
         onClick={scrollToTop}
         data-tooltip="Scroll to Top"
         aria-label="Scroll to top"
       >
-        <ArrowBigUp size={45} strokeWidth={5}/>
+        <ArrowBigUp size={45} strokeWidth={5} />
       </button>
 
     </div>

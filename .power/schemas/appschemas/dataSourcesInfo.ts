@@ -891,6 +891,106 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "fetchattendancecalendar": {
+    "tableId": "",
+    "version": "v2",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {
+      "FetchAttendanceCalendar": {
+        "path": "/dbo.FetchAttendanceCalendar",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "inputParameters",
+            "in": "body",
+            "required": false,
+            "type": "object"
+          }
+        ]
+      }
+    }
+  },
+  "generateadditionaloe_id2": {
+    "tableId": "",
+    "version": "v2",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {
+      "GenerateAdditionalOE_ID2": {
+        "path": "/dbo.GenerateAdditionalOE_ID2",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "inputParameters",
+            "in": "body",
+            "required": false,
+            "type": "object"
+          }
+        ]
+      }
+    }
+  },
+  "generatenewtripticket": {
+    "tableId": "",
+    "version": "v2",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {
+      "GenerateNewTripTicket": {
+        "path": "/dbo.GenerateNewTripTicket",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "inputParameters",
+            "in": "body",
+            "required": false,
+            "type": "object"
+          }
+        ]
+      }
+    }
+  },
+  "get_aggregatedassigned_countsbybu": {
+    "tableId": "",
+    "version": "v2",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {
+      "Get_AggregatedAssigned_CountsByBU": {
+        "path": "/dbo.Get_AggregatedAssigned_CountsByBU",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "inputParameters",
+            "in": "body",
+            "required": false,
+            "type": "object"
+          }
+        ]
+      }
+    }
+  },
+  "get_aggregatedtrips_countsbybu": {
+    "tableId": "",
+    "version": "v2",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {
+      "Get_AggregatedTrips_CountsByBU": {
+        "path": "/dbo.Get_AggregatedTrips_CountsByBU",
+        "method": "POST",
+        "parameters": [
+          {
+            "name": "inputParameters",
+            "in": "body",
+            "required": false,
+            "type": "object"
+          }
+        ]
+      }
+    }
+  },
   "gsdc_gitpat": {
     "tableId": "[dbo].[GSDC_GITPAT]",
     "version": "v2",

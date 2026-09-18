@@ -845,7 +845,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
 
   // Extract fetch logic so it can be re-used
   const fetchAttendance = useCallback(async () => {
-    console.log('fetching data...')
+    // console.log('fetching att data...')
     setLoading(true);
     try {
       const res = await FetchAttendanceCalendarService.FetchAttendanceCalendar({
@@ -855,25 +855,27 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
         CutoffStartDay: 5,
         CutoffEndDay: 4
       } as any);
-      console.log('fetching attendance successfull...', res)
+
       const rawData = (res.data?.ResultSets?.Table1 || []) as any;
 
+      // console.log('raw att data: ', rawData);
 
 
-      // // --- DEBUG LOG START ---
-      // if (rawData.length > 0) {
-      //   const dates = rawData
-      //     .map((item: any) => item.AttendanceDate?.split('T')[0])
-      //     .filter(Boolean)
-      //     .sort();
 
-      //   if (dates.length > 0) {
-      //     console.log(`📅 [Attendance Range]: ${dates[0]} ➔ ${dates[dates.length - 1]} (Total: ${rawData.length} rows)`);
-      //   }
-      // } else {
-      //   console.log('⚠️ [Attendance Range]: No records returned.');
-      // }
-      // // --- DEBUG LOG END ---
+      // --- DEBUG LOG START ---
+      if (rawData.length > 0) {
+        const dates = rawData
+          .map((item: any) => item.AttendanceDate?.split('T')[0])
+          .filter(Boolean)
+          .sort();
+
+        if (dates.length > 0) {
+          console.log(`📅 [Attendance Range]: ${dates[0]} ➔ ${dates[dates.length - 1]} (Total: ${rawData.length} rows)`);
+        }
+      } else {
+        console.log('⚠️ [Attendance Range]: No records returned.');
+      }
+      // --- DEBUG LOG END ---
 
       // --- DEBUG: Filter and inspect specific records ---
       // const specificRecords = rawData.filter((rec: any) => {

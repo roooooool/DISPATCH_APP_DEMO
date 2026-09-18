@@ -1330,7 +1330,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         } as any);
 
 
+
+
         const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+        console.log('trip ticket: ', table1)
         if (table1 && table1.length > 0) {
           return table1[0].TripTicketID + ' (Preview)' || null;
         } else {
