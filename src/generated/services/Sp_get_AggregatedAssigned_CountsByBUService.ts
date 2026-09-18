@@ -19,7 +19,7 @@ export class Sp_get_AggregatedAssigned_CountsByBUService {
       {
         connectorOperation: {
           tableName: Sp_get_AggregatedAssigned_CountsByBUService.dataSourceName,
-          operationName: 'sp_get_AggregatedAssigned_CountsByBU',
+          operationName: 'Sp_get_AggregatedAssigned_CountsByBU',
           parameters: params
         },
       });

@@ -78,7 +78,9 @@ import {
 
     formatToLocalISO,
 
-    encodeColumnName as enc
+    encodeColumnName as enc,
+
+    logDebug, type DebugLogParams,
 
 
 } from '../utils/Ewul_GSDC_Utils';
@@ -573,8 +575,17 @@ const OrderManagement: React.FC = () => {
 
                     return { success: true, data: result.data };
 
-                } catch (err) {
-                    console.error("Error submitting fuel request:", err);
+                } catch (error) {
+                    console.error("Error submitting fuel request:", error);
+                    const err: DebugLogParams = {
+                        contextType: "Fuel - Submit",
+                        user: user?.FullName || 'Unkown User',
+                        nav: `fuelrequest.submit`,
+                        error: error,
+                        details: formData as any,
+                        tripOE: formData.Orderentryref,
+                    }
+                    logDebug(err)
                     return { success: false, data: null };
                 }
             },
@@ -634,18 +645,28 @@ const OrderManagement: React.FC = () => {
         console.log("Fetching trips with date range:", selectedRange);
 
 
-        const fromInt = ISOtoInt(selectedRange.from);
-        const toInt = ISOtoInt(selectedRange.to);
-        const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt} and TripProgress ne 'PLD Done' ${buFilter('Buisness Unit')}`;
+        const fromInt = ISOtoInt(selectedRange.from, true);
+        const toInt = ISOtoInt(selectedRange.to, true);
+        const dateFilter = `OEDateAsInt2 ge ${fromInt} and OEDateAsInt2 le ${toInt} and TripProgress ne 'PLD Done' ${buFilter('Buisness Unit')}`;
+        //const dateFilter2 = `OEDateOffset ge datetime'2026-09-01T10:34:29'`
 
         setLoadingFor(FETCH_LOADING_KEYS.trips, true);
         try {
             const result = await ewulFetchAll<any>(
                 LiveDMSView_CEMService,
-                { filter: dateFilter, orderBy: ["OEDateAsInt desc"] },
+                { filter: dateFilter, orderBy: ["OEDateAsInt2 desc"] },
                 10000,
-                'ID'
+                'ID',
+                "live dms",
             );
+
+
+
+            //orderBy: ["OEDateAsInt desc"]
+
+            // Find and log inside the async scope where `result` exists
+            // const targetRecord = result?.find((record: any) => record.OE === 'SOC26-09-0428');
+            // console.log('target record: ', targetRecord, 'date filter: ', dateFilter, 'result length: ', result.length);
 
             // Only update if the result is actually different or exists
             setTrips(result || []);

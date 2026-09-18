@@ -62,7 +62,7 @@ import {
   logDmsUpdate,
   fetchSharepointAttachments,
   convertFormDataToHtmlTable,
-  logDebug, type DebugLogParams
+  logDebug, type DebugLogParams,
 } from '../utils/Ewul_GSDC_Utils';
 import { useTaskWorker } from '../utils/TaskWorkerContext';
 

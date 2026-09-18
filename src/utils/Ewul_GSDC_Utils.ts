@@ -33,13 +33,17 @@ export const ewulFetchAll = async <T>(
   service: { getAll: (options?: IGetAllOptions) => Promise<IOperationResult<T[]>> },
   options: IGetAllOptions,
   targetTop: number = 5000,
-  keyField?: keyof T // parameter for deduplication
+  keyField?: keyof T, // parameter for deduplication
+  name?: string,
 ): Promise<T[]> => {
   const MAX_BATCH_SIZE = 2000;
   let result: T[] = [];
   let currentSkip = options.skip || 0;
 
+
+
   while (result.length < targetTop) {
+
     const remainingToFetch = targetTop - result.length;
     const batchSize = Math.min(MAX_BATCH_SIZE, remainingToFetch);
 
@@ -53,10 +57,18 @@ export const ewulFetchAll = async <T>(
       const response = await service.getAll(batchOptions);
       const batchData = response?.data || [];
 
+      // // Find and log inside the async scope where `result` exists
+      // const targetRecord = batchData?.find((record: any) => record.OE === 'SOC26-09-0428');
+      // console.log('target record: ', targetRecord, 'date filter: ', 'skip: ', currentSkip, ' top: ', batchSize, 'result length: ', result.length, ' opt:', options);
+
+
       if (batchData.length === 0) break;
 
       result = [...result, ...batchData];
+      // currentSkip += batchData.length;
       currentSkip += batchData.length;
+
+      console.log('name: ', name, ' skip: ', currentSkip, ' acc length: ', result.length);
 
       if (batchData.length < batchSize) break;
     } catch (error) {

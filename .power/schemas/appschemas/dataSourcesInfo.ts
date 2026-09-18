@@ -808,98 +808,98 @@ export const dataSourcesInfo = {
     }
   },
   "action_logs_history": {
-    "tableId": "Action_Logs_History",
+    "tableId": "[dbo].[Action_Logs_History]",
     "version": "v2",
     "primaryKey": "ID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "changelog2": {
-    "tableId": "changelog2",
+    "tableId": "[dbo].[changelog2]",
     "version": "v2",
     "primaryKey": "id_primary",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "chatmessages": {
-    "tableId": "ChatMessages",
+    "tableId": "[dbo].[ChatMessages]",
     "version": "v2",
     "primaryKey": "MessageID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "cifmetripsview_cem_unfiltered": {
-    "tableId": "CIFMETripsView_CEM_unfiltered",
+    "tableId": "[dbo].[CIFMETripsView_CEM_unfiltered]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "dispapp_bu_capacity_summary": {
-    "tableId": "DISPAPP_BU_Capacity_Summary",
+    "tableId": "[dbo].[DISPAPP_BU_Capacity_Summary]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "dispatchedassetpairingstate": {
-    "tableId": "DispatchedAssetPairingState",
+    "tableId": "[dbo].[DispatchedAssetPairingState]",
     "version": "v2",
     "primaryKey": "PairingID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "dms_attendancelogs": {
-    "tableId": "DMS_AttendanceLogs",
+    "tableId": "[dbo].[DMS_AttendanceLogs]",
     "version": "v2",
     "primaryKey": "ID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "dms_cem": {
-    "tableId": "DMS_CEM",
+    "tableId": "[dbo].[DMS_CEM]",
     "version": "v2",
     "primaryKey": "ID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "dms_debuglogs": {
-    "tableId": "DMS_DebugLogs",
+    "tableId": "[dbo].[DMS_DebugLogs]",
     "version": "v2",
     "primaryKey": "LogID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "dms_newtrip_remarks": {
-    "tableId": "DMS_NewTrip_Remarks",
+    "tableId": "[dbo].[DMS_NewTrip_Remarks]",
     "version": "v2",
     "primaryKey": "ID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "dms_tripfuelrequestslist": {
-    "tableId": "DMS_TripFuelRequestsList",
+    "tableId": "[dbo].[DMS_TripFuelRequestsList]",
     "version": "v2",
     "primaryKey": "ID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "fctfinal": {
-    "tableId": "fctFinal",
+    "tableId": "[dbo].[fctFinal]",
     "version": "v2",
     "primaryKey": "SQLID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "gsdc_gitpat": {
-    "tableId": "GSDC_GITPAT",
+    "tableId": "[dbo].[GSDC_GITPAT]",
     "version": "v2",
     "primaryKey": "patID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "headtosheet": {
-    "tableId": "HeadToSheet",
+    "tableId": "[dbo].[HeadToSheet]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
@@ -913,119 +913,119 @@ export const dataSourcesInfo = {
     "apis": {}
   },
   "jr_jo_details_test": {
-    "tableId": "jr_jo_details_test",
+    "tableId": "[dbo].[jr_jo_details_test]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "late_attendance_requests": {
-    "tableId": "Late_Attendance_Requests",
+    "tableId": "[dbo].[Late_Attendance_Requests]",
     "version": "v2",
     "primaryKey": "request_id",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "liveactionlogsview": {
-    "tableId": "LiveActionLogsView",
+    "tableId": "[dbo].[LiveActionLogsView]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "livedmsview_cem": {
-    "tableId": "LiveDMSView_CEM",
+    "tableId": "[dbo].[LiveDMSView_CEM]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "livedriverdispatchedlist_all": {
-    "tableId": "LiveDriverDispatchedList_All",
+    "tableId": "[dbo].[LiveDriverDispatchedList_All]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "livevehicleassignmentlistview": {
-    "tableId": "LiveVehicleAssignmentLIstView",
+    "tableId": "[dbo].[LiveVehicleAssignmentLIstView]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "live_latestfuelrequests": {
-    "tableId": "Live_LatestFuelRequests",
+    "tableId": "[dbo].[Live_LatestFuelRequests]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "newtripsview_cem_unfiltered": {
-    "tableId": "NewTripsView_CEM_unfiltered",
+    "tableId": "[dbo].[NewTripsView_CEM_unfiltered]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "op_incidentreports": {
-    "tableId": "OP_IncidentReports",
+    "tableId": "[dbo].[OP_IncidentReports]",
     "version": "v2",
     "primaryKey": "IncidentID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "triptaskeditorlist": {
-    "tableId": "TripTaskEditorList",
+    "tableId": "[dbo].[TripTaskEditorList]",
     "version": "v2",
     "primaryKey": "OE",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "triptasktracker": {
-    "tableId": "TripTaskTracker",
+    "tableId": "[dbo].[TripTaskTracker]",
     "version": "v2",
     "primaryKey": "OE",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "triptickets": {
-    "tableId": "TripTickets",
+    "tableId": "[dbo].[TripTickets]",
     "version": "v2",
     "primaryKey": "TripTicketID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "userchannelreadstatus": {
-    "tableId": "UserChannelReadStatus",
+    "tableId": "[dbo].[UserChannelReadStatus]",
     "version": "v2",
     "primaryKey": "UserChannelReadStatusID",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "vw_employeeservedtodaycount": {
-    "tableId": "vw_EmployeeServedTodayCount",
+    "tableId": "[dbo].[vw_EmployeeServedTodayCount]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "vw_fct_routenodelist": {
-    "tableId": "vw_FCT_RouteNodeList",
+    "tableId": "[dbo].[vw_FCT_RouteNodeList]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "vw_livedms_truckdriverhelper_pairing": {
-    "tableId": "vw_LiveDMS_TruckDriverHelper_Pairing",
+    "tableId": "[dbo].[vw_LiveDMS_TruckDriverHelper_Pairing]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
     "apis": {}
   },
   "vw_source_list_cem": {
-    "tableId": "vw_SOURCE_LIST_CEM",
+    "tableId": "[dbo].[vw_SOURCE_LIST_CEM]",
     "version": "v2",
     "primaryKey": "",
     "dataSourceType": "Connector",
@@ -1042,10 +1042,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "OE",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1054,16 +1054,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "CurrentOE",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "DivertOE",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1072,58 +1066,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "UserName",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "UserID",
-            "in": "body",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "InputOE",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Action",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Value",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "BU",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Context",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "ActionJSON",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "Role",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1132,34 +1078,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "Year",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "Month",
-            "in": "body",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "BU",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "CutoffStartDay",
-            "in": "body",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "CutoffEndDay",
-            "in": "body",
-            "required": false,
-            "type": "integer"
+            "type": "object"
           }
         ]
       },
@@ -1168,10 +1090,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "Type",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1180,10 +1102,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "Type",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1192,22 +1114,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "IncidentType",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "CreatedDateTime",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "GeneratedIRID",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1216,10 +1126,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "OE",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1228,16 +1138,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "EmployeeNames",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "TargetDate",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1246,10 +1150,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "Head",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1258,10 +1162,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "OE",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1270,16 +1174,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "prevOE",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "newOE",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1288,10 +1186,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "spID",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1300,22 +1198,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "Year",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "Month",
-            "in": "body",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "BU",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1324,34 +1210,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "Year",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "Month",
-            "in": "body",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "BU",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "CutoffStartDay",
-            "in": "body",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "CutoffEndDay",
-            "in": "body",
-            "required": false,
-            "type": "integer"
+            "type": "object"
           }
         ]
       },
@@ -1360,10 +1222,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "Head",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1372,34 +1234,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "colToGet",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "BU",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "FROM",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "TO",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "transpose",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
+            "type": "object"
           }
         ]
       },
@@ -1408,34 +1246,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "colToGet",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "BU",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "FROM",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "TO",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "transpose",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
+            "type": "object"
           }
         ]
       },
@@ -1444,100 +1258,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "EmployeeName",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "EmployeeID",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "AttendanceDate",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "AttendanceStatus",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "OE",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "TripKM",
-            "in": "body",
-            "required": false,
-            "type": "number"
-          },
-          {
-            "name": "SD",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "SecondTrip",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "TripIndex",
-            "in": "body",
-            "required": false,
-            "type": "number"
-          },
-          {
-            "name": "TransactionType",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Position",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "TCVC",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "ModifiedBy",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "ApprovedBy",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Approved",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "SpID",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1546,16 +1270,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "OE",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Remarks",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1564,94 +1282,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "OE",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "TripProgress",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "AssignedUnit",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "AssignedDriver",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "HasATW",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "HasSO",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "HasFuelRequest",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "HasFuelPO",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "HasFuelDisapproved",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "TaggedDate",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "UpdateOnly",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "deleteIfComplete",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "EditorName",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "deleteAnyways",
-            "in": "body",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "name": "TripJSON",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1660,82 +1294,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "OE",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Truck",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "TruckPlate",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Trailer",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "TrailerPlate",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Driver",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "DriverID",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Helper",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "HelperID",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "PairingStatus",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "UpdatedBy",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "Action",
-            "in": "body",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "PairType",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       },
@@ -1744,16 +1306,10 @@ export const dataSourcesInfo = {
         "method": "POST",
         "parameters": [
           {
-            "name": "OldOE",
+            "name": "inputParameters",
             "in": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "NewOE",
-            "in": "body",
-            "required": false,
-            "type": "string"
+            "type": "object"
           }
         ]
       }

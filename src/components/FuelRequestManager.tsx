@@ -22,7 +22,7 @@ import {
     GPS_STATUS_COLOR,
 } from '../truth.config';
 
-import { ewulFetchAll, fetchSharepointAttachments, formatDate, formatToLocalISO, ISOtoInt } from '../utils/Ewul_GSDC_Utils';
+import { ewulFetchAll, fetchSharepointAttachments, formatDate, formatToLocalISO, ISOtoInt, logDebug, type DebugLogParams } from '../utils/Ewul_GSDC_Utils';
 import type { LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
 
 
@@ -594,6 +594,24 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
 
         } catch (error) {
             console.error(`Error during fuelrequest attachments upload:`, error);
+            const fileDetails = files.map((file) => ({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                lastModified: new Date(file.lastModified).toISOString(),
+            }));
+            const err: DebugLogParams = {
+                contextType: "Fuel - Attachment",
+                user: user?.FullName || 'Unkown User',
+                nav: `fuelrequest.uploadattachments`,
+                error: error,
+                details: {
+                    files: fileDetails,
+                    totalFiles: files.length,
+                },
+                tripOE: formData.Orderentryref,
+            }
+            logDebug(err)
             return { success: false, error };
         }
     };

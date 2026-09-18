@@ -2437,6 +2437,65 @@
           "x-ms-permission": "read-write",
           "x-ms-sort": "none"
         },
+        "OEDateAsInt2": {
+          "title": "OEDateAsInt2",
+          "x-ms-capabilities": {
+            "filterFunctions": [
+              "lt",
+              "le",
+              "eq",
+              "ne",
+              "gt",
+              "ge",
+              "min",
+              "max",
+              "countdistinct",
+              "add",
+              "sub",
+              "mul",
+              "div",
+              "mod",
+              "negate",
+              "sum",
+              "average"
+            ]
+          },
+          "type": "integer",
+          "format": "int64",
+          "minimum": -9223372036854776000,
+          "maximum": 9223372036854776000,
+          "x-ms-permission": "read-write",
+          "x-ms-sort": "none"
+        },
+        "OEDateOffset": {
+          "title": "OEDateOffset",
+          "x-ms-capabilities": {
+            "filterFunctions": [
+              "lt",
+              "le",
+              "eq",
+              "ne",
+              "gt",
+              "ge",
+              "min",
+              "max",
+              "countdistinct",
+              "day",
+              "month",
+              "year",
+              "hour",
+              "minute",
+              "second",
+              "date",
+              "time",
+              "totaloffsetminutes"
+            ]
+          },
+          "type": "string",
+          "format": "date-time",
+          "x-ms-permission": "read-write",
+          "x-ms-sort": "none"
+        },
         "TripIndex": {
           "title": "TripIndex",
           "x-ms-capabilities": {
@@ -2949,5 +3008,6 @@
       }
     },
     "x-ms-permission": "read-only"
-  }
+  },
+  "x-ms-connection-version": "v2"
 }

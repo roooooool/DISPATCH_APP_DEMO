@@ -25,7 +25,7 @@ export class LiveDMSView_CEMService {
   public static async update(id: string, changedFields: LiveDMSView_CEM): Promise<IOperationResult<LiveDMSView_CEM>> {
     const result = await LiveDMSView_CEMService.client.updateRecordAsync<LiveDMSView_CEM, LiveDMSView_CEM>(
       LiveDMSView_CEMService.dataSourceName,
-      id.toString(),
+      id,
       changedFields
     );
     return result;
@@ -34,13 +34,13 @@ export class LiveDMSView_CEMService {
   public static async delete(id: string): Promise<void> {
     await LiveDMSView_CEMService.client.deleteRecordAsync(
       LiveDMSView_CEMService.dataSourceName,
-      id.toString());
+      id);
   }
 
   public static async get(id: string, options?: IGetOptions): Promise<IOperationResult<LiveDMSView_CEM>> {
     const result = await LiveDMSView_CEMService.client.retrieveRecordAsync<LiveDMSView_CEM>(
       LiveDMSView_CEMService.dataSourceName,
-      id.toString(),
+      id,
       options
     );
     return result;

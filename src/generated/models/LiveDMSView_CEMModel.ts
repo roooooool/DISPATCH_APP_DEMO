@@ -81,6 +81,8 @@ export interface LiveDMSView_CEM {
   OE_x0020_Date?: string;
   TripTicketID?: string;
   OEDateAsInt?: number;
+  OEDateAsInt2?: number;
+  OEDateOffset?: string;
   TripIndex?: string;
   TripKM?: string;
   SDID?: string;

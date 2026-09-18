@@ -17,7 +17,6 @@
         "dms_cem",
         "_810a2b32_6752_4f35_a9a7_c38a02bed148_sp",
         "newtripsview_cem_unfiltered",
-        "livedmsview_cem",
         "vw_livedms_truckdriverhelper_pairing",
         "dms_attendancelogs",
         "livevehicleassignmentlistview",
@@ -41,7 +40,8 @@
         "dispapp_bu_capacity_summary",
         "dms_newtrip_remarks",
         "dispatchedassetpairingstate",
-        "dms_debuglogs"
+        "dms_debuglogs",
+        "livedmsview_cem"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -54,9 +54,6 @@
             "_810a2b32_6752_4f35_a9a7_c38a02bed148_sp": {},
             "newtripsview_cem_unfiltered": {
               "tableName": "NewTripsView_CEM_unfiltered"
-            },
-            "livedmsview_cem": {
-              "tableName": "[dbo].[LiveDMSView_CEM]"
             },
             "vw_livedms_truckdriverhelper_pairing": {
               "tableName": "[dbo].[vw_LiveDMS_TruckDriverHelper_Pairing]"
@@ -129,6 +126,9 @@
             },
             "dms_debuglogs": {
               "tableName": "[dbo].[DMS_DebugLogs]"
+            },
+            "livedmsview_cem": {
+              "tableName": "[dbo].[LiveDMSView_CEM]"
             }
           }
         }
