@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.39.18"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.39.19"; // Update this with each release for better error tracking and user support
 
 
 //react helper for truths
@@ -900,8 +900,18 @@ export const LIVE_DMS_ASSIGNED_TABLE_CONFIG: TableModuleConfig = {
 
     { col: "Driver", cellStyle: () => { return { textAlign: 'left' } } },
     { col: "Helper", cellStyle: () => { return { textAlign: 'left' } } },
-    { col: "Vehicle", alias: "Truck" },
-    { col: "BO", alias: "Trailer" },
+    {
+      col: "Vehicle", alias: "Truck", render(val, row, _searchTerm, _addTask, _fontSize) {
+        const full = row[enc("Head_Full")]
+        return full ? full : val;
+      },
+    },
+    {
+      col: "BO", alias: "Trailer", render(val, row, _searchTerm, _addTask, _fontSize) {
+        const full = row[enc("BO_Full")]
+        return full ? full : val;
+      },
+    },
 
 
     { col: "Customer", cellStyle: () => { return { textAlign: 'left' } } },

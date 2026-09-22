@@ -665,8 +665,8 @@ const OrderManagement: React.FC = () => {
             //orderBy: ["OEDateAsInt desc"]
 
             // Find and log inside the async scope where `result` exists
-            // const targetRecord = result?.find((record: any) => record.OE === 'SOC26-09-0428');
-            // console.log('target record: ', targetRecord, 'date filter: ', dateFilter, 'result length: ', result.length);
+            const targetRecord = result?.find((record: any) => record.OE === 'SOC26-09-0428');
+            console.log('target record: ', targetRecord, 'date filter: ', dateFilter, 'result length: ', result.length);
 
             // Only update if the result is actually different or exists
             setTrips(result || []);

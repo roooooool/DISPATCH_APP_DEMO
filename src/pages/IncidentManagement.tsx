@@ -25,6 +25,7 @@ import {
 //power apps
 import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
 import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
+import { LiveDMSView_CEM2Service } from '../generated/services/LiveDMSView_CEM2Service';
 
 // Define a loading key for incident reports
 const FETCH_LOADING_KEYS = {
@@ -133,6 +134,10 @@ const IncidentManagement: React.FC = () => {
                 options,
                 5000
             );
+
+            const res = await LiveDMSView_CEM2Service.getAll();
+
+            console.log("IR Result: ", res, " len: ", res.data.length);
 
             if (result && result.length > 0) {
                 setIncidentReports(result);

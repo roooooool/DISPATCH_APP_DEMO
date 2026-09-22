@@ -46,7 +46,8 @@
         "get_aggregatedassigned_countsbybu",
         "fetchattendancecalendar",
         "generateadditionaloe_id2",
-        "generatenewtripticket"
+        "generatenewtripticket",
+        "livedmsview_cem2"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -139,7 +140,10 @@
             "get_aggregatedassigned_countsbybu": {},
             "fetchattendancecalendar": {},
             "generateadditionaloe_id2": {},
-            "generatenewtripticket": {}
+            "generatenewtripticket": {},
+            "livedmsview_cem2": {
+              "tableName": "[dbo].[LiveDMSView_CEM2]"
+            }
           }
         }
       }

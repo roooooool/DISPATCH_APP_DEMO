@@ -1040,6 +1040,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Connector",
     "apis": {}
   },
+  "livedmsview_cem2": {
+    "tableId": "[dbo].[LiveDMSView_CEM2]",
+    "version": "v2",
+    "primaryKey": "",
+    "dataSourceType": "Connector",
+    "apis": {}
+  },
   "livedriverdispatchedlist_all": {
     "tableId": "[dbo].[LiveDriverDispatchedList_All]",
     "version": "v2",

@@ -3009,5 +3009,6 @@
     },
     "x-ms-permission": "read-only"
   },
-  "x-ms-connection-version": "v2"
+  "x-ms-connection-version": "v2",
+  "x-ms-model-name-suffix": ""
 }
