@@ -3,12 +3,17 @@ import { createPortal } from 'react-dom';
 import { Loader2, MoreVertical } from 'lucide-react';
 import LoadingOverlay from './LoadingOverlay_navblue';
 import './comp_css/tripGroup_DonutChart.css';
+import { getApiUrl } from "../api/config";
 
-
+//@ts-ignore
 import { Get_AggregatedAssigned_CountsByBUService } from '../generated/services/Get_AggregatedAssigned_CountsByBUService';
 
 // TRUTH LIST
 import { TRIP_GROUPS, STATUS_COLORS } from '../truth.config';
+
+
+//
+import { AuthService } from "../api/AuthService.ts";
 
 /* --- DonutChart Sub-component remains the same --- */
 const DonutChart = ({ total, segments, isLoading }: { total: number; segments: { value: number; color: string }[]; isLoading?: boolean }) => {
@@ -124,19 +129,44 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
   }, []);
 
   const fetchStats = async () => {
-    console.log("fetching donut chart data")
+    console.log("fetching donut chart data");
     setLoading(true);
     try {
-      const res = await Get_AggregatedAssigned_CountsByBUService.Get_AggregatedAssigned_CountsByBU({
+      const database = "DISPATCH_APP_DMS";
+      const spName = "Get_AggregatedAssigned_CountsByBU";
+      const endpoint = `/api/${database}/sp/${spName}`;
+      const token = await AuthService.ensureValidToken();
+
+      // Fix: Resolve full API URL using getApiUrl
+      const url = getApiUrl(endpoint);
+
+      const payload = {
         colToGet: "*",
-        // Use conditional spread to avoid passing BU: null
         ...(BU && { BU: BU }),
         FROM: fromStr,
         TO: toStr,
         transpose: false
-      } as any);
-      console.log("Fetched donut stats:", res.data);
-      setData(res.data?.ResultSets?.Table1 || [] as any);
+      };
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Fetched donut stats:", data);
+
+      // Extract records array returned in 'value' property
+      setData(data.value || []);
     } catch (error) {
       console.error("Failed to fetch donut stats:", error);
       setData([]);

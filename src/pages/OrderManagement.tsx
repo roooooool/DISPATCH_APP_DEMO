@@ -82,6 +82,8 @@ import {
 
     logDebug, type DebugLogParams,
 
+    fetchODataRows, type ODataOptions
+
 
 } from '../utils/Ewul_GSDC_Utils';
 import { useTaskWorker } from '../utils/TaskWorkerContext';
@@ -652,13 +654,15 @@ const OrderManagement: React.FC = () => {
 
         setLoadingFor(FETCH_LOADING_KEYS.trips, true);
         try {
+            console.log('fetching trips: ')
             const result = await ewulFetchAll<any>(
                 LiveDMSView_CEMService,
                 { filter: dateFilter, orderBy: ["OEDateAsInt2 desc"] },
                 10000,
                 'ID',
-                "live dms",
+                "live dms", undefined, true
             );
+
 
 
 

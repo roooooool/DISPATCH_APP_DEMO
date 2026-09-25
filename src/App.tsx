@@ -1,3 +1,5 @@
+
+
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom"; // Changed to HashRouter
 import { useEffect, useState, useCallback } from 'react';
 
@@ -29,6 +31,12 @@ import { ErrorChecker } from './components/errorChecker'; // Import the error ch
 import { useVersionCheck } from './components/versionChecker'; // Import the version checker hook
 
 
+//AUTH SERVICE
+import { AuthService } from './api/AuthService';
+import { FetchWorker } from "./utils/FetchWorkerShared";
+
+const worker = new FetchWorker();
+
 
 const VersionGuard = ({ children }: { children: React.ReactNode }) => {
   useVersionCheck(); // This runs the Major/Minor comparison logic
@@ -39,6 +47,7 @@ const VersionGuard = ({ children }: { children: React.ReactNode }) => {
 
 // Move the logic into a child component
 function MainContent() {
+
   const { setNotifications } = useNotifications();
 
   const [worker_notifications, setWorkerNotifications] = useState<Notification[]>([]);
@@ -46,6 +55,42 @@ function MainContent() {
   const [showOverlay, setShowOverlay] = useState(true);
   const [overlayProgress, setOverlayProgress] = useState(0);
   const [overlayFading, setOverlayFading] = useState(false);
+
+
+
+  async function initializeAuthentication() {
+    try {
+      const APP_KEY = import.meta.env.VITE_APP_KEY;
+      const APP_SECRET = import.meta.env.VITE_APP_SECRET;
+
+
+      let session = await AuthService.initialize();
+
+      if (!session) {
+        // console.log('loggin in: ', 'KEY: ', APP_KEY, 'SECRET: ', APP_SECRET);
+        session = await AuthService.login(APP_KEY, APP_SECRET);
+        // console.log('done loggin in: ', session);
+      }
+
+      if (session) {
+        worker.postMessage({
+          type: "SET_TOKEN",
+          accessToken: session.accessToken,
+          expiresIn: session.expiresIn
+        });
+      }
+    } catch (error) {
+      console.error("Authentication initialization failed:", error);
+    }
+  }
+
+  useEffect(() => {
+    initializeAuthentication();
+  }, []);
+
+
+
+
 
   const handleNewToasts = useCallback((newData: Notification[]) => {
     setToastNotifications((prev) => {
@@ -75,6 +120,8 @@ function MainContent() {
       }, 700);
     }
   };
+
+
 
 
 
@@ -121,9 +168,11 @@ function MainContent() {
 // The main App component only handles the top-level Provider
 function App() {
   return (
+
     <NotificationProvider>
       <MainContent />
     </NotificationProvider>
+
   );
 }
 

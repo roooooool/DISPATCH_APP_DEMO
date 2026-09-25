@@ -6,6 +6,7 @@ import 'react-day-picker/dist/style.css';
 
 // Power apps services
 import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMService';
+import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
 
 
 // Global Component imports
@@ -26,7 +27,7 @@ import { BUSINESS_UNITS, SPECIAL_POSITIONS, LIVE_DMS_TABLE_CONFIG, TRIP_GROUPS }
 
 // Utilities
 import { encodeColumnName as enc } from '../components/ewul_TableFlex';
-import { ewulFetchAll } from '../utils/Ewul_GSDC_Utils';
+import { ewulFetchAll, fetchODataRows, type ODataOptions } from '../utils/Ewul_GSDC_Utils';
 import { useUser } from '../utils/useUser';
 
 
@@ -86,6 +87,7 @@ const LandingPage: React.FC = () => {
   }, []);
 
   const fetchDetailedTrips = useCallback(async (top: number = 10000, buOverride?: string) => {
+    console.log('fetching trips.');
     // Only fetch if user is logged in
     if (!user) return;
 
@@ -104,15 +106,28 @@ const LandingPage: React.FC = () => {
     }
 
     try {
-      const options = {
-        filter: `${enc("Trip Status")} ne 'PLD Served' and (${finalFilter})`
-      };
+      // const options = {
+      //   filter: `${enc("Trip Status")} ne 'PLD Served' and (${finalFilter})`,
+      //   orderBy: ['OEDateAsInt desc']
+      // };
 
-      const result = await ewulFetchAll<LiveDMSView_CEMService>(
-        LiveDMSView_CEMService,
-        options,
-        top
+      // const result = await ewulFetchAll<any>(
+      //   LiveDMSView_CEMService,
+      //   options,
+      //   5,  //top,
+      //   'ID', 'test', undefined, true
+      // );
+
+      const result = await fetchODataRows<LiveDMSView_CEM>(
+        "https://gsdc-dispatch-app.tail6eee22.ts.net/api/DISPATCH_APP_DMS/table/LiveDMSView_CEM",
+        {
+          $filter: "Trip_x0020_Status ne 'PLD Served'",
+          $orderby: "OEDateAsInt desc"
+        },
+        6000
       );
+
+      console.log('fetched trips: ', result.length, result[0])
 
       if (result && result.length > 0) {
         setFilteredData(result);
@@ -193,14 +208,12 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     if (!user) {
       navigate("/");
-    } else {
-      fetchDetailedTrips();
+      return;
     }
+
+    fetchDetailedTrips();
   }, [user, navigate, fetchDetailedTrips]);
 
-  useEffect(() => {
-    fetchDetailedTrips();
-  }, [dateRange, selectedBU, fetchDetailedTrips]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
@@ -241,13 +254,13 @@ const LandingPage: React.FC = () => {
                 {/* GSDC Map */}
 
                 <div className="gsdc-map-container" style={{ flex: 1, minHeight: 0 }}>
-                  <GSDCMap
+                  {false && (<GSDCMap
                     ref={mapRef}
                     data={filteredData}
                     latCol="Latitude"
                     lngCol="Longitude"
                     labelCol="Vehicle"
-                  />
+                  />)}
                 </div>
 
 
@@ -368,7 +381,7 @@ const LandingPage: React.FC = () => {
             </div>
 
             <div className="details-body">
-              <TableView
+              {/*<TableView
                 data={filteredData}
                 config={tableConfig}
                 storageKey={`landing_page${user?.id}`}
@@ -383,7 +396,7 @@ const LandingPage: React.FC = () => {
                 rowStyle={LIVE_DMS_TABLE_CONFIG.rowStyle}
                 showNumbering={true}
                 maxHeight={600}
-              />
+              />*/}
             </div>
           </div>
         )}

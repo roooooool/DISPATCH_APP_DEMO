@@ -1,4 +1,5 @@
 /* POWER APPS UTILITY FOR GSDC SHENANIGANS  by ewul*/
+import { dataSourcesInfo } from '../../.power/schemas/appschemas/dataSourcesInfo.ts';
 import type { IOperationResult } from '@microsoft/power-apps/data';
 import type { IGetAllOptions } from '../generated/models/CommonModels';
 import { DMS_updatedService } from '../generated/services/DMS_updatedService';
@@ -6,6 +7,98 @@ import { DMS_ATTACHMENTS_ENDPOINT, type UserInfo } from '../truth.config';
 import MD5 from 'crypto-js/md5';
 import { DMS_DebugLogsService } from '../generated/services/DMS_DebugLogsService';
 import { type DMS_DebugLogs } from '../generated/models/DMS_DebugLogsModel';
+
+import { getApiUrl } from "../api/config";
+import { AuthService } from "../api/AuthService.ts";
+// import { FetchWorker } from "./FetchWorkerShared";
+
+
+
+
+
+
+export interface ODataOptions {
+  $filter?: string;
+  $select?: string;
+  $orderby?: string;
+}
+
+export async function fetchODataRows<T>(
+  endpoint: string,
+  options: ODataOptions = {},
+  targetRows: number = 1000
+): Promise<T[]> {
+  const results: T[] = [];
+  const pageSize = 2000;
+  let skip = 0;
+
+  while (results.length < targetRows) {
+    const remaining = targetRows - results.length;
+    const top = Math.min(pageSize, remaining);
+
+    const params = new URLSearchParams();
+
+    params.set("$top", String(top));
+    params.set("$skip", String(skip));
+
+    if (options.$filter) params.set("$filter", options.$filter);
+    if (options.$select) params.set("$select", options.$select);
+    if (options.$orderby) params.set("$orderby", options.$orderby);
+
+    const response = await fetch(`${endpoint}?${params.toString()}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `OData request failed (${response.status}): ${errorText}`
+      );
+    }
+
+    const data: { value?: T[] } = await response.json();
+    const rows = data.value ?? [];
+
+    results.push(...rows);
+
+    // Server returned fewer rows than requested,
+    // so there is no more data.
+    if (rows.length < top) {
+      break;
+    }
+
+    skip += rows.length;
+  }
+
+  return results.slice(0, targetRows);
+}
+
+
+
+
+export const getEndpointFromService = (service: any, db?: string): string => {
+  // 1. Extract raw name (e.g. 'livedmsview_cem' from service.dataSourceName)
+  const rawKey: string =
+    (typeof service === 'string' ? service : undefined) ||
+    service?.dataSourceName ||
+    service?.constructor?.dataSourceName ||
+    service?.name ||
+    service?.constructor?.name ||
+    '';
+
+  const database = db ? db : 'DISPATCH_APP_DMS'
+
+  // 2. Normalize key for lookups (e.g. 'LiveDMSView_CEMService' -> 'livedmsview_cem')
+  const lookupKey = rawKey.replace(/Service$/, '').toLowerCase();
+
+  // 3. Lookup in dataSourcesInfo to get the real tableId (e.g. "[dbo].[LiveDMSView_CEM]")
+  const schemaEntry = (dataSourcesInfo as Record<string, any>)[lookupKey];
+  const rawTableId: string = schemaEntry?.tableId || lookupKey;
+
+  // 4. Clean brackets: "[dbo].[LiveDMSView_CEM]" -> "LiveDMSView_CEM"
+  const cleanTableName = rawTableId.replace(/^\[.*?\]\./, '').replace(/[\[\]]/g, '');
+
+  // 5. Construct final endpoint
+  return getApiUrl(`/api/${database}/table/${cleanTableName}`);
+};
 
 /**
  * Bypasses the standard 2,000-row delegation limit of Power Apps/OData services 
@@ -29,68 +122,244 @@ import { type DMS_DebugLogs } from '../generated/models/DMS_DebugLogsModel';
  * 'ID'
  * );
  */
+// ewulFetchAll.ts
 export const ewulFetchAll = async <T>(
   service: { getAll: (options?: IGetAllOptions) => Promise<IOperationResult<T[]>> },
   options: IGetAllOptions,
-  targetTop: number = 5000,
-  keyField?: keyof T, // parameter for deduplication
+  targetTop: number = 2000,
+  keyField?: keyof T,
+  //@ts-ignore
   name?: string,
+  db?: string,
+  //@ts-ignore
+  test: boolean = false
 ): Promise<T[]> => {
+  // if (!test) return [];
+
+  const endpoint = getEndpointFromService(service, db);
+  const token = await AuthService.ensureValidToken();
+
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(
+      new URL('./fetchWorker.ts', import.meta.url),
+      { type: 'module' }
+    );
+
+    worker.onmessage = (event: MessageEvent<{ success: boolean; data?: T[]; error?: string }>) => {
+      const { success, data, error } = event.data;
+      worker.terminate();
+
+      if (success && data) {
+        resolve(data);
+      } else {
+        reject(new Error(error || 'Worker execution failed'));
+      }
+    };
+
+    worker.onerror = (err) => {
+      worker.terminate();
+      reject(err);
+    };
+
+    worker.postMessage({
+      type: "FETCH",
+      endpoint,
+      options,
+      targetTop,
+      keyField: keyField ? String(keyField) : undefined,
+      accessToken: token
+    });
+  });
+};
+
+
+export async function apiFetch(
+  url: string,
+  options: RequestInit = {}
+) {
+  const token = await AuthService.ensureValidToken();
+
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+
+  const headers = new Headers(options.headers);
+
+  headers.set("Authorization", `Bearer ${token}`);
+
+  if (
+    options.body &&
+    !headers.has("Content-Type")
+  ) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  let response = await fetch(url, {
+    ...options,
+    headers,
+    credentials: "include"
+  });
+
+  // Fallback for an unexpected expiration/race condition
+  if (response.status === 401) {
+    const newToken = await AuthService.refresh();
+
+    if (!newToken) {
+      throw new Error("Authentication expired");
+    }
+
+    headers.set("Authorization", `Bearer ${newToken}`);
+
+    response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include"
+    });
+  }
+
+  return response;
+}
+
+
+
+export const ewulFetchAllOld = async <T>(
+
+  service: { getAll: (options?: IGetAllOptions) => Promise<IOperationResult<T[]>> },
+
+  options: IGetAllOptions,
+
+  targetTop: number = 5000,
+
+  keyField?: keyof T, // parameter for deduplication
+
+  name?: string,
+
+): Promise<T[]> => {
+
+
+
+
+
+
+
   const MAX_BATCH_SIZE = 2000;
+
   let result: T[] = [];
+
   let currentSkip = options.skip || 0;
+
+
+
+
 
 
 
   while (result.length < targetTop) {
 
+
+
     const remainingToFetch = targetTop - result.length;
+
     const batchSize = Math.min(MAX_BATCH_SIZE, remainingToFetch);
 
+
+
     const batchOptions: IGetAllOptions = {
+
       ...options,
+
       top: batchSize,
+
       skip: currentSkip,
+
     };
 
+
+
     try {
+
       const response = await service.getAll(batchOptions);
+
       const batchData = response?.data || [];
 
+
+
       // // Find and log inside the async scope where `result` exists
+
       // const targetRecord = batchData?.find((record: any) => record.OE === 'SOC26-09-0428');
+
       // console.log('target record: ', targetRecord, 'date filter: ', 'skip: ', currentSkip, ' top: ', batchSize, 'result length: ', result.length, ' opt:', options);
+
+
+
 
 
       if (batchData.length === 0) break;
 
+
+
       result = [...result, ...batchData];
+
       // currentSkip += batchData.length;
+
       currentSkip += batchData.length;
+
+
 
       console.log('name: ', name, ' skip: ', currentSkip, ' acc length: ', result.length);
 
+
+
       if (batchData.length < batchSize) break;
+
     } catch (error) {
+
       console.error("Batch Fetch Error:", error);
+
       throw error;
+
     }
+
   }
 
+
+
   // --- DYNAMIC DE-DUPLICATION ---
+
   if (!keyField) return result;
 
+
+
   const uniqueMap = new Map();
+
   result.forEach((item) => {
+
     const val = item[keyField];
+
     // Only add to map if we haven't seen this specific ID/OE yet
+
     if (val !== undefined && val !== null && !uniqueMap.has(val)) {
+
       uniqueMap.set(val, item);
+
     }
+
   });
 
+
+
   return Array.from(uniqueMap.values());
+
 };
+
+
+
+
+
 
 
 

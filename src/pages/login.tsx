@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+//@ts-ignore
 import { GSDC_AccountsService } from "../generated/services/GSDC_AccountsService";
+import { getApiUrl } from "../api/config";
 
 import { type UserInfo, mandatoryLogout } from '../truth.config';
 
@@ -15,6 +17,7 @@ import truckBg from "../../public/images/trucks.jpg"; // Import the background i
 
 
 import { useUser } from '../utils/useUser';
+import { AuthService } from "../api/AuthService.ts";
 
 
 export default function Login() {
@@ -45,6 +48,7 @@ export default function Login() {
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     if (!username || !password) {
       setError("Please enter username and password");
       return;
@@ -54,16 +58,42 @@ export default function Login() {
     setError("");
 
     try {
-      const result = await GSDC_AccountsService.getAll({
-        filter: `UserName eq '${username}'`,
-        select: [
-          "ID", "UserName", "fullName", "MiddleName", "LastName",
-          "Role", "Position", "BusinessUnit", "BusinessUnit2",
-          "FleetGroup", "Location", "microsoftEmail", "PassWord"
-        ],
+      const accessToken = await AuthService.ensureValidToken();
+
+      if (!accessToken) {
+        throw new Error("Unable to authenticate with the server");
+      }
+
+      const selectFields = [
+        "ID", "UserName", "fullName", "MiddleName", "LastName",
+        "Role", "Position", "BusinessUnit", "BusinessUnit2",
+        "FleetGroup", "Location", "microsoftEmail", "PassWord"
+      ].join(",");
+
+      const filterQuery = `UserName eq '${username}'`;
+
+      const endpoint = `/api/SHAREPOINT_DATA/table/gsdc_accounts?$filter=${encodeURIComponent(filterQuery)}&$select=${encodeURIComponent(selectFields)}&$top=1`;
+      const url = getApiUrl(endpoint);
+
+      console.log("f url: ", url);
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`
+        },
+        credentials: "include"
       });
 
-      const account = result.data?.[0];
+      if (!response.ok) {
+        throw new Error(`Server returned status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("fetched account: ", result);
+
+      const account = result.value?.[0];
 
       if (!account) {
         setError("User not found");
@@ -74,11 +104,10 @@ export default function Login() {
           FirstName: account.fullName || "",
           MiddleName: account.MiddleName || "",
           LastName: account.LastName || "",
-          FullName: account.LastName + ', ' + account.fullName + (account.MiddleName ? ` (${account.MiddleName})` : ''),
+          FullName: `${account.LastName}, ${account.fullName}${account.MiddleName ? ` (${account.MiddleName})` : ""}`,
           BusinessUnit: account.BusinessUnit || "",
           Position: account.Position || "",
           id: String(account.ID) || "",
-
           CurrentNav: "/dash"
         };
 
@@ -86,7 +115,6 @@ export default function Login() {
           localStorage.setItem(`lastLogout_${userInfo.id}`, mandatoryLogout);
         }
 
-        //localStorage.setItem("gsdc_user", JSON.stringify(userInfo));
         updateUser(userInfo);
         setIsLeaving(true);
 
@@ -96,7 +124,7 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error(err);
-      setError("Error logging in. Please try again.");
+      setError(`Error logging in. Please try again. ${err.message || err}`);
     } finally {
       setLoading(false);
     }

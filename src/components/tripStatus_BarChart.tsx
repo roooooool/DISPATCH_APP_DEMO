@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Filter, Eye, EyeOff } from 'lucide-react';
 import LoadingOverlay from './LoadingOverlay_navblue';
+//@ts-ignore
 import { Get_AggregatedTrips_CountsByBUService } from '../generated/services/Get_AggregatedTrips_CountsByBUService';
 import { TRIP_STATUSES } from '../truth.config';
 import './comp_css/tripStatus_BarChart.css';
+import { getApiUrl } from "../api/config";
+import { AuthService } from "../api/AuthService.ts";
 
 interface BarChartProps {
   BU: string | null | undefined;
@@ -40,15 +43,42 @@ const TripStatus_BarChart: React.FC<BarChartProps> = ({ BU, fromStr, toStr, onBa
 
   const fetchStats = async () => {
     setLoading(true);
+
+    const database = "DISPATCH_APP_DMS";
+    const spName = "Get_AggregatedTrips_CountsByBU";
+    const endpoint = `/api/${database}/sp/${spName}`;
+    const token = await AuthService.ensureValidToken();
+
     try {
-      const res = await Get_AggregatedTrips_CountsByBUService.Get_AggregatedTrips_CountsByBU({
+      const url = getApiUrl(endpoint);
+
+      const payload = {
         colToGet: "*",
         ...(BU && { BU }),
         FROM: fromStr,
         TO: toStr,
         transpose: false
-      } as any);
-      setData(res.data?.ResultSets?.Table1 || [] as any);
+      };
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(`Server returned status: ${response.status} - ${errBody.details || errBody.error}`);
+      }
+
+      const data = await response.json();
+
+      // Extract array from data.value returned by Flask endpoint
+      setData(data.value || []);
     } catch (error) {
       console.error("Failed to fetch bar stats:", error);
       setData([]);
