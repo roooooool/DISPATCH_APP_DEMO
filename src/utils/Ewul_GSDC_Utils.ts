@@ -12,7 +12,6 @@ import { getApiUrl } from "../api/config";
 import { AuthService } from "../api/AuthService.ts";
 import { type ExecuteWorkerPayload } from './executeWorker';
 import { type FetchWorkerPayload } from './fetchWorker';
-// import { FetchWorker } from "./FetchWorkerShared";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -150,10 +149,12 @@ export const ewulFetchAll = async <T>(
   //@ts-ignore
   test: boolean = false
 ): Promise<T[]> => {
-  // if (!test) return [];
+  if (!test) return [];
 
   const endpoint = getEndpointFromService(service, db);
   const token = await AuthService.ensureValidToken();
+
+  console.log('ewul fetch no endpoint: ', endpoint);
 
   if (!token) {
     throw new Error("Authentication required");

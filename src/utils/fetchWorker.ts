@@ -15,7 +15,7 @@ export interface FetchWorkerPayload {
 }
 
 const ctx: Worker = self as unknown as Worker;
-const API_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "";
 
 let accessToken: string | null = null;
 let accessTokenExpiresAt = 0;
@@ -102,7 +102,31 @@ async function authenticatedFetch(
 }
 
 ctx.onmessage = async (event: MessageEvent<FetchWorkerPayload>) => {
-    const { endpoint, options = {}, targetTop = 2000, keyField, accessToken: token } = event.data;
+    const { endpoint, options = {}, targetTop = 2000, keyField, accessToken: token, type: type } = event.data;
+
+    if (type === "SET_TOKEN") {
+        if (token) {
+            accessToken = token;
+            accessTokenExpiresAt = Date.now() + 15 * 60 * 1000;
+        }
+        return;
+    }
+
+    if (type !== "FETCH") {
+        return;
+    }
+
+    // Inside ctx.onmessage in fetchWorker.ts
+    if (type === "FETCH") {
+        if (!endpoint || endpoint === "undefined") {
+            console.error("[FETCH WORKER ERROR] Received invalid endpoint:", { endpoint, eventData: event.data });
+            ctx.postMessage({
+                success: false,
+                error: "FetchWorker payload missing valid endpoint parameter."
+            });
+            return;
+        }
+    }
 
     if (token) {
         accessToken = token;
@@ -133,7 +157,16 @@ ctx.onmessage = async (event: MessageEvent<FetchWorkerPayload>) => {
                 queryParams.set('$orderby', orderbyStr);
             }
 
-            const response = await authenticatedFetch(`${endpoint}?${queryParams.toString()}`);
+            const requestUrl = `${endpoint}?${queryParams.toString()}`;
+
+            console.log("[FETCH WORKER]", {
+                endpoint,
+                requestUrl,
+                API_URL,
+                options
+            });
+
+            const response = await authenticatedFetch(requestUrl);
 
             if (!response.ok) {
                 const errorText = await response.text();

@@ -31,11 +31,7 @@ import { ErrorChecker } from './components/errorChecker'; // Import the error ch
 import { useVersionCheck } from './components/versionChecker'; // Import the version checker hook
 
 
-//AUTH SERVICE
-import { AuthService } from './api/AuthService';
-import { FetchWorker } from "./utils/FetchWorkerShared";
 
-const worker = new FetchWorker();
 
 
 const VersionGuard = ({ children }: { children: React.ReactNode }) => {
@@ -57,36 +53,6 @@ function MainContent() {
   const [overlayFading, setOverlayFading] = useState(false);
 
 
-
-  async function initializeAuthentication() {
-    try {
-      const APP_KEY = import.meta.env.VITE_APP_KEY;
-      const APP_SECRET = import.meta.env.VITE_APP_SECRET;
-
-
-      let session = await AuthService.initialize();
-
-      if (!session) {
-        // console.log('loggin in: ', 'KEY: ', APP_KEY, 'SECRET: ', APP_SECRET);
-        session = await AuthService.login(APP_KEY, APP_SECRET);
-        // console.log('done loggin in: ', session);
-      }
-
-      if (session) {
-        worker.postMessage({
-          type: "SET_TOKEN",
-          accessToken: session.accessToken,
-          expiresIn: session.expiresIn
-        });
-      }
-    } catch (error) {
-      console.error("Authentication initialization failed:", error);
-    }
-  }
-
-  useEffect(() => {
-    initializeAuthentication();
-  }, []);
 
 
 
