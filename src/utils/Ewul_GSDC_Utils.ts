@@ -195,52 +195,53 @@ export const ewulFetchAll = async <T>(
 };
 
 
-export async function apiFetch(
-  url: string,
-  options: RequestInit = {}
-) {
-  const token = await AuthService.ensureValidToken();
+// export async function apiFetch(
+//   url: string,
+//   options: RequestInit = {}
+// ) {
 
-  if (!token) {
-    throw new Error("Authentication required");
-  }
+//   const token = await AuthService.ensureValidToken();
 
-  const headers = new Headers(options.headers);
+//   if (!token) {
+//     throw new Error("Authentication required");
+//   }
 
-  headers.set("Authorization", `Bearer ${token}`);
+//   const headers = new Headers(options.headers);
 
-  if (
-    options.body &&
-    !headers.has("Content-Type")
-  ) {
-    headers.set("Content-Type", "application/json");
-  }
+//   headers.set("Authorization", `Bearer ${token}`);
 
-  let response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: "include"
-  });
+//   if (
+//     options.body &&
+//     !headers.has("Content-Type")
+//   ) {
+//     headers.set("Content-Type", "application/json");
+//   }
 
-  // Fallback for an unexpected expiration/race condition
-  if (response.status === 401) {
-    const newToken = await AuthService.refresh();
+//   let response = await fetch(url, {
+//     ...options,
+//     headers,
+//     credentials: "include"
+//   });
 
-    if (!newToken) {
-      throw new Error("Authentication expired");
-    }
+//   // Fallback for an unexpected expiration/race condition
+//   if (response.status === 401) {
+//     const newToken = await AuthService.refresh();
 
-    headers.set("Authorization", `Bearer ${newToken}`);
+//     if (!newToken) {
+//       throw new Error("Authentication expired");
+//     }
 
-    response = await fetch(url, {
-      ...options,
-      headers,
-      credentials: "include"
-    });
-  }
+//     headers.set("Authorization", `Bearer ${newToken}`);
 
-  return response;
-}
+//     response = await fetch(url, {
+//       ...options,
+//       headers,
+//       credentials: "include"
+//     });
+//   }
+
+//   return response;
+// }
 
 
 export interface EwulExecuteOptions {
