@@ -6,6 +6,7 @@ import 'react-day-picker/dist/style.css';
 
 // Power apps services
 import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMService';
+//@ts-ignore
 import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
 
 
@@ -13,6 +14,7 @@ import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
 import Navbar from '../components/Navbar';
 import TripGroup_DonutChart from '../components/tripGroup_DonutChart';
 import TripStatus_BarChart from '../components/tripStatus_BarChart';
+//@ts-ignore
 import TableView from '../components/ewul_TableFlex';
 import GSDCMap, { type GSDCMapHandle } from '../components/ewul_Maps';
 import DateRangePicker from '../components/ewul_DateRangePicker';
@@ -27,7 +29,7 @@ import { BUSINESS_UNITS, SPECIAL_POSITIONS, LIVE_DMS_TABLE_CONFIG, TRIP_GROUPS }
 
 // Utilities
 import { encodeColumnName as enc } from '../components/ewul_TableFlex';
-import { ewulFetchAll, fetchODataRows, type ODataOptions } from '../utils/Ewul_GSDC_Utils';
+import { ewulFetchAll } from '../utils/Ewul_GSDC_Utils';
 import { useUser } from '../utils/useUser';
 
 
@@ -57,10 +59,14 @@ const LandingPage: React.FC = () => {
   });
 
   const [showDetails, setShowDetails] = useState(false);
+  //@ts-ignore
   const [filteredData, setFilteredData] = useState<any[]>([]);
+  const [mapData, setMapData] = useState<any[]>([]);
   const [detailTitle, setDetailTitle] = useState("");
+  //@ts-ignore
   const [isLoading, _setLoading] = useState(false);
   const [_tablerefreshSignal, setTableRefreshSignal] = useState(false);
+  //@ts-ignore
   const [scrollToTable, setScrollToTable] = useState<number>(0);
   const [showTopBtn, setShowTopBtn] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -74,7 +80,9 @@ const LandingPage: React.FC = () => {
   const { from, to } = dateRange;
 
   const initialTableConfig = LIVE_DMS_TABLE_CONFIG.table_config;
+  //@ts-ignore
   const [tableConfig, setTableConfig] = useState(initialTableConfig);
+  //@ts-ignore
   const searchcols = LIVE_DMS_TABLE_CONFIG.searchable_cols;
 
   // 2. HELPER FUNCTIONS
@@ -118,21 +126,41 @@ const LandingPage: React.FC = () => {
       //   'ID', 'test', undefined, true
       // );
 
-      const result = await fetchODataRows<LiveDMSView_CEM>(
-        "https://gsdc-dispatch-app.tail6eee22.ts.net/api/DISPATCH_APP_DMS/table/LiveDMSView_CEM",
-        {
-          $filter: "Trip_x0020_Status ne 'PLD Served'",
-          $orderby: "OEDateAsInt desc"
-        },
-        6000
+      const result = await ewulFetchAll<any>(
+        LiveDMSView_CEMService,
+        { filter: `${enc("Trip Status")} ne 'PLD Served' and ${dateFilter}`, orderBy: ["OEDateAsInt2 desc"] },
+        top ? top : 10000,
+        'ID',
+        "dashboard - live dms"
       );
 
+      // Define your item interface
+      interface MapDataItem {
+        Vehicle: string;
+        OEDateAsInt2: number;
+        [key: string]: unknown;
+      }
+
+      // Compact approach with explicit Map typing
+      const processedResult = Array.from(
+        (result as MapDataItem[])
+          .reduce((map, item) => {
+            const existing = map.get(item.Vehicle);
+            if (!existing || item.OEDateAsInt2 > existing.OEDateAsInt2) {
+              map.set(item.Vehicle, item);
+            }
+            return map;
+          }, new Map<string, MapDataItem>())
+          .values()
+      ).sort((a, b) => b.OEDateAsInt2 - a.OEDateAsInt2);
       console.log('fetched trips: ', result.length, result[0])
 
       if (result && result.length > 0) {
         setFilteredData(result);
+        setMapData(processedResult);
       } else {
         setFilteredData([]);
+        setMapData([]);
         console.log("No data found!");
       }
     } catch (err) {
@@ -187,6 +215,8 @@ const LandingPage: React.FC = () => {
     handleScrollRequest();
   };
 
+
+  //@ts-ignore
   const handleTableRefresh = (signal: boolean) => {
     setTableRefreshSignal(signal);
     if (signal) fetchDetailedTrips();
@@ -254,9 +284,9 @@ const LandingPage: React.FC = () => {
                 {/* GSDC Map */}
 
                 <div className="gsdc-map-container" style={{ flex: 1, minHeight: 0 }}>
-                  {false && (<GSDCMap
+                  {true && (<GSDCMap
                     ref={mapRef}
-                    data={filteredData}
+                    data={mapData}
                     latCol="Latitude"
                     lngCol="Longitude"
                     labelCol="Vehicle"
@@ -384,7 +414,7 @@ const LandingPage: React.FC = () => {
               {/*<TableView
                 data={filteredData}
                 config={tableConfig}
-                storageKey={`landing_page${user?.id}`}
+                storageKey={`landing_page2${user?.id}`}
                 isLoading={isLoading}
                 triggerScroll={scrollToTable}
                 searchCol={searchcols}

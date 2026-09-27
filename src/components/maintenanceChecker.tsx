@@ -3,7 +3,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import MaintenancePage from '../pages/MaintenancePage';
 import { useUser } from '../utils/useUser';
 import { GSDC_GITPATService } from '../generated/services/GSDC_GITPATService';
-import { ewulFetchAll } from '../utils/Ewul_GSDC_Utils';
+import { ewulFetchAll, ewulUpdate } from '../utils/Ewul_GSDC_Utils';
 
 interface ConfigContextType {
   config: any;
@@ -51,7 +51,9 @@ const MaintenanceChecker: React.FC<MaintenanceCheckerProps> = ({ children }) => 
 
   const updateGITPATusedCount = async (id: number, newCount: number) => {
     try {
-      await GSDC_GITPATService.update(id.toString(), { used: newCount });
+      console.log('update git pat');
+      const test = await ewulUpdate('DISPATCH_APP_DMS', 'GSDC_GITPAT', id.toString(), { used: newCount });
+      console.log('update git pat DONE: ', test);
     } catch (error) {
       // console.error("Failed to update GITPAT used count:", error);
     }

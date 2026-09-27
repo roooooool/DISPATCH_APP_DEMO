@@ -7,12 +7,17 @@ import { AlertTriangle, Ban, Sparkles, ThumbsUp } from 'lucide-react';
 
 // POWER APPS SERVICES
 
+//@ts-ignore
 import { DMS_CEMService } from '../generated/services/DMS_CEMService';
+//@ts-ignore
 import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAdditionalOE_IDService';
+//@ts-ignore
 import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
 
 import type { UpsertTripTaskTrackerRequest } from '../generated/models/UpsertTripTaskTrackerModel';
+//@ts-ignore
 import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
+//@ts-ignore
 import { CheckIfOEExistsService } from '../generated/services/CheckIfOEExistsService';
 
 //
@@ -23,7 +28,8 @@ import AutoDismissBanner from './ewul_Banner';
 
 //UTILS
 import {
-
+    //@ts-ignore
+    ewulFetchAll, ewulCreate, ewulDelete, ewulUpdate, ewulExecute,
     logDmsUpdate,
 
 } from '../utils/Ewul_GSDC_Utils';
@@ -170,7 +176,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                     return;
                 }
 
-                console.log("weeeew: ", rawData);
+
 
                 if (isBUItem && sourceBu === targetBu) return;
 
@@ -202,7 +208,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
                 const droppedRowRecord = {
                     ...record,
-                    _isLocal: true,
+                    _isLocal: isBUItem ? Boolean(record._isLocal) : true,
                     ...(displayMapping.statusField ? { [displayMapping.statusField]: isBUItem ? record[displayMapping.statusField] : 'New Trip' } : {})
                 };
 
@@ -320,6 +326,8 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
             }))
         );
 
+        console.log('to upsert: ', ordersToUpsert);
+
         // 1. Gather all dropped keys across all BUs
         const allDroppedIds = new Set<string>();
         Object.values(buDroppedItems).forEach(items => {
@@ -406,8 +414,9 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                         console.log("Checking duplicate");
 
                         // 1. Check duplicate OE
-                        const duplicateCheck = await CheckIfOEExistsService.CheckIfOEExists(order.OE);
-                        const table1 = duplicateCheck.data?.ResultSets?.Table1 as any[] | undefined;
+                        const duplicateCheck = await ewulExecute('DISPATCH_APP_DMS', 'CheckIfOEExists', { OE: order.OE })
+
+                        const table1 = duplicateCheck as any[] | undefined;
                         if (table1 && table1.length > 0) {
                             if (table1[0].DoesExist) {
                                 setDuplicateOEValue(order.OE || '');
@@ -419,8 +428,9 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                             // 2. Generate Trip Ticket if missing
                             let tripTicketID = order.TripTicketID;
                             if (!tripTicketID) {
-                                const ticketResult = await GenerateNewTripTicketService.GenerateNewTripTicket({ OE: order.OE } as any);
-                                const table1 = ticketResult.data?.ResultSets?.Table1 as any[] | undefined;
+                                const ticketResult = await ewulExecute('DISPATCH_APP_DMS', 'GenerateNewTripTicket', { OE: order.OE });
+
+                                const table1 = ticketResult as any[] | undefined;
                                 if (table1 && table1.length > 0) {
                                     tripTicketID = table1[0].TripTicketID;
                                 }
@@ -432,8 +442,8 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                             let currentOE = order.OE;
                             let additionalOE = '';
                             if (order._tripGroup === 'Preload' || order._tripGroup === 'Mobilization') {
-                                const additionalOEres = await GenerateAdditionalOE_IDService.GenerateAdditionalOE_ID(order);
-                                const table1 = additionalOEres.data?.ResultSets?.Table1 as any[] | undefined;
+                                const additionalOEres = await ewulExecute('DISPATCH_APP_DMS', 'GenerateAdditionalOE_ID', order)
+                                const table1 = additionalOEres as any[] | undefined;
                                 if (!table1 || table1.length === 0) {
                                     // nothing
                                 } else {
@@ -463,7 +473,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
                                 Loading_x0020_Sequence: 9999,
 
-                                OE_x0020_Date: additionalOE ? new Date().toDateString() : order.OE_x0020_Date,
+                                OE_x0020_Date: additionalOE ? new Date().toISOString() : order.OE_x0020_Date,
                                 //MonitoredBy: formData.MonitoredBy,
                                 DispatchedBy: user?.FullName || 'Unknown User',
 
@@ -473,16 +483,17 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                 HelperUnloaderType: "Full Trip"
                             };
 
-                            // 5. DMS_CEMService.create(...)
+
                             console.log("creating trip");
-                            const createResult = await DMS_CEMService.create(payload);
+                            const createResult = await ewulCreate<any>('DISPATCH_APP_DMS', 'DMS_CEM', payload);
                             console.log('created new trip: ', createResult)
 
                             // 6. Update tripID to match the newly generated database record ID
-                            if (createResult?.data?.ID) {
+                            if (createResult?.ID) {
                                 console.log("updating tripID");
-                                const newId = createResult.data.ID;
-                                await DMS_CEMService.update(newId.toString(), { tripID: newId });
+                                const newId = createResult.ID;
+
+                                await ewulUpdate<any>('DISPATCH_APP_DMS', 'DMS_CEM', newId.toString(), { tripID: newId });
 
                                 // 7. Update TripTaskTracker side-effects
                                 const payload: UpsertTripTaskTrackerRequest = {
@@ -509,8 +520,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                                 };
 
                                 console.log('trip task update: ', payload);
-
-                                UpsertTripTaskTrackerService.UpsertTripTaskTracker(payload as any);
+                                ewulExecute('DISPATCH_APP_DMS', 'UpsertTripTaskTracker', payload)
                             }
 
                             //track added
@@ -525,21 +535,18 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                             recordActionLog(oeNumber, newBu, "Assigned");
 
                         }
-                        else {
-                            // ✅ FIXED: Safely placed outside the local conditional block
-                            const existingId = order.rawData?.ID || order.ID;
-                            console.log("Updating BU for existing trip record ID:", existingId);
+                    } else {
+                        // ✅ FIXED: Safely placed outside the local conditional block
+                        const existingId = order.rawData?.ID || order.ID;
+                        console.log("Updating BU for existing trip record ID:", existingId, ' BU:', order.BU);
 
-                            await DMS_CEMService.update(
-                                existingId.toString(),
-                                {
-                                    Buisness_x0020_Unit: order[displayMapping.buField]
-                                }
-                            );
 
-                            // LOG REASSIGNED
-                            recordActionLog(oeNumber, newBu, "Reassigned", prevBu);
-                        }
+                        await ewulUpdate<any>('DISPATCH_APP_DMS', 'DMS_CEM', existingId.toString(), {
+                            Buisness_x0020_Unit: order.BU
+                        });
+
+                        // LOG REASSIGNED
+                        recordActionLog(oeNumber, newBu, "Reassigned", prevBu);
                     }
 
 
@@ -549,7 +556,8 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
                 // Remove / Unassign Execution Loop
                 for (const id of ordersToDelete) {
                     console.log("Deleting database ID reference:", id);
-                    await DMS_CEMService.delete(id.toString());
+
+                    await ewulDelete('DISPATCH_APP_DMS', 'DMS_CEM', id.toString())
 
                     const targetTrip = tripAssignedList.find(
                         trip => (trip.rawData?.ID || trip.ID) === id
@@ -1237,7 +1245,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
             <OEDuplicateWarningModal
                 isOpen={showOEDuplicateWarningModal}
                 duplicateOE={duplicateOEValue}
-                onClose={() => setShowOEDuplicateWarningModal(false)}
+                onClose={() => { setShowOEDuplicateWarningModal(false); setIsSubmitting(false); }}
             />
 
         </div>

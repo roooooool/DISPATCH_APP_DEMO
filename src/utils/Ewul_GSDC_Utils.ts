@@ -10,9 +10,11 @@ import { type DMS_DebugLogs } from '../generated/models/DMS_DebugLogsModel';
 
 import { getApiUrl } from "../api/config";
 import { AuthService } from "../api/AuthService.ts";
+import { type ExecuteWorkerPayload } from './executeWorker';
+import { type FetchWorkerPayload } from './fetchWorker';
 // import { FetchWorker } from "./FetchWorkerShared";
 
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 
 
@@ -74,7 +76,7 @@ export async function fetchODataRows<T>(
 
 
 
-export const getEndpointFromService = (service: any, db?: string): string => {
+export const getEndpointFromService = (service: any, db?: string, objectType: string = 'table'): string => {
   // 1. Extract raw name (e.g. 'livedmsview_cem' from service.dataSourceName)
   const rawKey: string =
     (typeof service === 'string' ? service : undefined) ||
@@ -97,7 +99,21 @@ export const getEndpointFromService = (service: any, db?: string): string => {
   const cleanTableName = rawTableId.replace(/^\[.*?\]\./, '').replace(/[\[\]]/g, '');
 
   // 5. Construct final endpoint
-  return getApiUrl(`/api/${database}/table/${cleanTableName}`);
+  return getApiUrl(`/api/${database}/${objectType}/${cleanTableName}`);
+};
+
+
+export const ewulDecodeKeys = <T extends Record<string, any>>(
+  record: T
+): Record<string, any> => {
+  return Object.fromEntries(
+    Object.entries(record).map(([key, value]) => [
+      key.replace(/_x([0-9A-Fa-f]{4})_/g, (_, hex) =>
+        String.fromCharCode(parseInt(hex, 16))
+      ),
+      value,
+    ])
+  );
 };
 
 /**
@@ -165,14 +181,16 @@ export const ewulFetchAll = async <T>(
       reject(err);
     };
 
-    worker.postMessage({
+    const payload: FetchWorkerPayload = {
       type: "FETCH",
       endpoint,
       options,
       targetTop,
       keyField: keyField ? String(keyField) : undefined,
       accessToken: token
-    });
+    }
+
+    worker.postMessage(payload);
   });
 };
 
@@ -225,8 +243,176 @@ export async function apiFetch(
 }
 
 
+export interface EwulExecuteOptions {
+  params?: Record<string, any>;
+  method?: 'GET' | 'POST';
+  pagination?: {
+    top?: number;
+    skip?: number;
+  };
+}
 
-export const ewulFetchAllOld = async <T>(
+export const ewulExecute = async <T>(
+  database: string,
+  storedProcedure: string,
+  options: any,
+): Promise<T[]> => {
+  const token = await AuthService.ensureValidToken();
+
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(
+      new URL('./executeWorker.ts', import.meta.url),
+      { type: 'module' }
+    );
+
+    worker.onmessage = (
+      event: MessageEvent<{ success: boolean; data?: T[]; error?: string }>
+    ) => {
+      const { success, data, error } = event.data;
+      worker.terminate();
+
+      if (success && data) {
+        resolve(data);
+      } else {
+        reject(new Error(error || 'Worker execution failed'));
+      }
+    };
+
+    worker.onerror = (err) => {
+      worker.terminate();
+      reject(err);
+    };
+
+    const payload: ExecuteWorkerPayload = {
+      database: database,
+      spName: storedProcedure,
+      method: 'GET',
+      params: options,
+      // pagination: options.pagination,
+      accessToken: token,
+    };
+
+    worker.postMessage(payload);
+  });
+};
+
+
+
+export const ewulCreate = async <T>(
+  database: string,
+  tableName: string,
+  record: Record<string, any>,
+): Promise<T> => {
+  const token = await AuthService.ensureValidToken();
+
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+
+  const url = `${API_BASE_URL}/api/${encodeURIComponent(database)}/table/${encodeURIComponent(tableName)}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify(ewulDecodeKeys(record)),
+  });
+
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      result?.error ||
+      `Create request failed (${response.status})`
+    );
+  }
+
+  return result as T;
+};
+
+export const ewulUpdate = async <T>(
+  database: string,
+  tableName: string,
+  recordId: string,
+  changes: Record<string, any>,
+): Promise<T> => {
+  const token = await AuthService.ensureValidToken();
+
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+
+  const url = `${API_BASE_URL}/api/${encodeURIComponent(database)}/table/${encodeURIComponent(tableName)}/${encodeURIComponent(recordId)}`;
+
+  const response = await fetch(url, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify(ewulDecodeKeys(changes)),
+  });
+
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      result?.error ||
+      `Update request failed (${response.status})`
+    );
+  }
+
+  return result as T;
+};
+
+export const ewulDelete = async (
+  database: string,
+  tableName: string,
+  recordId: string,
+): Promise<void> => {
+  const token = await AuthService.ensureValidToken();
+
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+
+  const url = `${API_BASE_URL}/api/${encodeURIComponent(database)}/table/${encodeURIComponent(tableName)}/${encodeURIComponent(recordId)}`;
+
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      result?.error ||
+      `Delete request failed (${response.status})`
+    );
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+export const ewulFetchAllPowerAppsCLI = async <T>(
 
   service: { getAll: (options?: IGetAllOptions) => Promise<IOperationResult<T[]>> },
 
@@ -950,10 +1136,11 @@ export const useAntiSpam = (
 
 
 export const encodeColumnName = (name: string): string => {
-  return name.replace(/[^a-zA-Z0-9_]|_(?=[xX])/g, (char) => {
-    const hex = char.charCodeAt(0).toString(16).padStart(4, '0');
-    return `_x${hex}_`;
-  });
+  return name
+  // return name.replace(/[^a-zA-Z0-9_]|_(?=[xX])/g, (char) => {
+  //   const hex = char.charCodeAt(0).toString(16).padStart(4, '0');
+  //   return `_x${hex}_`;
+  // });
 };
 
 

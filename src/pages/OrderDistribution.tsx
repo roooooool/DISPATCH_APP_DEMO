@@ -7,7 +7,8 @@ import {
 
 import { useUser } from '../utils/useUser';
 import {
-  ewulFetchAll,
+  //@ts-ignore
+  ewulFetchAll, ewulCreate, ewulDelete, ewulUpdate, ewulExecute,
   ISOtoInt,
   useAntiSpam,
 
@@ -29,7 +30,9 @@ import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel'
 import { type DMS_CEM } from '../generated/models/DMS_CEMModel'
 // import { LiveVehicleAssignmentLIstViewService } from '../generated/services/LiveVehicleAssignmentLIstViewService';
 // import { LiveDriverDispatchedList_AllService } from '../generated/services/LiveDriverDispatchedList_AllService';
+//@ts-ignore
 import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
+//@ts-ignore
 import { GenerateAdditionalOE_ID2Service } from '../generated/services/GenerateAdditionalOE_ID2Service';
 import { Vw_FCT_RouteNodeListService } from '../generated/services/Vw_FCT_RouteNodeListService';
 import { DISPAPP_BU_Capacity_SummaryService } from '../generated/services/DISPAPP_BU_Capacity_SummaryService';
@@ -62,6 +65,7 @@ import './css/OrderManagement.css';
 
 
 import { useTaskWorker } from '../utils/TaskWorkerContext';
+//@ts-ignore
 import { DMS_CEMService } from '@/generated';
 
 
@@ -167,8 +171,8 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
   const formattedAssignedOrders = useMemo(() => {
     if (!assignedOrders) return [];
 
-    return assignedOrders.map((trip: LiveDMSView_CEM): NormalizedOrder => ({
-      BU: trip.Buisness_x0020_Unit || '',
+    return assignedOrders.map((trip: any): NormalizedOrder => ({
+      BU: trip["Buisness Unit"] || '',
       OE: trip.OE || '',
       SAPStatus: trip.TripProgress || '',
       SourceName: trip.Source || '',
@@ -704,12 +708,12 @@ const OrderDistribution: React.FC = () => {
     setLoadingFor(FETCH_LOADING_KEYS.generatedTripID, true);
 
     try {
-      const res = await GenerateNewTripTicketService.GenerateNewTripTicket({
-        OE: OE,
-      } as any);
+
+      const res = await ewulExecute('DISPATCH_APP_DMS', 'GenerateNewTripTicket', { OE: OE })
 
 
-      const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+
+      const table1 = res as any[] | undefined;
       console.log("Response from GenerateNewTripTicketService:", res);
       if (table1 && table1.length > 0) {
         setPreviewTripTicketID(table1[0].TripTicketID + ' (Preview)' || null);
@@ -734,12 +738,13 @@ const OrderDistribution: React.FC = () => {
     setLoadingFor(FETCH_LOADING_KEYS.generateAddOE, true);
 
     try {
-      const res = await GenerateAdditionalOE_ID2Service.GenerateAdditionalOE_ID2({
-        Type: type,
-      } as any);
+
+      const data = await ewulExecute('DISPATCH_APP_DMS', 'GenerateAdditionalOE_ID2', { Type: type })
 
 
-      const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+
+      const table1 = data as any[];
+      // const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
       if (!table1 || table1.length === 0) {
         console.error("No data returned for new OE generation.");
         return;
@@ -829,11 +834,13 @@ const OrderDistribution: React.FC = () => {
     setBulkRows(prev => [...prev, newSkeleton]);
 
     try {
-      const res = await GenerateAdditionalOE_ID2Service.GenerateAdditionalOE_ID2({
-        Type: taskType, // Automatically uses correct type for endpoint routing
-      } as any);
+      const data = await ewulExecute('DISPATCH_APP_DMS', 'GenerateAdditionalOE_ID2', { Type: taskType })
 
-      const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+
+
+
+      const table1 = data as any[];
+      // const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
       const generatedId = (table1 && table1.length > 0) ? table1[0].NewID : 'ERR-GEN';
 
       setBulkRows(prev => prev.map(row =>
@@ -1218,8 +1225,11 @@ const OrderDistribution: React.FC = () => {
       // Generate a unique trip ticket ID for each row's OE
       let tripTicketID = '';
       try {
-        const res = await GenerateNewTripTicketService.GenerateNewTripTicket({ OE: row.oe } as any);
-        const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+        const res = await ewulExecute('DISPATCH_APP_DMS', 'GenerateNewTripTicket', { OE: row.oe })
+
+
+
+        const table1 = res as any[] | undefined;
         if (table1 && table1.length > 0) {
           tripTicketID = table1[0].TripTicketID;
         }
@@ -1261,12 +1271,12 @@ const OrderDistribution: React.FC = () => {
         name: `Creating ${row.type} ${row.oe}`,
         execute: async () => {
           try {
-            const result = await DMS_CEMService.create(payload as DMS_CEM);
-            if (result.error) {
-              throw new Error(result.error.message);
-            }
-            console.log('Trip created successfully:', result.data);
-            return { success: true, data: result.data };
+
+            const result = await ewulCreate<DMS_CEM>('DISPATCH_APP_DMS', 'DMS_CEM', payload);
+            // const result = await DMS_CEMService.create(payload as DMS_CEM);
+
+            console.log('Trip created successfully:', result);
+            return { success: true, data: result };
           } catch (error) {
             console.error('Failed to create trip:', error);
             return { success: false, error };
@@ -1288,7 +1298,8 @@ const OrderDistribution: React.FC = () => {
           });
           fetchAssignedOrders(); // Refresh table list upon successful creation
           // console.log('succ: ', result.data);
-          DMS_CEMService.update(result.data.ID, { tripID: result.data.ID });
+          ewulUpdate<DMS_CEM>('DISPATCH_APP_DMS', 'DMS_CEM', result.data.ID, { tripID: result.data.ID });
+          // DMS_CEMService.update(result.data.ID, { tripID: result.data.ID });
         },
         onFailure: (result) => {
           console.log('handle failure', result);

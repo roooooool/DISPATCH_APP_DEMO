@@ -1,6 +1,7 @@
 // src/workers/fetchWorker.ts
 
 export interface FetchWorkerPayload {
+    type: string;
     endpoint: string;
     options: {
         filter?: string;

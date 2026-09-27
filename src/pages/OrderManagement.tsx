@@ -82,7 +82,6 @@ import {
 
     logDebug, type DebugLogParams,
 
-    fetchODataRows, type ODataOptions
 
 
 } from '../utils/Ewul_GSDC_Utils';

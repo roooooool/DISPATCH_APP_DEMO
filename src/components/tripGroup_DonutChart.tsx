@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } f
 import { createPortal } from 'react-dom';
 import { Loader2, MoreVertical } from 'lucide-react';
 import LoadingOverlay from './LoadingOverlay_navblue';
-import './comp_css/tripGroup_DonutChart.css';
-import { getApiUrl } from "../api/config";
+import './comp_css/tripGroup_DonutChart.css';;
+import { ewulExecute } from "../utils/Ewul_GSDC_Utils.ts";
 
 //@ts-ignore
 import { Get_AggregatedAssigned_CountsByBUService } from '../generated/services/Get_AggregatedAssigned_CountsByBUService';
@@ -12,8 +12,6 @@ import { Get_AggregatedAssigned_CountsByBUService } from '../generated/services/
 import { TRIP_GROUPS, STATUS_COLORS } from '../truth.config';
 
 
-//
-import { AuthService } from "../api/AuthService.ts";
 
 /* --- DonutChart Sub-component remains the same --- */
 const DonutChart = ({ total, segments, isLoading }: { total: number; segments: { value: number; color: string }[]; isLoading?: boolean }) => {
@@ -134,13 +132,8 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
     try {
       const database = "DISPATCH_APP_DMS";
       const spName = "Get_AggregatedAssigned_CountsByBU";
-      const endpoint = `/api/${database}/sp/${spName}`;
-      const token = await AuthService.ensureValidToken();
 
-      // Fix: Resolve full API URL using getApiUrl
-      const url = getApiUrl(endpoint);
-
-      const payload = {
+      const options = {
         colToGet: "*",
         ...(BU && { BU: BU }),
         FROM: fromStr,
@@ -148,25 +141,19 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
         transpose: false
       };
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        credentials: "include",
-        body: JSON.stringify(payload)
-      });
 
-      if (!response.ok) {
-        throw new Error(`Server returned status: ${response.status}`);
-      }
 
-      const data = await response.json();
+      const data = await ewulExecute(
+        database,
+        spName,
+        options
+      );
+
+      // const data = await response.json();
       console.log("Fetched donut stats:", data);
 
       // Extract records array returned in 'value' property
-      setData(data.value || []);
+      setData(data || []);
     } catch (error) {
       console.error("Failed to fetch donut stats:", error);
       setData([]);
