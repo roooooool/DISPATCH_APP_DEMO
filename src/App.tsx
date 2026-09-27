@@ -57,7 +57,6 @@ function MainContent() {
 
 
 
-
   const handleNewToasts = useCallback((newData: Notification[]) => {
     setToastNotifications((prev) => {
       const combined = [...prev, ...newData];

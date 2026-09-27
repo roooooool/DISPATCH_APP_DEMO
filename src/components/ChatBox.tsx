@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 're
 import ReactDOM from 'react-dom';
 import Draggable from 'react-draggable';
 import './comp_css/ChatBox.css';
-import { X, Minus, MessageSquare, Maximize2, Minimize2} from 'lucide-react';
+import { X, Minus, MessageSquare, Maximize2, Minimize2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 // SQL + GATEWAY services
@@ -12,21 +12,21 @@ import { type ChatMessages } from '../generated/models/ChatMessagesModel';
 
 // Custom Utilities
 import { ewulFetchAll, ISOtoInt } from '../utils/Ewul_GSDC_Utils';
-import {type UserInfo, DEVBOT_USERID, ITDEV_USERID, GSDC_SEND_TO_CHAT_key, GSDC_NAVIGATE_TO_TRIP_key} from '../truth.config';
+import { type UserInfo, DEVBOT_USERID, ITDEV_USERID, GSDC_SEND_TO_CHAT_key, GSDC_NAVIGATE_TO_TRIP_key } from '../truth.config';
 import { type UserChannelReadStatus } from '../generated/models/UserChannelReadStatusModel';
 
 type MessageWithStatus = Partial<ChatMessages> & { SentAtAsInt?: number; status?: 'sending' | 'sent' | 'failed' };
 
 export interface ChatBoxHandle {
-  fetchTotalUnread: () => Promise<number>;
-  sendMessage: (text: string, channel?: string) => Promise<void>;
+    fetchTotalUnread: () => Promise<number>;
+    sendMessage: (text: string, channel?: string) => Promise<void>;
 }
 
 interface ChatBoxProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onOpen: () => void;
-  user: UserInfo | null;
+    isOpen: boolean;
+    onClose: () => void;
+    onOpen: () => void;
+    user: UserInfo | null;
 }
 
 const CHANNELS = [
@@ -39,69 +39,70 @@ const CHANNELS = [
 ];
 
 const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOpen, user }, ref) => {
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [activeChannel, setActiveChannel] = useState('Dispatch');
-  const [channelMessages, setChannelMessages] = useState<Record<string, MessageWithStatus[]>>({});
-  const [newMessage, setNewMessage] = useState('');
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const nodeRef = useRef(null);
-  const minimizedNodeRef = useRef(null);
-  const chatBodyRef = useRef<HTMLDivElement>(null);
+    const [isMinimized, setIsMinimized] = useState(false);
+    const [activeChannel, setActiveChannel] = useState('Dispatch');
+    const [channelMessages, setChannelMessages] = useState<Record<string, MessageWithStatus[]>>({});
+    const [newMessage, setNewMessage] = useState('');
+    const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+    const [isLoading, setIsLoading] = useState(true);
+    const nodeRef = useRef(null);
+    const minimizedNodeRef = useRef(null);
+    const chatBodyRef = useRef<HTMLDivElement>(null);
 
-  const [isMaximized, setIsMaximized] = useState(false);
+    const [isMaximized, setIsMaximized] = useState(false);
 
-  const hasUnreadMessages = Object.values(unreadCounts).some(count => count > 0);
+    const hasUnreadMessages = Object.values(unreadCounts).some(count => count > 0);
 
-  const fetchUnreadCounts = async () => {
-      if (!user) return { counts: {}, total: 0 };
 
-      try {
-          // 1. Get user's last read status for all channels
-          const readStatuses = await ewulFetchAll<UserChannelReadStatus>(
-              UserChannelReadStatusService,
-              { filter: `UserID eq '${user.id}'` },
-              CHANNELS.length,
-              'UserChannelReadStatusID'
-          );
-          const readStatusMap = new Map(readStatuses.map(s => [s.Channel, s.LastReadMessageID]));
+    const fetchUnreadCounts = async () => {
+        if (!user) return { counts: {}, total: 0 };
 
-          // 2. For each channel, count messages newer than the last read message
-          let total = 0;
-          const counts: Record<string, number> = {};
-          for (const channel of CHANNELS) {
-              const lastReadId = readStatusMap.get(channel) || 0;
-              
-              let filter = `Channel eq '${channel}' and MessageID gt ${lastReadId} and UserID ne '${user.id}'`;
+        try {
+            // 1. Get user's last read status for all channels
+            const readStatuses = await ewulFetchAll<UserChannelReadStatus>(
+                UserChannelReadStatusService,
+                { filter: `UserID eq '${user.id}'` },
+                CHANNELS.length,
+                'UserChannelReadStatusID'
+            );
+            const readStatusMap = new Map(readStatuses.map(s => [s.Channel, s.LastReadMessageID]));
 
-              if (channel === 'Dev Bot') {
-                  // For Dev Bot, only count messages sent specifically TO the current user
-                  filter += ` and RecipientUserID eq '${user.id}'`;
-              } else {
-                  // For public channels, only count public messages
-                  filter += ` and RecipientUserID eq null`;
-              }
+            // 2. For each channel, count messages newer than the last read message
+            let total = 0;
+            const counts: Record<string, number> = {};
+            for (const channel of CHANNELS) {
+                const lastReadId = readStatusMap.get(channel) || 0;
 
-              const unreadMessages = await ewulFetchAll<ChatMessages>(
-                  ChatMessagesService,
-                  { 
-                      filter: filter,
-                      select: ['MessageID'], // Only fetch IDs to be lightweight
-                      top: 100 // Cap at 100 to represent "99+"
-                  },
-                  100, // Cap at 100 to represent "99+"
-                  'MessageID'
-              );
-              counts[channel] = unreadMessages.length;
-              total += unreadMessages.length;
-          }
-          return { counts, total };
+                let filter = `Channel eq '${channel}' and MessageID gt ${lastReadId} and UserID ne '${user.id}'`;
 
-      } catch (error) {
-          console.error("Failed to fetch unread counts:", error);
-          return { counts: {}, total: 0 };
-      }
-  };
+                if (channel === 'Dev Bot') {
+                    // For Dev Bot, only count messages sent specifically TO the current user
+                    filter += ` and RecipientUserID eq '${user.id}'`;
+                } else {
+                    // For public channels, only count public messages
+                    filter += ` and RecipientUserID eq null`;
+                }
+
+                const unreadMessages = await ewulFetchAll<ChatMessages>(
+                    ChatMessagesService,
+                    {
+                        filter: filter,
+                        select: ['MessageID'], // Only fetch IDs to be lightweight
+                        top: 100 // Cap at 100 to represent "99+"
+                    },
+                    100, // Cap at 100 to represent "99+"
+                    'MessageID'
+                );
+                counts[channel] = unreadMessages.length;
+                total += unreadMessages.length;
+            }
+            return { counts, total };
+
+        } catch (error) {
+            console.error("Failed to fetch unread counts:", error);
+            return { counts: {}, total: 0 };
+        }
+    };
 
     const internalSend = async (text: string, channel: string) => {
         console.log("Received event for Sending chat internally...")
@@ -130,31 +131,31 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
             }
 
             if (!isOpen) {
-                onOpen(); 
+                onOpen();
             }
 
         } catch (error) {
             console.error("External send failed:", error);
             setChannelMessages(prev => ({
                 ...prev,
-                [channel]: prev[channel].map(msg => 
+                [channel]: prev[channel].map(msg =>
                     msg.SentAtAsInt === payload.SentAtAsInt ? { ...msg, status: 'failed' } : msg
                 )
             }));
         }
     };
 
-  useImperativeHandle(ref, () => ({
-    fetchTotalUnread: async () => {
-      const { total } = await fetchUnreadCounts();
-      return total;
-    },
-    sendMessage: async (text: string, channel: string = activeChannel) => {
-        await internalSend(text, channel);
-    }
-  }));
+    useImperativeHandle(ref, () => ({
+        fetchTotalUnread: async () => {
+            const { total } = await fetchUnreadCounts();
+            return total;
+        },
+        sendMessage: async (text: string, channel: string = activeChannel) => {
+            await internalSend(text, channel);
+        }
+    }));
 
-  useEffect(() => {
+    useEffect(() => {
         const handleExternalSend = (event: any) => {
             const { text, channel } = event.detail;
             internalSend(text, channel || activeChannel);
@@ -168,7 +169,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
         // Combined regex to catch both patterns
         // Group 1: TRIP, Group 2: THINK
         const combinedRegex = /\[TRIP:(.*?)\]|\[THINK:(.*?)\]/g;
-        
+
         const parts = text.split(combinedRegex);
         if (parts.length === 1) return <ReactMarkdown components={{ p: 'span' }}>{text}</ReactMarkdown>;
 
@@ -178,12 +179,12 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
 
             // Note: With two capture groups, every match consumes 3 array slots (part, group1, group2)
             // However, a simpler way is to check the text content or context
-            
+
             // Handle Trip Mentions
             if (text.includes(`[TRIP:${part}]`)) {
                 return (
-                    <span 
-                        key={index} 
+                    <span
+                        key={index}
                         className={`chat-mention-trip ${isMine ? 'mine' : ''}`}
                         onClick={() => onMentionClick(part)}
                     >
@@ -212,78 +213,78 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
 
 
 
-  const updateReadStatus = async (channel: string) => {
-    if (!user) return;
+    const updateReadStatus = async (channel: string) => {
+        if (!user) return;
 
-    try {
-        // Get the latest message in the channel
-        const latestMessages = await ewulFetchAll<ChatMessages>(
-            ChatMessagesService,
-            { filter: `Channel eq '${channel}'`, orderBy: ["MessageID desc"], top: 1 },
-            1,
-            'MessageID'
-        );
-
-        if (latestMessages.length > 0) {
-            const lastMessageID = latestMessages[0].MessageID!;
-            
-            // Check if a read status already exists for this user and channel
-            const existingStatus = await ewulFetchAll<UserChannelReadStatus>(
-                UserChannelReadStatusService,
-                { filter: `UserID eq '${user.id}' and Channel eq '${channel}'`},
+        try {
+            // Get the latest message in the channel
+            const latestMessages = await ewulFetchAll<ChatMessages>(
+                ChatMessagesService,
+                { filter: `Channel eq '${channel}'`, orderBy: ["MessageID desc"], top: 1 },
                 1,
-                'UserID' // Assuming UserID+Channel is unique, but need a key
+                'MessageID'
             );
 
-            const payload = {
-                UserID: user.id,
-                Channel: channel,
-                LastReadMessageID: lastMessageID,
-                LastReadAt: new Date().toISOString()
-            };
+            if (latestMessages.length > 0) {
+                const lastMessageID = latestMessages[0].MessageID!;
 
-            if (existingStatus.length > 0) {
-                // Update existing status
-                await UserChannelReadStatusService.update(existingStatus[0].UserChannelReadStatusID!.toString(), payload);
-            } else {
-                // Create new status
-                await UserChannelReadStatusService.create(payload);
+                // Check if a read status already exists for this user and channel
+                const existingStatus = await ewulFetchAll<UserChannelReadStatus>(
+                    UserChannelReadStatusService,
+                    { filter: `UserID eq '${user.id}' and Channel eq '${channel}'` },
+                    1,
+                    'UserID' // Assuming UserID+Channel is unique, but need a key
+                );
+
+                const payload = {
+                    UserID: user.id,
+                    Channel: channel,
+                    LastReadMessageID: lastMessageID,
+                    LastReadAt: new Date().toISOString()
+                };
+
+                if (existingStatus.length > 0) {
+                    // Update existing status
+                    await UserChannelReadStatusService.update(existingStatus[0].UserChannelReadStatusID!.toString(), payload);
+                } else {
+                    // Create new status
+                    await UserChannelReadStatusService.create(payload);
+                }
+
+                // Optimistically set unread count for this channel to 0
+                setUnreadCounts(prev => ({ ...prev, [channel]: 0 }));
             }
-            
-            // Optimistically set unread count for this channel to 0
-            setUnreadCounts(prev => ({ ...prev, [channel]: 0 }));
+        } catch (error) {
+            console.error(`Failed to update read status for ${channel}:`, error);
         }
-    } catch (error) {
-        console.error(`Failed to update read status for ${channel}:`, error);
-    }
-  };
-
-  const handleChannelClick = (channel: string) => {
-      if (activeChannel !== channel) {
-          // Optimistically clear the count for the channel we are leaving
-          setUnreadCounts(prev => ({ ...prev, [activeChannel]: 0 }));
-          
-          // Update statuses for both channels in the background
-          updateReadStatus(activeChannel); // Mark the old channel as read
-          updateReadStatus(channel);       // Mark the new channel as read
-      }
-      // Switch to the new channel
-      setActiveChannel(channel);
-  };
-
-  useEffect(() => {
-    const pollUnreadCounts = async () => {
-        const { counts } = await fetchUnreadCounts();
-        setUnreadCounts(counts);
     };
-    setUnreadCounts(prev => ({ ...prev, ['Dispatch']: 0 }));
-    
-    if (isOpen) {
-        pollUnreadCounts();
-        const interval = setInterval(pollUnreadCounts, 60000); // Poll for unread counts every 60s
-        return () => clearInterval(interval);
-    }
-  }, [isOpen, user]);
+
+    const handleChannelClick = (channel: string) => {
+        if (activeChannel !== channel) {
+            // Optimistically clear the count for the channel we are leaving
+            setUnreadCounts(prev => ({ ...prev, [activeChannel]: 0 }));
+
+            // Update statuses for both channels in the background
+            updateReadStatus(activeChannel); // Mark the old channel as read
+            updateReadStatus(channel);       // Mark the new channel as read
+        }
+        // Switch to the new channel
+        setActiveChannel(channel);
+    };
+
+    useEffect(() => {
+        const pollUnreadCounts = async () => {
+            const { counts } = await fetchUnreadCounts();
+            setUnreadCounts(counts);
+        };
+        setUnreadCounts(prev => ({ ...prev, ['Dispatch']: 0 }));
+
+        if (isOpen) {
+            pollUnreadCounts();
+            const interval = setInterval(pollUnreadCounts, 60000); // Poll for unread counts every 60s
+            return () => clearInterval(interval);
+        }
+    }, [isOpen, user]);
 
     useEffect(() => {
         const fetchInitialMessages = async () => {
@@ -308,8 +309,8 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
             try {
                 const fetchedMessages = await ewulFetchAll<ChatMessages>(
                     ChatMessagesService,
-                    { 
-                        filter: filter, 
+                    {
+                        filter: filter,
                         orderBy: ["SentAt desc"],
                         top: 50
                     },
@@ -339,8 +340,8 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
         const scrollToBottom = () => {
             if (chatBodyRef.current) {
                 chatBodyRef.current.scrollTo({
-                top: chatBodyRef.current.scrollHeight,
-                behavior: 'smooth'
+                    top: chatBodyRef.current.scrollHeight,
+                    behavior: 'smooth'
                 });
             }
         };
@@ -428,7 +429,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
 
         const userMsgText = newMessage;
         const optimisticMessage: MessageWithStatus = {
-            MessageID: Date.now(), 
+            MessageID: Date.now(),
             Channel: activeChannel,
             UserID: user?.id || 'UNKNOWN_USER',
             UserName: user?.FullName || 'Unknown User',
@@ -456,7 +457,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
                 SentAtAsInt: optimisticMessage.SentAtAsInt!,
                 RecipientUserID: activeChannel === 'Dev Bot' ? DEVBOT_USERID : activeChannel === 'IT Support' ? ITDEV_USERID : undefined,
             };
-            
+
             const result = await ChatMessagesService.create(payload);
 
             if (activeChannel === 'Dev Bot') {
@@ -466,18 +467,18 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
 
                 const getNextPhrase = () => {
                     if (unusedPhrases.length === 0) {
-                        return "Finalizing response..."; 
+                        return "Finalizing response...";
                     }
-                    
+
                     const randomIndex = Math.floor(Math.random() * unusedPhrases.length);
                     const phrase = unusedPhrases[randomIndex];
-                    
+
                     // Remove the picked phrase from the local pool
                     unusedPhrases.splice(randomIndex, 1);
                     return phrase;
                 };
                 const firstPhrase = getNextPhrase() || "Processing...";
-                
+
                 setChannelMessages(prev => ({
                     ...prev,
                     ['Dev Bot']: [...(prev['Dev Bot'] || []), {
@@ -493,14 +494,14 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
 
                 const rotateText = () => {
                     if (!isThinking) return; // Stop if the response is back
-                    
+
                     const nextPhrase = getNextPhrase();
                     if (!nextPhrase) return;
                     const randomDelay = Math.floor(Math.random() * (8000 - 3500 + 1) + 1500); // 1.5s to 4s
 
                     setChannelMessages(prev => ({
                         ...prev,
-                        ['Dev Bot']: (prev['Dev Bot'] || []).map(m => 
+                        ['Dev Bot']: (prev['Dev Bot'] || []).map(m =>
                             m.MessageID === TEMP_BOT_ID ? { ...m, MessageText: `[THINK:${nextPhrase}]` } : m
                         )
                     }));
@@ -511,7 +512,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
 
 
                 const botResponseText = await handleDevBotChat(userMsgText);
-                
+
                 isThinking = false; // stop the thinking text rotation
                 const botPayload = {
                     Channel: 'Dev Bot',
@@ -531,16 +532,16 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
                         ['Dev Bot']: [...filtered, { ...botPayload, MessageID: Date.now() + 1, status: 'sent' }]
                     };
                 });
-                
+
                 ChatMessagesService.create(botPayload); // Fire and forget the bot response to save in DB
 
 
 
             } else {
-                
+
                 setChannelMessages(prev => ({
                     ...prev,
-                    [activeChannel]: prev[activeChannel].map(msg => 
+                    [activeChannel]: prev[activeChannel].map(msg =>
                         msg.MessageID === optimisticMessage.MessageID ? { ...result.data, status: 'sent' } : msg
                     )
                 }));
@@ -551,7 +552,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
             console.error("Failed to send message:", error);
             setChannelMessages(prev => ({
                 ...prev,
-                [activeChannel]: prev[activeChannel].map(msg => 
+                [activeChannel]: prev[activeChannel].map(msg =>
                     msg.MessageID === optimisticMessage.MessageID ? { ...msg, status: 'failed' } : msg
                 )
             }));
@@ -562,14 +563,14 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
     const handleDevBotChat = async (userMessage: string) => {
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
         const secretKey = user?.Position === 'Developer' ? import.meta.env.VITE_DEV_BOT_SECRETDEV : import.meta.env.VITE_DEV_BOT_SECRET;
-        
-        const now = new Date().toLocaleString('en-US', { 
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
-            hour: '2-digit', minute: '2-digit' 
+
+        const now = new Date().toLocaleString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
         });
 
         const historyData = (channelMessages['Dev Bot'] || []).slice(-20);
-        const historyMD = historyData.length > 0 
+        const historyMD = historyData.length > 0
             ? "### CHAT HISTORY (For Reference):\n" + historyData.map(msg => {
                 const role = msg.UserID === user?.id ? 'User' : 'Dev Bot';
                 const msgTime = new Date(msg.SentAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -610,15 +611,15 @@ ${historyMD}
             // 2. Send the message to your new protected Ollama endpoint
             const chatRes = await fetch(`${baseUrl}/api/ollm/chatDispApp`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Authorization': token,
-                    'Content-Type': 'application/json' 
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: fullMDPrompt})
+                body: JSON.stringify({ message: fullMDPrompt })
             });
 
             const data = await chatRes.json();
-            
+
             if (chatRes.status === 429) return "Daily limit reached.";
             return data.answer;
 
@@ -628,113 +629,113 @@ ${historyMD}
         }
     };
 
-  if (isMinimized && isOpen) {
-    return (
-      <Draggable nodeRef={minimizedNodeRef}>
-        <div 
-          ref={minimizedNodeRef} 
-          className={`chatbox-minimized ${hasUnreadMessages ? 'has-unread' : ''}`} 
-          onClick={() => setIsMinimized(false)}
-        >
-          <MessageSquare size={24} />
-        </div>
-      </Draggable>
-    );
-  }
+    if (isMinimized && isOpen) {
+        return (
+            <Draggable nodeRef={minimizedNodeRef}>
+                <div
+                    ref={minimizedNodeRef}
+                    className={`chatbox-minimized ${hasUnreadMessages ? 'has-unread' : ''}`}
+                    onClick={() => setIsMinimized(false)}
+                >
+                    <MessageSquare size={24} />
+                </div>
+            </Draggable>
+        );
+    }
 
-  if (isOpen) {
+    if (isOpen) {
         return ReactDOM.createPortal(
             <div className={isMaximized ? "chatbox-maximized-wrapper" : ""}>
-            <Draggable handle=".chatbox-header" nodeRef={nodeRef} disabled={isMaximized}>
-            <div 
-                ref={nodeRef} 
-                className={`chatbox-container ${isMaximized ? 'maximized' : ''}`}
-                style={isMaximized ? { transform: 'none' } : {}} // Reset draggable transform
-                >
-                <div className="chatbox-sidebar">
-                    <div className="chatbox-sidebar-header">
-                        <h3>Channels</h3>
-                    </div>
-                    <ul className="chatbox-channels">
-                        {CHANNELS.map(channel => (
-                            <li 
-                                key={channel} 
-                                className={`channel-item ${activeChannel === channel ? 'active' : ''}`}
-                                onClick={() => {setUnreadCounts(prev => ({ ...prev, [channel]: 0 })); handleChannelClick(channel);}}
-                            >
-                                <span># {channel}</span>
-                                {unreadCounts[channel] > 0 && activeChannel !== channel && (
-                                    <span className="unread-badge">
-                                        {unreadCounts[channel] > 99 ? '99+' : unreadCounts[channel]}
-                                    </span>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="chatbox-main">
-                    <div className="chatbox-header">
-                    <h2>{activeChannel}</h2>
-                    <div className="chatbox-controls">
-                        <button onClick={() => setIsMaximized(!isMaximized)} className="chatbox-control-btn">
-                            {isMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                        </button>
-                        <button onClick={() => setIsMinimized(true)} className="chatbox-control-btn">
-                        <Minus size={20} />
-                        </button>
-                        <button onClick={onClose} className="chatbox-control-btn">
-                        <X size={20} />
-                        </button>
-                    </div>
-                    </div>
-                    <div className="chatbox-body" ref={chatBodyRef}>
-                    {(isLoading && (channelMessages[activeChannel] || []).length === 0) ? (
-                        <>
-                            <div className="skeleton-bubble theirs"></div>
-                            <div className="skeleton-bubble theirs"></div>
-                            <div className="skeleton-bubble mine"></div>
-                            <div className="skeleton-bubble theirs"></div>
-                            <div className="skeleton-bubble mine"></div>
-                            <div className="skeleton-bubble mine"></div>
-                            <div className="skeleton-bubble mine"></div>
-                        </>
-                    ) : (
-                        (channelMessages[activeChannel] || []).map((msg) => {
-                            const isMine = msg.UserID === user?.id;
-                            
-                            return (
-                                <div key={msg.MessageID} className={`chat-message ${isMine ? 'mine' : ''}`}>
-                                    <div className="message-sender">{isMine ? 'You' : msg.UserName}</div>
-                                    <div className="message-text">
-                                        {renderMessageText(msg.MessageText || '', (oe) => {
-                                            // Trigger the navigation event we built earlier
-                                            const event = new CustomEvent(GSDC_NAVIGATE_TO_TRIP_key, { 
-                                                detail: { oe } 
-                                            });
-                                            window.dispatchEvent(event);
-                                        }, isMine)}
-                                    </div>
-                                    <div className="message-time">
-                                        {new Date(msg.SentAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </div>
+                <Draggable handle=".chatbox-header" nodeRef={nodeRef} disabled={isMaximized}>
+                    <div
+                        ref={nodeRef}
+                        className={`chatbox-container ${isMaximized ? 'maximized' : ''}`}
+                        style={isMaximized ? { transform: 'none' } : {}} // Reset draggable transform
+                    >
+                        <div className="chatbox-sidebar">
+                            <div className="chatbox-sidebar-header">
+                                <h3>Channels</h3>
+                            </div>
+                            <ul className="chatbox-channels">
+                                {CHANNELS.map(channel => (
+                                    <li
+                                        key={channel}
+                                        className={`channel-item ${activeChannel === channel ? 'active' : ''}`}
+                                        onClick={() => { setUnreadCounts(prev => ({ ...prev, [channel]: 0 })); handleChannelClick(channel); }}
+                                    >
+                                        <span># {channel}</span>
+                                        {unreadCounts[channel] > 0 && activeChannel !== channel && (
+                                            <span className="unread-badge">
+                                                {unreadCounts[channel] > 99 ? '99+' : unreadCounts[channel]}
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="chatbox-main">
+                            <div className="chatbox-header">
+                                <h2>{activeChannel}</h2>
+                                <div className="chatbox-controls">
+                                    <button onClick={() => setIsMaximized(!isMaximized)} className="chatbox-control-btn">
+                                        {isMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                                    </button>
+                                    <button onClick={() => setIsMinimized(true)} className="chatbox-control-btn">
+                                        <Minus size={20} />
+                                    </button>
+                                    <button onClick={onClose} className="chatbox-control-btn">
+                                        <X size={20} />
+                                    </button>
                                 </div>
-                            );
-                        })
-                    )}
+                            </div>
+                            <div className="chatbox-body" ref={chatBodyRef}>
+                                {(isLoading && (channelMessages[activeChannel] || []).length === 0) ? (
+                                    <>
+                                        <div className="skeleton-bubble theirs"></div>
+                                        <div className="skeleton-bubble theirs"></div>
+                                        <div className="skeleton-bubble mine"></div>
+                                        <div className="skeleton-bubble theirs"></div>
+                                        <div className="skeleton-bubble mine"></div>
+                                        <div className="skeleton-bubble mine"></div>
+                                        <div className="skeleton-bubble mine"></div>
+                                    </>
+                                ) : (
+                                    (channelMessages[activeChannel] || []).map((msg) => {
+                                        const isMine = msg.UserID === user?.id;
+
+                                        return (
+                                            <div key={msg.MessageID} className={`chat-message ${isMine ? 'mine' : ''}`}>
+                                                <div className="message-sender">{isMine ? 'You' : msg.UserName}</div>
+                                                <div className="message-text">
+                                                    {renderMessageText(msg.MessageText || '', (oe) => {
+                                                        // Trigger the navigation event we built earlier
+                                                        const event = new CustomEvent(GSDC_NAVIGATE_TO_TRIP_key, {
+                                                            detail: { oe }
+                                                        });
+                                                        window.dispatchEvent(event);
+                                                    }, isMine)}
+                                                </div>
+                                                <div className="message-time">
+                                                    {new Date(msg.SentAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                            <div className="chatbox-footer">
+                                <input
+                                    type="text"
+                                    placeholder={`Message #${activeChannel}`}
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                />
+                                <button onClick={handleSendMessage}>Send</button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="chatbox-footer">
-                        <input 
-                            type="text" 
-                            placeholder={`Message #${activeChannel}`} 
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                        />
-                        <button onClick={handleSendMessage}>Send</button>
-                    </div>
-                </div>
-            </div>
-            </Draggable></div>,
+                </Draggable></div>,
             document.body
         );
     }

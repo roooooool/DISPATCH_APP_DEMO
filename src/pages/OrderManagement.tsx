@@ -659,7 +659,6 @@ const OrderManagement: React.FC = () => {
                 { filter: dateFilter, orderBy: ["OEDateAsInt2 desc"] },
                 10000,
                 'ID',
-                "live dms", undefined, true
             );
 
 
@@ -1240,7 +1239,7 @@ const OrderManagement: React.FC = () => {
             }
 
             // 2. Fallback: Default "Buisness Unit" filter to user's BusinessUnit only if user is a Coordinator ('Coor')
-            if (column.col === "Buisness Unit" && user?.BusinessUnit && user?.Position === 'Coor') {
+            if ((column.col === "Buisness Unit" || column.col === "Buisness_x0020_Unit") && user?.BusinessUnit && user?.Position === 'Coor') {
                 return {
                     ...column,
                     filter: {

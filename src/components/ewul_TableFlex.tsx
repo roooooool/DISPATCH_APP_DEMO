@@ -174,11 +174,11 @@ interface TableViewProps {
 }
 
 export const encodeColumnName = (name: string): string => {
-  return name;
-  // return name.replace(/[^a-zA-Z0-9_]|_(?=[xX])/g, (char) => {
-  //   const hex = char.charCodeAt(0).toString(16).padStart(4, '0');
-  //   return `_x${hex}_`;
-  // });
+  // return name;
+  return name.replace(/[^a-zA-Z0-9_]|_(?=[xX])/g, (char) => {
+    const hex = char.charCodeAt(0).toString(16).padStart(4, '0');
+    return `_x${hex}_`;
+  });
 };
 
 // FILTER COMPONENT

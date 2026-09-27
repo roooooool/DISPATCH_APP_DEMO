@@ -65,7 +65,7 @@ export default function Login() {
       }
 
       const selectFields = [
-        "ID", "UserName", "fullName", "MiddleName", "LastName",
+        "ID", "UserName", "FirstName", "MiddleName", "LastName",
         "Role", "Position", "BusinessUnit", "BusinessUnit2",
         "FleetGroup", "Location", "microsoftEmail", "PassWord"
       ].join(",");
@@ -101,10 +101,10 @@ export default function Login() {
         setError("Incorrect password");
       } else {
         const userInfo: UserInfo = {
-          FirstName: account.fullName || "",
+          FirstName: account.FirstName || "",
           MiddleName: account.MiddleName || "",
           LastName: account.LastName || "",
-          FullName: `${account.LastName}, ${account.fullName}${account.MiddleName ? ` (${account.MiddleName})` : ""}`,
+          FullName: `${account.LastName}, ${account.FirstName}${account.MiddleName ? ` (${account.MiddleName})` : ""}`,
           BusinessUnit: account.BusinessUnit || "",
           Position: account.Position || "",
           id: String(account.ID) || "",

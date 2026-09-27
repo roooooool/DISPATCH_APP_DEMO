@@ -485,7 +485,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
 
 
                             console.log("creating trip");
-                            const createResult = await ewulCreate<any>('DISPATCH_APP_DMS', 'DMS_CEM', payload);
+                            const createResult = (await ewulCreate<any>('DISPATCH_APP_DMS', 'DMS_CEM', payload)).data;
                             console.log('created new trip: ', createResult)
 
                             // 6. Update tripID to match the newly generated database record ID

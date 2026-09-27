@@ -172,7 +172,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({
     if (!assignedOrders) return [];
 
     return assignedOrders.map((trip: any): NormalizedOrder => ({
-      BU: trip["Buisness Unit"] || '',
+      BU: trip["Buisness Unit"] || trip.Buisness_x0020_Unit || '',
       OE: trip.OE || '',
       SAPStatus: trip.TripProgress || '',
       SourceName: trip.Source || '',

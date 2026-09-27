@@ -145,16 +145,15 @@ export const ewulFetchAll = async <T>(
   keyField?: keyof T,
   //@ts-ignore
   name?: string,
+  decodeKeys: boolean = false,
   db?: string,
   //@ts-ignore
   test: boolean = false
 ): Promise<T[]> => {
-  if (!test) return [];
+  // if (!test) return [];
 
   const endpoint = getEndpointFromService(service, db);
   const token = await AuthService.ensureValidToken();
-
-  console.log('ewul fetch no endpoint: ', endpoint);
 
   if (!token) {
     throw new Error("Authentication required");
@@ -188,7 +187,8 @@ export const ewulFetchAll = async <T>(
       options,
       targetTop,
       keyField: keyField ? String(keyField) : undefined,
-      accessToken: token
+      accessToken: token,
+      decodeKeys: decodeKeys,
     }
 
     worker.postMessage(payload);
@@ -196,53 +196,9 @@ export const ewulFetchAll = async <T>(
 };
 
 
-// export async function apiFetch(
-//   url: string,
-//   options: RequestInit = {}
-// ) {
 
-//   const token = await AuthService.ensureValidToken();
+export interface EwulResponse<T> { data: T | null; error: any; code: number; }
 
-//   if (!token) {
-//     throw new Error("Authentication required");
-//   }
-
-//   const headers = new Headers(options.headers);
-
-//   headers.set("Authorization", `Bearer ${token}`);
-
-//   if (
-//     options.body &&
-//     !headers.has("Content-Type")
-//   ) {
-//     headers.set("Content-Type", "application/json");
-//   }
-
-//   let response = await fetch(url, {
-//     ...options,
-//     headers,
-//     credentials: "include"
-//   });
-
-//   // Fallback for an unexpected expiration/race condition
-//   if (response.status === 401) {
-//     const newToken = await AuthService.refresh();
-
-//     if (!newToken) {
-//       throw new Error("Authentication expired");
-//     }
-
-//     headers.set("Authorization", `Bearer ${newToken}`);
-
-//     response = await fetch(url, {
-//       ...options,
-//       headers,
-//       credentials: "include"
-//     });
-//   }
-
-//   return response;
-// }
 
 
 export interface EwulExecuteOptions {
@@ -293,7 +249,7 @@ export const ewulExecute = async <T>(
       database: database,
       spName: storedProcedure,
       method: 'GET',
-      params: options,
+      params: ewulDecodeKeys(options),
       // pagination: options.pagination,
       accessToken: token,
     };
@@ -304,11 +260,11 @@ export const ewulExecute = async <T>(
 
 
 
-export const ewulCreate = async <T>(
+export const ewulCreate = async <T = any>(
   database: string,
   tableName: string,
   record: Record<string, any>,
-): Promise<T> => {
+): Promise<EwulResponse<T>> => {
   const token = await AuthService.ensureValidToken();
 
   if (!token) {
@@ -329,21 +285,23 @@ export const ewulCreate = async <T>(
   const result = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(
-      result?.error ||
-      `Create request failed (${response.status})`
-    );
+    const message = result?.error?.message || result?.error || `Create request failed (${response.status})`;
+    throw new Error(message);
   }
 
-  return result as T;
+  return {
+    data: (result?.data ?? result) as T,
+    error: result?.error,
+    code: response.status,
+  };
 };
 
-export const ewulUpdate = async <T>(
+export const ewulUpdate = async <T = any>(
   database: string,
   tableName: string,
   recordId: string,
   changes: Record<string, any>,
-): Promise<T> => {
+): Promise<EwulResponse<T>> => {
   const token = await AuthService.ensureValidToken();
 
   if (!token) {
@@ -364,20 +322,22 @@ export const ewulUpdate = async <T>(
   const result = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(
-      result?.error ||
-      `Update request failed (${response.status})`
-    );
+    const message = result?.error?.message || result?.error || `Update request failed (${response.status})`;
+    throw new Error(message);
   }
 
-  return result as T;
+  return {
+    data: (result?.data ?? result) as T,
+    error: result?.error,
+    code: response.status,
+  };
 };
 
 export const ewulDelete = async (
   database: string,
   tableName: string,
   recordId: string,
-): Promise<void> => {
+): Promise<EwulResponse<boolean>> => {
   const token = await AuthService.ensureValidToken();
 
   if (!token) {
@@ -396,11 +356,15 @@ export const ewulDelete = async (
   const result = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(
-      result?.error ||
-      `Delete request failed (${response.status})`
-    );
+    const message = result?.error?.message || result?.error || `Delete request failed (${response.status})`;
+    throw new Error(message);
   }
+
+  return {
+    data: true,
+    error: result?.error,
+    code: response.status,
+  };
 };
 
 
@@ -1138,11 +1102,11 @@ export const useAntiSpam = (
 
 
 export const encodeColumnName = (name: string): string => {
-  return name
-  // return name.replace(/[^a-zA-Z0-9_]|_(?=[xX])/g, (char) => {
-  //   const hex = char.charCodeAt(0).toString(16).padStart(4, '0');
-  //   return `_x${hex}_`;
-  // });
+  // return name
+  return name.replace(/[^a-zA-Z0-9_]|_(?=[xX])/g, (char) => {
+    const hex = char.charCodeAt(0).toString(16).padStart(4, '0');
+    return `_x${hex}_`;
+  });
 };
 
 

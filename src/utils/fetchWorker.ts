@@ -12,6 +12,7 @@ export interface FetchWorkerPayload {
     targetTop: number;
     keyField?: string;
     accessToken?: string;
+    decodeKeys?: boolean;
 }
 
 const ctx: Worker = self as unknown as Worker;
@@ -102,7 +103,7 @@ async function authenticatedFetch(
 }
 
 ctx.onmessage = async (event: MessageEvent<FetchWorkerPayload>) => {
-    const { endpoint, options = {}, targetTop = 2000, keyField, accessToken: token, type: type } = event.data;
+    const { endpoint, options = {}, targetTop = 2000, keyField, accessToken: token, type: type, decodeKeys: decodeKeys } = event.data;
 
     if (type === "SET_TOKEN") {
         if (token) {
@@ -119,7 +120,7 @@ ctx.onmessage = async (event: MessageEvent<FetchWorkerPayload>) => {
     // Inside ctx.onmessage in fetchWorker.ts
     if (type === "FETCH") {
         if (!endpoint || endpoint === "undefined") {
-            console.error("[FETCH WORKER ERROR] Received invalid endpoint:", { endpoint, eventData: event.data });
+            // console.error("[FETCH WORKER ERROR] Received invalid endpoint:", { endpoint, eventData: event.data });
             ctx.postMessage({
                 success: false,
                 error: "FetchWorker payload missing valid endpoint parameter."
@@ -157,14 +158,9 @@ ctx.onmessage = async (event: MessageEvent<FetchWorkerPayload>) => {
                 queryParams.set('$orderby', orderbyStr);
             }
 
-            const requestUrl = `${endpoint}?${queryParams.toString()}`;
+            queryParams.set('encodeKeys', String(!decodeKeys));
 
-            console.log("[FETCH WORKER]", {
-                endpoint,
-                requestUrl,
-                API_URL,
-                options
-            });
+            const requestUrl = `${endpoint}?${queryParams.toString()}`;
 
             const response = await authenticatedFetch(requestUrl);
 

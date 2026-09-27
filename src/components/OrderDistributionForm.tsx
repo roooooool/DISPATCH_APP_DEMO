@@ -6,6 +6,7 @@ import Modal from './ewul_Modal';
 // POWER APPS SERVICES
 import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
 import { DMS_AttachmentsService } from '../generated/services/DMS_AttachmentsService'
+//@ts-ignore
 import { DMS_CEMService } from '../generated/services/DMS_CEMService';
 import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAdditionalOE_IDService';
 import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
@@ -57,7 +58,8 @@ import AutoDismissBanner from '../components/ewul_Banner';
 
 //Utils
 import {
-  ewulFetchAll,
+  //@ts-ignore
+  ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute,
   formatDate,
   logDmsUpdate,
   fetchSharepointAttachments,
@@ -1325,14 +1327,14 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const generateTripTicketID = async (OE?: string | undefined) => {
 
       try {
-        const res = await GenerateNewTripTicketService.GenerateNewTripTicket({
+        const res = await ewulExecute('DISPATCH_APP_DMS', 'GenerateNewTripTicket', {
           OE: OE,
         } as any);
 
 
 
 
-        const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+        const table1 = res as any[] | undefined;
         console.log('trip ticket: ', table1)
         if (table1 && table1.length > 0) {
           return table1[0].TripTicketID + ' (Preview)' || null;
@@ -1354,12 +1356,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
       try {
-        const res = await GenerateAdditionalOE_IDService.GenerateAdditionalOE_ID({
+        const res = await ewulExecute('DISPATCH_APP_DMS', 'GenerateAdditionalOE_ID', {
           Type: type,
         } as any);
 
 
-        const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+        const table1 = res as any[] | undefined;
         if (!table1 || table1.length === 0) {
           console.error("No data returned for new OE generation.");
           return;
@@ -1553,7 +1555,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   }
 
                   try {
-                    await UpsertAttendanceLogService.UpsertAttendanceLog(fpayload);
+                    await ewulExecute('DISPATCH_APP_DMS', 'UpsertAttendanceLog', fpayload);
                   } catch (error) {
                     handleLogError(error, `attendance.served`, 'Trip - Attendance', fpayload);
                   }
@@ -1621,7 +1623,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
         console.log('trip task update: ', payload);
 
-        UpsertTripTaskTrackerService.UpsertTripTaskTracker(payload as any);
+        ewulExecute('DISPATCH_APP_DMS', 'UpsertTripTaskTracker', payload as any);
 
       } catch (error) {
         console.error("Failed to sync TripTaskTracker:", error);
@@ -1656,8 +1658,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           try {
 
             if (progress_next === 'Assigned') { //check if OE already exists when proceeding, return a warning if yes to prevent duplicates
-              const checkResult = await CheckIfOEExistsService.CheckIfOEExists({ OE: formData.OE || '' } as any);
-              const table1 = checkResult.data?.ResultSets?.Table1 as any[] | undefined;
+              const checkResult = await ewulExecute('DISPATCH_APP_DMS', 'CheckIfOEExists', { OE: formData.OE || '' } as any);
+              const table1 = checkResult as any[] | undefined;
               if (table1 && table1.length > 0) {
                 if (table1[0].DoesExist) {
                   // Handle the case where the OE already exists
@@ -1807,7 +1809,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
             // Create a new record
 
-            const result = await (progress_next === 'Assigned' ? DMS_CEMService.create({
+            const result = await (progress_next === 'Assigned' ? ewulCreate('DISPATCH_APP_DMS', 'DMS_CEM', {
               ...updatedData,
 
               Ordered_x0020_Date: additionalOE ? new Date().toDateString() : formData.Ordered_x0020_Date,
@@ -1832,7 +1834,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               //MonitoredBy: formData.MonitoredBy,
               DispatchedBy: formData.DispatchedBy,
 
-            }) : DMS_CEMService.update(formData.ID.toString(), {
+            }) : ewulUpdate('DISPATCH_APP_DMS', 'DMS_CEM', formData.ID.toString(), {
               ...updatedData,
               TripProgress: progress_next, //next progress
               Dispatched_x0020_to_x0020_Source: progress_next === 'Dispatched To Source' ? new Date().toISOString() : formData.Dispatched_x0020_to_x0020_Source,
@@ -1846,7 +1848,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               throw new Error(result.error.message);
             }
 
-            if (progress_next === 'Assigned' && result.data.ID) await DMS_CEMService.update(result.data.ID.toString(), { tripID: result.data.ID });
+            if (progress_next === 'Assigned' && result.data.ID) await ewulUpdate('DISPATCH_APP_DMS', 'DMS_CEM', result.data.ID.toString(), { tripID: result.data.ID });
 
             if (progress_next == 'Done') {
               console.log('serving trip, attendance already handled');
@@ -1899,9 +1901,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           try {
             const assetPairingPayload = buildAssetPairingPayload(formData, driverOptions, helperOptions, truckOptions, trailerOptions, editingUser?.FullName || 'Unkown User');
             if (progress_next == 'Done') {
-              Upsert_DispatchedAssetPairingService.Upsert_DispatchedAssetPairing({ ...assetPairingPayload, Action: 'DELETE' } as any)
+              ewulExecute('DISPATCH_APP_DMS', 'Upsert_DispatchedAssetPairing', { ...assetPairingPayload, Action: 'DELETE' } as any)
             } else {
-              Upsert_DispatchedAssetPairingService.Upsert_DispatchedAssetPairing(assetPairingPayload as any)
+              ewulExecute('DISPATCH_APP_DMS', 'Upsert_DispatchedAssetPairing', assetPairingPayload as any)
             }
           } catch (error) {
             console.error('Failed to update asset pairing:', error);
@@ -1930,6 +1932,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     };
 
     const handleTripSave = async () => {
+      console.log('saving....');
       setIsSubmitting(true);
       //check for assignment changes
       if (formData.TripProgress !== 'Done') {
@@ -1954,7 +1957,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         execute: async () => {
           try {
 
-            const result = await DMS_CEMService.update(
+            const result = await ewulUpdate('DISPATCH_APP_DMS', 'DMS_CEM',
               formData.ID.toString(),
               {
 
@@ -2046,7 +2049,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           });
           try {
             const assetPairingPayload = buildAssetPairingPayload(formData, driverOptions, helperOptions, truckOptions, trailerOptions, editingUser?.FullName || 'Unkown User');
-            Upsert_DispatchedAssetPairingService.Upsert_DispatchedAssetPairing(assetPairingPayload as any);
+            ewulExecute('DISPATCH_APP_DMS', 'Upsert_DispatchedAssetPairing', assetPairingPayload as any);
           } catch (error) {
             console.error('Failed to update asset pairing:', error);
           }
@@ -2096,9 +2099,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         execute: async () => {
           onCancelTrip?.(formData.ID); // Optimistically update the UI
           try {
-            await DMS_CEMService.delete(formData.ID.toString());
+            await ewulDelete('DISPATCH_APP_DMS', 'DMS_CEM', formData.ID.toString());
 
-            UpsertTripTaskTrackerService.UpsertTripTaskTracker({ //delete task of cancelled OE
+            ewulExecute('DISPATCH_APP_DMS', 'UpsertTripTaskTracker', { //delete task of cancelled OE
               OE: formData.OE || '',
               TripProgress: formData.TripProgress || '',
               AssignedDriver: !!formData.Driver,
@@ -2183,7 +2186,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         execute: async () => {
           try {
 
-            const result = await DMS_CEMService.update(
+            const result = await ewulUpdate('DISPATCH_APP_DMS', 'DMS_CEM',
               formData.ID.toString(),
               {
                 Trip_x0020_Status: 'ITD',
@@ -2698,12 +2701,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       setIsFetchingServedCounts(true);
       let table1 = [];
       try {
-        const result = await GetEmployeeServedCountService.GetEmployeeServedCount({
+        const result = await ewulExecute('DISPATCH_APP_DMS', 'GetEmployeeServedCount', {
           EmployeeNames: names.join('|'),
           TargetDate: new Date(date).toDateString(),
         } as any);
 
-        const table = result.data?.ResultSets?.Table1 as any[];
+        const table = result as any[];
         if (table && table.length > 0) {
           table1 = table
         }
@@ -2923,7 +2926,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           try {
 
 
-            UpsertAttendanceLogService.UpsertAttendanceLog(upsertAtt as any);
+            ewulExecute('DISPATCH_APP_DMS', 'UpsertAttendanceLog', upsertAtt as any);
 
             return { success: true };
           } catch (error) {
