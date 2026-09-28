@@ -1963,7 +1963,7 @@ export const PRINT_DMS_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.env
 export const UPLOAD_ATTACHMENTS_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/956d4fbec4db4bd78f0c5f99aae41c6c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=RB-nyQsBDWEy0aux94IfIhw6CLVTSjGb9M-vixmyn6o";
 export const ERROR_EMAIL_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/25910ba44d244d92aaa23ab1aaf9d146/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=n3Pva4B7ioglK0TIhBoyv3yGd2xizzVc32Eyt3Ri70E";
 export const GSDC_ANNOUNCEMENT_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/578d19e838174478a31d68bc3c20b2c9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZhsPaRPlvhhlywgCr7aEoywbQl3jn2fT2Rlrc5IT7s4";
-
+export const EWUL_SP_API_ENDPOINT = "https://b2d2222dc740ef1690861d5bd091f1.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/16/workflows/baa7432f8985477db9c86d4634909551/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=viQdfFXGwkj_ESiuOy896YH80dkyn_WQNPiQj1MLZ7M";
 
 export const DEVBOT_USERID = '-1432';
 export const ITDEV_USERID = '251';

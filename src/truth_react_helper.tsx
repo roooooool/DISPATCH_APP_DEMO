@@ -6,14 +6,18 @@ import { HighlightText, encodeColumnName as enc } from './components/ewul_TableF
 //
 import { ATTENDANCE_STATUS_COLORS } from './truth.config';
 
-//
-import { ewulFetchAll } from './utils/Ewul_GSDC_Utils';
+//@ts-ignore
+import { ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI, } from './utils/Ewul_GSDC_Utils';
 
 
 import { LiveVehicleAssignmentLIstViewService } from './generated/services/LiveVehicleAssignmentLIstViewService';
+//@ts-ignore
 import { DMS_CEMService } from './generated/services/DMS_CEMService';
+//@ts-ignore
 import { UpsertAttendanceLogService } from './generated/services/UpsertAttendanceLogService';
+//@ts-ignore
 import { UpsertNewTripRemarksService } from './generated/services/UpsertNewTripRemarksService';
+//@ts-ignore
 import { DMS_NewTrip_RemarksService } from './generated/services/DMS_NewTrip_RemarksService';
 
 
@@ -365,7 +369,7 @@ export const handleUpdateStatus = async (newValue: string, row: any) => {
 
   const ID = row.dmsID;
   try {
-    const result = await DMS_CEMService.update(ID, { [enc("Trip Status")]: newValue });
+    const result = await ewulUpdate('DISPATCH_APP_DMS', 'DMS_CEM', ID, { [enc("Trip Status")]: newValue })
     console.log("Status update result:", result);
 
     if (result.error) {
@@ -384,13 +388,13 @@ export const handleUpdateStatus = async (newValue: string, row: any) => {
 
 export const handleUpdateAttendanceStatus = async (newAttendance: string, empId: string, empName: string, OE: string) => {
   try {
-    UpsertAttendanceLogService.UpsertAttendanceLog({
+    ewulExecute('DISPATCH_APP_DMS', 'UpsertAttendanceLog', {
       EmployeeName: empName,
       EmployeeID: empId,
       AttendanceDate: new Date().toISOString().split('T')[0],
       AttendanceStatus: newAttendance || 'PRESENT',
       OE: OE || '',
-    } as any);
+    });
     return { success: true };
   } catch (error) {
     console.error("Fetch error:", error);
@@ -638,7 +642,7 @@ export const DDRemarksInputCompact: React.FC<DDRemarksInputProps> = ({
 
 // Standard service caller
 const saveODMRemarks = async (newRemarks: string, recordID: string) => {
-  return DMS_CEMService.update(recordID, { [enc('Planning')]: newRemarks });
+  return await ewulUpdate('DISPATCH_APP_DMS', 'DMS_CEM', recordID, { [enc('Planning')]: newRemarks });
 };
 
 // Renderer accepting (onRecordChange, row) matching DDRemarksStatusDropdown structure
@@ -694,7 +698,6 @@ const onRemarksStatusDropdownChange = (
 ) => {
   console.log('upserting remarks: ', val, ' id: ', id, ' oe: ', oe);
 
-  // 1. Immediately update UI state
   if (onRecordChange) {
     onRecordChange({
       ...row,
@@ -702,12 +705,13 @@ const onRemarksStatusDropdownChange = (
     });
   }
 
-  // 2. Fire request in background
-  UpsertNewTripRemarksService.UpsertNewTripRemarks({ OE: oe, Remarks: val } as any)
-    .catch((error) => {
-      console.error('Failed to persist remarks change:', error);
-      // Optional: rollback state if request fails
-    });
+  ewulExecute('DISPATCH_APP_DMS', 'UpsertNewTripRemarks', {
+    OE: oe,
+    Remarks: val,
+  }).catch((error) => {
+    console.error('Failed to persist remarks change:', error);
+  });
+
 };
 
 // Internal removal handler
@@ -729,7 +733,7 @@ const onRemarksStatusDropdownRemove = (
   }
 
   // 2. Fire delete in background
-  DMS_NewTrip_RemarksService.delete(id)
+  ewulDelete('DISPATCH_APP_DMS', 'DMS_NewTrip_Remarks', id)
     .catch((error) => {
       console.error('Failed to delete remarks:', error);
       // Optional: Handle error

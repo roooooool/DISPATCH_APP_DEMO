@@ -371,9 +371,68 @@ export const ewulDelete = async (
 
 
 
+export interface SharePointAPIOptions {
+  filter?: string;
+  top?: number;
+  orderBy?: string;
+  select?: string;
+}
 
+export const ewulSharePointAPI = async <T>(
+  site: string,
+  list: string,
+  operation: "get" | "query" | "create" | "update" | "delete",
+  options?: SharePointAPIOptions,
+  data?: Partial<T>,
+  id?: number,
+): Promise<T[]> => {
+  const FLOW_URL = import.meta.env.VITE_SHAREPOINT_API_URL;
 
+  const payload = {
+    operation,
+    site,
+    list,
+    id,
+    data,
+    filter: options?.filter,
+    top: options?.top,
+    orderby: options?.orderBy,
+    select: options?.select,
+  };
 
+  const response = await fetch(FLOW_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `SharePoint API failed (${response.status}): ${errorText}`
+    );
+  }
+
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(
+      result.error?.message || "SharePoint API request failed"
+    );
+  }
+
+  if (operation === "query") {
+    return result.data ?? [];
+  }
+
+  if (result.data) {
+    return [result.data];
+  }
+
+  return [];
+};
 
 
 

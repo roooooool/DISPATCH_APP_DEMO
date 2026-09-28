@@ -5,6 +5,7 @@ import Modal from './ewul_Modal';
 
 // POWER APPS SERVICES
 import { type LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
+//@ts-ignore
 import { DMS_AttachmentsService } from '../generated/services/DMS_AttachmentsService'
 //@ts-ignore
 import { DMS_CEMService } from '../generated/services/DMS_CEMService';
@@ -14,6 +15,7 @@ import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAd
 import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
 //@ts-ignore
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
+//@ts-ignore
 import { GSDC_AttendanceService } from '../generated/services/GSDC_AttendanceService';
 import { type GSDC_AttendanceBase } from '../generated/models/GSDC_AttendanceModel';
 import type { UpsertTripTaskTrackerRequest } from '../generated/models/UpsertTripTaskTrackerModel';
@@ -66,7 +68,7 @@ import AutoDismissBanner from '../components/ewul_Banner';
 //Utils
 import {
   //@ts-ignore
-  ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute,
+  ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
   formatDate,
   logDmsUpdate,
   fetchSharepointAttachments,
@@ -371,7 +373,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       setOriginalFormData(newInitialData);
       setTempPlantDrAttachments([]);
       setTempWsAttachments([]);
-      fetchAttachments(initialData?.tripID || 0, initialData); // Fetch attachments for the current trip
+      fetchAttachments(initialData?.tripID || initialData?.ID || 0, initialData); // Fetch attachments for the current trip
       // Initial validation run
       const initialValidation = runValidation(newInitialData);
       setValidation(initialValidation);
@@ -394,13 +396,16 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const fetchAttachments = async (tripID: number, initialData?: any) => {
 
       try {
-        const records = await ewulFetchAll<any>(
-          DMS_AttachmentsService,
-          {
-            filter: `dmsID eq ${tripID}`,
-            orderBy: ['Created desc'],
-          },
-          50
+        const options = {
+          filter: `dmsID eq ${tripID}`,
+          orderBy: 'Created desc',
+          top: 50
+        }
+        const records = await ewulSharePointAPI<any>(
+          "Projects & Developments",
+          "DMS_Attachments",
+          "query",
+          options
         );
 
         await fetchSharepointAttachments({
@@ -412,7 +417,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           // onFinish: () => validateAfterAttachmentFetch(initialData),
         });
 
-        console.log(records);
+        console.log('fetched attachments: ', records);
 
         if (records) {
           setWsAttachmentItemID(
@@ -1438,12 +1443,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       });
       setShowAssignmentConfirmModal(true);
 
-      // 💡 CHANGE 1: The promise now resolves with the final array payload or null from the modal
       const finalPayloadToUpload = await new Promise<any[] | null>((resolve) => {
         setPendingAssignmentConfirmation(() => resolve);
       });
 
-      // 💡 CHANGE 2: If the user cancels, finalPayloadToUpload is null
       if (!finalPayloadToUpload) {
         console.log("Assignment changes cancelled by user.");
         return { canProceed: false };
@@ -1516,7 +1519,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         //   hrID: getPersonnelIdByName(item.SName, item.Role)
         // })) as GSDC_AttendanceBase[];
 
-
         if (recordsToUpload.length > 0) {
           addTask({
             name: 'Uploading attendance records to Coor Apps.',
@@ -1556,7 +1558,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                   }
 
                   try {
-                    await GSDC_AttendanceService.create(sppayload);
+                    // await GSDC_AttendanceService.create(sppayload);
+                    console.log('uploading to sharepoint attendance: ', sppayload);
+                    await ewulSharePointAPI('Communication site', 'GSDC_Attendance', 'create', undefined, sppayload);
                   } catch (error) {
                     handleLogError(error, `spattendance.served`, 'Trip - SP Attendance', sppayload);
                   }
@@ -2650,7 +2654,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           return result.data?.every(res => res.success) ?? false;
         },
         onSuccess: () => {
-          fetchAttachments(formData.tripID || 0, formData); // Refresh attachments on success
+          fetchAttachments(formData.tripID || formData.ID || 0, formData); // Refresh attachments on success
         },
         message: `Uploading attachments for trip ${formData.OE}...`,
         message_success: `Attachments for ${formData.OE} uploaded successfully!`,
