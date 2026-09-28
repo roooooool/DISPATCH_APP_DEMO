@@ -58,7 +58,18 @@ export default function Login() {
     setError("");
 
     try {
-      const accessToken = await AuthService.ensureValidToken();
+      const APP_KEY = import.meta.env.VITE_APP_KEY;
+      const APP_SECRET = import.meta.env.VITE_APP_SECRET;
+
+      // 1. Try existing access token / refresh token first
+      let accessToken = await AuthService.ensureValidToken();
+
+      // 2. No existing session -> authenticate the application
+      if (!accessToken) {
+        const session = await AuthService.login(APP_KEY, APP_SECRET);
+        accessToken = session.access_token;
+      }
+
 
       if (!accessToken) {
         throw new Error("Unable to authenticate with the server");
