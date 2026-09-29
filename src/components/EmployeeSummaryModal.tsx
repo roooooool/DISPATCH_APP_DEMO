@@ -14,14 +14,22 @@ import {
 import './comp_css/EmployeeSummaryModal.css';
 
 //POWERAPPS
+//@ts-ignore
 import { GSDC_AttendanceService } from '../generated/services/GSDC_AttendanceService';
+//@ts-ignore
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
+//@ts-ignore
 import { ResetAttendanceLogBySpIDService } from '../generated/services/ResetAttendanceLogBySpIDService';
+//@ts-ignore
 import { DMS_AttendanceLogsService } from '../generated/services/DMS_AttendanceLogsService';
 
 //utils
 import { useTaskWorker } from '../utils/TaskWorkerContext';
-import { generateAttendanceID } from '../utils/Ewul_GSDC_Utils'
+import {
+    //@ts-ignore
+    ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
+    generateAttendanceID
+} from '../utils/Ewul_GSDC_Utils'
 
 
 interface CutoffGroup {
@@ -482,12 +490,13 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                         console.log('payload create: ', createPayloads);
 
                         const createResults = await Promise.all(
-                            createPayloads.map((payload) => GSDC_AttendanceService.create(payload))
+
+                            createPayloads.map((payload) => ewulSharePointAPI('Communication site', 'GSDC_Attendance', 'create', undefined, payload))
                         );
 
                         console.log('success wew1', createResults)
 
-                        const hasCreateFailure = createResults.some((res) => !res?.success);
+                        const hasCreateFailure = createResults.some((res) => !res);
                         if (hasCreateFailure) {
                             throw new Error("Failed to create one or more attendance records in SharePoint.");
                         }
@@ -499,12 +508,13 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             updateRecords.map(async (rec) => {
                                 try {
                                     // Attempt standard update
-                                    const updateRes = await GSDC_AttendanceService.update(rec.spID!, {
+                                    const updateRes = await ewulSharePointAPI('Communication site', 'GSDC_Attendance', 'update', undefined, {
                                         Approval: rec.Approved || '',
-                                    });
+                                    }, Number(rec.spID!))
+
 
                                     // If update succeeded, return response
-                                    if (updateRes?.success) {
+                                    if (updateRes) {
                                         return updateRes;
                                     }
 
@@ -512,11 +522,11 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                     console.warn(`spID ${rec.spID} not found in SharePoint. Resetting orphan log and creating new record...`);
 
                                     // 1. Reset orphan spID binding in SQL Database
-                                    await ResetAttendanceLogBySpIDService.ResetAttendanceLogBySpID({ spID: rec.spID! } as any);
+                                    await ewulExecute('DISPATCH_APP_DMS', 'ResetAttendanceLogBySpID', { spID: rec.spID! } as any);
 
                                     // 2. Create replacement record with FULL payload
                                     const formattedStatus = SP_ATTENDANCE_STATUS_KEY_MAP[rec.AttendanceStatus];
-                                    const createRes = await GSDC_AttendanceService.create({
+                                    const createRes = await ewulSharePointAPI('Communication site', 'GSDC_Attendance', 'create', undefined, {
                                         OE: rec.OE || '',
                                         TripKM: rec.tripKM?.toString() || '',
                                         SD: rec.SD || formattedStatus || '',
@@ -538,9 +548,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
                                     // Fallback attempt if update threw an unhandled exception
                                     try {
-                                        await ResetAttendanceLogBySpIDService.ResetAttendanceLogBySpID({ spID: rec.spID! } as any);
+                                        await ewulExecute('DISPATCH_APP_DMS', 'ResetAttendanceLogBySpID', { spID: rec.spID! } as any);
 
-                                        return await GSDC_AttendanceService.create({
+                                        return await ewulSharePointAPI('Communication site', 'GSDC_Attendance', 'create', undefined, {
                                             OE: rec.OE || '',
                                             TripKM: rec.tripKM?.toString() || '',
                                             SD: rec.SD || '',
@@ -563,7 +573,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             })
                         );
 
-                        const hasUpdateFailure = updateResults.some((res) => !res?.success);
+                        const hasUpdateFailure = updateResults.some((res) => !res);
                         if (hasUpdateFailure) {
                             throw new Error("Failed to update or recreate one or more attendance records in SharePoint.");
                         }
@@ -576,9 +586,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             deleteRecords.map(async (rec) => {
                                 try {
                                     //Delete from SQL
-                                    if (rec.attendanceID) { await DMS_AttendanceLogsService.delete(rec.attendanceID); }
+                                    if (rec.attendanceID) { await ewulDelete('DISPATCH_APP_DMS', 'DMS_AttendanceLogs', rec.attendanceID); }
                                     //Delete from sharepoint
-                                    if (rec.spID) { await GSDC_AttendanceService.delete(rec.spID); }
+                                    if (rec.spID) { await ewulSharePointAPI('Communication site', 'GSDC_Attendance', 'delete', undefined, undefined, Number(rec.spID)); }
                                     return { success: true };
                                 } catch (err) {
                                     console.error(`Failed to delete spID ${rec.spID}:`, err);
@@ -605,7 +615,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             const day = String(dateObj.getDate()).padStart(2, '0');
                             const dateStr = `${year}-${month}-${day}`;
 
-                            return UpsertAttendanceLogService.UpsertAttendanceLog({
+                            return ewulExecute('DISPATCH_APP_DMS', 'UpsertAttendanceLog', {
                                 EmployeeName: rec.EmployeeName,
                                 EmployeeID: rec.EmployeeID,
                                 AttendanceDate: dateStr,
@@ -615,7 +625,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                                 ModifiedBy: user?.FullName || 'Unknown User',
                                 ApprovedBy: rec.Approved === 'Approved' ? (user?.FullName || undefined) : undefined,
                                 TCVC: rec.TCVC || 'VC'
-                            } as any);
+                            });
                         })
                     );
 
@@ -623,7 +633,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
                     console.log('upserting success!', upsertResults);
 
-                    const hasUpsertFailure = upsertResults.some((res) => res && res.success === false);
+                    const hasUpsertFailure = upsertResults.some((res) => !res);
                     if (hasUpsertFailure) {
                         throw new Error("Failed to sync one or more attendance records with the SQL database.");
                     }

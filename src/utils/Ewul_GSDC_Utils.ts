@@ -2,6 +2,7 @@
 import { dataSourcesInfo } from '../../.power/schemas/appschemas/dataSourcesInfo.ts';
 import type { IOperationResult } from '@microsoft/power-apps/data';
 import type { IGetAllOptions } from '../generated/models/CommonModels';
+//@ts-ignore
 import { DMS_updatedService } from '../generated/services/DMS_updatedService';
 import { DMS_ATTACHMENTS_ENDPOINT, type UserInfo } from '../truth.config';
 import MD5 from 'crypto-js/md5';
@@ -799,7 +800,7 @@ export const logDmsUpdate = async (params: {
 
 
   try {
-    await DMS_updatedService.DMS_updated({
+    await ewulExecute('DISPATCH_APP_DMS', 'DMS_updated', {
       UserName: userName,
       UserID: userID,
       InputOE: inputOE,

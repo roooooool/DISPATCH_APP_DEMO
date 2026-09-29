@@ -20,8 +20,11 @@ import { useUser } from '../utils/useUser';
 
 //POWER APPS
 // import { Sp_fetchAttendanceCalendar2Service } from '../generated/services/Sp_fetchAttendanceCalendar2Service';
+//@ts-ignore
 import { FetchAttendanceCalendarService } from '../generated/services/FetchAttendanceCalendarService';
+//@ts-ignore
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
+//@ts-ignore
 import { Late_Attendance_RequestsService } from '../generated/services/Late_Attendance_RequestsService';
 import { type Late_Attendance_Requests } from '../generated/models/Late_Attendance_RequestsModel';
 
@@ -34,7 +37,8 @@ import {
 
 import {
 
-  ewulFetchAll,
+  //@ts-ignore
+  ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
   ISOtoInt,
   //@ts-ignore
   encodeColumnName as enc
@@ -586,7 +590,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       name: `Employee Attendance Update`,
       execute: async () => {
         try {
-          await UpsertAttendanceLogService.UpsertAttendanceLog({
+          await ewulExecute('DISPATCH_APP_DMS', 'UpsertAttendanceLog', {
             EmployeeName: empName,
             EmployeeID: empId,
             AttendanceDate: dateStr,
@@ -797,7 +801,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
       name: `Create Late Attendance Request`,
       execute: async () => {
         try {
-          const result = await Late_Attendance_RequestsService.create(payload as any);
+          const result = await ewulCreate('DISPATCH_APP_DMS', 'Late_Attendance_Requests', payload);
           console.log('creating late attendance request: ', payload);
           console.log('late attendance request result: ', result);
           return { success: true, data: result };
@@ -848,7 +852,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
     // console.log('fetching att data...')
     setLoading(true);
     try {
-      const res = await FetchAttendanceCalendarService.FetchAttendanceCalendar({
+      const res = await ewulExecute('DISPATCH_APP_DMS', 'FetchAttendanceCalendar', {
         Year: year,
         Month: month,
         BU: BU || 'SBUO-1A,SBUO-1B',
@@ -856,7 +860,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
         CutoffEndDay: 4
       } as any);
 
-      const rawData = (res.data?.ResultSets?.Table1 || []) as any;
+      const rawData = (res || []) as any;
 
       // console.log('raw att data: ', rawData);
 
