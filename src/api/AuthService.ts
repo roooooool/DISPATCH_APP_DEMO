@@ -88,7 +88,6 @@ async function performRefresh(): Promise<{ accessToken: string; expiresIn: numbe
     console.log("Refresh status:", response.status);
 
     const responseText = await response.text();
-    console.log("Refresh response:", responseText);
 
     if (!response.ok) {
         accessToken = null;

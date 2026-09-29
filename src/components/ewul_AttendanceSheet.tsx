@@ -860,25 +860,30 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
         CutoffEndDay: 4
       } as any);
 
-      const rawData = (res || []) as any;
+      const rawData = ((res || []) as any[]).map(row => ({
+        ...row,
+        AttendanceDate: row.AttendanceDate
+          ? new Date(row.AttendanceDate).toISOString().split('T')[0]
+          : null
+      }));
 
-      // console.log('raw att data: ', rawData);
+      console.log('raw att data: ', rawData);
 
 
 
-      // --- DEBUG LOG START ---
-      if (rawData.length > 0) {
-        const dates = rawData
-          .map((item: any) => item.AttendanceDate?.split('T')[0])
-          .filter(Boolean)
-          .sort();
+      // // --- DEBUG LOG START ---
+      // if (rawData.length > 0) {
+      //   const dates = rawData
+      //     .map((item: any) => item.AttendanceDate?.split('T')[0])
+      //     .filter(Boolean)
+      //     .sort();
 
-        if (dates.length > 0) {
-          console.log(`📅 [Attendance Range]: ${dates[0]} ➔ ${dates[dates.length - 1]} (Total: ${rawData.length} rows)`);
-        }
-      } else {
-        console.log('⚠️ [Attendance Range]: No records returned.');
-      }
+      //   if (dates.length > 0) {
+      //     console.log(`📅 [Attendance Range]: ${dates[0]} ➔ ${dates[dates.length - 1]} (Total: ${rawData.length} rows)`);
+      //   }
+      // } else {
+      //   console.log('⚠️ [Attendance Range]: No records returned.');
+      // }
       // --- DEBUG LOG END ---
 
       // --- DEBUG: Filter and inspect specific records ---
@@ -963,9 +968,8 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
 
     data.forEach(item => {
       if (item.AttendanceDate) {
-        const dateStr = item.AttendanceDate.split('T')[0];
+        const dateStr = item.AttendanceDate;
         if (!dateMap.has(dateStr)) {
-          // Parse date as local time (YYYY-MM-DD)
           const [y, m, d] = dateStr.split('-').map(Number);
           dateMap.set(dateStr, new Date(y, m - 1, d));
         }
