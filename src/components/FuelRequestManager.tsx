@@ -22,7 +22,11 @@ import {
     GPS_STATUS_COLOR,
 } from '../truth.config';
 
-import { ewulFetchAll, fetchSharepointAttachments, formatDate, formatToLocalISO, ISOtoInt, logDebug, type DebugLogParams } from '../utils/Ewul_GSDC_Utils';
+import {
+    //@ts-ignore
+    ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
+    fetchSharepointAttachments, formatDate, formatToLocalISO, ISOtoInt, logDebug, type DebugLogParams
+} from '../utils/Ewul_GSDC_Utils';
 import type { LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';
 
 

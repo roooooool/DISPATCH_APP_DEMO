@@ -1,5 +1,5 @@
 export const APP_VERSION = "3.39.19"; // Update this with each release for better error tracking and user support
-
+export const mandatoryLogout = "2026-08-13 00:00:00"
 
 //react helper for truths
 import {
@@ -39,7 +39,7 @@ export type UserInfo = {
   lastLogout?: string; // for the logout modal
 };
 
-export const mandatoryLogout = "2026-08-13 16:54:03"
+
 
 export const TRIP_GROUPS = [
   { id: 'Trading_bulk', label: 'Trading - Bulk', color: '#092162' },

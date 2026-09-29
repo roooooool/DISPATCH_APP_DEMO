@@ -11,6 +11,7 @@ import TaskTracker from './ewul_TripTaskTracker';
 
 import { useUser } from "../utils/useUser";
 import { mandatoryLogout } from "../truth.config"
+import { AuthService } from "../api/AuthService";
 
 import profile_icon_placeholder from "../../public/icons/pwhite.svg"; // Placeholder profile icon path
 
@@ -138,23 +139,34 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
   };
 
   useEffect(() => {
-    if (!user?.id || !mandatoryLogout) return;
+    const checkAuthentication = async () => {
+      const accessToken = await AuthService.ensureValidToken();
 
-    const storageKey = `lastLogout_${user.id}`;
-    const storedLastLogout = localStorage.getItem(storageKey);
+      if (!accessToken) {
+        setShowMandatoryLogoutModal(true);
+        return;
+      }
 
-    if (storedLastLogout) {
-      const lastLogoutTime = new Date(storedLastLogout).getTime();
-      const mandatoryLogoutTime = new Date(mandatoryLogout).getTime();
+      if (!user?.id || !mandatoryLogout) return;
 
-      if (lastLogoutTime < mandatoryLogoutTime) {
+      const storageKey = `lastLogout_${user.id}`;
+      const storedLastLogout = localStorage.getItem(storageKey);
+
+      if (storedLastLogout) {
+        const lastLogoutTime = new Date(storedLastLogout).getTime();
+        const mandatoryLogoutTime = new Date(mandatoryLogout).getTime();
+
+        if (lastLogoutTime < mandatoryLogoutTime) {
+          setShowMandatoryLogoutModal(true);
+        }
+      } else {
+        // No record exists, so force the user to acknowledge the logout requirement
         setShowMandatoryLogoutModal(true);
       }
-    } else {
-      // If no record exists, trigger modal to update timestamp
-      setShowMandatoryLogoutModal(true);
-    }
-  }, [user?.id]);
+    };
+
+    checkAuthentication();
+  }, [user?.id, mandatoryLogout]);
 
   const handleMandatoryLogoutConfirm = () => {
     setShowMandatoryLogoutModal(false);

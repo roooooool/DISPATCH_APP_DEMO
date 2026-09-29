@@ -66,7 +66,8 @@ import type { DropdownOption } from '@components/SearchableDropdown';
 import { useUser } from '../utils/useUser';
 import {
 
-    ewulFetchAll,
+    //@ts-ignore
+    ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
     ISOtoInt,
 
     ewul_canFetch as canFetch,

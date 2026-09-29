@@ -51,15 +51,19 @@
 }
 
 .login-title h1 {
-  font-size: 32px; /* Increased size */
-  font-weight: 900; /* Maximum thickness */
+  font-size: 32px;
+  /* Increased size */
+  font-weight: 900;
+  /* Maximum thickness */
   color: var(--color-primary);
   margin-bottom: 30px;
-  letter-spacing: 2px; /* Spread it out for that "Premium" look */
-  text-transform: uppercase; /* All caps always feels bolder */
-  
+  letter-spacing: 2px;
+  /* Spread it out for that "Premium" look */
+  text-transform: uppercase;
+  /* All caps always feels bolder */
+
   /* This creates a "faux-bold" effect by doubling the edges */
-  text-shadow: 0.5px 0 0 var(--color-primary); 
+  text-shadow: 0.5px 0 0 var(--color-primary);
 }
 
 
@@ -75,7 +79,8 @@
 /* Your Specific Spec: Gradient outline via overlapping boxes */
 .input-gradient-wrapper {
   position: relative;
-  padding: 2px; /* Border thickness */
+  padding: 2px;
+  /* Border thickness */
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   border-radius: 12px;
   transition: transform 0.2s ease;
@@ -93,17 +98,19 @@
 
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(135deg, rgba(9,33,98,1), red) border-box;
+    linear-gradient(135deg, rgba(9, 33, 98, 1), red) border-box;
 
-  color: rgba(9,33,98,1);
+  color: rgba(9, 33, 98, 1);
   font-size: 14px;
   outline: none;
 }
 
 /* Focus effect */
 .gradient-input:focus {
-  border-width: 3px; /* slightly thicker */
-  box-shadow: 0 0 8px rgba(9,33,98,0.4); /* subtle glow */
+  border-width: 3px;
+  /* slightly thicker */
+  box-shadow: 0 0 8px rgba(9, 33, 98, 0.4);
+  /* subtle glow */
 }
 
 .btn-login {
@@ -141,7 +148,7 @@
   position: relative;
   z-index: 2;
   width: min(480px, 90%);
-  padding: 4px; 
+  padding: 4px;
   border-radius: 28px;
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   animation: glowPulseRed 2.5s ease-in-out infinite;
@@ -158,4 +165,89 @@
 .fade-out {
   opacity: 0;
   transform: scale(0.98);
+}
+
+
+
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 4px 0;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.login-divider span {
+  padding: 0 12px;
+}
+
+/* --- MICROSOFT BUTTON (Gradient Border + White Inner) --- */
+.btn-microsoft {
+  width: 100%;
+  padding: 2px;
+  /* Outer gradient border thickness */
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #092162 0%, #3a4efc 50%, #e53935 100%);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-microsoft-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  /* Inner radius matching outer minus padding */
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-microsoft:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(58, 78, 252, 0.25);
+}
+
+.btn-microsoft:hover:not(:disabled) .btn-microsoft-inner {
+  background-color: #f8fafc;
+}
+
+.btn-microsoft:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-microsoft:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ms-logo {
+  flex-shrink: 0;
+}
+
+/* --- ERROR TEXT --- */
+.error-text {
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin: -4px 0 0 0;
+  text-align: left;
 }

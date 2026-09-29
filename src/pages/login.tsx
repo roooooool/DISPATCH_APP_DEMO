@@ -18,16 +18,19 @@ import truckBg from "../../public/images/trucks.jpg"; // Import the background i
 
 import { useUser } from '../utils/useUser';
 import { AuthService } from "../api/AuthService.ts";
+import { msalInstance } from "../api/msalConfig";
 
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+
 
   const { user, updateUser } = useUser();
   useEffect(() => {
@@ -46,11 +49,138 @@ export default function Login() {
     }
   }, [navigate]);*/
 
+  // Standard RFC 5322 compliant regex pattern
+  const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  function validateEmail(val: string): boolean {
+    if (!val.trim()) {
+      setEmailError("Email address is required.");
+      return false;
+    }
+    if (!EMAIL_REGEX.test(val.trim())) {
+      setEmailError("Please enter a valid email address.");
+      return false;
+    }
+    setEmailError("");
+    return true;
+  }
+
+  function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setEmail(value);
+    if (emailError) {
+      validateEmail(value); // Clear/update error as user types once triggered
+    }
+  }
+
+  function validateEmailOnBlur() {
+    if (email) {
+      validateEmail(email);
+    }
+  }
+
+  //@ts-ignore
+  async function handleMicrosoftLogin() {
+    try {
+      setError("");
+      setLoading(true);
+
+      const result = await msalInstance.loginPopup({
+        scopes: ["openid", "profile", "email"]
+      });
+
+      console.log("MICROSOFT LOGIN RESULT:", result);
+      console.log("MICROSOFT ACCOUNT:", result.account);
+      console.log("MICROSOFT USERNAME:", result.account?.username);
+      console.log("MICROSOFT NAME:", result.account?.name);
+      console.log("MICROSOFT ID TOKEN CLAIMS:", result.idTokenClaims);
+
+    } catch (err: any) {
+      console.error("MICROSOFT LOGIN ERROR:", err);
+      setError(err.message || "Microsoft login failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  //@ts-ignore
+  async function loginOld(accessToken: string) {
+    const selectFields = [
+      "ID", "UserName", "FirstName", "MiddleName", "LastName",
+      "Role", "Position", "BusinessUnit", "BusinessUnit2",
+      "FleetGroup", "Location", "microsoftEmail", "PassWord"
+    ].join(",");
+
+    const filterQuery = `UserName eq '${email}'`;
+
+    const endpoint = `/api/SHAREPOINT_DATA/table/gsdc_accounts?$filter=${encodeURIComponent(filterQuery)}&$select=${encodeURIComponent(selectFields)}&$top=1`;
+    const url = getApiUrl(endpoint);
+
+    console.log("f url: ", url);
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      },
+      credentials: "include"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server returned status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return result.data[0];
+  }
+
+  async function loginApi(accessToken: string) {
+    // 2. Call user login endpoint
+    const response = await fetch(
+      getApiUrl("/api/auth/login"),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    console.log("LOGIN STATUS:", response.status);
+    console.log("LOGIN RESPONSE:", result);
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || `Login failed with status ${response.status}`
+      );
+    }
+
+    return result.user
+  }
+
+
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!username || !password) {
-      setError("Please enter username and password");
+    const username = email;
+
+    const isEmailValid = validateEmail(email);
+    if (!isEmailValid) {
+      return;
+    }
+
+    if (!password) {
+      setError("Please enter your password.");
       return;
     }
 
@@ -75,49 +205,30 @@ export default function Login() {
         throw new Error("Unable to authenticate with the server");
       }
 
-      const selectFields = [
-        "ID", "UserName", "FirstName", "MiddleName", "LastName",
-        "Role", "Position", "BusinessUnit", "BusinessUnit2",
-        "FleetGroup", "Location", "microsoftEmail", "PassWord"
-      ].join(",");
+      console.log('username: ', username, ' password: ', password);
 
-      const filterQuery = `UserName eq '${username}'`;
+      const user = await loginApi(accessToken);
 
-      const endpoint = `/api/SHAREPOINT_DATA/table/gsdc_accounts?$filter=${encodeURIComponent(filterQuery)}&$select=${encodeURIComponent(selectFields)}&$top=1`;
-      const url = getApiUrl(endpoint);
+      console.log("fetched account: ", user);
 
-      console.log("f url: ", url);
+      const account = user;
 
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        credentials: "include"
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log("fetched account: ", result);
-
-      const account = result.value?.[0];
+      const fn = account.FirstName || account.name || "";
+      const mn = account.MiddleName || account.middlename || "";
+      const ln = account.LastName || account.surname || "";
 
       if (!account) {
         setError("User not found");
-      } else if (account.PassWord !== password) {
-        setError("Incorrect password");
+        // } else if (account.PassWord !== password) {
+        //   setError("Incorrect password");
       } else {
         const userInfo: UserInfo = {
-          FirstName: account.FirstName || "",
-          MiddleName: account.MiddleName || "",
-          LastName: account.LastName || "",
-          FullName: `${account.LastName}, ${account.FirstName}${account.MiddleName ? ` (${account.MiddleName})` : ""}`,
+          FirstName: fn,
+          MiddleName: mn,
+          LastName: ln,
+          FullName: `${ln}, ${fn}${mn ? ` (${mn})` : ""}`,
           BusinessUnit: account.BusinessUnit || "",
-          Position: account.Position || "",
+          Position: account.Position || account.roles[0] || "",
           id: String(account.ID) || "",
           CurrentNav: "/dash"
         };
@@ -145,30 +256,69 @@ export default function Login() {
     <div className={`login-container ${isLeaving ? "fade-out" : ""}`}>
       {/* Left Side - Login */}
       <div className="login-left">
-        <img
-          src={gsdcLogo} // Corrected
-          alt="GSDC Logo"
-          className="logo"
-        />
+        <img src={gsdcLogo} alt="GSDC Logo" className="logo" />
         <h1 className="login-title">TRIP DISPATCH APP</h1>
+
         <form className="login-form" onSubmit={handleLogin}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="gradient-input"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="gradient-input"
-          />
+          {/* Gradient Wrapper Pattern for Inputs */}
+          <div className={`gradient-input-wrapper ${emailError ? "input-error" : ""}`}>
+            <input
+              type="email"
+              placeholder="Email Address (e.g. user@company.com)"
+              value={email}
+              onChange={handleEmailChange}
+              onBlur={validateEmailOnBlur}
+              className="gradient-input"
+              autoComplete="email"
+              required
+            />
+          </div>
+          {emailError && <p className="field-error-text">{emailError}</p>}
+
+          <div className="gradient-input-wrapper">
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="gradient-input"
+            />
+          </div>
+
           {error && <p className="error-text">{error}</p>}
+
+          {/* Primary Action Button */}
           <button type="submit" className="btn-login" disabled={loading}>
             {loading ? "Signing In..." : "Sign In"}
+          </button>
+
+          {/* Visual Divider */}
+          <div className="login-divider">
+            <span>OR</span>
+          </div>
+
+          {/* Microsoft SSO Button with Gradient Outline */}
+          <button
+            type="button"
+            className="btn-microsoft"
+            onClick={() => handleMicrosoftLogin()}
+            disabled={loading || true}
+          >
+            <div className="btn-microsoft-inner">
+              <svg
+                className="ms-logo"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 23 23"
+                width="18"
+                height="18"
+              >
+                <path fill="#f35325" d="M1 1h10v10H1z" />
+                <path fill="#81bc06" d="M12 1h10v10H12z" />
+                <path fill="#05a6f0" d="M1 12h10v10H1z" />
+                <path fill="#ffba08" d="M12 12h10v10H12z" />
+              </svg>
+              <span>Sign in with Microsoft</span>
+            </div>
           </button>
         </form>
       </div>
