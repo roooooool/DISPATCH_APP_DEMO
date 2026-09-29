@@ -36,6 +36,7 @@ import { GenerateNewTripTicketService } from '../generated/services/GenerateNewT
 import { Live_LatestFuelRequestsService } from '../generated/services/Live_LatestFuelRequestsService';
 import { Vw_FCT_RouteNodeListService } from '../generated/services/Vw_FCT_RouteNodeListService';
 import { DMS_CEMService } from '../generated/services/DMS_CEMService';
+//@ts-ignore
 import { FctFinalService } from '../generated/services/FctFinalService';
 import { type FctFinal } from '../generated/models/FctFinalModel';
 import { DMS_TripFuelRequestsListService } from '../generated/services/DMS_TripFuelRequestsListService';
@@ -536,7 +537,7 @@ const OrderManagement: React.FC = () => {
                 try {
                     let result = null;
                     if (isCreate) {
-                        result = await FctFinalService.create(createData);
+                        result = await ewulCreate('FCT_Reporting', 'FctFinal', createData);
                         if (result.error) throw new Error("Failed to submit fuel request: " + result.error.message);
                         DMS_TripFuelRequestsListService.create({
                             OE: formData.Orderentryref || '',
@@ -557,7 +558,7 @@ const OrderManagement: React.FC = () => {
                         });
                     } else if (formData.SQLID?.toString()) {
                         console.log("Updating existing fuel request with ID:", formData.SQLID.toString());
-                        result = await FctFinalService.update(formData.SQLID?.toString(), updateData);
+                        result = await ewulUpdate('FCT_Reporting', 'FctFinal', formData.SQLID?.toString(), updateData);
                         if (result.error) throw new Error("Failed to update fuel request: " + result.error.message);
                         logDmsUpdate({ // record transaction in log
                             userName: user?.FullName || 'Unknown User',
@@ -571,11 +572,11 @@ const OrderManagement: React.FC = () => {
                     }
 
                     // console.log("Update result:", result);
-                    if (!result?.success) {
+                    if (result?.error) {
                         throw new Error("Failed to submit fuel request.");
                     }
 
-                    return { success: true, data: result.data };
+                    return { success: true, data: result };
 
                 } catch (error) {
                     console.error("Error submitting fuel request:", error);

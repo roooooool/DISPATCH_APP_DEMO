@@ -11,6 +11,7 @@ import gsdcLogo from "../../public/logo/logo-trimmed.png";
 //utils
 import { useTaskWorker } from '../utils/TaskWorkerContext';
 
+
 // truth
 import {
   type UserInfo,
@@ -225,7 +226,14 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
   ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete, onValidateReady, hideCloseBtn }, ref) => {
 
     const { addTask } = useTaskWorker();
+
+
+
+
     const incidentReportItem = item || {};
+
+
+
     const [zoom, setZoom] = useState<number>(1.0); // 1.0 = 100% original scale
     const jsonDetails = (incidentReportItem && incidentReportItem.reportJSON)
       ? (JSON.parse(incidentReportItem.reportJSON) as Partial<IR_ShortBags_Form_Model>)

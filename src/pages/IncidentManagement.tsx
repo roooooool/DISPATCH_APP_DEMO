@@ -12,7 +12,8 @@ import {
 } from '../truth.config';
 import { useUser } from '../utils/useUser';
 import {
-    ewulFetchAll,
+    //@ts-ignore
+    ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
     ISOtoInt,
     ewul_canFetch as canFetch,
     ewul_isAnythingLoading as isAnythingLoading,
@@ -25,7 +26,7 @@ import {
 //power apps
 import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
 import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
-import { LiveDMSView_CEM2Service } from '../generated/services/LiveDMSView_CEM2Service';
+// import { LiveDMSView_CEM2Service } from '../generated/services/LiveDMSView_CEM2Service';
 
 // Define a loading key for incident reports
 const FETCH_LOADING_KEYS = {
@@ -122,9 +123,39 @@ const IncidentManagement: React.FC = () => {
         const toInt = ISOtoInt(selectedDateRange.to);
         const dateFilter = `IncidentDateAsInt ge ${fromInt} and IncidentDateAsInt le ${toInt} and (OE_Reference ne null and OE_Reference ne '' and flexValue ne '0')`;
 
+        const select = [
+            "ActionStatus",
+            "CreatedDateTime",
+            "Description",
+            "EmployeeBU",
+            "EmployeeBUHead",
+            "EmployeeID",
+            "EmployeeName",
+            "EmployeePosition",
+            "EmployeeTractor",
+            "EmployeeTrailer",
+            "IRID",
+            "IRStatus",
+            "IncidentDateAsInt",
+            "IncidentID",
+            "IncidentType",
+            "ModifiedBy",
+            "ModifiedDateTime",
+            "OE_Reference",
+            "Remarks",
+            "ReportedBy",
+            "ReporterPosition",
+            "Resolution",
+            "ResolvedBy",
+            "ResolvedDate",
+            "ResolvedDateAsInt",
+            "flexValue"
+        ];
+
         const options = {
             filter: dateFilter,
             orderBy: ["IncidentDateAsInt desc"],
+            select: select
         };
 
 
@@ -135,9 +166,9 @@ const IncidentManagement: React.FC = () => {
                 5000
             );
 
-            const res = await LiveDMSView_CEM2Service.getAll();
+            // const res = await LiveDMSView_CEM2Service.getAll();
 
-            console.log("IR Result: ", res, " len: ", res.data.length);
+            console.log("IR Result: ", result[0], " len: ", result.length);
 
             if (result && result.length > 0) {
                 setIncidentReports(result);
@@ -167,8 +198,24 @@ const IncidentManagement: React.FC = () => {
 
 
 
-    const handleRowClick = (row: any) => {
-        setSelectedReport(row);
+    const handleRowClick = async (row: any) => {
+
+        const options = {
+            filter: `IncidentID eq ${row.IncidentID}`,
+        };
+
+
+
+        const result = await ewulFetchAll<any>(
+            OP_IncidentReportsService,
+            options,
+            5000
+        );
+
+        if (!result?.length) return;
+
+
+        setSelectedReport(result[0]);
         // setIsModalOpen(true);
         setScrollTo({ search_col: 'IncidentID', key: row.IncidentID, highlight: 'success' });
         setTimeout(() => formRef.current?.setFormData(row), 50);

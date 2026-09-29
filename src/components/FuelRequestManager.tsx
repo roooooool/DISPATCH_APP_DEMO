@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { type FctFinal } from '../generated/models/FctFinalModel';
+//@ts-ignore
 import { Fct2Service } from '../generated/services/Fct2Service';
 import { type Live_LatestFuelRequests } from '../generated/models/Live_LatestFuelRequestsModel';
 import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
@@ -489,21 +490,23 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
         setIsFetchingAttachment(true);
 
         try {
-            const records = await ewulFetchAll<any>(
+            // const records = await ewulFetchAll<any>(
 
-                Fct2Service,
+            //     Fct2Service,
 
-                {
+            //     {
 
-                    filter: `ID eq ${fuelrequestSPID}`,
+            //         filter: `ID eq ${fuelrequestSPID}`,
 
-                    orderBy: ['Created desc'],
+            //         orderBy: ['Created desc'],
 
-                },
+            //     },
 
-                50
+            //     50
 
-            );
+            // );
+
+            const records = await ewulSharePointAPI<any>('Communication site', 'fct2', 'get', undefined, undefined, fuelrequestSPID)
 
             console.log("Fetched attachment records:", records);
 
