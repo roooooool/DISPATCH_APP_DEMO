@@ -265,3 +265,39 @@
   margin: -10px 0 0 4px;
   text-align: left;
 }
+
+
+/* Container inside gradient wrapper */
+.password-input-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 10px;
+}
+
+/* Adjust password input to make room for toggle button */
+.gradient-input.password-input {
+  flex: 1;
+  border-radius: 10px 0 0 10px;
+  padding-right: 8px;
+}
+
+/* Toggle button styling */
+.password-toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  outline: none;
+}
+
+.password-toggle-btn:hover {
+  color: #092162;
+  /* Primary Navy color on hover */
+}
