@@ -3,6 +3,7 @@ import { type FctFinal } from '../generated/models/FctFinalModel';
 //@ts-ignore
 import { Fct2Service } from '../generated/services/Fct2Service';
 import { type Live_LatestFuelRequests } from '../generated/models/Live_LatestFuelRequestsModel';
+//@ts-ignore
 import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
 import SearchableDropdown, { type DropdownOption } from './SearchableDropdown';
 import CustomFileAttachment, { type CustomFileAttachmentRef } from './DropFile';
@@ -322,7 +323,7 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
     };
 
     const updateTaskTracker = async () => {
-        UpsertTripTaskTrackerService.UpsertTripTaskTracker({ OE: formData.Orderentryref, HasFuelRequest: true, EditorName: user?.FullName || 'Unknown User' } as any);
+        ewulExecute('DISPATCH_APP_DMS', 'UpsertTripTaskTracker', { OE: formData.Orderentryref, HasFuelRequest: true, EditorName: user?.FullName || 'Unknown User' })
     };
 
     const [hasSubmitted, setHasSubmitted] = useState(false);

@@ -29,24 +29,32 @@ import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMSer
 import { LiveVehicleAssignmentLIstViewService } from '../generated/services/LiveVehicleAssignmentLIstViewService'
 import { type LiveVehicleAssignmentLIstView } from '../generated/models/LiveVehicleAssignmentLIstViewModel';
 import { LiveDriverDispatchedList_AllService } from '../generated/services/LiveDriverDispatchedList_AllService'
+//@ts-ignore
 import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAdditionalOE_IDService';
+//@ts-ignore
 import { GenerateNewTripTicketService } from '../generated/services/GenerateNewTripTicketService';
 //import {Vw_SOURCE_LIST_CEMService } from '../generated/services/Vw_SOURCE_LIST_CEMService'; //alread being fetch on fct routes
-//import {DMS_TripFuelRequestsListService} from '../generated/services/DMS_TripFuelRequestsListService';
 import { Live_LatestFuelRequestsService } from '../generated/services/Live_LatestFuelRequestsService';
 import { Vw_FCT_RouteNodeListService } from '../generated/services/Vw_FCT_RouteNodeListService';
+//@ts-ignore
 import { DMS_CEMService } from '../generated/services/DMS_CEMService';
 //@ts-ignore
 import { FctFinalService } from '../generated/services/FctFinalService';
 import { type FctFinal } from '../generated/models/FctFinalModel';
+//@ts-ignore
 import { DMS_TripFuelRequestsListService } from '../generated/services/DMS_TripFuelRequestsListService';
+//@ts-ignore
 import { GetLastLiquidatedOdometerService } from '../generated/services/GetLastLiquidatedOdometerService';
 import FuelRequestManager from '../components/FuelRequestManager';
 // import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService';
+//@ts-ignore
 import { TripTicketsService } from '../generated/services/TripTicketsService';
+//@ts-ignore
 import { Usp_ChangeTripTaskTrackerOEService } from '../generated/services/Usp_ChangeTripTaskTrackerOEService';
+//@ts-ignore
 import { OnFCTDivertService } from '../generated/services/OnFCTDivertService';
 import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFMETripsView_CEM_unfilteredService';
+//@ts-ignore
 import { Changelog2Service } from '../generated/services/Changelog2Service';
 import { type Changelog2 } from '../generated/models/Changelog2Model';
 
@@ -425,12 +433,10 @@ const OrderManagement: React.FC = () => {
             setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, false);
 
             console.log("fetching last Odometer:");
-            const resOdo = await GetLastLiquidatedOdometerService.GetLastLiquidatedOdometer({
-                Head: vehicle,
-            } as any);
+            const resOdo = await ewulExecute('DISPATCH_APP_DMS', 'GetLastLiquidatedOdometer', { Head: vehicle } as any);
 
 
-            const tableOdoData = resOdo.data?.ResultSets?.Table1 as lastOdometerResult[];
+            const tableOdoData = resOdo as lastOdometerResult[];
             const lastOdometer = tableOdoData ? tableOdoData[0].Odometer : 0;
             const lastOE = tableOdoData ? tableOdoData[0].lastOE : null;
 
@@ -539,7 +545,7 @@ const OrderManagement: React.FC = () => {
                     if (isCreate) {
                         result = await ewulCreate('FCT_Reporting', 'FctFinal', createData);
                         if (result.error) throw new Error("Failed to submit fuel request: " + result.error.message);
-                        DMS_TripFuelRequestsListService.create({
+                        ewulCreate('DISPATCH_APP_DMS', 'DMS_TripFuelRequestsList', {
                             OE: formData.Orderentryref || '',
                             fuelrequestID: result.data.SQLID?.toString() || '',
                             RequestedBy: user?.FullName || 'Unknown',
@@ -605,7 +611,7 @@ const OrderManagement: React.FC = () => {
 
                 // console.log('fct2 to log: ', changelogData);
                 //update change log
-                Changelog2Service.create(changelogData);
+                ewulCreate('FCT_Reporting', 'Changelog2', changelogData);
             },
             onFailure: () => { null },
             message: `Submitting fuel request for OE ${formData.Orderentryref}...`,
@@ -952,12 +958,13 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.generatedTripID, true);
 
         try {
-            const res = await GenerateNewTripTicketService.GenerateNewTripTicket({
+            ``
+            const res = await ewulExecute('DISPATCH_APP_DMS', 'GenerateNewTripTicket', {
                 OE: OE,
-            } as any);
+            });
 
 
-            const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+            const table1 = res as any[] | undefined;
             console.log("Response from GenerateNewTripTicketService:", res);
             if (table1 && table1.length > 0) {
                 setPreviewTripTicketID(table1[0].TripTicketID + ' (Preview)' || null);
@@ -982,12 +989,12 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.generateAddOE, true);
 
         try {
-            const res = await GenerateAdditionalOE_IDService.GenerateAdditionalOE_ID({
+            const res = await ewulExecute('DISPATCH_APP_DMS', 'GenerateAdditionalOE_ID', {
                 Type: type,
-            } as any);
+            })
 
 
-            const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;
+            const table1 = res as any[] | undefined;
             if (!table1 || table1.length === 0) {
                 console.error("No data returned for new OE generation.");
                 return;
@@ -2120,16 +2127,16 @@ const OrderManagement: React.FC = () => {
                                                             throw new Error(`OE ${selectedChangeTripOE.OE} already has a driver or helper assigned.`);
                                                         }
 
-
-                                                        const result = await DMS_CEMService.update(
+                                                        const result = await ewulUpdate('DISPATCH_APP_DMS', 'DMS_CEM',
                                                             showChangeTripModal.record.ID.toString(),
                                                             changedTripRecord
-                                                        );
-
-                                                        await DMS_CEMService.delete(originalID)
+                                                        )
 
 
-                                                        const result2 = await TripTicketsService.update(
+                                                        await ewulDelete('DISPATCH_APP_DMS', 'DMS_CEM', originalID)
+
+
+                                                        const result2 = await ewulUpdate('DISPATCH_APP_DMS', 'TripTickets',
                                                             showChangeTripModal.record.TripTicketID || '',
                                                             {
                                                                 OE: selectedChangeTripOE.OE,
@@ -2138,12 +2145,12 @@ const OrderManagement: React.FC = () => {
 
                                                         //change OF of triptask too
                                                         console.log("changing oe of trip task from ", showChangeTripModal.record.OE || '', " to ", selectedChangeTripOE.OE || '');
-                                                        Usp_ChangeTripTaskTrackerOEService.Usp_ChangeTripTaskTrackerOE({
+                                                        ewulExecute('DISPATCH_APP_DMS', 'Usp_ChangeTripTaskTrackerOE', {
                                                             OldOE: showChangeTripModal.record.OE || '',
                                                             NewOE: selectedChangeTripOE.OE || '',
                                                         } as any);
 
-                                                        OnFCTDivertService.OnFCTDivert({
+                                                        ewulExecute('DISPATCH_APP_DMS', 'OnFCTDivert', {
                                                             prevOE: showChangeTripModal.record.OE || '',
                                                             newOE: selectedChangeTripOE.OE || ''
                                                         } as any);
