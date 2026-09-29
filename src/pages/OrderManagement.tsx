@@ -662,7 +662,7 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.trips, true);
         try {
             console.log('fetching trips: ')
-            const result = await ewulFetchAll<any>(
+            const result = await ewulFetchAll<LiveDMSView_CEM>(
                 LiveDMSView_CEMService,
                 { filter: dateFilter, orderBy: ["OEDateAsInt2 desc"] },
                 10000,
@@ -712,7 +712,7 @@ const OrderManagement: React.FC = () => {
 
         setLoadingFor(FETCH_LOADING_KEYS.truckList, true);
         try {
-            const result = await ewulFetchAll<any>(
+            const result = await ewulFetchAll<LiveVehicleAssignmentLIstView>(
                 LiveVehicleAssignmentLIstViewService,
                 { filter: `(Assignment eq 'VASQUEZ' or Assignment eq 'INTERCITY') ${buFilter('Bu')}` },
                 3000
@@ -1932,6 +1932,7 @@ const OrderManagement: React.FC = () => {
                             highlightSelected={true}
                             theme="var(--color-primary)"
                             onRowClick={async (record) => {
+                                console.log('recordsss: ', record)
                                 handleTripsTableOnClick(record);
                             }}
                             accordion={LIVE_DMS_TABLE_CONFIG.accordion}
@@ -2104,7 +2105,7 @@ const OrderManagement: React.FC = () => {
                                                 execute: async () => {
                                                     try {
 
-                                                        const checkResult = await ewulFetchAll<any>(
+                                                        const checkResult = await ewulFetchAll<LiveDMSView_CEM>(
                                                             LiveDMSView_CEMService,
                                                             { filter: `OE eq '${selectedChangeTripOE.OE}'`, orderBy: ["OEDateAsInt asc"] },
                                                             1,
