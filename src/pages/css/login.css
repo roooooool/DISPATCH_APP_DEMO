@@ -251,3 +251,17 @@
   margin: -4px 0 0 0;
   text-align: left;
 }
+
+/* --- EMAIL FIELD ERROR HIGHLIGHT --- */
+.gradient-input-wrapper.input-error {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.3);
+}
+
+.field-error-text {
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: -10px 0 0 4px;
+  text-align: left;
+}
