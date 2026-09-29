@@ -424,7 +424,7 @@ const OrderManagement: React.FC = () => {
             //setFuelRequests([]); // reset to prevent stale data entering the logic
             const requestsResults = await ewulFetchAll<any>(
                 Live_LatestFuelRequestsService,
-                { filter: currentOEFilter },
+                { filter: currentOEFilter, orderBy: ["CreatedDate desc"] },
                 100,
                 'DMS_RequestID'
             );
@@ -543,7 +543,8 @@ const OrderManagement: React.FC = () => {
                 try {
                     let result = null;
                     if (isCreate) {
-                        result = await ewulCreate('FCT_Reporting', 'FctFinal', createData);
+                        result = await ewulCreate<any>('FCT_Reporting', 'fctFinal', createData);
+                        console.log('created fuel: ', result);
                         if (result.error) throw new Error("Failed to submit fuel request: " + result.error.message);
                         ewulCreate('DISPATCH_APP_DMS', 'DMS_TripFuelRequestsList', {
                             OE: formData.Orderentryref || '',
@@ -564,7 +565,7 @@ const OrderManagement: React.FC = () => {
                         });
                     } else if (formData.SQLID?.toString()) {
                         console.log("Updating existing fuel request with ID:", formData.SQLID.toString());
-                        result = await ewulUpdate('FCT_Reporting', 'FctFinal', formData.SQLID?.toString(), updateData);
+                        result = await ewulUpdate('FCT_Reporting', 'fctFinal', formData.SQLID?.toString(), updateData);
                         if (result.error) throw new Error("Failed to update fuel request: " + result.error.message);
                         logDmsUpdate({ // record transaction in log
                             userName: user?.FullName || 'Unknown User',

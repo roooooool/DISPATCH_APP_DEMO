@@ -150,7 +150,7 @@ export default function Login() {
         credentials: "include",
         body: JSON.stringify({
           email: email,
-          password: password
+          password: password,
         })
       }
     );

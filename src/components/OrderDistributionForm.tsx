@@ -3077,6 +3077,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               qty_discrepancy: actualWithdrawn ? (Number(actualWithdrawn) - Number(actualDelivered)) : (formData.QTYWithdrawn !== undefined && formData.QTYDelivered !== undefined ? (Number(formData.QTYWithdrawn) - Number(formData.QTYDelivered)) : null),
             };
 
+            console.log('')
+
             const response = await fetch(PRINT_DMS_ENDPOINT, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

@@ -290,8 +290,10 @@ export const ewulCreate = async <T = any>(
     throw new Error(message);
   }
 
+  console.log('db: ', database, 'tb: ', tableName, ' res:', result);
+
   return {
-    data: (result?.data ?? result) as T,
+    data: (result?.data?.value ?? result?.data ?? result?.value ?? result) as T,
     error: result?.error,
     code: response.status,
   };
@@ -328,7 +330,7 @@ export const ewulUpdate = async <T = any>(
   }
 
   return {
-    data: (result?.data ?? result) as T,
+    data: (result?.data?.value ?? result?.data ?? result?.value ?? result) as T,
     error: result?.error,
     code: response.status,
   };
