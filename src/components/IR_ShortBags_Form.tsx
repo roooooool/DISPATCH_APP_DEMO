@@ -4,12 +4,18 @@ import { createPortal } from 'react-dom';
 import { Printer, ZoomIn, ZoomOut, RotateCcw, FileImage, Maximize2, ChevronLeft, ChevronRight, ThumbsDown, Sun, Moon, DeleteIcon, CheckCheck, CheckCircle, XCircle } from 'lucide-react'; // Clear, modern utility icons
 import '../components/comp_css/IR_ShortBags_Form.css';
 import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
-import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
+// import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
 import Modal from './ewul_Modal';
 import gsdcLogo from "../../public/logo/logo-trimmed.png";
 
 //utils
 import { useTaskWorker } from '../utils/TaskWorkerContext';
+import {
+
+  //@ts-ignore
+  ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
+
+} from '../utils/Ewul_GSDC_Utils';
 
 
 // truth
@@ -833,12 +839,13 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
               console.log(`Saving IR [${incidentReportItem.IncidentID}]: `, { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
 
-              result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
+
+              result = await ewulUpdate('DISPATCH_APP_DMS', 'OP_IncidentReports', incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
               console.log('Saving result: ', result)
 
 
               if (result.error) {
-                throw new Error(result.error.message);
+                throw new Error(result.error);
               }
 
               if (!result || !result.data) {
@@ -902,7 +909,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
               console.log(`Saving IR [${incidentReportItem.IncidentID}]: `, { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
 
-              result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
+              result = await ewulUpdate('DISPATCH_APP_DMS', 'OP_IncidentReports', incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
               console.log('Saving result: ', result)
 
 
@@ -1016,7 +1023,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                 ResolvedBy: initialUser?.FullName,
               } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
 
-              result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, IRStatus: 'Closed', reportJSON: JSON.stringify(formData) });
+              result = await ewulUpdate('DISPATCH_APP_DMS', 'OP_IncidentReports', incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, IRStatus: 'Closed', reportJSON: JSON.stringify(formData) });
 
               if (result.error) {
                 throw new Error(result.error.message);
@@ -1081,7 +1088,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                 ResolvedDate: formData.date,
               } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
 
-              result = await OP_IncidentReportsService.update(incidentReportItem.IncidentID.toString(), { ...ir_details, IRStatus: 'Cancelled', reportJSON: JSON.stringify(formData) });
+              result = await ewulUpdate('DISPATCH_APP_DMS', 'OP_IncidentReports', incidentReportItem.IncidentID.toString(), { ...ir_details, IRStatus: 'Cancelled', reportJSON: JSON.stringify(formData) });
 
               if (result.error) {
                 throw new Error(result.error.message);
@@ -1132,7 +1139,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
               if (incidentReportItem.IncidentID === undefined) return;
 
 
-              await OP_IncidentReportsService.delete(incidentReportItem.IncidentID.toString());
+              await ewulDelete('DISPATCH_APP_DMS', 'OP_IncidentReports', incidentReportItem.IncidentID.toString());
 
             } catch (error) {
               console.error("Failed to upload attendance records:", error);
