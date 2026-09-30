@@ -301,3 +301,27 @@
   color: #092162;
   /* Primary Navy color on hover */
 }
+
+
+
+/* Password gradient fill when field contains a value */
+.gradient-input-wrapper.has-value .password-input-container {
+  background: var(--bg-gradient-main) border-box !important;
+}
+
+.gradient-input-wrapper.has-value .password-input {
+  background: transparent;
+  color: #ffffff;
+}
+
+.gradient-input-wrapper.has-value .password-input::placeholder {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.gradient-input-wrapper.has-value .password-toggle-btn {
+  color: #ffffff;
+}
+
+.gradient-input-wrapper.has-value .password-toggle-btn:hover {
+  color: #ffffff;
+}

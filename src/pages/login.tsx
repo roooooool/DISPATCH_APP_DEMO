@@ -18,7 +18,7 @@ import truckBg from "../../public/images/trucks.jpg"; // Import the background i
 
 import { useUser } from '../utils/useUser';
 import { AuthService } from "../api/AuthService.ts";
-import { msalInstance } from "../api/msalConfig";
+import { msalInstance, msalInitPromise } from "../api/msalConfig";
 
 
 export default function Login() {
@@ -41,6 +41,68 @@ export default function Login() {
       navigate(destination, { state: { user: user } });
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function processMicrosoftRedirect() {
+      try {
+        await msalInitPromise;
+
+        const loginRequested =
+          sessionStorage.getItem("msal_login_requested") === "true";
+
+        if (!loginRequested) {
+          return;
+        }
+
+        const result = await msalInstance.handleRedirectPromise();
+
+        if (!mounted) return;
+
+        // Consume the flag so a normal visit to /login
+        // won't authenticate again.
+        sessionStorage.removeItem("msal_login_requested");
+
+        if (!result) {
+          return;
+        }
+
+        console.log("Microsoft redirect result:", result);
+
+        if (result.account) {
+          msalInstance.setActiveAccount(result.account);
+        }
+
+        if (!result.idToken) {
+          throw new Error("Microsoft ID token was not returned.");
+        }
+
+        await completeMicrosoftLogin(result.idToken);
+
+      } catch (err: any) {
+        console.error("MICROSOFT REDIRECT ERROR:", err);
+
+        sessionStorage.removeItem("msal_login_requested");
+
+        if (!mounted) return;
+
+        setError(
+          err.message || "Microsoft authentication failed."
+        );
+
+        setLoading(false);
+      }
+    }
+
+    processMicrosoftRedirect();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+
 
   /*useEffect(() => {
     const savedUser = localStorage.getItem("gsdc_user");
@@ -81,60 +143,142 @@ export default function Login() {
   }
 
   //@ts-ignore
+  // src/pages/Login.tsx
+
+
   async function handleMicrosoftLogin() {
+    if (loading) return;
+
     try {
       setError("");
       setLoading(true);
 
-      const result = await msalInstance.loginPopup({
-        scopes: ["openid", "profile", "email"]
-      });
+      await msalInitPromise;
 
-      console.log("MICROSOFT LOGIN RESULT:", result);
-      console.log("MICROSOFT ACCOUNT:", result.account);
-      console.log("MICROSOFT USERNAME:", result.account?.username);
-      console.log("MICROSOFT NAME:", result.account?.name);
-      console.log("MICROSOFT ID TOKEN CLAIMS:", result.idTokenClaims);
+      // Remember that WE initiated a Microsoft login.
+      sessionStorage.setItem("msal_login_requested", "true");
+
+      await msalInstance.loginRedirect({
+        scopes: ["openid", "profile", "email"],
+        prompt: "select_account",
+      });
 
     } catch (err: any) {
       console.error("MICROSOFT LOGIN ERROR:", err);
-      setError(err.message || "Microsoft login failed");
+
+      sessionStorage.removeItem("msal_login_requested");
+
+      const errorCode = err.errorCode || err.code;
+
+      if (
+        errorCode === "user_cancelled" ||
+        err.message?.includes("user_cancelled")
+      ) {
+        clearMsalInteractionStorage();
+        setError("Login was cancelled.");
+      } else if (errorCode === "interaction_in_progress") {
+        clearMsalInteractionStorage();
+        setError("A Microsoft login is already in progress.");
+      } else {
+        setError(err.message || "Microsoft login failed");
+      }
+
+      setLoading(false);
+    }
+  }
+
+  async function completeMicrosoftLogin(microsoftToken: string) {
+    try {
+      setError("");
+      setLoading(true);
+
+      const APP_KEY = import.meta.env.VITE_APP_KEY;
+      const APP_SECRET = import.meta.env.VITE_APP_SECRET;
+
+      // Authenticate the application with your backend
+      const session = await AuthService.login(APP_KEY, APP_SECRET);
+      const accessToken = session.access_token;
+
+      if (!accessToken) {
+        throw new Error("Unable to authenticate with the server");
+      }
+
+      // Authenticate the Microsoft user with your new endpoint
+      const account = await loginMicrosoftApi(
+        accessToken,
+        microsoftToken
+      );
+
+      console.log("Microsoft authenticated user:", account);
+
+      if (!account) {
+        throw new Error("User account was not found.");
+      }
+
+      const fn = account.FirstName || account.name || "";
+      const mn = account.MiddleName || account.middlename || "";
+      const ln = account.LastName || account.surname || "";
+
+      const userInfo: UserInfo = {
+        FirstName: fn,
+        MiddleName: mn,
+        LastName: ln,
+        FullName: `${ln}, ${fn}${mn ? ` (${mn})` : ""}`,
+        BusinessUnit: account.BusinessUnit || "",
+        Position: account.Position || account.roles?.[0] || "",
+        id: String(account.ID || ""),
+        CurrentNav: "/dash"
+      };
+
+      if (userInfo.id) {
+        localStorage.setItem(
+          `lastLogout_${userInfo.id}`,
+          mandatoryLogout
+        );
+      }
+
+      console.log("Final userInfo:", userInfo);
+
+      updateUser(userInfo);
+      setIsLeaving(true);
+
+      setTimeout(() => {
+        navigate(userInfo.CurrentNav || "/dash", {
+          state: { user: userInfo }
+        });
+      }, 500);
+
+    } catch (err: any) {
+      console.error("MICROSOFT BACKEND LOGIN ERROR:", err);
+
+      setError(
+        `Microsoft login failed. ${err.message || err}`
+      );
+
     } finally {
       setLoading(false);
     }
   }
 
-  //@ts-ignore
-  async function loginOld(accessToken: string) {
-    const selectFields = [
-      "ID", "UserName", "FirstName", "MiddleName", "LastName",
-      "Role", "Position", "BusinessUnit", "BusinessUnit2",
-      "FleetGroup", "Location", "microsoftEmail", "PassWord"
-    ].join(",");
 
-    const filterQuery = `UserName eq '${email}'`;
 
-    const endpoint = `/api/SHAREPOINT_DATA/table/gsdc_accounts?$filter=${encodeURIComponent(filterQuery)}&$select=${encodeURIComponent(selectFields)}&$top=1`;
-    const url = getApiUrl(endpoint);
 
-    console.log("f url: ", url);
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${accessToken}`
-      },
-      credentials: "include"
-    });
+  // Helper to safely remove temporary MSAL interaction lock keys
+  function clearMsalInteractionStorage() {
+    const clearStorageKeys = (storage: Storage) => {
+      Object.keys(storage).forEach((key) => {
+        if (
+          key.startsWith("msal.") &&
+          (key.includes("interaction") || key.includes("request"))
+        ) {
+          storage.removeItem(key);
+        }
+      });
+    };
 
-    if (!response.ok) {
-      throw new Error(`Server returned status: ${response.status}`);
-    }
-
-    const result = await response.json();
-
-    return result.data[0];
+    clearStorageKeys(sessionStorage);
+    clearStorageKeys(localStorage);
   }
 
   async function loginApi(accessToken: string) {
@@ -168,6 +312,43 @@ export default function Login() {
 
     return result.user
   }
+
+
+  //@ts-ignore
+  async function loginMicrosoftApi(
+    accessToken: string,
+    microsoftToken: string
+  ) {
+    const response = await fetch(
+      getApiUrl("/api/auth/microsoft"),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          id_token: microsoftToken
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    console.log("MICROSOFT LOGIN STATUS:", response.status);
+    console.log("MICROSOFT LOGIN RESPONSE:", result);
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || `Microsoft login failed with status ${response.status}`
+      );
+    }
+
+    return result.user;
+  }
+
+
 
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -276,7 +457,7 @@ export default function Login() {
           </div>
           {emailError && <p className="field-error-text">{emailError}</p>}
 
-          <div className="gradient-input-wrapper">
+          <div className={`gradient-input-wrapper ${password ? "has-value" : ""}`}>
             <div className="password-input-container">
               <input
                 type={showPassword ? "text" : "password"}
@@ -327,7 +508,7 @@ export default function Login() {
             type="button"
             className="btn-microsoft"
             onClick={() => handleMicrosoftLogin()}
-            disabled={loading || true}
+            disabled={loading}
           >
             <div className="btn-microsoft-inner">
               <svg

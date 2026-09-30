@@ -29,8 +29,7 @@ import { NotificationProvider, useNotifications } from './utils/NotificationCont
 import MaintenanceChecker from './components/maintenanceChecker';
 import { ErrorChecker } from './components/errorChecker'; // Import the error checker to wrap the app
 import { useVersionCheck } from './components/versionChecker'; // Import the version checker hook
-
-
+import { msalInstance, msalInitPromise } from "./api/msalConfig";
 
 
 
@@ -38,6 +37,56 @@ const VersionGuard = ({ children }: { children: React.ReactNode }) => {
   useVersionCheck(); // This runs the Major/Minor comparison logic
   return <>{children}</>;
 };
+
+
+function MsalInitializer({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    const initializeMsal = async () => {
+      try {
+        await msalInitPromise;
+
+        const result = await msalInstance.handleRedirectPromise();
+
+        if (result?.account) {
+          msalInstance.setActiveAccount(result.account);
+
+          console.log(
+            "Microsoft login completed"
+          );
+
+          // console.log(
+          //   "Microsoft login result:",
+          //   result
+          // );
+
+          return;
+        }
+
+        const account =
+          msalInstance.getActiveAccount() ||
+          msalInstance.getAllAccounts()[0];
+
+        if (account) {
+          msalInstance.setActiveAccount(account);
+
+          console.log(
+            "Existing Microsoft account:",
+            account
+          );
+        }
+      } catch (err) {
+        console.error(
+          "MSAL initialization failed:",
+          err
+        );
+      }
+    };
+
+    initializeMsal();
+  }, []);
+
+  return <>{children}</>;
+}
 
 
 
@@ -133,11 +182,11 @@ function MainContent() {
 // The main App component only handles the top-level Provider
 function App() {
   return (
-
     <NotificationProvider>
-      <MainContent />
+      <MsalInitializer>
+        <MainContent />
+      </MsalInitializer>
     </NotificationProvider>
-
   );
 }
 

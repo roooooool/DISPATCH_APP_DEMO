@@ -4,9 +4,11 @@ export const msalInstance = new PublicClientApplication({
     auth: {
         clientId: import.meta.env.VITE_MICROSOFT_CLIENT_ID,
         authority: `https://login.microsoftonline.com/${import.meta.env.VITE_MICROSOFT_TENANT_ID}`,
-        redirectUri: window.location.origin
+        redirectUri: `${window.location.origin}/microsoft-callback.html`,
     },
     cache: {
-        cacheLocation: "sessionStorage"
-    }
+        cacheLocation: "sessionStorage",
+    },
 });
+
+export const msalInitPromise = msalInstance.initialize();
