@@ -3022,13 +3022,45 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         name: `Generating DMS for ${formData.OE}`,
         execute: async () => {
           try {
+
+            // // Console log all relevant raw date fields BEFORE forming payload
+            // console.group("🔍 DMS Date Fields Debugger");
+            // console.log("Ordered_x0020_Date:", formData.Ordered_x0020_Date);
+            // console.log("Needed_x0020_Date:", formData.Needed_x0020_Date);
+            // console.log("Tagged_x0020_Date:", formData.Tagged_x0020_Date);
+            // console.log("Dispatched_x0020_to_x0020_Source:", formData.Dispatched_x0020_to_x0020_Source);
+            // console.log("Source_x0020_in:", formData.Source_x0020_in);
+            // console.log("Source_x0020_out:", formData.Source_x0020_out);
+            // console.log("Dispatched_x0020_to_x0020_Destination:", formData.Dispatched_x0020_to_x0020_Destination);
+            // console.log("Destination_x0020_in:", formData.Destination_x0020_in);
+            // console.log("Destination_x0020_out:", formData.Destination_x0020_out);
+            // console.log("Receive_x0020_Date:", formData.Receive_x0020_Date);
+            // console.log("Documented_x0020_Date:", formData.Documented_x0020_Date);
+            // console.log("Transimtted_x0020_Date:", formData.Transimtted_x0020_Date);
+            // console.groupEnd();
+
+            // Helper to safely parse dates regardless of format ('2026-09-30' or '2026-09-30T07:10:55Z')
+            const toISODate = (val: string | null | undefined): string | null => {
+              if (!val) return null;
+              const date = new Date(val);
+              return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
+            };
+
+            const toTimeString = (val: string | null | undefined): string | null => {
+              if (!val) return null;
+              const date = new Date(val);
+              return isNaN(date.getTime()) ? null : date.toLocaleTimeString();
+            };
+
             const payload = {
               filename: filename,
               trip_ticket: formData.TripTicketID || null,
               issued_date: new Date().toISOString().split('T')[0],
               oe_reference: formData.OE || null,
-              order_date: formData.Ordered_x0020_Date ? new Date(formData.Ordered_x0020_Date.slice(0, -1)).toISOString().split('T')[0] : null,
-              need_date: formData.Needed_x0020_Date ? new Date(formData.Needed_x0020_Date.slice(0, -1)).toISOString().split('T')[0] : null,
+              // order_date: formData.Ordered_x0020_Date ? new Date(formData.Ordered_x0020_Date.slice(0, -1)).toISOString().split('T')[0] : null,
+              // need_date: formData.Needed_x0020_Date ? new Date(formData.Needed_x0020_Date.slice(0, -1)).toISOString().split('T')[0] : null,
+              order_date: toISODate(formData.Ordered_x0020_Date),
+              need_date: toISODate(formData.Needed_x0020_Date),
               dispatch_site: 'GSDC', // This might need to be dynamic
               issuer: editingUser?.FullName || null,
               business_unit: formData.Buisness_x0020_Unit || null,
@@ -3077,7 +3109,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               qty_discrepancy: actualWithdrawn ? (Number(actualWithdrawn) - Number(actualDelivered)) : (formData.QTYWithdrawn !== undefined && formData.QTYDelivered !== undefined ? (Number(formData.QTYWithdrawn) - Number(formData.QTYDelivered)) : null),
             };
 
-            console.log('')
+            console.log('to be printed: ', payload)
 
             const response = await fetch(PRINT_DMS_ENDPOINT, {
               method: 'POST',

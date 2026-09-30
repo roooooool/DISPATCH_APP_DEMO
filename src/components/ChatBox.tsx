@@ -11,7 +11,13 @@ import { ChatMessagesService } from '../generated/services/ChatMessagesService';
 import { type ChatMessages } from '../generated/models/ChatMessagesModel';
 
 // Custom Utilities
-import { ewulFetchAll, ISOtoInt } from '../utils/Ewul_GSDC_Utils';
+import {
+
+    //@ts-ignore
+    ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
+    ISOtoInt
+
+} from '../utils/Ewul_GSDC_Utils';
 import { type UserInfo, DEVBOT_USERID, ITDEV_USERID, GSDC_SEND_TO_CHAT_key, GSDC_NAVIGATE_TO_TRIP_key } from '../truth.config';
 import { type UserChannelReadStatus } from '../generated/models/UserChannelReadStatusModel';
 
@@ -124,7 +130,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
         }));
 
         try {
-            await ChatMessagesService.create(payload);
+            await ewulCreate('DISPATCH_APP_DMS', 'ChatMessages', payload);
 
             if (activeChannel !== channel) {
                 handleChannelClick(channel); // This reuses your existing logic to update read status and switch
@@ -245,10 +251,10 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
 
                 if (existingStatus.length > 0) {
                     // Update existing status
-                    await UserChannelReadStatusService.update(existingStatus[0].UserChannelReadStatusID!.toString(), payload);
+                    await ewulUpdate('DISPATCH_APP_DMS', 'UserChannelReadStatus', existingStatus[0].UserChannelReadStatusID!.toString(), payload);
                 } else {
                     // Create new status
-                    await UserChannelReadStatusService.create(payload);
+                    await ewulCreate('DISPATCH_APP_DMS', 'UserChannelReadStatus', payload);
                 }
 
                 // Optimistically set unread count for this channel to 0
@@ -458,7 +464,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
                 RecipientUserID: activeChannel === 'Dev Bot' ? DEVBOT_USERID : activeChannel === 'IT Support' ? ITDEV_USERID : undefined,
             };
 
-            const result = await ChatMessagesService.create(payload);
+            const result = await ewulCreate('DISPATCH_APP_DMS', 'ChatMessages', payload);
 
             if (activeChannel === 'Dev Bot') {
                 const TEMP_BOT_ID = Date.now();
@@ -533,7 +539,7 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
                     };
                 });
 
-                ChatMessagesService.create(botPayload); // Fire and forget the bot response to save in DB
+                ewulCreate('DISPATCH_APP_DMS', 'ChatMessages', botPayload); // Fire and forget the bot response to save in DB
 
 
 
