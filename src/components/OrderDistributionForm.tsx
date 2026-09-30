@@ -3046,6 +3046,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
             };
 
+            //@ts-ignore
             const toTimeString = (val: string | null | undefined): string | null => {
               if (!val) return null;
               const date = new Date(val);
