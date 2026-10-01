@@ -965,9 +965,13 @@ const OrderDistribution: React.FC = () => {
     try {
       const result = await ewulFetchAll<any>(
         Vw_FCT_RouteNodeListService,
-        { filter: '' },
+        { filter: "Type ne 'Station' and Type ne 'Destination'" },
         2000,
-        'Route'
+      );
+
+      console.log(
+        'fctroute: ',
+        result.filter((item: any) => item.Route?.includes('HOLCIM'))
       );
 
       if (result && result.length > 0) {
