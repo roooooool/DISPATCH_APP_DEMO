@@ -1,0 +1,506 @@
+/* Modal Overlay */
+.edit-pair-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeInOverlay 0.2s ease-out;
+}
+
+/* Modal Container */
+.edit-pair-modal-container {
+    background: #ffffff;
+    width: 95%;
+    max-width: 850px;
+    height: 85vh;
+    max-height: 600px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 8, 45, 0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: scaleInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Header */
+.edit-pair-modal-header {
+    background: linear-gradient(135deg, #00082d 0%, #3a4efc 100%);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-title-group .modal-icon {
+    color: #ffffff !important;
+}
+
+.modal-header-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffffff !important;
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.18);
+    border: none;
+    color: #ffffff;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.close-btn:hover {
+    background: rgba(239, 68, 68, 0.8);
+}
+
+/* Currently Assigned Banner */
+.current-assignment-banner {
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.banner-label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.banner-value {
+    color: #00082d;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.banner-icon {
+    color: #3a4efc;
+}
+
+.banner-none {
+    color: #ef4444;
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* Search Bar Section */
+.search-bar-wrapper {
+    padding: 12px 20px 6px 20px;
+    flex-shrink: 0;
+}
+
+.gradient-search-wrapper {
+    background: linear-gradient(135deg, #00082d, #3a4efc, #ef4444);
+    padding: 2px;
+    border-radius: 10px;
+}
+
+.gradient-search-inner {
+    background: #ffffff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+}
+
+.search-icon {
+    color: #3a4efc;
+    margin-right: 8px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 0;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    color: #00082d;
+    background: transparent;
+}
+
+.clear-search-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.clear-search-btn:hover {
+    color: #ef4444;
+}
+
+/* Body / Table List */
+.edit-pair-modal-body {
+    padding: 8px 20px 16px 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.table-responsive-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.personnel-selection-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    text-align: left;
+}
+
+.personnel-selection-table th {
+    background-color: #f8fafc;
+    color: #00082d;
+    font-weight: 700;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.personnel-selection-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.personnel-selection-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.personnel-selection-table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+.personnel-selection-table tbody tr.active-selection {
+    background-color: #eef2ff;
+}
+
+.current-assigned-row {
+    border-left: 4px solid #3a4efc;
+}
+
+.name-cell-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge-current-pill {
+    background: linear-gradient(135deg, #00082d, #3a4efc);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.person-name {
+    font-weight: 600;
+    color: #00082d;
+}
+
+.badge-bu {
+    background: #e2e8f0;
+    color: #00082d;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.unassign-row {
+    background-color: #fff5f5;
+}
+
+.unassign-row:hover {
+    background-color: #ffe4e4 !important;
+}
+
+.unassign-label {
+    color: #ef4444;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.selected-icon {
+    color: #3a4efc;
+}
+
+.btn-select-pair {
+    background: linear-gradient(135deg, #00082d, #3a4efc);
+    color: #ffffff;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.btn-select-pair:hover {
+    opacity: 0.9;
+}
+
+.btn-select-pair.disabled-btn {
+    background: #cbd5e1 !important;
+    color: #64748b !important;
+    cursor: not-allowed !important;
+}
+
+.no-data-cell {
+    text-align: center;
+    color: #94a3b8;
+    padding: 24px;
+}
+
+/* Disabled Rows */
+.disabled-row {
+    background-color: #f8fafc !important;
+    cursor: not-allowed !important;
+}
+
+.disabled-row:hover {
+    background-color: #f8fafc !important;
+}
+
+.disabled-row .person-name,
+.disabled-row td {
+    color: #94a3b8;
+}
+
+/* Fleetmon Status Pills Base Styling */
+.fleetmon-status-pill {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.2px;
+    line-height: 1;
+    white-space: nowrap;
+    opacity: 1 !important;
+}
+
+/* System (OE Detected) -> Red */
+.fleetmon-status-pill.fleetmon-status-system {
+    background-color: #ecfdf5 !important;
+    color: #059669 !important;
+    border: 1px solid #a7f3d0 !important;
+}
+
+/* Paired -> Primary Blue */
+.fleetmon-status-pill.fleetmon-status-paired {
+    background-color: #eff6ff !important;
+    color: #3a4efc !important;
+    border: 1px solid #bfdbfe !important;
+    cursor: help;
+}
+
+/* Unpaired -> Gray */
+.fleetmon-status-pill.fleetmon-status-unpaired {
+    background-color: #f8fafc !important;
+    color: #64748b !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* Ensure status badges maintain full opacity even in disabled rows */
+.disabled-row .fleetmon-status-pill {
+    opacity: 1 !important;
+}
+
+/* Subtext for trip status underneath badge */
+.fleetmon-trip-status-subtext {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+/* Tooltip for Paired status hover */
+.fleetmon-tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.fleetmon-status-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    width: max-content;
+    max-width: 220px;
+    background-color: #00082d;
+    color: #ffffff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.75rem;
+    position: absolute;
+    z-index: 100;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+}
+
+.fleetmon-status-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #00082d transparent transparent transparent;
+}
+
+.fleetmon-tooltip-container:hover .fleetmon-status-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+
+/* Footer */
+.edit-pair-modal-footer {
+    padding: 12px 20px;
+    background-color: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.btn-secondary {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #f1f5f9;
+}
+
+/* Keyframe Animations */
+@keyframes fadeInOverlay {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleInModal {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+
+
+/* Filter Controls Layout Container */
+.filter-controls-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.gradient-search-wrapper {
+    flex: 1;
+}
+
+/* Gradient Wrapper for Filter Dropdown */
+.gradient-filter-wrapper {
+    background: linear-gradient(135deg, #00082d, #3a4efc, #ef4444);
+    padding: 2px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.gradient-filter-inner {
+    background: #ffffff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    height: 38px;
+}
+
+.filter-icon {
+    color: #3a4efc;
+    margin-right: 6px;
+}
+
+.status-filter-select {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #00082d;
+    cursor: pointer;
+    padding-right: 4px;
+}
+
+.status-filter-select option {
+    font-weight: 500;
+    color: #00082d;
+}

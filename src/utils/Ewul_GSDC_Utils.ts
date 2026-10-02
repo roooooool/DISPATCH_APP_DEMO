@@ -140,7 +140,9 @@ export const ewulDecodeKeys = <T extends Record<string, any>>(
  */
 // ewulFetchAll.ts
 export const ewulFetchAll = async <T>(
-  service: { getAll: (options?: IGetAllOptions) => Promise<IOperationResult<T[]>> },
+  service:
+    | { getAll: (options?: IGetAllOptions) => Promise<IOperationResult<T[]>> }
+    | string, // Allow string type
   options: IGetAllOptions,
   targetTop: number = 2000,
   keyField?: keyof T,

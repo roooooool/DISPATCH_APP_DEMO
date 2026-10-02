@@ -1,5 +1,5 @@
 export const APP_VERSION = "3.40.20"; // Update this with each release for better error tracking and user support
-export const mandatoryLogout = "2026-08-13 00:00:00"
+export const mandatoryLogout = "2026-010-02 00:00:00"
 
 //react helper for truths
 import {
@@ -471,6 +471,7 @@ export const FETCH_LOADING_KEYS = {
   fetchTripTaskLists: 'fetchTripTaskLists',
   fetchAttendanceServedCounts: 'fetchAttendanceServedCounts',
   cifmeOrders: 'fetchCIFMEOrders',
+  driverHelperListFM: 'driverHelperListFM'
 }
 
 export const GSDC_NAVIGATE_TO_TRIP_key = '4557554c504f4749';
@@ -1177,81 +1178,6 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
     {
-      col: "TruckFull",
-      alias: "Truck",
-      portion: 0.5,
-      render: (val: any, row: any, searchTerm: string) => {
-        if (!val) return '---';
-
-        return (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '8px',
-              width: '100%'
-            }}
-          >
-            <p
-              title={`View: ${val}`}
-              onClick={(e) => { e.stopPropagation(); openFleetModal(vehicleInfoModal(row, 'Truck')); }}
-              className='fleetmonpage-redhover stop-propagation'
-              style={{
-                margin: 0,
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                color: 'var(--color-primary)',
-                fontSize: '13px',
-              }}
-            >
-              <HighlightText text={`${GPS_STATUS_EMOJIS[row[enc("GPS Status")]] || ''} ${row.TruckFull}`} highlight={searchTerm} isSearchable={true} />
-            </p>
-
-            {/* Call the helper function here */}
-            {renderRepairIcon(row, enc("JR_Truck"), 'TractorJRStatus')}
-          </div>
-        );
-      }
-    },
-    {
-      col: "Trailer",
-      portion: 0.5,
-      // We use render instead of just cellStyle to allow for the icon placement
-      render: (val: any, row: any, searchTerm: string) => {
-        if (!val) return '---';
-
-        return (
-          <div
-            title={`View: ${val}`}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '2px',
-              width: '100%'
-            }}
-          >
-            <span
-              onClick={(e) => { e.stopPropagation(); openFleetModal(vehicleInfoModal(row, 'Trailer')); }}
-              style={{
-                color: 'var(--color-primary)', // Moved from cellStyle to here
-                textAlign: 'center',
-              }}
-              className='fleetmonpage-redhover stop-propagation'
-              onMouseEnter={(e) => { e.stopPropagation(); }}
-              onMouseLeave={(e) => { e.stopPropagation(); }}
-            >
-              <HighlightText text={val} highlight={searchTerm} isSearchable={true} />
-            </span>
-
-            {/* Use the helper function with the Trailer-specific keys */}
-            {renderRepairIcon(row, 'JR_Trailer', 'TrailerJRStatus')}
-          </div>
-        );
-      }
-    },
-    {
       col: "Driver", portion: 1.5,
       render: (val: any, row: any, searchTerm: string, addTask?: any, _fontSize?: number, _onRecordChange?: any, emitSignal?: any) => {
         return <PersonnelCell
@@ -1260,6 +1186,7 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
           statusRaw={row.AttendanceD}
           searchTerm={searchTerm}
           emitSignal={emitSignal}
+          signalKey='DRIVER'
           onAttendanceChange={(newStatus, row) => {
             if (addTask) {
               addTask({
@@ -1288,6 +1215,7 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
           statusRaw={row.AttendanceH}
           searchTerm={searchTerm}
           emitSignal={emitSignal}
+          signalKey='HELPER'
           onAttendanceChange={(newStatus, row) => {
             if (addTask) {
               addTask({
@@ -1307,6 +1235,87 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
         />;
       },
     },
+    {
+      col: "TruckFull",
+      alias: "Truck",
+      portion: 0.5,
+      render: (val: any, row: any, searchTerm: string, _addTask?: any, fontSize: number = 1, _onRecordChange?: any, _emitSignal?: any) => {
+        if (!val) return '---';
+
+        return (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '8px',
+              width: '100%'
+            }}
+          >
+            <p
+              title={`View: ${val}`}
+              onClick={(e) => { e.stopPropagation(); openFleetModal(vehicleInfoModal(row, 'Truck')); }}
+              className='fleetmonpage-redhover stop-propagation'
+              style={{
+                margin: 0,
+                lineHeight: 1,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                color: 'var(--color-primary)',
+                fontSize: `${fontSize}rem`,
+              }}
+            >
+              <HighlightText text={`${GPS_STATUS_EMOJIS[row[enc("GPS Status")]] || ''} ${row.TruckFull}`} highlight={searchTerm} isSearchable={true} />
+            </p>
+
+            {/* Call the helper function here */}
+            {renderRepairIcon(row, enc("JR_Truck"), 'TractorJRStatus', fontSize)}
+          </div>
+        );
+      }
+    },
+    {
+      col: "Trailer",
+      portion: 0.5,
+      // We use render instead of just cellStyle to allow for the icon placement
+      render: (val: any, row: any, searchTerm: string, _addTask?: any, fontSize: number = 1, _onRecordChange?: any, _emitSignal?: any) => {
+        if (!val) return '---';
+
+        return (
+          <div
+            title={`View: ${val}`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '2px',
+              width: '100%'
+            }}
+          >
+            <p
+              onClick={(e) => { e.stopPropagation(); openFleetModal(vehicleInfoModal(row, 'Trailer')); }}
+              style={{
+                margin: 0,
+                lineHeight: 1,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                color: 'var(--color-primary)',
+                fontSize: `${fontSize}rem`,
+              }}
+              className='fleetmonpage-redhover stop-propagation'
+              onMouseEnter={(e) => { e.stopPropagation(); }}
+              onMouseLeave={(e) => { e.stopPropagation(); }}
+            >
+              <HighlightText text={val} highlight={searchTerm} isSearchable={true} />
+            </p>
+
+            {/* Use the helper function with the Trailer-specific keys */}
+            {renderRepairIcon(row, 'JR_Trailer', 'TrailerJRStatus', fontSize)}
+          </div>
+        );
+      }
+    },
+
     {
       col: "Trip Status", alias: "Status", portion: 0.5,
       render: (val: any, row: any, _searchTerm: string, addTask?: any) => {

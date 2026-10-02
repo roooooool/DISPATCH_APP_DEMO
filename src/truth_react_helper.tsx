@@ -245,6 +245,7 @@ export interface PersonnelProps {
   searchTerm: string;
   onAttendanceChange: (newValue: string, row: any) => void;
   emitSignal?: (signal: string, record: any) => void; // <--- Signal emitter function
+  signalKey?: string;
 }
 
 export const PersonnelCell: React.FC<PersonnelProps> = ({
@@ -253,7 +254,8 @@ export const PersonnelCell: React.FC<PersonnelProps> = ({
   statusRaw,
   searchTerm,
   onAttendanceChange,
-  emitSignal
+  emitSignal,
+  signalKey,
 }) => {
   const [localstatusRaw, setLocalstatusRaw] = useState(statusRaw);
 
@@ -344,7 +346,7 @@ export const PersonnelCell: React.FC<PersonnelProps> = ({
           className="stop-propagation"
           onClick={(e) => {
             e.stopPropagation();
-            emitSignal?.('EDIT_PERSONNEL', row);
+            emitSignal?.(`EDIT_PERSONNEL_${signalKey}`, row);
           }}
           title={`Edit Pair`}
           style={{
@@ -467,39 +469,49 @@ export const handleUpdateAttendanceStatus = async (newAttendance: string, empId:
   }
 };
 
-export const renderRepairIcon = (row: any, jrNumberKey: string, jrStatusKey: string) => {
+export const renderRepairIcon = (
+  row: any,
+  jrNumberKey: string,
+  jrStatusKey: string,
+  fontSize: number = 1
+) => {
   const jrNumber = row[jrNumberKey];
   const jrStatus = row[jrStatusKey];
 
-  // If there's no Job Request number, don't show the icon
   if (!jrNumber) return null;
 
-  // Determine color based on status
-  let wrenchColor = 'var(--color-primary)'; // Fallback to Navy
-  if (jrStatus === 'On going') wrenchColor = 'var(--color-orange)';
+  let wrenchColor = 'var(--color-primary)';
+  if (jrStatus === 'On going' || jrStatus === 'Converted to JO') wrenchColor = 'var(--color-orange)';
   if (jrStatus === 'Pending') wrenchColor = 'var(--color-yellow)';
 
-  const isOngoing = jrStatus === 'On going';
+  const isOngoing = jrStatus === 'On going' || jrStatus === 'Converted to JO';
+  const computedSize = Math.round(18 * fontSize);
 
   return (
     <span
       title={`Repair Job: ${jrNumber}`}
-      style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        lineHeight: 0, // Removes extra bottom spacing caused by baseline alignment
+        flexShrink: 0,
+      }}
     >
       <Wrench
-        size={18}
+        size={computedSize}
         strokeWidth={2.5}
         fill={wrenchColor}
         style={{
           color: wrenchColor,
-          filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))'
+          filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))',
+          display: 'block', // Prevents inline SVG extra bottom margin
         }}
         className={isOngoing ? "animate-wrench-pulse" : ""}
       />
     </span>
   );
 };
-
 
 export default {
   GlobalFleetModal,

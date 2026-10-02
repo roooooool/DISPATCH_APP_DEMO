@@ -17,6 +17,7 @@ import { Vw_LiveDMS_TruckDriverHelper_PairingService } from '../generated/servic
 
 // Ewul Components
 import TableView, { encodeColumnName as enc, type scrollToConfig } from '../components/ewul_TableFlex';
+import EditPairModal, { type PairingRecord } from '../components/EditPairModal';
 import FuelRequestManager from '../components/FuelRequestManager';
 import FleetPairManager from '../components/FleetPairManager';
 import { InfoCardGallery } from '../components/ewul_CardGallery';
@@ -48,6 +49,8 @@ const FleetMonitoring: React.FC = () => {
     const [tableExpanded, _setTableExpanded] = useState(true);
     const [pairingData, setPairingData] = useState<any[]>([]);
     const [fuelRequests, setFuelRequests] = useState<any[]>([]);
+    const [driverList, setDriverList] = useState<any[]>([]);
+    const [helperList, setHelperList] = useState<any[]>([]);
     //const [loading, setLoading] = useState(false);
     const [modalOpen, setModalOpen] = useState<null | 'attendance' | 'fuel' | 'fleet' | 'export'>(() => {
         return (user?.lastActiveModule as any) || null;
@@ -60,6 +63,16 @@ const FleetMonitoring: React.FC = () => {
         }
         return BUSINESS_UNITS[0].Title;
     });*/
+
+    const [editPairModal, setEditPairModal] = useState<{
+        isOpen: boolean;
+        type: 'driver' | 'helper' | null;
+        record: PairingRecord | null;
+    }>({
+        isOpen: false,
+        type: null,
+        record: null,
+    });
 
     const [selectedBU, setSelectedBU] = useState(['Coor', 'Supervisor'].includes(user?.Position || '') ? user?.BusinessUnit : null);
     const [viewMode, _setViewMode] = useState<'table' | 'gallery'>('table');
@@ -109,7 +122,7 @@ const FleetMonitoring: React.FC = () => {
             // 1. Await the result. 'result' is now the actual array
             const result = await ewulFetchAll<any>(
                 Vw_LiveDMS_TruckDriverHelper_PairingService,
-                { filter: '' },
+                { filter: '', orderBy: ['CompletenessScore asc'] },
                 10000,
                 //'ID'
             );
@@ -143,7 +156,7 @@ const FleetMonitoring: React.FC = () => {
                 }
                 return 0;
             });
-            // console.log('processedData: ', processedData)
+            console.log('processedData: ', processedData.slice(0, 5))
             setPairingData(processedData);
 
         } catch (error) {
@@ -153,8 +166,50 @@ const FleetMonitoring: React.FC = () => {
         }
     };
 
+    // Data fetch logic for Driver / Helper List
+    const fetchDriverHelperData = async () => {
+        if (driverList.length > 0 && (!ewul_loadingList[FETCH_LOADING_KEYS.driverHelperList]) || false) {
+            if (!ewul_canFetch(FETCH_LOADING_KEYS.driverHelperListFM)) return;
+        }
+
+        ewul_setLoadingFor(FETCH_LOADING_KEYS.driverHelperListFM, true);
+        console.log("Fetching driver/helper list data...");
+
+        try {
+            // 1. Fetch data using LiveDriverDispatchedList_AllService
+            const result = await ewulFetchAll<any>(
+                'vw_BaseEmployees',
+                { filter: '', orderBy: ['Fullname asc'] }, // Adjust orderBy column if needed
+                10000
+            );
+
+            const rawData = result || [];
+
+            // 2. Separate into Drivers and Helpers based on Position
+            const drivers = rawData.filter(
+                (item: any) => item.Position?.toString().trim().toLowerCase() === 'driver'
+            );
+
+            const helpers = rawData.filter(
+                (item: any) => item.Position?.toString().trim().toLowerCase() === 'helper'
+            );
+
+            // 3. Update state variables accordingly
+            setDriverList(drivers);
+            setHelperList(helpers);
+
+            console.log('fetched drivers: ', drivers.slice(0, 5));
+
+        } catch (error) {
+            console.error("Error fetching driver/helper data:", error);
+        } finally {
+            ewul_setLoadingFor(FETCH_LOADING_KEYS.driverHelperList, false);
+        }
+    };
+
     useEffect(() => {
         fetchPairingData();
+        fetchDriverHelperData();
         const interval = setInterval(() => {
             fetchPairingData();
         }, 60000 * 2); // 30 seconds
@@ -526,6 +581,7 @@ const FleetMonitoring: React.FC = () => {
                             {true && (<GSDCMap
                                 ref={mapRef}
                                 data={pairingData}
+                                key='Truck'
                                 latCol="Latitude"
                                 lngCol="Longitude"
                                 labelCol={enc("Truck")}
@@ -651,9 +707,20 @@ const FleetMonitoring: React.FC = () => {
                                                                 console.log("view fleet modal", record);
                                                                 break;
 
-                                                            case 'EDIT_PERSONNEL':
-                                                                // Handle pencil edit click here on the parent side
-                                                                console.log("edit personnel modal", record);
+                                                            case 'EDIT_PERSONNEL_DRIVER':
+                                                                setEditPairModal({
+                                                                    isOpen: true,
+                                                                    type: 'driver',
+                                                                    record: record,
+                                                                });
+                                                                break;
+
+                                                            case 'EDIT_PERSONNEL_HELPER':
+                                                                setEditPairModal({
+                                                                    isOpen: true,
+                                                                    type: 'helper',
+                                                                    record: record,
+                                                                });
                                                                 break;
 
                                                             default:
@@ -715,6 +782,20 @@ const FleetMonitoring: React.FC = () => {
                     {renderModalContent()}
                 </Modal>
             )*/}
+
+            <EditPairModal
+                isOpen={editPairModal.isOpen}
+                type={editPairModal.type}
+                record={editPairModal.record}
+                driverList={driverList}
+                helperList={helperList}
+                pairList={pairingData}
+                onClose={() => setEditPairModal({ isOpen: false, type: null, record: null })}
+                onSave={async (record, type, selectedPerson) => {
+                    console.log(`Updated ${type} to ${selectedPerson} for unit ${record.Truck}`);
+                    // Add backend API update call here
+                }}
+            />
 
 
             <GlobalFleetModal />
