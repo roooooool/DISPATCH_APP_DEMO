@@ -111,7 +111,8 @@ export interface ColumnConfig {
     searchTerm: string,
     addTask?: (task: Omit<Task, 'id'>) => void,
     fontSize?: number,
-    onRecordChange?: (updatedRecord: any) => void
+    onRecordChange?: (updatedRecord: any) => void,
+    emitSignal?: (signal: string, record: any) => void,
   ) => React.ReactNode;
   defaultShow?: boolean;
   hidden?: boolean;
@@ -146,6 +147,7 @@ interface TableViewProps {
   colMinWidth?: number;
   onCellClick?: (event: { clickedColumn: string; record: any }) => void;
   onRowClick?: (record: any) => void;
+  onSignal?: (signal: string, record: any) => void;
   allowMultipleSelection?: boolean;
   onSelectionChange?: (selectedRecords: any[]) => void;
   theme?: string;
@@ -609,6 +611,8 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
   onRefresh,
   colMinWidth = 150,
   onRowClick,
+  onCellClick,
+  onSignal,
   theme = 'var(--color-primary)',
   themeGradient = 'var(--loadbar-gradient)',
   allowMultipleSelection = false,
@@ -1785,9 +1789,29 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
           const isSticky = columnStyles[column.col]?.position === 'sticky';
 
           return (
-            <td key={colIndex} style={{ ...columnStyles[column.col], ...conditionalStyle }} className={`cell ${(isSticky && isScrolledX) ? 'cell-blur' : ''}`}>
+            <td
+              key={colIndex}
+              style={{ ...columnStyles[column.col], ...conditionalStyle }}
+              className={`cell ${(isSticky && isScrolledX) ? 'cell-blur' : ''}`}
+              onClick={() => {
+                if (onCellClick) {
+                  onCellClick({
+                    clickedColumn: (column as any).rawCol || column.col,
+                    record: row
+                  });
+                }
+              }}
+            >
               {column.render
-                ? column.render(cellValue, row, searchTerm, addTask, (fontSizePercent / 100), onRecordChange)
+                ? column.render(
+                  cellValue,
+                  row,
+                  searchTerm,
+                  addTask,
+                  (fontSizePercent / 100),
+                  onRecordChange,
+                  (signal, record) => onSignal?.(signal, record)
+                )
                 : neonCell?.rowId === row._rowId && neonCell?.colKey === column.col ? (
                   <span className="text-glow-wrapper">
                     <HighlightText text={cellValue} highlight={searchTerm} isSearchable={isSearchable} />
@@ -1798,6 +1822,7 @@ const TableView = React.forwardRef<TableViewRef, TableViewProps>(({
             </td>
           );
         })}
+
       </>
     );
   };

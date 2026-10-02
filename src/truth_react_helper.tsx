@@ -1,5 +1,5 @@
 import React, { useState, useImperativeHandle, forwardRef, useRef, useEffect, useMemo } from 'react';
-import { Wrench, Fuel } from 'lucide-react';
+import { Wrench, Fuel, Pencil, Lock } from 'lucide-react';
 import { createPortal } from "react-dom";
 import { HighlightText, encodeColumnName as enc } from './components/ewul_TableFlex';
 
@@ -244,29 +244,43 @@ export interface PersonnelProps {
   statusRaw: string;
   searchTerm: string;
   onAttendanceChange: (newValue: string, row: any) => void;
+  emitSignal?: (signal: string, record: any) => void; // <--- Signal emitter function
 }
 
-export const PersonnelCell: React.FC<PersonnelProps> = ({ employeeName, row, statusRaw, searchTerm, onAttendanceChange }) => {
-
+export const PersonnelCell: React.FC<PersonnelProps> = ({
+  employeeName,
+  row,
+  statusRaw,
+  searchTerm,
+  onAttendanceChange,
+  emitSignal
+}) => {
   const [localstatusRaw, setLocalstatusRaw] = useState(statusRaw);
+
   useEffect(() => {
     setLocalstatusRaw(statusRaw);
   }, [statusRaw]);
+
+  const isEditLocked = Boolean(row.OE); // Only edit action is locked if row.OE exists
+
   const status = (localstatusRaw in ATTENDANCE_STATUS_COLORS
     ? localstatusRaw
     : "ABSENT") as keyof typeof ATTENDANCE_STATUS_COLORS;
   const attendance_initial = status.charAt(0);
   const statusConfig = ATTENDANCE_STATUS_COLORS[status];
 
-
-
-  //console.log("Rendering Personnel Cell:", { employeeName, employeeType, status, row });
-
-
-
-
   return employeeName ? (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} title={status}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        position: 'relative',
+        paddingRight: 20
+      }}
+      title={status}
+    >
+      {/* Attendance Dropdown - Unaffected */}
       <DropdownSpan
         style={{
           fontWeight: 'bold',
@@ -280,26 +294,77 @@ export const PersonnelCell: React.FC<PersonnelProps> = ({ employeeName, row, sta
         statusKey={status}
         hasOE={row.OE}
         onSelect={(newStatus) => {
-          console.log("Selected new status:", newStatus, "for row:", row);
           setLocalstatusRaw(newStatus);
           onAttendanceChange(newStatus, row);
         }}
       >
         {attendance_initial}
       </DropdownSpan>
+
+      {/* Fleet Modal Trigger - Unaffected */}
       <span
-        onClick={() => { openFleetModal(row); }}
+        onClick={() => {
+          emitSignal?.('VIEW_FLEET_MODAL', row);
+        }}
         className='fleetmonpage-redhover stop-propagation'
         style={{
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
           textAlign: 'left',
-          color: 'var(--color-primary)'
+          color: 'var(--color-primary)',
+          cursor: 'pointer'
         }}
         title={`View: ${employeeName}`}
       >
         <HighlightText text={employeeName} highlight={searchTerm} isSearchable={true} />
       </span>
+
+      {/* Edit Button: Locked/Disabled if row.OE exists */}
+      {isEditLocked ? (
+        <span
+          title="System Detected Pair"
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            color: '#d97706',
+            cursor: 'not-allowed',
+            padding: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 0.6
+          }}
+        >
+          <Lock size={12} />
+        </span>
+      ) : (
+        <button
+          type="button"
+          className="stop-propagation"
+          onClick={(e) => {
+            e.stopPropagation();
+            emitSignal?.('EDIT_PERSONNEL', row);
+          }}
+          title={`Edit Pair`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 2,
+            color: 'var(--color-primary)',
+            opacity: 0.7,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <Pencil size={13} />
+        </button>
+      )}
     </div>
   ) : '---';
 };

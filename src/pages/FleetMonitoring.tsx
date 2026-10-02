@@ -143,7 +143,7 @@ const FleetMonitoring: React.FC = () => {
                 }
                 return 0;
             });
-
+            // console.log('processedData: ', processedData)
             setPairingData(processedData);
 
         } catch (error) {
@@ -157,7 +157,7 @@ const FleetMonitoring: React.FC = () => {
         fetchPairingData();
         const interval = setInterval(() => {
             fetchPairingData();
-        }, 60000); // 30 seconds
+        }, 60000 * 2); // 30 seconds
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -615,6 +615,7 @@ const FleetMonitoring: React.FC = () => {
                                             <div className="view-transition-in view-wrapper" style={{ height: '100%' }} key="table-view">
                                                 <TableView
                                                     data={pairingData}
+                                                    rowKey='_id'
                                                     config={PAIRING_LIST_TABLE_CONFIG.table_config}
                                                     storageKey={`fleetmon${user?.id}`}
                                                     isLoading={ewul_loadingList[FETCH_LOADING_KEYS.fleetPairing] || false}
@@ -642,6 +643,22 @@ const FleetMonitoring: React.FC = () => {
                                                         } as HighlightConfig;
                                                         const isdeselecting = highlightedUnit && highlightedUnit.col_key === hl.col_key && highlightedUnit.key === hl.key;
                                                         setHighlightedUnit(isdeselecting ? null : hl);
+                                                    }}
+                                                    onSignal={(signal: string, record: any) => {
+                                                        switch (signal) {
+                                                            case 'VIEW_FLEET_MODAL':
+                                                                // Handle fleet modal display here on the parent side
+                                                                console.log("view fleet modal", record);
+                                                                break;
+
+                                                            case 'EDIT_PERSONNEL':
+                                                                // Handle pencil edit click here on the parent side
+                                                                console.log("edit personnel modal", record);
+                                                                break;
+
+                                                            default:
+                                                                break;
+                                                        }
                                                     }}
                                                     addTask={addTask}
                                                 />

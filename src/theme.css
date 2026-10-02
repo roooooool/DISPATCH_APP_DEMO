@@ -1,5 +1,6 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lato:wght@400;700&display=swap'); /* Import Lato and Inter for a clean, non-sharp look */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lato:wght@400;700&display=swap');
+/* Import Lato and Inter for a clean, non-sharp look */
 
 
 
@@ -19,16 +20,21 @@
    ROOT VARIABLES (THEME)
 ========================= */
 :root {
-  --color-primary: rgba(9, 33, 98, 1); /* Navy Blue #000080 */ 
+  --color-primary: rgba(9, 33, 98, 1);
+  /* Navy Blue #000080 */
   --color-primary-hover: color-mix(in srgb, var(--color-primary) 80%, black 20%);
   --color-primary-2: #3a4efc;
-  --color-primary-3: #2600ff; /* lighter blue for accents */
-  --color-primary-light: #c7d2fe; /* Light Navy for backgrounds */
+  --color-primary-3: #2600ff;
+  /* lighter blue for accents */
+  --color-primary-light: #c7d2fe;
+  /* Light Navy for backgrounds */
   --color-accent: #da1613;
-  --color-accent-dark: #a30906;    
-  --color-accent-light: #ff0400;         /* Red */
-  --color-bg: #ffffff;   
-  --color-bg-dark: #1c1c22;                /* Dark background */
+  --color-accent-dark: #a30906;
+  --color-accent-light: #ff0400;
+  /* Red */
+  --color-bg: #ffffff;
+  --color-bg-dark: #1c1c22;
+  /* Dark background */
   --color-bg-blue: #f7f9fb;
   --color-bg-blue-2: #d9e8f5;
   --color-bg-muted-dark: #eaf1f7;
@@ -37,11 +43,13 @@
   --color-muted: #666;
   --color-border: #e0e0e0;
 
-  --color-bg-hover:#f1f5f9; /* Light grey for hover states */
-  --color-mix-hover:#000000;
+  --color-bg-hover: #f1f5f9;
+  /* Light grey for hover states */
+  --color-mix-hover: #000000;
 
   --color-orange: #ff8000;
   --color-yellow: #ebb52a;
+  --color-gold: #d97706;
   --color-green: #28a745;
   --color-red: rgb(235, 54, 30);
   --color-darkslategray: #334155;
@@ -53,15 +61,20 @@
   --bg-gradient-main-eq: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
   --bg-gradient-light: linear-gradient(135deg, var(--color-primary-3) 0%, var(--color-accent) 100%);
   --input-gradient: linear-gradient(135deg, var(--color-primary), var(--color-accent), var(--color-primary-3));
-  --loadbar-gradient: linear-gradient(
-    90deg, 
-    transparent 0%,       /* Start Navy */
-    var(--color-primary-3) 10%,    /* Quick transition to Light Blue */
-    var(--color-accent) 20%,       /* Start Red early... */
-    var(--color-accent) 80%,       /* ...and keep it Red until 80% */
-    var(--color-primary-3) 90%,    /* Transition back to Light Blue */
-    transparent 100%      /* End Navy */
-  );
+  --loadbar-gradient: linear-gradient(90deg,
+      transparent 0%,
+      /* Start Navy */
+      var(--color-primary-3) 10%,
+      /* Quick transition to Light Blue */
+      var(--color-accent) 20%,
+      /* Start Red early... */
+      var(--color-accent) 80%,
+      /* ...and keep it Red until 80% */
+      var(--color-primary-3) 90%,
+      /* Transition back to Light Blue */
+      transparent 100%
+      /* End Navy */
+    );
 
 
   /* Status Border Variables */
@@ -79,92 +92,124 @@
   --color-bg-danger: #fff1f2;
 
   /* TRIP PROGRESS COLORS */
-  --progress-newtrip: #ff00d9;   /* Vibrant Magenta */
-  --progress-assigned: #092162;    /* Navy (Primary) */
-  --progress-source: var(--color-yellow);      /* Gold */
-  --progress-destination: var(--color-orange); /* Orange */
-  --progress-done: var(--color-green);        /* Professional Green (Success) */
+  --progress-newtrip: #ff00d9;
+  /* Vibrant Magenta */
+  --progress-assigned: #092162;
+  /* Navy (Primary) */
+  --progress-source: var(--color-yellow);
+  /* Gold */
+  --progress-destination: var(--color-orange);
+  /* Orange */
+  --progress-done: var(--color-green);
+  /* Professional Green (Success) */
 
   --color-input-disabled-bg: #e4f0f8;
 
 
-    /* TYPOGRAPHY */
-    --font-family-primary: 'Lato', sans-serif;
-    --font-family-secondary: 'Inter', sans-serif;
+  /* TYPOGRAPHY */
+  --font-family-primary: 'Lato', sans-serif;
+  --font-family-secondary: 'Inter', sans-serif;
 
-    --font-size-base: 0.875rem;   /* 14px */
-    --font-size-vsm: 0.50rem;      /* 12px */
-    --font-size-sm: 0.75rem;      /* 12px */
-    --font-size-lg: 1rem;         /* 16px */
-    --font-size-vlg: 2rem;
-    --font-size-title: 2rem;      /* Main page titles */
-    --font-size-subtitle: 1.25rem;/* Section/subtitles */
-    --font-size-label: 0.95rem;   /* Form labels, small headings */
-    --font-size-span: 0.92rem;    /* Inline text, spans */
-    --font-size-caption: 0.8rem;  /* Captions, helper text */
-    font-size: var(--font-size-base);
+  --font-size-base: 0.875rem;
+  /* 14px */
+  --font-size-vsm: 0.50rem;
+  /* 12px */
+  --font-size-sm: 0.75rem;
+  /* 12px */
+  --font-size-lg: 1rem;
+  /* 16px */
+  --font-size-vlg: 2rem;
+  --font-size-title: 2rem;
+  /* Main page titles */
+  --font-size-subtitle: 1.25rem;
+  /* Section/subtitles */
+  --font-size-label: 0.95rem;
+  /* Form labels, small headings */
+  --font-size-span: 0.92rem;
+  /* Inline text, spans */
+  --font-size-caption: 0.8rem;
+  /* Captions, helper text */
+  font-size: var(--font-size-base);
 }
 
 [data-theme="dark"] {
-  --color-primary: #38599f; /* A lighter, softer blue for dark mode */
+  --color-primary: #38599f;
+  /* A lighter, softer blue for dark mode */
   --color-primary-hover: color-mix(in srgb, var(--color-primary) 80%, white 20%);
   --color-primary-2: #6b8eef;
   --color-primary-3: #8fa8ff;
   --color-primary-light: #2c3a5e;
-  --color-accent: #ff5252; /* A brighter red for visibility */
+  --color-accent: #ff5252;
+  /* A brighter red for visibility */
   --color-accent-dark: #ff1744;
-  --color-accent-light: rgb(254, 190, 188); /* Red */
-  --color-bg: #1c1c22; /* Off-black for the main background */
-  --color-bg-dark: #eff0ff;  
-  --color-bg-blue: #1a1a2e; /* A dark blue-ish background */
-  --color-text: rgb(155, 179, 245); /* Light gray for primary text */
-  --color-text-2: rgb(5, 16, 41); 
-  --color-muted: #a0a0a0; /* A slightly darker gray for muted text */
-  --color-border: #444; /* Darker border color */
+  --color-accent-light: rgb(254, 190, 188);
+  /* Red */
+  --color-bg: #1c1c22;
+  /* Off-black for the main background */
+  --color-bg-dark: #eff0ff;
+  --color-bg-blue: #1a1a2e;
+  /* A dark blue-ish background */
+  --color-text: rgb(155, 179, 245);
+  /* Light gray for primary text */
+  --color-text-2: rgb(5, 16, 41);
+  --color-muted: #a0a0a0;
+  /* A slightly darker gray for muted text */
+  --color-border: #444;
+  /* Darker border color */
 
-  --color-bg-hover: #2a2a2a; /* Slightly lighter than the dark background for hover */
-  --color-mix-hover:#ffffff;
+  --color-bg-hover: #2a2a2a;
+  /* Slightly lighter than the dark background for hover */
+  --color-mix-hover: #ffffff;
 
   --color-orange: #ffab40;
+  --color-gold: #d97706;
   --color-green: #69f0ae;
-  --color-darkslategray: #94a3b8; /* Lighter slate gray for dark mode text */
+  --color-darkslategray: #94a3b8;
+  /* Lighter slate gray for dark mode text */
 
   /* Gradients can be adjusted or kept the same if they work well */
   --bg-gradient-main: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 25%, var(--color-accent) 100%);
   --bg-gradient-main-eq: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
   --bg-gradient-light: linear-gradient(135deg, var(--color-primary-3) 0%, var(--color-accent) 100%);
   --input-gradient: linear-gradient(135deg, var(--color-primary), var(--color-accent), var(--color-primary-2));
-  --loadbar-gradient: linear-gradient(
-    90deg, 
-    transparent 0%,
-    var(--color-primary-3) 10%,
-    var(--color-accent) 20%,
-    var(--color-accent) 80%,
-    var(--color-primary-3) 90%,
-    transparent 100%
-  );
+  --loadbar-gradient: linear-gradient(90deg,
+      transparent 0%,
+      var(--color-primary-3) 10%,
+      var(--color-accent) 20%,
+      var(--color-accent) 80%,
+      var(--color-primary-3) 90%,
+      transparent 100%);
 
 
   /* Status Border Variables (Dark) */
-  --color-border-row: #5a7dcb; /* Lighter blue for dark mode */
-  --color-border-success: #4ade80; /* Brighter green */
-  --color-border-warning: #facc15; /* Brighter yellow/amber */
-  --color-border-info: #60a5fa; /* Lighter info blue */
-  --color-border-danger: #f87171; /* Lighter red */
+  --color-border-row: #5a7dcb;
+  /* Lighter blue for dark mode */
+  --color-border-success: #4ade80;
+  /* Brighter green */
+  --color-border-warning: #facc15;
+  /* Brighter yellow/amber */
+  --color-border-info: #60a5fa;
+  /* Lighter info blue */
+  --color-border-danger: #f87171;
+  /* Lighter red */
 
   /* Status Background Variables (Dark) */
-  --color-bg-success: rgba(34, 197, 94, 0.1); /* Dark, transparent green */
-  --color-bg-warning: rgba(245, 158, 66, 0.1); /* Dark, transparent orange */
-  --color-bg-info: rgba(58, 78, 252, 0.1);    /* Dark, transparent blue */
-  --color-bg-danger: rgba(10, 0, 60, 0.1);   /* Dark, transparent red */
+  --color-bg-success: rgba(34, 197, 94, 0.1);
+  /* Dark, transparent green */
+  --color-bg-warning: rgba(245, 158, 66, 0.1);
+  /* Dark, transparent orange */
+  --color-bg-info: rgba(58, 78, 252, 0.1);
+  /* Dark, transparent blue */
+  --color-bg-danger: rgba(10, 0, 60, 0.1);
+  /* Dark, transparent red */
 
 
   --color-input-disabled-bg: #0a0a35;
 
 }
 
-html, 
-body, 
+html,
+body,
 #root {
   height: 100%;
   margin: 0;
@@ -201,7 +246,9 @@ body {
 /* =========================
    TYPOGRAPHY
 ========================= */
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   color: var(--color-primary);
 }
 
@@ -265,7 +312,7 @@ p {
   transition: var(--transition);
 }
 
-.gradient-input-wrapper input, 
+.gradient-input-wrapper input,
 .gradient-input-wrapper textarea {
   width: 100%;
   padding: 10px;
@@ -287,7 +334,7 @@ p {
   background: var(--color-bg);
   border-radius: var(--radius);
   padding: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
 /* =========================
@@ -343,9 +390,17 @@ a:hover {
   text-align: center;
 }
 
-.mt-1 { margin-top: 10px; }
-.mt-2 { margin-top: 20px; }
-.mt-3 { margin-top: 30px; }
+.mt-1 {
+  margin-top: 10px;
+}
+
+.mt-2 {
+  margin-top: 20px;
+}
+
+.mt-3 {
+  margin-top: 30px;
+}
 
 
 /* =========================
@@ -371,7 +426,8 @@ a:hover {
 }
 
 .logo {
-  width: 180px;  /* increase from 120px → 180px */
+  width: 180px;
+  /* increase from 120px → 180px */
   margin-bottom: 20px;
   animation: bob 3s ease-in-out infinite;
 }
@@ -399,32 +455,42 @@ a:hover {
   position: relative;
   z-index: 2;
   width: min(480px, 90%);
-  padding: 5px; /* border thickness */
+  padding: 5px;
+  /* border thickness */
   border-radius: 28px;
   overflow: hidden;
-  box-shadow: 
-    0 10px 15px rgba(0, 0, 0, 0.12), /* existing shadow */
-    0 0 8px 2px rgba(255, 255, 255, 0.35); /* white glow */
-  
-  background: linear-gradient(135deg, rgba(9,33,98,1), #e53935);
+  box-shadow:
+    0 10px 15px rgba(0, 0, 0, 0.12),
+    /* existing shadow */
+    0 0 8px 2px rgba(255, 255, 255, 0.35);
+  /* white glow */
+
+  background: linear-gradient(135deg, rgba(9, 33, 98, 1), #e53935);
 }
 
 .company-info-inner {
-  background-color: var(--color-bg); /* solid white content box */
-  border-radius: 23px; /* slightly smaller than panel to fit inside gradient */
+  background-color: var(--color-bg);
+  /* solid white content box */
+  border-radius: 23px;
+  /* slightly smaller than panel to fit inside gradient */
   padding: 32px 30px;
   backdrop-filter: blur(14px);
   color: var(--color-text);
 }
 
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 
-    0 10px 15px rgba(0,0,0,0.12), 
-    0 0 8px 2px rgba(255,255,255,0.15); 
+
+  0%,
+  100% {
+    box-shadow:
+      0 10px 15px rgba(0, 0, 0, 0.12),
+      0 0 8px 2px rgba(255, 255, 255, 0.15);
   }
-  50% { box-shadow: 
-    0 10px 15px rgba(0,0,0,0.12), 
-    0 0 8px 2px rgba(255,255,255,0.5); 
+
+  50% {
+    box-shadow:
+      0 10px 15px rgba(0, 0, 0, 0.12),
+      0 0 8px 2px rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -462,7 +528,8 @@ a:hover {
 }
 
 .company-info-panel h2 {
-  color: var(--color-primary); /* navy */
+  color: var(--color-primary);
+  /* navy */
   font-size: 1.58rem;
   margin-bottom: 10px;
 }
@@ -535,7 +602,8 @@ a:hover {
   right: 0;
   bottom: 0;
   background-image: url('/src/assets/images/gradient_fill.png');
-  opacity: 0.75; /* increased from 0.7 */
+  opacity: 0.75;
+  /* increased from 0.7 */
   background-size: cover;
   background-repeat: no-repeat;
   z-index: 1;
@@ -547,7 +615,8 @@ a:hover {
 .company-info-box {
   position: relative;
   z-index: 2;
-  background-color: var(--color-bg); /* slightly more opaque */
+  background-color: var(--color-bg);
+  /* slightly more opaque */
   border-radius: 20px;
   padding: 40px 30px;
   max-width: 400px;
@@ -558,7 +627,8 @@ a:hover {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin: auto; /* center vertically with flex on parent */
+  margin: auto;
+  /* center vertically with flex on parent */
 }
 
 /* Title */
@@ -566,7 +636,8 @@ a:hover {
   font-size: 26px;
   margin-bottom: 10px;
   font-weight: bold;
-  color: var(--color-primary); /* navy blue */
+  color: var(--color-primary);
+  /* navy blue */
   line-height: 1.2;
 }
 
@@ -574,7 +645,8 @@ a:hover {
 .company-info-box h3 {
   font-size: 16px;
   margin-bottom: 25px;
-  color: var(--color-accent); /* red accent */
+  color: var(--color-accent);
+  /* red accent */
   font-weight: 500;
   line-height: 1.3;
 }
@@ -595,14 +667,25 @@ a:hover {
   background-size: cover;
   background-position: center;
   display: flex;
-  align-items: center; /* center vertically */
-  justify-content: center; /* center horizontally */
+  align-items: center;
+  /* center vertically */
+  justify-content: center;
+  /* center horizontally */
   padding: 20px;
 }
 
 @keyframes bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); } /* move up 15px at midpoint */
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+
+  /* move up 15px at midpoint */
 }
 
 /* Fade out animation */
@@ -615,6 +698,7 @@ a:hover {
     opacity: 1;
     transform: scale(1);
   }
+
   to {
     opacity: 0;
     transform: scale(0.98);
@@ -641,7 +725,8 @@ a:hover {
   display: flex;
   height: 100%;
   width: 100%;
-  transition: transform 0.8s ease-in-out; /* smooth slide */
+  transition: transform 0.8s ease-in-out;
+  /* smooth slide */
 }
 
 .scroll-image {
@@ -659,14 +744,23 @@ a:hover {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-50%);
   }
 }
 
-.scroll-container { z-index: 0; }
-.gradient-overlay { z-index: 1; }
-.company-info-panel { z-index: 2; }
+.scroll-container {
+  z-index: 0;
+}
+
+.gradient-overlay {
+  z-index: 1;
+}
+
+.company-info-panel {
+  z-index: 2;
+}
 
 
 
@@ -675,13 +769,16 @@ a:hover {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--color-bg-hover);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--color-primary);
   border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary-2);
 }
@@ -729,8 +826,9 @@ textarea:focus {
 
 /* GRADIENTS */
 .gradient-input-wrapper:hover:has(input:not(:disabled), textarea:not(:disabled), select:not(:disabled), div) {
-  
-  padding: 1.5px !important; /* Slightly thicker border on hover */
+
+  padding: 1.5px !important;
+  /* Slightly thicker border on hover */
 
 }
 
@@ -740,8 +838,8 @@ textarea:focus {
 .gradient-input-wrapper textarea:disabled,
 .gradient-input-wrapper div:disabled {
   background: var(--color-input-disabled-bg) !important;
-  color: var(--color-primary) !important; 
-  -webkit-text-fill-color: var(--color-primary); 
+  color: var(--color-primary) !important;
+  -webkit-text-fill-color: var(--color-primary);
   opacity: 1 !important;
   /*border: 1px dashed var(--color-muted) !important;*/
   cursor: not-allowed;
@@ -751,15 +849,18 @@ textarea:focus {
 
 .gradient-input-wrapper {
   position: relative;
-  padding: 1px !important; /* Border thickness - thinner */
-  background: var(--input-gradient) !important; /* Navy to Red */
+  padding: 1px !important;
+  /* Border thickness - thinner */
+  background: var(--input-gradient) !important;
+  /* Navy to Red */
   border-radius: calc(var(--radius) + 1px) !important;
 }
 
 
 
 .gradient-btn-proceed {
-  background: var(--color-primary); /* Navy */
+  background: var(--color-primary);
+  /* Navy */
   color: var(--color-text-2);
 }
 
@@ -776,7 +877,8 @@ textarea:focus {
 }
 
 .gradient-btn-proceed:disabled:hover {
-  background: var(--color-muted); /* Keep the same disabled background on hover */
+  background: var(--color-muted);
+  /* Keep the same disabled background on hover */
   transform: none;
   box-shadow: none;
 }
@@ -797,30 +899,34 @@ textarea:focus {
 .nongradient-btn-save {
   background: var(--color-green);
   color: var(--color-text-2);
-  position: relative; /* Needed for positioning the indicator */
+  position: relative;
+  /* Needed for positioning the indicator */
 }
 
 .nongradient-btn-save:hover {
   background: color-mix(in srgb, var(--color-green) 80%, var(--color-mix-hover) 20%);
 }
+
 /* SPINNER */
 
 .spinner-animate {
-    animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Optional: Pulse effect for the preview wrapper while loading */
 .file-preview-wrapper:has(.spinner-animate) {
-    background: rgba(58, 78, 252, 0.05); /* Very light navy tint */
+  background: rgba(58, 78, 252, 0.05);
+  /* Very light navy tint */
 }
 
 
@@ -828,8 +934,10 @@ textarea:focus {
 @keyframes attendance-dropdown-fade-in {
   from {
     opacity: 0;
-    transform: translateY(-8px); /* Slight slide down effect */
+    transform: translateY(-8px);
+    /* Slight slide down effect */
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -847,6 +955,7 @@ textarea:focus {
     filter: drop-shadow(0 0 0px transparent);
     fill: var(--color-orange);
   }
+
   50% {
     transform: scale(1.3);
     /* Creates a soft orange glow around the icon */
@@ -854,6 +963,7 @@ textarea:focus {
     /* Slightly lighten the core color during the pulse */
     fill: var(--color-accent-light);
   }
+
   100% {
     transform: scale(1);
     filter: drop-shadow(0 0 0px transparent);
@@ -886,7 +996,8 @@ textarea:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;                  /* Ensure it sits above the table */
+  z-index: 9999;
+  /* Ensure it sits above the table */
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -899,14 +1010,16 @@ textarea:focus {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Clips content to rounded corners */
+  overflow: hidden;
+  /* Clips content to rounded corners */
 }
 
 /* Modal Header styling using your Navy + Red gradient */
 .fleetmon-modal-content h3 {
   margin: 0;
   padding: 16px 20px;
-  background: var(--bg-gradient-main); /* Navy to Red */
+  background: var(--bg-gradient-main);
+  /* Navy to Red */
   color: var(--color-bg);
   font-family: 'Lato', sans-serif;
   font-size: 1.1rem;
@@ -928,7 +1041,7 @@ textarea:focus {
   font-family: 'Consolas', 'Monaco', monospace;
   font-size: 0.85rem;
   overflow-y: auto;
-  overflow-x:hidden;
+  overflow-x: hidden;
   flex-grow: 1;
 }
 
@@ -952,13 +1065,25 @@ textarea:focus {
 
 /* Subtle entry animation */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Apply slideUp to the inner content */
@@ -973,13 +1098,27 @@ textarea:focus {
 
 /* --- ANIMATIONS --- */
 @keyframes bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes glowPulseRed {
-  0%, 100% { box-shadow: 0 0 10px rgba(229, 57, 53, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(229, 57, 53, 0.5); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(229, 57, 53, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(229, 57, 53, 0.5);
+  }
 }
 
 
@@ -994,7 +1133,8 @@ textarea:focus {
   gap: 10px;
   cursor: pointer;
   font-family: inherit;
-  color: var(--color-primary); /* Navy Blue */
+  color: var(--color-primary);
+  /* Navy Blue */
   font-weight: 500;
   margin-bottom: 8px;
 }
@@ -1009,21 +1149,24 @@ textarea:focus {
   position: relative;
   width: 20px;
   height: 20px;
-  border-radius: 50%; /* Gentle rounded design */
+  border-radius: 50%;
+  /* Gentle rounded design */
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   /* Gradient background for the "border" */
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-light) 100%);
-  padding: 2px; /* This determines the border thickness */
+  padding: 2px;
+  /* This determines the border thickness */
 }
 
 /* The inner circle (The "Mask" that creates the outline effect) */
 .radio-inner-circle {
   width: 100%;
   height: 100%;
-  background: var(--color-bg); /* White bg */
+  background: var(--color-bg);
+  /* White bg */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1043,7 +1186,7 @@ textarea:focus {
 }
 
 /* Checked State Logic */
-.gradient-radio-container input[type="radio"]:checked + .radio-gradient-outline .radio-inner-circle::after {
+.gradient-radio-container input[type="radio"]:checked+.radio-gradient-outline .radio-inner-circle::after {
   transform: scale(1);
 }
 
@@ -1060,17 +1203,20 @@ textarea:focus {
 .gradient-radio-container.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  pointer-events: none; /* Prevents all hover/click logic cascades */
+  pointer-events: none;
+  /* Prevents all hover/click logic cascades */
 }
 
 /* Fallback override to drop gradient backgrounds when the option is locked down */
 .gradient-radio-container.disabled .radio-gradient-outline {
-  background: #787a7e !important; /* Muted gray border canvas fallback */
+  background: #787a7e !important;
+  /* Muted gray border canvas fallback */
   box-shadow: none !important;
 }
 
 .gradient-radio-container.disabled span {
-  color: #494c52; /* Grayed out text label */
+  color: #494c52;
+  /* Grayed out text label */
 }
 
 
@@ -1084,7 +1230,8 @@ textarea:focus {
 /* FONT SIZE SLIDER */
 input[type="range"].gradient-font-size-slider {
   width: 100%;
-  accent-color: var(--color-primary-3); /* fallback for browsers that support accent-color */
+  accent-color: var(--color-primary-3);
+  /* fallback for browsers that support accent-color */
   background: transparent;
   height: 4px;
   margin: 8px 0;

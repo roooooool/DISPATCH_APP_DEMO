@@ -374,7 +374,7 @@ export const ewulDelete = async (
 
 
 
-export interface SharePointAPIOptions {
+export interface SharePointAPIOptions { //ODATA format
   filter?: string;
   top?: number;
   orderBy?: string;
@@ -831,7 +831,7 @@ export const logDmsUpdate = async (params: {
  * then stream the actual file contents from Power Automate.
  * @description
  * fetches the attachment metadata and file contents from Power Automate.
- * @param metadataRecords - Array of SharePoint attachment metadata records.
+ * @param metadataRecords - Array of SharePoint attachment metadata records, fetched using SharepointAPI().
  * @param listName - The name of the SharePoint list.
  * @param siteAddress - The address of the SharePoint site.
  * @param onUpdate - Callback function to update the attachments state.
@@ -861,7 +861,7 @@ export const fetchSharepointAttachments = async ({
     const recordMetadata = Array.isArray(metadataRecords) ? metadataRecords : [];
     console.log("Fetched %d metadata records", recordMetadata.length);
 
-    // 🛑 Exit early and skip onFinish if there are no records
+    //no records exit na
     if (recordMetadata.length === 0) {
       onUpdate(() => []);
       return [];
@@ -878,7 +878,7 @@ export const fetchSharepointAttachments = async ({
       );
     };
 
-    // 1. Map metadata to initial placeholder objects
+    //mapping metadata
     const initialFiles = recordMetadata.map(item => {
       const fName = item.Filename || item['{FilenameWithExtension}'] || "Untitled File";
       const isPdf = fName.toLowerCase().endsWith('.pdf');
@@ -894,13 +894,13 @@ export const fetchSharepointAttachments = async ({
       };
     });
 
-    // Track running state locally
+
     let currentAttachments = [...initialFiles];
 
-    // Seed state with initial placeholders
+
     onUpdate(() => currentAttachments);
 
-    // 2. Fetch Base64 data concurrently
+    //kuha laman in Base64 
     await Promise.allSettled(
       initialFiles.map(async (file) => {
         try {
@@ -937,7 +937,7 @@ export const fetchSharepointAttachments = async ({
               };
             });
 
-            // Synchronously update tracking array
+            // Synchronous update of local variable
             currentAttachments = [
               ...currentAttachments.filter(attr => attr.id !== file.id),
               ...newAttachmentsFromFlow
@@ -952,10 +952,6 @@ export const fetchSharepointAttachments = async ({
       })
     );
 
-    // // 3. Fire onFinish ONLY if attachments were found and processed
-    // if (currentAttachments.length > 0) {
-    //   onFinish?.(currentAttachments);
-    // }
     onFinish?.()
 
     return currentAttachments;

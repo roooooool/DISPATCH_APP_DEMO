@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.39.19"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.40.20"; // Update this with each release for better error tracking and user support
 export const mandatoryLogout = "2026-08-13 00:00:00"
 
 //react helper for truths
@@ -1253,12 +1253,13 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
     },
     {
       col: "Driver", portion: 1.5,
-      render: (val: any, row: any, searchTerm: string, addTask?: any) => {
+      render: (val: any, row: any, searchTerm: string, addTask?: any, _fontSize?: number, _onRecordChange?: any, emitSignal?: any) => {
         return <PersonnelCell
           employeeName={val}
           row={row}
           statusRaw={row.AttendanceD}
           searchTerm={searchTerm}
+          emitSignal={emitSignal}
           onAttendanceChange={(newStatus, row) => {
             if (addTask) {
               addTask({
@@ -1280,12 +1281,13 @@ export const PAIRING_LIST_TABLE_CONFIG: TableModuleConfig = {
     },
     {
       col: "Helper", portion: 1.5,
-      render: (val: any, row: any, searchTerm: string, addTask?: any) => {
+      render: (val: any, row: any, searchTerm: string, addTask?: any, _fontSize?: number, _onRecordChange?: any, emitSignal?: any) => {
         return <PersonnelCell
           employeeName={val}
           row={row}
           statusRaw={row.AttendanceH}
           searchTerm={searchTerm}
+          emitSignal={emitSignal}
           onAttendanceChange={(newStatus, row) => {
             if (addTask) {
               addTask({

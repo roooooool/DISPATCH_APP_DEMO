@@ -133,6 +133,7 @@ export interface OrderDistributionFormRef {
   getFormData: () => LiveDMSView_CEM;
   showUnsavedChangesModal: () => Promise<boolean>;
   runValidation: (data: LiveDMSView_CEM) => { isValid: boolean; message: string };
+  buildPayloadWithOE: (oe: any, action?: 'UPSERT' | 'DELETE') => ReturnType<typeof buildAssetPairingPayload>;
 }
 
 /**
@@ -869,6 +870,26 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         });
       },
       runValidation: (data: LiveDMSView_CEM) => runValidation(data),
+
+      buildPayloadWithOE: (oe: any, action: 'UPSERT' | 'DELETE' = 'UPSERT') => {
+        // If your form data needs the OE attached before generating payload:
+        const updatedFormData = {
+          ...formData,
+          OE: oe, // Attach or override the OE parameter
+        };
+
+        return buildAssetPairingPayload(
+          updatedFormData,
+          driverOptions,
+          helperOptions,
+          truckOptions,
+          trailerOptions,
+          editingUser?.FullName || 'Unknown User',
+          action
+        );
+      },
+
+
     }), [formData, hasUnsavedChanges, runValidation]);
 
     const [pendingPersonnelValidationResolve, setPendingPersonnelValidationResolve] = useState<((val: boolean | 'planTrip') => void) | null>(null);

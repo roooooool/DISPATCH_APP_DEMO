@@ -2162,6 +2162,9 @@ const OrderManagement: React.FC = () => {
                                                         //     { OE: selectedChangeTripOE.OE }
                                                         // );
 
+                                                        const assetPairingPayload = formRef.current?.buildPayloadWithOE(selectedChangeTripOE.OE);
+                                                        ewulExecute('DISPATCH_APP_DMS', 'Upsert_DispatchedAssetPairing', assetPairingPayload as any);
+
 
 
                                                         if (result.error) {
