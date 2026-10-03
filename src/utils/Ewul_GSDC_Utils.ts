@@ -13,6 +13,7 @@ import { getApiUrl } from "../api/config";
 import { AuthService } from "../api/AuthService.ts";
 import { type ExecuteWorkerPayload } from './executeWorker';
 import { type FetchWorkerPayload } from './fetchWorker';
+import { canAccessBackend } from "./IdleContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -154,6 +155,10 @@ export const ewulFetchAll = async <T>(
   test: boolean = false
 ): Promise<T[]> => {
   // if (!test) return [];
+  if (!canAccessBackend()) {
+    console.log("[IDLE] Backend request skipped");
+    return [];
+  }
 
   const endpoint = getEndpointFromService(service, db);
   const token = await AuthService.ensureValidToken();
@@ -223,6 +228,13 @@ export const ewulExecute = async <T>(
   storedProcedure: string,
   options: any,
 ): Promise<EwulStoredProcedureResult<T>> => {
+
+  if (!canAccessBackend()) {
+    console.log("[IDLE] Backend request skipped");
+    return [];
+  }
+
+
   const token = await AuthService.ensureValidToken();
 
   if (!token) {
@@ -291,6 +303,16 @@ export const ewulCreate = async <T = any>(
   tableName: string,
   record: Record<string, any>,
 ): Promise<EwulResponse<T>> => {
+
+  if (!canAccessBackend()) {
+    console.log("[IDLE] Backend request skipped");
+    return {
+      data: {} as T,
+      error: "Stopping API Call, client IDLE",
+      code: 0,
+    };
+  }
+
   const token = await AuthService.ensureValidToken();
 
   if (!token) {
@@ -330,6 +352,17 @@ export const ewulUpdate = async <T = any>(
   recordId: string,
   changes: Record<string, any>,
 ): Promise<EwulResponse<T>> => {
+
+  if (!canAccessBackend()) {
+    console.log("[IDLE] Backend request skipped");
+    return {
+      data: {} as T,
+      error: "Stopping API Call, client IDLE",
+      code: 0,
+    };
+  }
+
+
   const token = await AuthService.ensureValidToken();
 
   if (!token) {
@@ -366,6 +399,11 @@ export const ewulDelete = async (
   tableName: string,
   recordId: string,
 ): Promise<EwulResponse<boolean>> => {
+
+  if (!canAccessBackend()) {
+    console.log("[IDLE] Backend request skipped");
+  }
+
   const token = await AuthService.ensureValidToken();
 
   if (!token) {
@@ -414,6 +452,12 @@ export const ewulSharePointAPI = async <T>(
   data?: Partial<T>,
   id?: number,
 ): Promise<T[]> => {
+
+  if (!canAccessBackend()) {
+    console.log("[IDLE] Backend request skipped");
+    return [];
+  }
+
   const FLOW_URL = import.meta.env.VITE_SHAREPOINT_API_URL;
 
   const payload = {
