@@ -153,7 +153,7 @@ const TripGroup_DonutChart = forwardRef<TripGroupDonutChartRef, GridProps>(({
       console.log("Fetched donut stats:", data);
 
       // Extract records array returned in 'value' property
-      setData(data || []);
+      setData(data as any[] || []);
     } catch (error) {
       console.error("Failed to fetch donut stats:", error);
       setData([]);

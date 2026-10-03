@@ -65,7 +65,7 @@ const TripStatus_BarChart: React.FC<BarChartProps> = ({ BU, fromStr, toStr, onBa
       );
 
       // Extract array from data.value returned by Flask endpoint
-      setData(data || []);
+      setData(data as any[] || []);
     } catch (error) {
       console.error("Failed to fetch bar stats:", error);
       setData([]);
