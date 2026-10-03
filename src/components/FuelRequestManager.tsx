@@ -648,6 +648,10 @@ const FuelRequestManager: React.FC<FuelRequestManagerProps> = ({
         setValidationMessage(validation.message);
     }, [activeTab]);
 
+    useEffect(() => {
+        console.log('FR Loading state: ', isLoading);
+    }, [isLoading])
+
 
     return (
         <>

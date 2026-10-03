@@ -404,12 +404,13 @@ const OrderManagement: React.FC = () => {
 
 
 
-
+    const [frLoading, setFRLoading] = useState(false);
     const fetchFuelRequests = useCallback(async (nocd: boolean = false, vehicle?: string, oe?: string) => {
         console.log("Fetching fuel requests with parameters - nocd:", nocd, "vehicle:", vehicle, "oe:", oe);
         if (!vehicle || !oe) return;
         if (!nocd && fuelRequests.length > 0 && !canFetch(`${FETCH_LOADING_KEYS.fuelRequests}-${vehicle}-${oe}`)) return;
         setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, true);
+        setFRLoading(true);
 
 
 
@@ -453,6 +454,7 @@ const OrderManagement: React.FC = () => {
             setFuelRequests([]);
         } finally {
             setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, false);
+            setFRLoading(false);
         }
     }, []);
 
@@ -1962,7 +1964,7 @@ const OrderManagement: React.FC = () => {
                                         tableConfig={FUEL_REQUESTS_TABLE_CONFIG.table_config as ColumnConfig[]}
                                         storageKey={`fuel_requests_${localUser?.id}`}
                                         searchableCols={FUEL_REQUESTS_TABLE_CONFIG.searchable_cols as string[]}
-                                        isLoading={loadingList[FETCH_LOADING_KEYS.fuelRequests] || false}
+                                        isLoading={/*loadingList[FETCH_LOADING_KEYS.fuelRequests] || false*/ frLoading}
                                         onRefresh={(signal) => signal && showFuelRequestModal && fetchFuelRequests(false, showFuelRequestModal.tractor, showFuelRequestModal.subtitle)}
                                         onFormSubmit={handleFuelRequestSubmit}
                                         tripData={showFuelRequestModal.data}
