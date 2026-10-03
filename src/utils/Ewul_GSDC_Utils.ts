@@ -1356,6 +1356,7 @@ interface DispatchAttendance {
 interface DispatchTrip {
   OE: string;
   "Trip Status": string;
+  "Trip_x0020_Status"?: string;
   Modified: string;
   TripProgress: string;
   Vehicle: string;
@@ -1420,6 +1421,8 @@ export async function getDriverHelperList(BU?: string) {
   const tripMap = new Map<string, DispatchTrip>();
 
   for (const trip of trips) {
+
+
     if (
       trip.Category === "Ongoing" &&
       (
@@ -1554,9 +1557,10 @@ export async function getDriverHelperList(BU?: string) {
 
         SortAttendance: sortAttendance,
 
+
         DMS_OE: latestTrip?.OE ?? null,
         OE: latestTrip?.OE ?? null,
-        DMS_TripStatus: latestTrip?.["Trip Status"] ?? null,
+        DMS_TripStatus: latestTrip?.["Trip Status"] ?? latestTrip?.["Trip_x0020_Status"] ?? null,
         DMS_Modified: latestTrip?.Modified ?? null,
         DMS_TripProgress: latestTrip?.TripProgress ?? null,
         DMS_Vehicle: latestTrip?.Vehicle ?? null,
