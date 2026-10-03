@@ -213,11 +213,16 @@ export interface EwulExecuteOptions {
   };
 }
 
+
+export type EwulStoredProcedureResult<T> =
+  | T[]
+  | Record<`Table${number}`, T[]>;
+
 export const ewulExecute = async <T>(
   database: string,
   storedProcedure: string,
   options: any,
-): Promise<T[]> => {
+): Promise<EwulStoredProcedureResult<T>> => {
   const token = await AuthService.ensureValidToken();
 
   if (!token) {
@@ -231,12 +236,29 @@ export const ewulExecute = async <T>(
     );
 
     worker.onmessage = (
-      event: MessageEvent<{ success: boolean; data?: T[]; error?: string }>
+      event: MessageEvent<{
+        success: boolean;
+        data?: T[] | Record<`Table${number}`, T[]>;
+        error?: string;
+      }>
     ) => {
       const { success, data, error } = event.data;
+
       worker.terminate();
 
-      if (success && data) {
+      if (success && data !== undefined) {
+        // Backward compatibility:
+        // One result set → return the original T[] format.
+        if (
+          !Array.isArray(data) &&
+          Object.keys(data).length === 1 &&
+          'Table1' in data
+        ) {
+          resolve(data.Table1);
+          return;
+        }
+
+        // Multiple result sets → keep the named TableN structure.
         resolve(data);
       } else {
         reject(new Error(error || 'Worker execution failed'));
@@ -249,17 +271,18 @@ export const ewulExecute = async <T>(
     };
 
     const payload: ExecuteWorkerPayload = {
-      database: database,
+      database,
       spName: storedProcedure,
       method: 'GET',
       params: ewulDecodeKeys(options),
-      // pagination: options.pagination,
       accessToken: token,
     };
 
     worker.postMessage(payload);
   });
 };
+
+
 
 
 

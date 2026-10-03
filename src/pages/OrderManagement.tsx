@@ -943,7 +943,6 @@ const OrderManagement: React.FC = () => {
                 'Id'
             );
 
-            // console.log('drivers3: ', result)
 
             setDriverHelperList(result);
 
@@ -959,7 +958,7 @@ const OrderManagement: React.FC = () => {
         setLoadingFor(FETCH_LOADING_KEYS.generatedTripID, true);
 
         try {
-            ``
+
             const res = await ewulExecute('DISPATCH_APP_DMS', 'GenerateNewTripTicket', {
                 OE: OE,
             });
