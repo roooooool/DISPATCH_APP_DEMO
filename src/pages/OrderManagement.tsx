@@ -28,6 +28,7 @@ import { NewTripsView_CEM_unfilteredService } from '../generated/services/NewTri
 import { LiveDMSView_CEMService } from '../generated/services/LiveDMSView_CEMService';
 import { LiveVehicleAssignmentLIstViewService } from '../generated/services/LiveVehicleAssignmentLIstViewService'
 import { type LiveVehicleAssignmentLIstView } from '../generated/models/LiveVehicleAssignmentLIstViewModel';
+//@ts-ignore
 import { LiveDriverDispatchedList_AllService } from '../generated/services/LiveDriverDispatchedList_AllService'
 //@ts-ignore
 import { GenerateAdditionalOE_IDService } from '../generated/services/GenerateAdditionalOE_IDService';
@@ -76,7 +77,7 @@ import { useUser } from '../utils/useUser';
 import {
 
     //@ts-ignore
-    ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
+    ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI, getDriverHelperList,
     ISOtoInt,
 
     ewul_canFetch as canFetch,
@@ -938,15 +939,18 @@ const OrderManagement: React.FC = () => {
         try {
             console.log('drivers2: ')
             setLoadingFor(FETCH_LOADING_KEYS.driverHelperList, true);
-            const result = await ewulFetchAll<any>(
-                LiveDriverDispatchedList_AllService,
-                { filter: `(contains(Deploystatus, 'Deployed') and (contains(EmploymentStatus, 'Regular') or contains(EmploymentStatus, 'Probationary'))) ${buFilter('BU')}` },
-                3000,
-                'Id'
-            );
 
 
+
+
+
+
+            const result = await getDriverHelperList(['Coor', 'Supervisor'].includes(user?.Position || '') ? user?.BusinessUnit : undefined);
             setDriverHelperList(result);
+
+
+
+
 
         } catch (err) {
             console.error("Driver Helper List Fetch Error:", err);

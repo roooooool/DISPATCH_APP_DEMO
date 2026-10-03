@@ -1305,3 +1305,283 @@ export async function logDebug(params: DebugLogParams): Promise<void> {
     console.error('Failed to send debug log payload:', loggingError);
   }
 }
+
+
+
+
+
+interface DispatchEmployee {
+  Id: number;
+  ExtraID: string;
+  LastName: string;
+  FirstName: string;
+  MiddleName: string;
+  Suffix: string;
+  PF: string;
+  Position: string;
+  EmploymentStatus: string;
+  Deploystatus: string;
+  RestrictionCode: string;
+  PhoneNumber: string;
+  AreaAssignment: string;
+  BU: string;
+  Role: string;
+  FullName: string;
+  Modified: string;
+  mod2: string;
+}
+
+interface DispatchAttendance {
+  ID: number;
+  EmployeeName: string;
+  AttendanceDate: string;
+  AttendanceStatus: string;
+  EmployeeID: string;
+  OE: string;
+  ModifiedAt: string;
+  tripKM: number;
+  SD: string;
+  secondTrip: string;
+  tripIndex: number;
+  TransactionType: string;
+  Position: string;
+  TCVC: string;
+  Approved: string;
+  spID: number;
+  ModifiedBy: string;
+  ApprovedBy: string;
+  ModifiedAt2: string;
+}
+
+interface DispatchTrip {
+  OE: string;
+  "Trip Status": string;
+  Modified: string;
+  TripProgress: string;
+  Vehicle: string;
+  BO: string;
+  Driver: string;
+  Helper: string;
+  "OE Date": string;
+  "Buisness Unit": string;
+  "_tripGroup": string;
+  Category: "Ongoing" | "Planned";
+}
+
+
+export async function getDriverHelperList(BU?: string) {
+  const result = await ewulExecute(
+    'DISPATCH_APP_DMS',
+    'GetDriverHelperDispatchData',
+    {}
+  ) as {
+    Table1: DispatchEmployee[];
+    Table2: DispatchAttendance[];
+    Table3: DispatchTrip[];
+  };
+
+  if (Array.isArray(result)) {
+    throw new Error(
+      'GetDriverHelperDispatchData did not return multiple result sets.'
+    );
+  }
+
+  const employees = result.Table1 as DispatchEmployee[];
+  const attendance = result.Table2 as DispatchAttendance[];
+  const trips = result.Table3 as DispatchTrip[];
+
+  // ------------------------------------------
+  // Attendance lookup
+  // ------------------------------------------
+
+  const attendanceMap = new Map<string, DispatchAttendance>();
+
+  for (const row of attendance) {
+    const existing = attendanceMap.get(row.EmployeeName);
+
+    if (
+      !existing ||
+      new Date(row.AttendanceDate).getTime() >
+      new Date(existing.AttendanceDate).getTime() ||
+      (
+        row.AttendanceDate === existing.AttendanceDate &&
+        new Date(row.ModifiedAt).getTime() >
+        new Date(existing.ModifiedAt).getTime()
+      )
+    ) {
+      attendanceMap.set(row.EmployeeName, row);
+    }
+  }
+
+  // ------------------------------------------
+  // Trip lookup
+  // ------------------------------------------
+
+  const tripMap = new Map<string, DispatchTrip>();
+
+  for (const trip of trips) {
+    if (
+      trip.Category === "Ongoing" &&
+      (
+        !trip.Driver ||
+        // !trip.Helper || trips can have no helper
+        !trip["OE Date"]
+      )
+    ) {
+      continue;
+    }
+
+    const updateTrip = (
+      employeeName: string,
+      position: "Driver" | "Helper"
+    ) => {
+      const key = `${employeeName}|${position}|${trip.Category}`;
+      const existing = tripMap.get(key);
+
+      if (
+        !existing ||
+        new Date(trip.Modified).getTime() >
+        new Date(existing.Modified).getTime()
+      ) {
+        tripMap.set(key, trip);
+      }
+    };
+
+    if (trip.Driver) {
+      updateTrip(trip.Driver, "Driver");
+    }
+
+    if (trip.Helper) {
+      updateTrip(trip.Helper, "Helper");
+    }
+  }
+
+  // ------------------------------------------
+  // Build final Driver / Helper list
+  // ------------------------------------------
+
+  const driverHelperList = employees
+    .filter(employee =>
+      employee.Deploystatus?.includes("Deployed") &&
+      (
+        employee.EmploymentStatus?.includes("Regular") ||
+        employee.EmploymentStatus?.includes("Probationary")
+      ) &&
+      (!BU || employee.BU === BU)
+    )
+    .map(employee => {
+
+      const attendanceRow =
+        attendanceMap.get(employee.FullName);
+
+      const ongoing =
+        tripMap.get(
+          `${employee.FullName}|${employee.Position}|Ongoing`
+        );
+
+      const planned =
+        tripMap.get(
+          `${employee.FullName}|${employee.Position}|Planned`
+        );
+
+
+      const latestTrip = ongoing;
+
+      const attendanceStatus =
+        attendanceRow?.AttendanceStatus ?? "ABSENT";
+
+      let sortAttendance = -1;
+
+      if (employee.BU === "THIRD PARTY") {
+        sortAttendance = 1;
+      }
+      else if (
+        [
+          "ABSENT",
+          "LEAVE",
+          "SUSPENDED",
+          "REST DAY",
+          "APPRENTICE",
+          "-"
+        ].includes(attendanceStatus)
+      ) {
+        sortAttendance = -1;
+      }
+      else if (
+        [
+          "ON TRIP",
+          "IN TRANSIT",
+          "TUKOD"
+        ].includes(attendanceStatus)
+      ) {
+        sortAttendance = 0;
+      }
+      else if (attendanceStatus === "PRESENT") {
+        sortAttendance = 1;
+      }
+      else if (attendanceStatus === "SERVED") {
+        sortAttendance = 2;
+      }
+
+      // const debugEmployee = "Palermo, Donde Cagalitang";
+
+      // console.table(
+      //   trips
+      //     .filter(trip =>
+      //       trip.Driver === debugEmployee ||
+      //       trip.Helper === debugEmployee
+      //     )
+      //     .sort(
+      //       (a, b) =>
+      //         new Date(b.Modified).getTime() -
+      //         new Date(a.Modified).getTime()
+      //     )
+      // );
+
+      return {
+        Id: employee.Id,
+        ExtraID: employee.ExtraID,
+        FullName: employee.FullName,
+        Role: employee.Role,
+        BU: employee.BU,
+        PF: employee.PF,
+        Position: employee.Position,
+        AreaAssignment: employee.AreaAssignment,
+        EmploymentStatus: employee.EmploymentStatus,
+        Deploystatus: employee.Deploystatus,
+        RestrictionCode: employee.RestrictionCode,
+        PhoneNumber: employee.PhoneNumber,
+
+        SortAttendance: sortAttendance,
+
+        DMS_OE: latestTrip?.OE ?? null,
+        OE: latestTrip?.OE ?? null,
+        DMS_TripStatus: latestTrip?.["Trip Status"] ?? null,
+        DMS_Modified: latestTrip?.Modified ?? null,
+        DMS_TripProgress: latestTrip?.TripProgress ?? null,
+        DMS_Vehicle: latestTrip?.Vehicle ?? null,
+        DMS_BO: latestTrip?.BO ?? null,
+
+        LastRecordedDate:
+          attendanceRow?.ModifiedAt ?? null,
+
+        DMS_Attendance:
+          employee.BU === "THIRD PARTY"
+            ? "PRESENT"
+            : attendanceStatus,
+
+        isPaired: null,
+
+        LastName: employee.LastName,
+        FirstName: employee.FirstName,
+        MiddleName: employee.MiddleName,
+        Suffix: employee.Suffix,
+
+        IRID: null,
+
+        plannedTrip: planned?.OE ?? null
+      };
+    });
+
+  return driverHelperList;
+}

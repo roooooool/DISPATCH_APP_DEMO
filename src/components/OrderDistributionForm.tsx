@@ -374,7 +374,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       setOriginalFormData(newInitialData);
       setTempPlantDrAttachments([]);
       setTempWsAttachments([]);
-      fetchAttachments(initialData?.tripID || initialData?.ID || 0, initialData); // Fetch attachments for the current trip
+      if (initialData?.OE) {
+        fetchAttachments(initialData?.tripID || initialData?.ID || 0, initialData); // Fetch attachments for the current trip
+      }
+
       // Initial validation run
       const initialValidation = runValidation(newInitialData);
       setValidation(initialValidation);
@@ -382,7 +385,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
     const validateAfterAttachmentFetch = (initialData?: any) => {
 
-      console.log('wada :', initialData);
+      // console.log('wada :', initialData);
       const validation = runValidation(initialData);
       setValidation(validation)
 
