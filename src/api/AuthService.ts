@@ -4,12 +4,15 @@ let accessToken: string | null = null;
 let accessTokenExpiresAt = 0;
 let refreshPromise: Promise<{ accessToken: string; expiresIn: number } | null> | null = null;
 
+
+
+
 export const AuthService = {
     async initialize() {
         return await this.refresh();
     },
 
-    async login(appKey: string, appSecret: string) {
+    async login(appKey: string, appSecret: string, deviceKey?: string) {
         const response = await fetch(`${API_URL}/api/auth/token`, {
             method: "POST",
             headers: {
@@ -18,7 +21,8 @@ export const AuthService = {
             credentials: "include",
             body: JSON.stringify({
                 app_key: appKey,
-                app_secret: appSecret
+                app_secret: appSecret,
+                device_key: deviceKey
             })
         });
 

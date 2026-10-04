@@ -196,7 +196,7 @@ export default function Login() {
       const APP_SECRET = import.meta.env.VITE_APP_SECRET;
 
       // Authenticate the application with your backend
-      const session = await AuthService.login(APP_KEY, APP_SECRET);
+      const session = await AuthService.login(APP_KEY, APP_SECRET, email);
       const accessToken = session.access_token;
 
       if (!accessToken) {
@@ -378,7 +378,7 @@ export default function Login() {
 
       // 2. No existing session -> authenticate the application
       if (!accessToken || true) {
-        const session = await AuthService.login(APP_KEY, APP_SECRET);
+        const session = await AuthService.login(APP_KEY, APP_SECRET, username);
         accessToken = session.access_token;
       }
 

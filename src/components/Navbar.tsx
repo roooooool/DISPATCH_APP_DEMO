@@ -124,11 +124,13 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
     setIsMobileMenuOpen(false); // Close mobile menu on navigation
   };
 
-  const handleLogout = (logoutTime?: string | React.MouseEvent) => {
+  const handleLogout = async (logoutTime?: string | React.MouseEvent) => {
     // If called by an onClick event, ignore the event object and default to mandatoryLogout or now
     const actualLogoutTime = typeof logoutTime === "string"
       ? logoutTime
       : mandatoryLogout;
+
+    await AuthService.logout();
 
     if (user?.id) {
       localStorage.setItem(`lastLogout_${user.id}`, actualLogoutTime);
