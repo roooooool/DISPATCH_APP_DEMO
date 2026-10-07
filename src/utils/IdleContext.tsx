@@ -8,6 +8,9 @@ import React, {
     useState,
 } from "react";
 
+
+import { APP_VERSION } from '../truth.config'
+
 interface IdleContextType {
     userIdle: boolean;
     tabVisible: boolean;
@@ -41,7 +44,7 @@ export function IdleProvider({ children, enabled = true, }: IdleProviderProps) {
 
     const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const BASE_TITLE = "GSDC Dispatch App";
+    const BASE_TITLE = `GSDC Dispatch App v${APP_VERSION}`;
 
     useEffect(() => {
         document.title = userIdle
