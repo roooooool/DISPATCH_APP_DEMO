@@ -227,7 +227,8 @@ export default function Login() {
         BusinessUnit: account.BusinessUnit || "",
         Position: account.Position || account.roles?.[0] || "",
         id: String(account.ID || ""),
-        CurrentNav: "/dash"
+        CurrentNav: "/dash",
+        email: email,
       };
 
       if (userInfo.id) {
@@ -412,11 +413,16 @@ export default function Login() {
           BusinessUnit: account.BusinessUnit || "",
           Position: account.Position || account.roles[0] || "",
           id: String(account.ID) || "",
-          CurrentNav: "/dash"
+          CurrentNav: "/dash",
+          email: username,
         };
 
         if (userInfo?.id) {
           localStorage.setItem(`lastLogout_${userInfo.id}`, mandatoryLogout);
+        }
+
+        if (userInfo?.email) {
+          localStorage.setItem("user_email", userInfo.email);
         }
 
         updateUser(userInfo);

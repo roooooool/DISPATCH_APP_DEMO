@@ -1,5 +1,5 @@
-export const APP_VERSION = "3.46.22"; // Update this with each release for better error tracking and user support
-export const mandatoryLogout = "2026-10-07 00:00:03"
+export const APP_VERSION = "3.48.22"; // Update this with each release for better error tracking and user support
+export const mandatoryLogout = "2026-10-07 00:00:05"
 
 //react helper for truths
 import {
@@ -37,6 +37,7 @@ export type UserInfo = {
   lastActiveModule?: string;
   attendanceSheetZoom?: number;
   lastLogout?: string; // for the logout modal
+  email?: string;
 };
 
 

@@ -12,6 +12,10 @@ export interface ExecuteWorkerPayload {
     accessToken?: string;
 }
 
+function getStoredDeviceKey(): string | undefined {
+    return localStorage.getItem("user_email") || undefined;
+}
+
 const ctx: Worker = self as unknown as Worker;
 const API_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '';
 
@@ -27,7 +31,10 @@ async function refreshAccessToken(): Promise<string | null> {
     refreshPromise = (async () => {
         const response = await fetch(`${API_URL}/api/auth/refresh`, {
             method: "POST",
-            credentials: "include"
+            credentials: "include",
+            body: JSON.stringify({
+                device_key: getStoredDeviceKey()
+            })
         });
 
         if (!response.ok) {

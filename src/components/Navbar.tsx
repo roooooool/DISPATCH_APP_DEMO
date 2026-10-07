@@ -142,7 +142,7 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
 
   useEffect(() => {
     const checkAuthentication = async () => {
-      const accessToken = await AuthService.ensureValidToken(user?.FullName || '');
+      const accessToken = await AuthService.ensureValidToken();
 
       if (!accessToken) {
         setShowMandatoryLogoutModal(true);

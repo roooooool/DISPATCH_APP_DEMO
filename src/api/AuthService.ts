@@ -4,12 +4,14 @@ let accessToken: string | null = null;
 let accessTokenExpiresAt = 0;
 let refreshPromise: Promise<{ accessToken: string; expiresIn: number } | null> | null = null;
 
-
-
+function getStoredDeviceKey(): string | undefined {
+    return localStorage.getItem("user_email") || undefined;
+}
 
 export const AuthService = {
-    async initialize(deviceKey?: string) {
-        return await this.refresh(deviceKey);
+
+    async initialize() {
+        return await this.refresh();
     },
 
     async login(appKey: string, appSecret: string, deviceKey?: string) {
@@ -37,12 +39,12 @@ export const AuthService = {
         return data;
     },
 
-    async refresh(deviceKey?: string) {
+    async refresh() {
         if (refreshPromise) {
             return refreshPromise;
         }
 
-        refreshPromise = performRefresh(deviceKey);
+        refreshPromise = performRefresh();
 
         try {
             return await refreshPromise;
@@ -51,11 +53,11 @@ export const AuthService = {
         }
     },
 
-    async ensureValidToken(deviceKey?: string): Promise<string | null> {
+    async ensureValidToken(): Promise<string | null> {
         const now = Date.now();
 
         if (!accessToken || now >= accessTokenExpiresAt - 5 * 60 * 1000) {
-            const result = await this.refresh(deviceKey);
+            const result = await this.refresh();
             return result?.accessToken ?? null;
         }
 
@@ -83,12 +85,13 @@ export const AuthService = {
     }
 };
 
-async function performRefresh(deviceKey?: string): Promise<{ accessToken: string; expiresIn: number } | null> {
+async function performRefresh(): Promise<{ accessToken: string; expiresIn: number } | null> {
+    console.log('refreshing with key: ', getStoredDeviceKey());
     const response = await fetch(`${API_URL}/api/auth/refresh`, {
         method: "POST",
         credentials: "include",
         body: JSON.stringify({
-            device_key: deviceKey
+            device_key: getStoredDeviceKey()
         })
     });
 
