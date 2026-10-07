@@ -8,8 +8,8 @@ let refreshPromise: Promise<{ accessToken: string; expiresIn: number } | null> |
 
 
 export const AuthService = {
-    async initialize() {
-        return await this.refresh();
+    async initialize(deviceKey?: string) {
+        return await this.refresh(deviceKey);
     },
 
     async login(appKey: string, appSecret: string, deviceKey?: string) {
@@ -37,12 +37,12 @@ export const AuthService = {
         return data;
     },
 
-    async refresh() {
+    async refresh(deviceKey?: string) {
         if (refreshPromise) {
             return refreshPromise;
         }
 
-        refreshPromise = performRefresh();
+        refreshPromise = performRefresh(deviceKey);
 
         try {
             return await refreshPromise;
@@ -51,11 +51,11 @@ export const AuthService = {
         }
     },
 
-    async ensureValidToken(): Promise<string | null> {
+    async ensureValidToken(deviceKey?: string): Promise<string | null> {
         const now = Date.now();
 
         if (!accessToken || now >= accessTokenExpiresAt - 5 * 60 * 1000) {
-            const result = await this.refresh();
+            const result = await this.refresh(deviceKey);
             return result?.accessToken ?? null;
         }
 
@@ -83,10 +83,13 @@ export const AuthService = {
     }
 };
 
-async function performRefresh(): Promise<{ accessToken: string; expiresIn: number } | null> {
+async function performRefresh(deviceKey?: string): Promise<{ accessToken: string; expiresIn: number } | null> {
     const response = await fetch(`${API_URL}/api/auth/refresh`, {
         method: "POST",
-        credentials: "include"
+        credentials: "include",
+        body: JSON.stringify({
+            device_key: deviceKey
+        })
     });
 
     console.log("Refresh status:", response.status);
