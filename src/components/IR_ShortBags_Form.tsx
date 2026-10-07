@@ -304,6 +304,15 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       // OPERATIONS
       if (!act.trim()) return { valid: false, msg: "Operation action is required." };
 
+      // ATTACHMENTS REQUIREMENT CHECK
+      if (!att || att.length === 0 && act != 'FOR CLEANING') {
+        return {
+          valid: false,
+          msg: "At least one evidence/image attachment is required to submit this report."
+        };
+      }
+
+
       if (["Coor"].includes(pos) && (!att || att.length === 0) && sb < -5.0 && act == 'PROCEED TO NEXT TRIP') {
         return { valid: false, msg: "Short bags is greater than 5, You must append at least one asset picture file as documentation evidence." };
       }
@@ -961,6 +970,10 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       // Check for attachments
       const hasAttachments = Boolean(formData.attachedImages && formData.attachedImages.length > 0);
 
+      if (opsAction === 'FOR CLEANING') {
+        return 'Closed';
+      }
+
       // 1. OPERATION WATERFALL RULE
       if (opsAction === 'PROCEED TO NEXT TRIP' && discrepancy < 0 && discrepancy > -5.0) {
         return 'Closed';
@@ -968,6 +981,11 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
       // 2. SUPERVISOR WATERFALL RULE
       if (opsAction === 'PROCEED TO NEXT TRIP' && hasAttachments && supAction === 'APPROVED') {
+        return 'Closed';
+      }
+
+      // Coor wrong discrepancy
+      if (opsAction === 'NO REPORTED SB' && hasAttachments && supAction === 'APPROVED') {
         return 'Closed';
       }
 
@@ -1466,7 +1484,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                           <option value="" disabled>-- Select Action --</option>
                           {getSectionActionOptions('Operations').map(option => {
                             // Disabling logic: If ShortBags is 0, only enable 'FOR CLEANING'; otherwise, use option.hide
-                            const isOptionDisabled = formData.ShortBags === 0
+                            const isOptionDisabled = formData.ShortBags === 0 && formData.ActualShortBags === 0
                               ? option.value !== 'FOR CLEANING'
                               : option.hide;
 

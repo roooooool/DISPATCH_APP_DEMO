@@ -71,4 +71,5 @@ export interface DMS_CEM {
   ServedDate?: string;
   CIFME_OE?: string;
   CIFME_DESTINATION?: string;
+  ServedBy?: string;
 }

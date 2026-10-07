@@ -652,6 +652,7 @@ const OrderManagement: React.FC = () => {
         return ['Coor', 'Supervisor'].includes(user?.Position || '') ? `and ${enc(col)} eq '${user?.BusinessUnit}'` : ''
     };
 
+    const [isTripLoading, setIsTripLoading] = useState(false);
     const fetchTrips = useCallback(async (nocd: boolean = false) => {
         if (!selectedRange) return;
         if (!nocd && trips.length > 0) null; //if (!canFetch(FETCH_LOADING_KEYS.trips)) return;
@@ -663,6 +664,7 @@ const OrderManagement: React.FC = () => {
         const dateFilter = `OEDateAsInt2 ge ${fromInt} and OEDateAsInt2 le ${toInt} and TripProgress ne 'PLD Done' ${buFilter('Buisness Unit')}`;
         //const dateFilter2 = `OEDateOffset ge datetime'2026-09-01T10:34:29'`
 
+        setIsTripLoading(true);
         setLoadingFor(FETCH_LOADING_KEYS.trips, true);
         try {
             console.log('fetching trips: ')
@@ -689,6 +691,7 @@ const OrderManagement: React.FC = () => {
             console.error("Fetch Error:", err);
         } finally {
             setLoadingFor(FETCH_LOADING_KEYS.trips, false);
+            setIsTripLoading(false);
         }
     }, [selectedRange]); // ONLY depend on the range
 
@@ -948,7 +951,7 @@ const OrderManagement: React.FC = () => {
             const result = await getDriverHelperList(['Coor', 'Supervisor'].includes(user?.Position || '') ? user?.BusinessUnit : undefined);
             setDriverHelperList(result);
 
-            // console.log('dh: ', result.find((item) => item.FullName == 'Baria, Joshua Ordanza'));
+            console.log('dh: ', result.find((item) => item.FullName == 'Baria, Joshua Ordanza'));
 
 
 
@@ -1925,7 +1928,7 @@ const OrderManagement: React.FC = () => {
                             config={liveTripsTableConfig as ColumnConfig[]}
                             storageKey={`order_page_live_trips${user?.id}`}
                             searchCol={LIVE_DMS_TABLE_CONFIG.searchable_cols as string[]}
-                            isLoading={loadingList[FETCH_LOADING_KEYS.trips] || false}
+                            isLoading={isTripLoading /*loadingList[FETCH_LOADING_KEYS.trips] || false*/}
                             showRowCount={50}
                             onRefresh={(signal) => signal && fetchTrips()}
                             overflowY={true}

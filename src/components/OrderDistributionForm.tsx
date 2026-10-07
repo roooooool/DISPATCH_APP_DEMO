@@ -1160,6 +1160,25 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       });
     };
 
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        // If click occurs outside the ref element, close the dropdown
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+          setMoreOptionsOpen(false);
+        }
+      };
+
+      if (isMoreOptionsOpen) {
+        document.addEventListener('mousedown', handleClickOutside);
+      }
+
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, [isMoreOptionsOpen]);
+
 
 
     type InputGroupState = {
@@ -1837,6 +1856,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             if (progress_next === 'Done' && !formData.Completed_x0020_Date) {
               updatedData.Completed_x0020_Date = new Date().toISOString(); // Set completed date to now if progressing to Done and completed date is not already set
               updatedData.ServedDate = new Date(servedDate).toISOString();
+              updatedData.ServedBy = editingUser?.FullName || "";
             }
 
 
@@ -1949,10 +1969,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
           if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT) {
             setIrFormVisible(false);
-            handleTripCreateIR(formData);
+            handleTripCreateIR(formData, 'COOR');
           } else if ((progress_next === 'Done' && updatedData.Completed_x0020_Date) && (actualDiscrepancy < SHORT_BAGS_LIMIT || updatedData.IRID)) {
             setIrFormVisible(false);
-            handleTripCreateIR(formData);
+            handleTripCreateIR(formData, 'ODM');
           }
 
 
@@ -2382,12 +2402,41 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       final?: boolean;
       status: 'Closed' | 'Open';
     } | null>(null);
-    const handleTripCreateIR = async (currentFormData: LiveDMSView_CEM) => {
+    const handleTripCreateIR = async (currentFormData: LiveDMSView_CEM, isVerifying?: 'COOR' | 'ODM' | 'MANUAL') => {
       if (incidentFormRef.current) {
         try {
           console.log("Pre-Creating IR...");
           setIsCreatingIR(true);
           setIrFormVisible(false);
+
+          // const select = [
+          //   "ActionStatus",
+          //   "CreatedDateTime",
+          //   "Description",
+          //   "EmployeeBU",
+          //   "EmployeeBUHead",
+          //   "EmployeeID",
+          //   "EmployeeName",
+          //   "EmployeePosition",
+          //   "EmployeeTractor",
+          //   "EmployeeTrailer",
+          //   "IRID",
+          //   "IRStatus",
+          //   "IncidentDateAsInt",
+          //   "IncidentID",
+          //   "IncidentType",
+          //   "ModifiedBy",
+          //   "ModifiedDateTime",
+          //   "OE_Reference",
+          //   "Remarks",
+          //   "ReportedBy",
+          //   "ReporterPosition",
+          //   "Resolution",
+          //   "ResolvedBy",
+          //   "ResolvedDate",
+          //   "ResolvedDateAsInt",
+          //   "flexValue"
+          // ];
 
           //check if IR already exist on this OE first
           const exisistingIR = await ewulFetchAll<any>(
@@ -2396,6 +2445,8 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             1,
             'IncidentID'
           );
+
+          console.log('exisistingIR: ', exisistingIR);
 
           let raw_data = null
 
@@ -2423,8 +2474,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             flexValue: (actualDiscrepancy || discrepancy).toString(),
           } as OP_IncidentReports
 
-          if (discrepancy > -5 && discrepancy < 0) {
+          console.log('creating IR progress: ', prog_next, 'ver:? ', prog_verified, ' actdis?: ', actualDiscrepancy, ' disc?: ', discrepancy, ' isVerifying: ', isVerifying, 'data: ', data);
+
+          if ((discrepancy > -5 && discrepancy < 0) && isVerifying == 'COOR') {
             // Safe JSON parse fallback
+
+
             const parsedJSON = JSON.parse(raw_data?.reportJSON || '{}');
 
             // Properly merge actions into the parsed JSON payload
@@ -2440,12 +2495,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 },
               },
             });
+
+            console.log('auto closed: ', data.reportJSON);
+
           }
 
           // WHEN VERIFIED
-          if (actualDiscrepancy < 0) {
+          if ((actualDiscrepancy < 0) && isVerifying == 'ODM') {
             // Safe JSON parse fallback
-            const parsedJSON = JSON.parse(data?.reportJSON || '{}');
+            const parsedJSON = JSON.parse(raw_data?.reportJSON || '{}');
 
             data.reportJSON = JSON.stringify({
               ...parsedJSON,
@@ -2453,18 +2511,50 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               ActualQtyWithdrawn: currentFormData.QTYWithdrawn_Actual,
               ActualShortBags: actualDiscrepancy,
               VerifiedBy: editingUser?.FullName || 'Unknown User',
+              ServedBy: currentFormData.ServedBy || '',
 
               // Spread actions conditionally only if discrepancy < 0
-              ...(discrepancy < 0 && {
-                actions: {
-                  ...parsedJSON.actions,
-                  operations: {
-                    ...parsedJSON.actions?.operations,
-                    action: 'NO REPORTED SB',
-                    date: new Date().toISOString().slice(0, 10),
-                  },
+
+              actions: {
+                ...parsedJSON.actions,
+                operations: {
+                  ...parsedJSON.actions?.operations,
+                  name: currentFormData.ServedBy || '',
+                  action: 'NO REPORTED SB',
+                  date: new Date().toISOString().slice(0, 10),
                 },
-              }),
+              },
+
+            });
+          }
+
+          console.log('Created IR:  Verifying: ', isVerifying);
+
+          // FOR CLEANING
+          if ((actualDiscrepancy === 0 && discrepancy === 0) && isVerifying == 'MANUAL') {
+            // Safe JSON parse fallback
+            const parsedJSON = JSON.parse(raw_data?.reportJSON || '{}');
+
+            data.reportJSON = JSON.stringify({
+              ...parsedJSON,
+              ActualQtyDelivered: currentFormData.QTYDelivered_Actual,
+              ActualQtyWithdrawn: currentFormData.QTYWithdrawn_Actual,
+              ActualShortBags: actualDiscrepancy,
+              VerifiedBy: editingUser?.FullName || 'Unknown User',
+              ServedBy: currentFormData.ServedBy || '',
+
+              // Spread actions conditionally only if discrepancy < 0
+
+              actions: {
+                ...parsedJSON.actions,
+                operations: {
+                  ...parsedJSON.actions?.operations,
+                  name: editingUser?.FullName || '',
+                  action: 'FOR CLEANING',
+                  date: new Date().toISOString().slice(0, 10),
+                },
+              },
+
             });
           }
 
@@ -2473,7 +2563,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-          // console.log('Created IR: ', JSON.parse(data.reportJSON || ''));
+          console.log('Created IR: ', JSON.parse(data.reportJSON || ''));
 
           setCreatedIR(data);
 
@@ -2738,7 +2828,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       try {
         const result = await ewulExecute('DISPATCH_APP_DMS', 'GetEmployeeServedCount', {
           EmployeeNames: names.join('|'),
-          TargetDate: new Date(date).toDateString(),
+          TargetDate: new Date(date).toISOString().split('T')[0],
         } as any);
 
         const table = result as any[];
@@ -3303,7 +3393,12 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     }
                   </button>
                   {isMoreOptionsOpen && (
-                    <div className="more-options-dropdown">
+                    <div
+                      ref={dropdownRef}
+                      className="more-options-dropdown"
+                      /* Automatically closes dropdown on option selection */
+                      onClick={() => setMoreOptionsOpen(false)}
+                    >
                       <a href="#" className={(!formData.Vehicle || formData.TripProgress === 'New Trip' || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.Vehicle || isReadOnly || formData.TripProgress === 'New Trip') return; onShowFuelRequest?.(formData); setMoreOptionsOpen(false); }}><Fuel size={16} /> Fuel Request {!canChangeTrip && !fuelFetching && <span className="unsaved-indicator">!</span>}{fuelFetching && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}</a>
                       <a href="#" className={(!formData.Latlong) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); setMoreOptionsOpen(false); }}><MapPin size={16} /> Check GPS</a>
                       <a href="#" className={(!formData.tripID || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.tripID || isReadOnly) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
@@ -3339,7 +3434,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         onClick={(e) => {
                           e.preventDefault();
                           if (!formData.OE || isReadOnly || /*((actualDiscrepancy ? actualDiscrepancy : discrepancy) >= SHORT_BAGS_LIMIT) ||*/ (formData.TripProgress !== 'Done') || isCreatingIR || isReadOnly) return;
-                          handleTripCreateIR(formData);
+                          handleTripCreateIR(formData, (discrepancy === 0 && actualDiscrepancy === 0) ? 'MANUAL' : (prog_next === 'Done' && !!formData.Completed_x0020_Date) ? 'ODM' : 'COOR');
                           // setIsIncidentModalOpen(false);
                           // setShowIncidentPrompt(true);
                         }}>
@@ -4564,6 +4659,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               onClose={() => { setIsIncidentModalOpen(false); setShowIncidentPrompt(false); }}
               width={'38%'}
               height={'auto'}
+              preventClickOutside={true}
             >
               <div className="incident-report-prompt-modal">
                 <h3>
@@ -4632,6 +4728,87 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       </p>
                     </div>
                   )}
+
+                  {/* Parse & Display reportJSON Details + Nested Actions */}
+                  {(() => {
+                    let parsedData: any = null;
+                    if (createdIR?.reportJSON) {
+                      try {
+                        parsedData = typeof createdIR.reportJSON === 'string'
+                          ? JSON.parse(createdIR.reportJSON)
+                          : createdIR.reportJSON;
+                      } catch (err) {
+                        console.error('Failed to parse reportJSON:', err);
+                      }
+                    }
+
+                    if (!parsedData) return null;
+
+                    // Extract actions array safely from actions.operations or actions array
+                    let actionList: any[] = [];
+                    if (parsedData.actions) {
+                      if (Array.isArray(parsedData.actions.operations)) {
+                        actionList = parsedData.actions.operations;
+                      } else if (parsedData.actions.operations && typeof parsedData.actions.operations === 'object') {
+                        actionList = [parsedData.actions.operations];
+                      } else if (Array.isArray(parsedData.actions)) {
+                        actionList = parsedData.actions;
+                      }
+                    }
+
+                    return (
+                      <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '8px', marginTop: '4px' }}>
+
+
+                        {/* Actions History List */}
+                        {actionList.length > 0 && (
+                          <>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#000080' }}>
+                              Actions:
+                            </span>
+                            <div
+                              style={{
+                                maxHeight: '120px',
+                                overflowY: 'auto',
+                                marginTop: '6px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '6px'
+                              }}
+                            >
+                              {actionList.map((act: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  style={{
+                                    fontSize: '0.8rem',
+                                    padding: '6px 8px',
+                                    backgroundColor: '#ffffff',
+                                    borderLeft: '3px solid #3a4efc',
+                                    borderRadius: '4px',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                    <strong style={{ color: '#000080' }}>
+                                      {act.action || act.Action || 'Action Recorded'}
+                                    </strong>
+                                    <span style={{ color: '#64748b', fontSize: '0.75rem' }}>
+                                      {act.date || act.timestamp || act.Timestamp || ''}
+                                    </span>
+                                  </div>
+                                  {(act.name || act.user || act.By) && (
+                                    <div style={{ color: '#64748b', fontSize: '0.72rem', fontStyle: 'italic' }}>
+                                      By: {act.name || act.user || act.By}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {validationIR?.status === 'Closed' && (
@@ -4641,19 +4818,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 )}
 
                 <div className="incident-report-prompt-modal-actions">
-                  {validationIR?.status !== 'Closed' && (
-                    <button
-                      className="btn-later"
-                      onClick={() => {
-                        setIsIncidentModalOpen(false);
-                        setShowIncidentPrompt(false);
-                        handleForceDiscardIR();
-                        setIrFormVisible(false);
-                      }}
-                    >
-                      {`Complete & Close`}
-                    </button>
-                  )}
                   <button
                     className="btn-create-now"
                     onClick={() => {

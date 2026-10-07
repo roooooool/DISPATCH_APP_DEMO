@@ -7,11 +7,19 @@ import {
     IR_ACTION_OPTIONS
 } from '../truth.config';
 
+import {
+
+    //@ts-ignore
+    ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
+} from '../utils/Ewul_GSDC_Utils';
+
 import '../components/comp_css/OrderDistributionForm.css'; // Reusing for container styles
 
 //power apps
+//@ts-ignore
 import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
 import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
+//@ts-ignore
 import { GenerateIRIDService } from '../generated/services/GenerateIRIDService';
 
 //utils
@@ -107,16 +115,16 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
                     try {
                         console.log("Submitting incident report");
 
-                        const resIRID = await GenerateIRIDService.GenerateIRID({
+                        const resIRID = await ewulExecute('DISPATCH_APP_DMS', 'GenerateIRID', {
                             IncidentType: submittedData.IncidentType
                         } as any);
 
-                        const table1 = resIRID.data?.ResultSets?.Table1 as any[] | undefined;
+                        const table1 = resIRID as any[] | undefined;
                         if (!table1 || table1.length <= 0) {
                             throw new Error("Failed to generate ID: ");
                         }
 
-                        result = await OP_IncidentReportsService.create({
+                        result = await ewulCreate('DISPATCH_APP_DMS', 'OP_IncidentReports', {
                             ...submittedData,
                             IRID: table1[0].NewIRID || 'NA',
                             reportJSON: JSON.stringify(preFill)
@@ -170,19 +178,19 @@ const IncidentReportForm = forwardRef<IncidentFormHandle, IncidentReportFormProp
             console.log("2")
 
             // 1. Await the ID Generator Service
-            const resIRID = await GenerateIRIDService.GenerateIRID({
+            const resIRID = await ewulExecute('DISPATCH_APP_DMS', 'GenerateIRID', {
                 IncidentType: submittedData.IncidentType
             } as any);
 
             console.log("1")
 
-            const table1 = resIRID.data?.ResultSets?.Table1 as any[] | undefined;
+            const table1 = resIRID as any[] | undefined;
             if (!table1 || table1.length <= 0) {
                 throw new Error("Failed to generate ID: ");
             }
             console.log("prefill: ", preFill)
             // 2. Await the Creation Service
-            const result = await OP_IncidentReportsService.create({
+            const result = await ewulCreate('DISPATCH_APP_DMS', 'OP_IncidentReports', {
                 ...submittedData,
                 IRID: table1[0].NewIRID || 'NA',
                 reportJSON: JSON.stringify(preFill)

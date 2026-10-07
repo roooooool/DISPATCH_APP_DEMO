@@ -4,7 +4,6 @@
  */
 
 export interface LiveDMSView_CEM {
-  RowNum?: number;
   ID: number;
   Ordered_x0020_Date?: string;
   Needed_x0020_Date?: string;
@@ -100,4 +99,5 @@ export interface LiveDMSView_CEM {
   CIFME_DESTINATION?: string;
   IRID?: string;
   IRStatus?: string;
+  ServedBy?: string;
 }

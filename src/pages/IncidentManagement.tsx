@@ -109,11 +109,13 @@ const IncidentManagement: React.FC = () => {
         }
     }, [selectedDateRange, user?.id]);
 
+    const [isReportLoading, setIsReportLoading] = useState(false);
     const fetchIncidentReports = useCallback(async () => {
         if (!selectedDateRange?.from || !selectedDateRange?.to) {
             console.log("No valid date range selected for incident reports fetch, skipping.");
             return;
         }
+        setIsReportLoading(true);
         setLoadingFor(FETCH_LOADING_KEYS.incidentReports, true);
         if (!canFetch(FETCH_LOADING_KEYS.incidentReports, 2000)) { setLoadingFor(FETCH_LOADING_KEYS.incidentReports, false); return; }
 
@@ -179,6 +181,7 @@ const IncidentManagement: React.FC = () => {
             console.error("Fetch Error fetching incident reports:", err);
             setIncidentReports([]);
         } finally {
+            setIsReportLoading(false);
             setLoadingFor(FETCH_LOADING_KEYS.incidentReports, false);
             // console.log("Fetch incident reports completed."); // Removed count as state update is async
         }
@@ -308,7 +311,7 @@ const IncidentManagement: React.FC = () => {
                     config={INCIDENT_TABLE_MODULE.table_config}
                     rowStyle={INCIDENT_TABLE_MODULE.rowStyle}
                     onRowClick={handleRowClick}
-                    isLoading={isAnythingLoading()}
+                    isLoading={isReportLoading/*isAnythingLoading()*/}
                     loadingNoPreventAction={true}
                     theme="var(--color-primary)"
                     showNumbering={true}

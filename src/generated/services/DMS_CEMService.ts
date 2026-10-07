@@ -25,7 +25,7 @@ export class DMS_CEMService {
   public static async update(id: string, changedFields: Partial<Omit<DMS_CEM, 'ID'>>): Promise<IOperationResult<DMS_CEM>> {
     const result = await DMS_CEMService.client.updateRecordAsync<Partial<Omit<DMS_CEM, 'ID'>>, DMS_CEM>(
       DMS_CEMService.dataSourceName,
-      id.toString(),
+      id,
       changedFields
     );
     return result;
@@ -34,13 +34,13 @@ export class DMS_CEMService {
   public static async delete(id: string): Promise<void> {
     await DMS_CEMService.client.deleteRecordAsync(
       DMS_CEMService.dataSourceName,
-      id.toString());
+      id);
   }
 
   public static async get(id: string, options?: IGetOptions): Promise<IOperationResult<DMS_CEM>> {
     const result = await DMS_CEMService.client.retrieveRecordAsync<DMS_CEM>(
       DMS_CEMService.dataSourceName,
-      id.toString(),
+      id,
       options
     );
     return result;
