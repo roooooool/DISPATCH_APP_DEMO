@@ -429,6 +429,25 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         });
     };
 
+    //@ts-ignore
+    const checkIfSpExists = async (attendanceRecord: AttendanceRecord) => {
+        const filter = `EmployeeName eq '${attendanceRecord.EmployeeName}' and Date eq ${attendanceRecord.AttendanceDate.split('T')[0]}`;
+        console.log('Filter used:', filter);
+        const record = await ewulSharePointAPI(
+            'Communication site',
+            'GSDC_Attendance',
+            'query',
+            {
+                filter: filter,
+                top: 1,
+                orderBy: 'Date desc, ID desc'
+            }
+        )
+
+        console.log('Check if SP exists:', record)
+        return record[0]
+    };
+
     const handleConfirmChanges = async () => {
         const pendingArray = Object.values(pendingChanges);
         const processedArray = pendingArray.map((rec) => ({
@@ -453,8 +472,18 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         console.log('To be created in Sharepoint:', createRecords);
         console.log('To be deleted in Sharepoint:', deleteRecords);
 
+        // const testSpRecords = (
+        //     await Promise.all(
+        //         activeRecords.map(async (record) => await checkIfSpExists(record))
+        //     )
+        // ).filter(Boolean);
+
+        // console.log('Returned SharePoint records:', testSpRecords);
+
         const totalCount = pendingArray.length;
         const summaryLabel = `${totalCount} item${totalCount > 1 ? 's' : ''}`;
+
+        // return;
 
         addTask({
             id: `attendanceapproval-${Date.now()}`,

@@ -679,7 +679,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-      if (!data.QTYWithdrawn || data.QTYWithdrawn < 1) {
+      if ((!data.QTYWithdrawn || data.QTYWithdrawn < 1) && data._tripGroup !== 'Mobilization') {
         return { isValid: false, message: 'QTY Withdrawn must be greater than 0.' };
       }
 
@@ -726,7 +726,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       if (!destinationValidation.isValid) return destinationValidation;
 
 
-      if (!data.QTYDelivered || data.QTYDelivered < 1) {
+      if ((!data.QTYDelivered || data.QTYDelivered < 1) && data._tripGroup !== 'Mobilization') {
         return { isValid: false, message: 'QTY Delivered must be greater than 0.' };
       }
 
@@ -1123,13 +1123,15 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           irid: item.TractorIRID,
           conflict: 'The selected Truck has an open Incident Report.'
         });
+        return;
       }
 
-      if (item.TrailerIRID != null) {
+      if (item.IRID != null) {
         setProcessTruckIR({
-          irid: item.TrailerIRID,
+          irid: item.IRID,
           conflict: 'The selected Trailer has an open Incident Report.'
         });
+        return;
       }
 
       if (conflicts.length > 0) {
@@ -1967,10 +1969,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-          if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT) {
+          if (progress_next === 'Done' && discrepancy < SHORT_BAGS_LIMIT && updatedData._tripGroup !== 'Mobilization') {
             setIrFormVisible(false);
             handleTripCreateIR(formData, 'COOR');
-          } else if ((progress_next === 'Done' && updatedData.Completed_x0020_Date) && (actualDiscrepancy < SHORT_BAGS_LIMIT || updatedData.IRID)) {
+          } else if ((progress_next === 'Done' && updatedData.Completed_x0020_Date) && (actualDiscrepancy < SHORT_BAGS_LIMIT || updatedData.IRID) && updatedData._tripGroup !== 'Mobilization') {
             setIrFormVisible(false);
             handleTripCreateIR(formData, 'ODM');
           }
@@ -3291,33 +3293,59 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       console.log("Fetching incident reports with id:", irid);
 
 
-      const options = {
-        filter: `IRID eq '${irid}'`,
-        orderBy: ["IncidentDateAsInt desc"],
-      };
+      if (incidentFormRef.current) {
+        try {
+          console.log("Pre-Creating IR...");
+          setIsCreatingIR(true);
+          setIrFormVisible(false);
 
 
-      try {
-        const result = await ewulFetchAll<any>(
-          OP_IncidentReportsService,
-          options,
-          1
-        );
 
-        if (result && result.length > 0) {
-          setCreatedIR(result[0]);
+          //check if IR already exist on this OE first
+          const exisistingIR = await ewulFetchAll<any>(
+            OP_IncidentReportsService,
+            { filter: `IRID eq '${irid}'` },
+            1,
+            'IncidentID'
+          );
+
+          console.log('exisistingIR: ', exisistingIR);
+
+          let raw_data = null
+
+          if (exisistingIR?.length > 0) {
+            raw_data = exisistingIR[0];
+            setIsExistingIR(true);
+          } else {
+            //throw an error
+          }
+
+
+
+          let data = raw_data as OP_IncidentReports
+
+
+
+
+
+
+          console.log('Created IR: ', JSON.parse(data.reportJSON || ''));
+
+          setCreatedIR(data);
+
+
+          setShowIncidentPrompt(true);
           setIsIncidentModalOpen(true);
-        } else {
-          setCreatedIR(null);
+          setIsCreatingIR(false);
+
+
+        } catch (e) {
           setIsIncidentModalOpen(false);
+          setCreatedIR(null);
+          console.error(e);
+        } finally {
+          setIsCreatingIR(false); // Turn off loading spinner regardless of success/fail
         }
-      } catch (err) {
-        console.error("Fetch Error fetching incident reports:", err);
-        setCreatedIR(null);
-        setIsIncidentModalOpen(false);
-      } finally {
-        setIsCreatingIR(false);
-        console.log("Fetch incident reports completed."); // Removed count as state update is async
       }
     };
 
@@ -3847,7 +3875,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <div className="input-group">
                       <label>QTY Withdrawn *</label>
                       <div className="gradient-input-wrapper">
-                        <input disabled={disabledSrcGrp} type="number" value={formData.QTYWithdrawn || 0} onChange={e => handleFieldChange('QTYWithdrawn', Number(e.target.value))} />
+                        <input disabled={disabledSrcGrp || formData._tripGroup === 'Mobilization'} type="number" value={formData.QTYWithdrawn || 0} onChange={e => handleFieldChange('QTYWithdrawn', Number(e.target.value))} />
                       </div>
                     </div>
                     <div className="input-group"></div>
@@ -3953,7 +3981,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     <div className="input-group">
                       <label>QTY Delivered *</label>
                       <div className="gradient-input-wrapper">
-                        <input disabled={disabledDstGrp} type="number" value={formData.QTYDelivered || 0} onChange={e => handleFieldChange('QTYDelivered', Number(e.target.value))} />
+                        <input disabled={disabledDstGrp || formData._tripGroup === 'Mobilization'} type="number" value={formData.QTYDelivered || 0} onChange={e => handleFieldChange('QTYDelivered', Number(e.target.value))} />
                       </div>
                     </div>
                     <div className="input-group">

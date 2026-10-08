@@ -857,7 +857,8 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
         Month: month,
         BU: BU || 'SBUO-1A,SBUO-1B',
         CutoffStartDay: 5,
-        CutoffEndDay: 4
+        CutoffEndDay: 4,
+        $top: 2000
       } as any);
 
       const rawData = ((res || []) as any[]).map(row => ({
@@ -867,7 +868,7 @@ const AttendanceSheet = React.forwardRef<AttendanceSheetRef, AttendanceSheetProp
           : null
       }));
 
-      console.log('raw att data: ', rawData);
+      console.log('raw att data: ', rawData.filter((rec: any) => rec.EmployeeName === 'Abadilla, Nelson Baliscao'));
 
 
 

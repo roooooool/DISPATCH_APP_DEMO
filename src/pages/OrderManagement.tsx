@@ -738,7 +738,7 @@ const OrderManagement: React.FC = () => {
                     return {
                         value: item.Head ?? '',
                         label: item.Head_Full ?? '',
-                        subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.PairedTrailer ?? 'NO BO'} | ${item.OE ?? 'NO TRIP'} |  ${item.TractorJrNumber ? item.TractorJrNumber + ': ' + item.Tractor_JRStatus : 'NO UR '} | ${item.TractorIRID ? item.TractorIRID : 'NO IR'}`,
+                        subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.PairedTrailer ?? 'NO BO'} | ${item.OE ?? 'NO TRIP'} |  ${item.TractorJrNumber ? item.TractorJrNumber + ': ' + item.Tractor_JRStatus : 'NO UR '} | ${item.IRID ? item.IRID : 'NO TRAILER IR'}`,
                         type: 'multi',
                         record: item
                     };
@@ -752,7 +752,7 @@ const OrderManagement: React.FC = () => {
                     return {
                         value: item.PairedTrailer ?? '',
                         label: item.Trailer_Full ?? '',
-                        subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.Head ?? 'NO HEAD'} | ${item.OE ?? 'NO TRIP'} |  ${item.TrailerJrNumber ? item.TrailerJrNumber + ': ' + item.Trailer_JRStatus : 'NO UR '} | ${item.TrailerIRID ? item.TrailerIRID : 'NO IR'}`,
+                        subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.Head ?? 'NO HEAD'} | ${item.OE ?? 'NO TRIP'} |  ${item.TrailerJrNumber ? item.TrailerJrNumber + ': ' + item.Trailer_JRStatus : 'NO UR '} | ${item.IRID ? item.IRID : 'NO IR'}`,
                         type: 'multi',
                         record: item // Store the original record for later use when an option is selected
                     }
