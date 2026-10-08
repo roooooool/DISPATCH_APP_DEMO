@@ -36,6 +36,7 @@ interface IdleProviderProps {
 }
 
 export function IdleProvider({ children, enabled = true, }: IdleProviderProps) {
+    const lastActivityRef = useRef<number>(Date.now());
     const [userIdle, setUserIdle] = useState(false);
     const [tabVisible, setTabVisible] = useState(
         document.visibilityState === "visible"
@@ -57,7 +58,9 @@ export function IdleProvider({ children, enabled = true, }: IdleProviderProps) {
             return;
         }
 
-        setLastActivity(Date.now());
+        const now = Date.now();
+        setLastActivity(now);
+        lastActivityRef.current = now;
 
         if (idleTimerRef.current) {
             clearTimeout(idleTimerRef.current);
@@ -100,11 +103,23 @@ export function IdleProvider({ children, enabled = true, }: IdleProviderProps) {
 
         const handleVisibilityChange = () => {
             const visible = document.visibilityState === "visible";
-
             setTabVisible(visible);
 
             if (visible && !userIdle) {
-                resetIdleTimer();
+                const elapsed = Date.now() - lastActivityRef.current;
+
+                if (elapsed >= IDLE_TIMEOUT) {
+                    // Inactive for too long while away -> set to idle
+                    setUserIdle(true);
+                } else {
+                    // Inactive for less than timeout -> adjust remaining time on the timer
+                    if (idleTimerRef.current) {
+                        clearTimeout(idleTimerRef.current);
+                    }
+                    idleTimerRef.current = setTimeout(() => {
+                        setUserIdle(true);
+                    }, IDLE_TIMEOUT - elapsed);
+                }
             }
         };
 

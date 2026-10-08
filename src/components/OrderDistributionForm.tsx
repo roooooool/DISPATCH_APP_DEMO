@@ -2411,34 +2411,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           setIsCreatingIR(true);
           setIrFormVisible(false);
 
-          // const select = [
-          //   "ActionStatus",
-          //   "CreatedDateTime",
-          //   "Description",
-          //   "EmployeeBU",
-          //   "EmployeeBUHead",
-          //   "EmployeeID",
-          //   "EmployeeName",
-          //   "EmployeePosition",
-          //   "EmployeeTractor",
-          //   "EmployeeTrailer",
-          //   "IRID",
-          //   "IRStatus",
-          //   "IncidentDateAsInt",
-          //   "IncidentID",
-          //   "IncidentType",
-          //   "ModifiedBy",
-          //   "ModifiedDateTime",
-          //   "OE_Reference",
-          //   "Remarks",
-          //   "ReportedBy",
-          //   "ReporterPosition",
-          //   "Resolution",
-          //   "ResolvedBy",
-          //   "ResolvedDate",
-          //   "ResolvedDateAsInt",
-          //   "flexValue"
-          // ];
 
           //check if IR already exist on this OE first
           const exisistingIR = await ewulFetchAll<any>(
@@ -2476,13 +2448,26 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             flexValue: (actualDiscrepancy || discrepancy).toString(),
           } as OP_IncidentReports
 
-          console.log('creating IR progress: ', prog_next, 'ver:? ', prog_verified, ' actdis?: ', actualDiscrepancy, ' disc?: ', discrepancy, ' isVerifying: ', isVerifying, 'data: ', data);
+          // fill in missing details
+          data.reportJSON = JSON.stringify({
+            ...JSON.parse(raw_data?.reportJSON || '{}'),
+            Customer: currentFormData.Customer,
+            Source: currentFormData.Source,
+            Destination: currentFormData.Destination,
+            CementType: currentFormData.cementType,
+            TripGroup: currentFormData._tripGroup,
+          });
+
+          const parsedJSON = JSON.parse(data?.reportJSON || '{}');
+
+
+          // console.log('current IR: ', currentFormData);
+
+          // console.log('creating IR progress: ', prog_next, 'ver:? ', prog_verified, ' actdis?: ', actualDiscrepancy, ' disc?: ', discrepancy, ' isVerifying: ', isVerifying, 'data: ', data);
 
           if ((discrepancy > -5 && discrepancy < 0) && isVerifying == 'COOR') {
             // Safe JSON parse fallback
 
-
-            const parsedJSON = JSON.parse(raw_data?.reportJSON || '{}');
 
             // Properly merge actions into the parsed JSON payload
             data.reportJSON = JSON.stringify({
@@ -2505,7 +2490,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           // WHEN VERIFIED
           if ((actualDiscrepancy < 0) && isVerifying == 'ODM') {
             // Safe JSON parse fallback
-            const parsedJSON = JSON.parse(raw_data?.reportJSON || '{}');
+
 
             data.reportJSON = JSON.stringify({
               ...parsedJSON,
@@ -2535,7 +2520,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           // FOR CLEANING
           if ((actualDiscrepancy === 0 && discrepancy === 0) && isVerifying == 'MANUAL') {
             // Safe JSON parse fallback
-            const parsedJSON = JSON.parse(raw_data?.reportJSON || '{}');
 
             data.reportJSON = JSON.stringify({
               ...parsedJSON,

@@ -431,7 +431,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     //@ts-ignore
     const checkIfSpExists = async (attendanceRecord: AttendanceRecord) => {
-        const filter = `EmployeeName eq '${attendanceRecord.EmployeeName}' and Date eq ${attendanceRecord.AttendanceDate.split('T')[0]}`;
+        const filter = `EmployeeName eq '${attendanceRecord.EmployeeName}' and Date eq ${attendanceRecord.AttendanceDate.split('T')[0]} and OE ${attendanceRecord.OE}`;
         console.log('Filter used:', filter);
         const record = await ewulSharePointAPI(
             'Communication site',
