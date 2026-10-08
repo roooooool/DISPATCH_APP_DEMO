@@ -2461,7 +2461,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           const parsedJSON = JSON.parse(data?.reportJSON || '{}');
 
 
-          // console.log('current IR: ', currentFormData);
+          console.log('current IR: ', data);
 
           // console.log('creating IR progress: ', prog_next, 'ver:? ', prog_verified, ' actdis?: ', actualDiscrepancy, ' disc?: ', discrepancy, ' isVerifying: ', isVerifying, 'data: ', data);
 
