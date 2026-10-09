@@ -270,9 +270,10 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
     // Filter options matching section type OR options without a specific type (accessible to all)
     const getSectionActionOptions = (sectionType: string) => {
-      return IR_ACTION_OPTIONS.filter(
+      const action = IR_ACTION_OPTIONS.filter(
         option => !option.type || option.type.toLowerCase() === sectionType.toLowerCase()
       );
+      return action;
     };
 
     interface errorInterface { valid: boolean, msg: string, final?: boolean };
@@ -1239,6 +1240,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
 
     useEffect(() => {
+      // console.log('selected action: ', formData.actions?.operations?.action || '');
       setError(validateForm(formData));
     }, []);
 

@@ -124,7 +124,7 @@ const IncidentManagement: React.FC = () => {
 
         const fromInt = ISOtoInt(selectedDateRange.from);
         const toInt = ISOtoInt(selectedDateRange.to);
-        const dateFilter = `IncidentDateAsInt ge ${fromInt} and IncidentDateAsInt le ${toInt} and (OE_Reference ne null and OE_Reference ne '' and flexValue ne '0') ${buFilter("EmployeeBU", user)}`;
+        const dateFilter = `IncidentDateAsInt ge ${fromInt} and IncidentDateAsInt le ${toInt} and (OE_Reference ne null and OE_Reference ne '') ${buFilter("EmployeeBU", user)}`;
 
         const select = [
             "ActionStatus",
@@ -217,6 +217,7 @@ const IncidentManagement: React.FC = () => {
         );
 
         if (!result?.length) return;
+
 
 
         setSelectedReport(result[0]);
