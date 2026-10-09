@@ -971,9 +971,9 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       // Check for attachments
       const hasAttachments = Boolean(formData.attachedImages && formData.attachedImages.length > 0);
 
-      if (opsAction === 'FOR CLEANING') {
-        return 'Closed';
-      }
+      // if (opsAction === 'FOR CLEANING') {
+      //   return 'Closed';
+      // }
 
       // 1. OPERATION WATERFALL RULE
       if (opsAction === 'PROCEED TO NEXT TRIP' && discrepancy < 0 && discrepancy > -5.0) {
@@ -991,13 +991,13 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       }
 
       // 3. INSPECTION WATERFALL RULE
-      if (opsAction === 'FOR BULK INSPECTION' && supAction === 'APPROVED' && inspAction === 'CLEARED') {
+      if ((opsAction === 'FOR BULK INSPECTION' || opsAction === 'FOR CLEANING') && supAction === 'APPROVED' && inspAction === 'CLEARED') {
         return 'Closed';
       }
 
       // 4. YARD WATERFALL RULE
       if (
-        opsAction === 'FOR BULK INSPECTION' &&
+        (opsAction === 'FOR BULK INSPECTION' || opsAction === 'FOR CLEANING') &&
         supAction === 'APPROVED' &&
         inspAction === 'FOR RETRIEVAL' &&
         (yardAction === 'FOR WAREHOUSE TRANSFER' || yardAction === 'FOR DISPOSAL')

@@ -472,6 +472,10 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         console.log('To be created in Sharepoint:', createRecords);
         console.log('To be deleted in Sharepoint:', deleteRecords);
 
+        const totalCount = pendingArray.length;
+        const summaryLabel = `${totalCount} item${totalCount > 1 ? 's' : ''}`;
+
+
         // const testSpRecords = (
         //     await Promise.all(
         //         activeRecords.map(async (record) => await checkIfSpExists(record))
@@ -480,8 +484,6 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
         // console.log('Returned SharePoint records:', testSpRecords);
 
-        const totalCount = pendingArray.length;
-        const summaryLabel = `${totalCount} item${totalCount > 1 ? 's' : ''}`;
 
         // return;
 

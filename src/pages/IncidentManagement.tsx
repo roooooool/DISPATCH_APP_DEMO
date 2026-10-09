@@ -27,7 +27,8 @@ import {
 //power apps
 import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
 import { type OP_IncidentReports } from '../generated/models/OP_IncidentReportsModel';
-// import { LiveDMSView_CEM2Service } from '../generated/services/LiveDMSView_CEM2Service';
+import { DMS_CEMService } from '../generated/services/DMS_CEMService';
+import { type DMS_CEM } from '../generated/models/DMS_CEMModel';
 
 // Define a loading key for incident reports
 const FETCH_LOADING_KEYS = {
@@ -201,29 +202,71 @@ const IncidentManagement: React.FC = () => {
 
 
 
-
+    const [loadingRowId, setLoadingRowId] = useState<string | number | null>(null);
     const handleRowClick = async (row: any) => {
+        // 1. Set the loading indicator for the clicked row
+        setLoadingRowId(row.IncidentID);
 
-        const options = {
-            filter: `IncidentID eq ${row.IncidentID}`,
-        };
+        try {
+            const options = {
+                filter: `IncidentID eq ${row.IncidentID}`,
+            };
 
+            const result = await ewulFetchAll<any>(
+                OP_IncidentReportsService,
+                options,
+                1
+            );
 
+            if (!result?.length) return;
 
-        const result = await ewulFetchAll<any>(
-            OP_IncidentReportsService,
-            options,
-            5000
-        );
+            let data = result[0] as OP_IncidentReports;
 
-        if (!result?.length) return;
+            const currentReport = JSON.parse(data?.reportJSON || '{}');
 
+            const isEmpty = (val: any) => val === undefined || val === null || (typeof val === 'string' && val.trim() === '');
 
+            // Check if any required field is missing
+            const requiredKeys = ['Customer', 'Source', 'Destination', 'CementType', 'TripGroup'];
+            const hasMissingData = requiredKeys.some((key) => isEmpty(currentReport[key]));
 
-        setSelectedReport(result[0]);
-        // setIsModalOpen(true);
-        setScrollTo({ search_col: 'IncidentID', key: row.IncidentID, highlight: 'success' });
-        setTimeout(() => formRef.current?.setFormData(row), 50);
+            // Fill up missing data
+            if (hasMissingData && data.OE_Reference) {
+                console.log('Fetching missing OE details for: ', data.OE_Reference);
+
+                const oe_result = await ewulFetchAll<any>(
+                    DMS_CEMService,
+                    {
+                        filter: `OE eq '${data.OE_Reference}'`,
+                        select: ['Customer', 'Source', 'Destination', 'cementType', '_tripGroup']
+                    },
+                    1
+                );
+
+                if (oe_result?.length) {
+                    const oeDetails = oe_result[0] as DMS_CEM;
+                    const updatedReport = {
+                        ...currentReport,
+                        Customer: isEmpty(currentReport.Customer) ? oeDetails.Customer : currentReport.Customer,
+                        Source: isEmpty(currentReport.Source) ? oeDetails.Source : currentReport.Source,
+                        Destination: isEmpty(currentReport.Destination) ? oeDetails.Destination : currentReport.Destination,
+                        CementType: isEmpty(currentReport.CementType) ? oeDetails.cementType : currentReport.CementType,
+                        TripGroup: isEmpty(currentReport.TripGroup) ? oeDetails._tripGroup : currentReport.TripGroup,
+                    };
+                    data.reportJSON = JSON.stringify(updatedReport);
+                }
+            }
+
+            setSelectedReport(data);
+            setScrollTo({ search_col: 'IncidentID', key: row.IncidentID, highlight: 'success' });
+            setTimeout(() => formRef.current?.setFormData(row), 50);
+
+        } catch (error) {
+            console.error("Error opening row report:", error);
+        } finally {
+            // 2. Clear loading indicator once fetching completes or fails
+            setLoadingRowId(null);
+        }
     };
 
     const headerActions = (
@@ -389,6 +432,17 @@ const IncidentManagement: React.FC = () => {
                     })()}
                 </Modal>
             )}
+
+
+            {loadingRowId && (
+                <Modal onClose={() => setLoadingRowId(null)} preventClickOutside={true} height="auto" width="250px" overlayBlur={2} hideX={true}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px' }}>
+                        <RefreshCcw className="animate-spin" size={24} style={{ animation: 'spin 1s linear infinite' }} />
+                        <span>Loading Report...</span>
+                    </div>
+                </Modal>
+            )}
+
         </PageTemplate>
     );
 };
