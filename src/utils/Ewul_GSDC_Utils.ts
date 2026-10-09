@@ -1631,3 +1631,9 @@ export async function getDriverHelperList(BU?: string) {
 
   return driverHelperList;
 }
+
+
+
+export const buFilter = (col: string, user: UserInfo | null) => {
+  return ['Coor', 'Supervisor'].includes(user?.Position || '') ? `and ${encodeColumnName(col)} eq '${user?.BusinessUnit}'` : ''
+};

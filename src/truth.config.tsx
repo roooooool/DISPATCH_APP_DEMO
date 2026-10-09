@@ -1,4 +1,4 @@
-export const APP_VERSION = "3.50.22"; // Update this with each release for better error tracking and user support
+export const APP_VERSION = "3.50.23"; // Update this with each release for better error tracking and user support
 export const mandatoryLogout = "2026-10-07 00:00:05"
 
 //react helper for truths
@@ -1652,6 +1652,7 @@ export const INCIDENT_TABLE_MODULE: TableModuleConfig = {
     //     );
     //   }
     // },
+    { col: "EmployeeBU", alias: "BU", portion: 0.5, filter: { type: "dropdown-multiple", }, },
     { col: "Remarks", alias: "Quick Remarks", portion: 2 },
     { col: "ReportedBy", alias: "Reported By", portion: 1.2, filter: { type: "dropdown-multiple" }, },
     { col: "CreatedDateTime", alias: "Reported Date", portion: 1, calculate: (row: any) => formatDate(row.CreatedDateTime, { mode: "datetime" }) },
