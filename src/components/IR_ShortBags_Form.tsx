@@ -392,7 +392,13 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
         const targetValue = inspectionRetrievalOption ? inspectionRetrievalOption.value : 'FOR RETRIEVAL';
 
-        if (section === 'supervisor' && field === 'action' && value === 'FOR RETRIEVAL') {
+        const opsAction = prev.actions?.operations?.action;
+
+        const autoUpdateInspection =
+          (section === 'supervisor' && field === 'action' && value === 'FOR RETRIEVAL') ||
+          (section === 'supervisor' && field === 'action' && value === 'APPROVED' && opsAction === 'FOR RETRIEVAL');
+
+        if (autoUpdateInspection) {
           console.log('syncing inspec too!', targetValue);
           const currentInspection = prev.actions?.inspection || { name: '', action: '', date: '' };
 
@@ -997,15 +1003,13 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
       // 4. YARD WATERFALL RULE
       if (
-        (opsAction === 'FOR BULK INSPECTION' || opsAction === 'FOR CLEANING') &&
+        (opsAction === 'FOR BULK INSPECTION' || opsAction === 'FOR CLEANING' || opsAction === 'FOR RETRIEVAL') &&
         supAction === 'APPROVED' &&
         inspAction === 'FOR RETRIEVAL' &&
         (yardAction === 'FOR WAREHOUSE TRANSFER' || yardAction === 'FOR DISPOSAL')
       ) {
         return 'Closed';
       }
-
-      if (opsAction == "FOR CLEANING") return 'Closed';
 
       // Default fallback if no conditions match
       return 'Open';

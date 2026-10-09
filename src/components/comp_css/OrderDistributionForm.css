@@ -634,7 +634,7 @@
   /* Needed for positioning the indicator */
 }
 
-.unsaved-indicator {
+.odform-unsaved-indicator {
   position: absolute;
   top: -5px;
   /* Tweak these values to fit your design */
@@ -651,7 +651,7 @@
   font-size: 10px;
   font-weight: bold;
   box-shadow: 0 0 5px red;
-  animation: pulse 1.5s infinite;
+  animation: unsaved_pulse 1.5s infinite;
   z-index: 1;
 }
 
@@ -674,7 +674,7 @@
   z-index: 1;
 }
 
-@keyframes pulse {
+@keyframes unsaved_pulse {
   0% {
     transform: scale(1);
     box-shadow: 0 0 3px rgba(255, 0, 0, 1);

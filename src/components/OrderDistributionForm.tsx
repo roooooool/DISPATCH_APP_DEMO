@@ -3401,7 +3401,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         (((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) && (formData.TripProgress === 'Done')) ||
                         (!canChangeTrip && !fuelFetching)
                       ) && !isMoreOptionsOpen
-                      && <span className="unsaved-indicator">!</span>
+                      && <span className="odform-unsaved-indicator">!</span>
                     }
                   </button>
                   {isMoreOptionsOpen && (
@@ -3411,7 +3411,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       /* Automatically closes dropdown on option selection */
                       onClick={() => setMoreOptionsOpen(false)}
                     >
-                      <a href="#" className={(!formData.Vehicle || formData.TripProgress === 'New Trip' || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.Vehicle || isReadOnly || formData.TripProgress === 'New Trip') return; onShowFuelRequest?.(formData); setMoreOptionsOpen(false); }}><Fuel size={16} /> Fuel Request {!canChangeTrip && !fuelFetching && <span className="unsaved-indicator">!</span>}{fuelFetching && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}</a>
+                      <a href="#" className={(!formData.Vehicle || formData.TripProgress === 'New Trip' || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.Vehicle || isReadOnly || formData.TripProgress === 'New Trip') return; onShowFuelRequest?.(formData); setMoreOptionsOpen(false); }}><Fuel size={16} /> Fuel Request {!canChangeTrip && !fuelFetching && <span className="odform-unsaved-indicator">!</span>}{fuelFetching && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}</a>
                       <a href="#" className={(!formData.Latlong) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); setMoreOptionsOpen(false); }}><MapPin size={16} /> Check GPS</a>
                       <a href="#" className={(!formData.tripID || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.tripID || isReadOnly) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
                       <a href="#" className={(!formData.tripID || !canChangeTrip || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (isReadOnly) { return; } if (!formData.tripID || !canChangeTrip) { handleCannotChangeTrip(); return; } onRequestChangeTrip?.(formData, progress_idx() > 2 ? 'Divert' : 'Change'); setMoreOptionsOpen(false); }}><Replace size={16} /> {`${progress_idx() > 2 ? 'Divert' : 'Change'} Trip`}</a>
@@ -3452,7 +3452,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                         }}>
                         <FileSpreadsheet size={16} />
                         {formData.IRID ? `View IR` : `Create IR`} {isCreatingIR && <span className="order-form-fuelfetch-spinner"> <Loader size={18} /> </span>}
-                        {( /* ((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) &&*/ (formData.TripProgress === 'Done') && (formData.IRStatus != 'Closed')) && <span className="unsaved-indicator">!</span>}
+                        {( /* ((actualDiscrepancy ? actualDiscrepancy : discrepancy) < SHORT_BAGS_LIMIT) &&*/ (formData.TripProgress === 'Done') && (formData.IRStatus != 'Closed')) && <span className="odform-unsaved-indicator">!</span>}
                       </a>
                     </div>
                   )}
@@ -4165,7 +4165,6 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             {(prog_verified || (['Developer', 'IT SUPPORT'].includes(editingUser?.Position || '') && formData.TripProgress === 'Done')) ?
 
               (<button className="btn-cancel" onClick={() => { if (isSubmitting) return; handleTripRevert(); }} disabled={isSubmitting || !['POD', 'DCC', ...SPECIAL_POSITIONS].includes(editingUser?.Position || 'wew')}>
-                {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
                 <Undo2 size={'var(--font-size-vlg)'} />
                 Revert
               </button>) : (null)
@@ -4174,7 +4173,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             {!prog_verified && (
               <>
                 <button className="btn-save" onClick={() => { if (isSubmitting || isReadOnly) return; handleTripSave(); }} disabled={isSubmitting || prog_verified || isReadOnly}>
-                  {hasUnsavedChanges && <span className="unsaved-indicator">!</span>}
+                  {hasUnsavedChanges && <span className="odform-unsaved-indicator">!</span>}
                   <SaveIcon size={'var(--font-size-vlg)'} />
                   Save
                 </button>
