@@ -16,6 +16,7 @@ import './comp_css/EmployeeSummaryModal.css';
 //POWERAPPS
 //@ts-ignore
 import { GSDC_AttendanceService } from '../generated/services/GSDC_AttendanceService';
+import { type GSDC_AttendanceBase } from '../generated/models/GSDC_AttendanceModel';
 //@ts-ignore
 import { UpsertAttendanceLogService } from '../generated/services/UpsertAttendanceLogService';
 //@ts-ignore
@@ -460,7 +461,7 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         );
 
         console.log('Check if SP exists:', record);
-        return record[0];
+        return record[0] as GSDC_AttendanceBase;
     };
 
     const handleConfirmChanges = async () => {
@@ -480,27 +481,46 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
         const deleteRecords = pendingArray.filter((rec) => rec.isDeleted);
         const activeRecords = pendingArray.filter((rec) => !rec.isDeleted);
-        const updateRecords = activeRecords.filter((rec) => rec.spID);
-        const createRecords = activeRecords.filter((rec) => !rec.spID);
+        // const updateRecords = activeRecords.filter((rec) => rec.spID);
+        // const createRecords = activeRecords.filter((rec) => !rec.spID);
+
+
+        // Check each active record in SharePoint
+        const updateRecords: any[] = [];
+        const createRecords: any[] = [];
+
+        await Promise.all(
+            activeRecords.map(async (record) => {
+                const existingSpRecord = await checkIfSpExists(record) as any;
+                const hasClzExisting = Boolean(existingSpRecord?.SD?.includes('CLZ'));
+                const hasClzNew = Boolean(record?.SD?.includes('CLZ'));
+                const notSDConflict = hasClzExisting === hasClzNew;
+
+                if (existingSpRecord && existingSpRecord.ID && notSDConflict) {
+                    // If it exists in SharePoint, assign its ID to spID and send to updateRecords
+                    record.spID = existingSpRecord.ID;
+                    updateRecords.push(record);
+                } else {
+                    // If it doesn't exist, route to createRecords
+                    createRecords.push(record);
+                }
+            })
+        );
+
+
 
         console.log('To be updated in Sharepoint:', updateRecords);
         console.log('To be created in Sharepoint:', createRecords);
         console.log('To be deleted in Sharepoint:', deleteRecords);
 
+
+
         const totalCount = pendingArray.length;
         const summaryLabel = `${totalCount} item${totalCount > 1 ? 's' : ''}`;
 
 
-        const testSpRecords = (
-            await Promise.all(
-                activeRecords.map(async (record) => await checkIfSpExists(record))
-            )
-        ).filter(Boolean);
 
-        console.log('Returned SharePoint records:', testSpRecords);
-
-
-        return;
+        // return;
 
         addTask({
             id: `attendanceapproval-${Date.now()}`,

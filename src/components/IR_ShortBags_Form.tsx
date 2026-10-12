@@ -135,9 +135,10 @@ interface IR_ShortBags_Props {
   hideCloseBtn?: boolean;
   onClose?: (skip?: boolean) => void;
   onSubmit?: (data: Partial<IR_ShortBags_Form_Model>) => void; // Updated type
-  onSave?: (data: Partial<IR_ShortBags_Form_Model>) => void; // Added for save functionality
+  onSave?: (data: Partial<IR_ShortBags_Form_Model>, closeAfter?: boolean) => void; // Added for save functionality
   onDelete?: (data: Partial<IR_ShortBags_Form_Model>) => void;
   onValidateReady?: (result: StatusValidationState | null) => void;
+  hidden?: boolean;
 }
 
 export const mapIncidentReportToFormModel = (
@@ -229,7 +230,7 @@ export const mapIncidentReportToFormModel = (
 };
 
 const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Props>(
-  ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete, onValidateReady, hideCloseBtn }, ref) => {
+  ({ initialUser, incidentReportItem: item, onClose, onSubmit, onSave, onDelete, onValidateReady, hideCloseBtn, hidden }, ref) => {
 
     const { addTask } = useTaskWorker();
 
@@ -824,7 +825,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       return allowedPositions.includes(userPosition);
     };
 
-    const handleSave = () => {
+    const handleSave = (closeAfter?: boolean) => {
+      console.log('close?: ', closeAfter);
       if (onSave && !isReadOnly) {
         addTask({
           id: `saveir-${incidentReportItem.IRID}`,
@@ -879,7 +881,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
             return result.success;
           },
           onSuccess: async (result: any) => {
-            onSave(result.data.data);
+            onSave(result.data.data, closeAfter);
             console.log(result);
           },
           onFailure: async (result: any) => {
@@ -892,7 +894,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
 
         })
-        if (onClose) onClose();
+        if (onClose && closeAfter) onClose();
       }
     };
 
@@ -1206,7 +1208,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       save: async () => {
         // Return the current form state directly or perform saving logic
         if (onSave) {
-          handleSave(); // Triggers the existing TaskWorker save flow
+          handleSave(false); // Triggers the existing TaskWorker save flow
         }
         return formData;
       },
@@ -1259,7 +1261,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
     return (
       <>
-        <div className={`ir-sb-container ${isReadOnly ? 'is-readonly' : ''}`}>
+        <div className={`ir-sb-container ${isReadOnly ? 'is-readonly' : ''} ${hidden ? 'is-ir-hidden' : ''}`}>
 
           {isReadOnly && (
             <div className="ir-sb-readonly-banner no-print">
@@ -1311,7 +1313,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                   <button type="button" onClick={handlePrint} className="ir-sb-btn ir-sb-print-btn">
                     <Printer size={14} /> Print Report
                   </button>
-                  <button disabled={(!error?.valid || isReadOnly) && initialUser?.Position !== 'Developer'} type="button" onClick={handleSave} className="ir-sb-btn btn-save">
+                  <button disabled={(!error?.valid || isReadOnly) && initialUser?.Position !== 'Developer'} type="button" onClick={() => handleSave(true)} className="ir-sb-btn btn-save">
                     {(error?.valid && !isReadOnly) && <span className='ir-pulse-badge-save-btn no-print'>!</span>}
                     Save
                   </button>

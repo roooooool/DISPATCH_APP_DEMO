@@ -2393,7 +2393,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-
+    const [shouldAutoSave, setShouldAutoSave] = useState(false);
     const [createdIR, setCreatedIR] = useState<OP_IncidentReports | null | undefined>(null);
     const [isCreatingIR, setIsCreatingIR] = useState<boolean>(false);
     const [irFormVisible, setIrFormVisible] = useState<boolean>(false);
@@ -2554,9 +2554,20 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           setCreatedIR(data);
 
 
-          setShowIncidentPrompt(true);
+          // setShowIncidentPrompt(true);
           setIsIncidentModalOpen(true);
           setIsCreatingIR(false);
+
+          setShowIncidentPrompt(false);
+          setIrFormVisible(true);
+
+          setShouldAutoSave(true);
+
+          // irShortBagsForm.current?.validate();
+          // const wew = await irShortBagsForm?.current?.save()
+          // console.log('saved wew: ', wew)
+
+
 
 
         } catch (e) {
@@ -2593,6 +2604,17 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
         }
       }
     };
+
+    useEffect(() => {
+      if (shouldAutoSave && irShortBagsForm.current) {
+        setShouldAutoSave(false); // Reset flag so it only runs once
+
+        irShortBagsForm.current.validate();
+        irShortBagsForm.current.save().then((wew) => {
+          console.log('[AUTOSAVED] IR SB: ', wew);
+        });
+      }
+    }, [shouldAutoSave]);
 
     const [isConfirmIRCloseOpen, setIsConfirmIRCloseOpen] = useState<boolean>(false);
 
@@ -4922,13 +4944,16 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                     handleForceCloseIR();
                     handleUpdateTruckTrailerIRdetails({ data });
                   }}
-                  onSave={(data: any) => {
+                  onSave={(data: any, closeAfter: boolean = true) => {
                     console.log("Saved successfully");
-                    handleForceCloseIR();
+                    if (closeAfter !== false) {
+                      handleForceCloseIR();
+                    }
                     handleUpdateTruckTrailerIRdetails(data);
                   }}
                   onDelete={() => { handleDeleteIR(); }}
                   onValidateReady={(validationResult) => { setValidationIR(validationResult); }}
+                  hidden={!irFormVisible}
                 />
               )}
 

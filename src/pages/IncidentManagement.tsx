@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, } from 'react';
 import PageTemplate from './template';
 import TableView, { type scrollToConfig } from '../components/ewul_TableFlex';
 import Modal from '../components/ewul_Modal';
