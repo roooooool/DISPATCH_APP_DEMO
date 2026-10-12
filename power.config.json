@@ -47,7 +47,8 @@
         "fetchattendancecalendar",
         "generateadditionaloe_id2",
         "generatenewtripticket",
-        "livedmsview_cem2"
+        "livedmsview_cem2",
+        "dms_cancellationrequests"
       ],
       "authenticationType": "sqlAuthentication",
       "sharedConnectionId": "/providers/Microsoft.PowerApps/apis/shared_sql/connections/b9c5373f724b4d55afa587baaf5b31bf",
@@ -143,6 +144,9 @@
             "generatenewtripticket": {},
             "livedmsview_cem2": {
               "tableName": "[dbo].[LiveDMSView_CEM2]"
+            },
+            "dms_cancellationrequests": {
+              "tableName": "[dbo].[DMS_CancellationRequests]"
             }
           }
         }

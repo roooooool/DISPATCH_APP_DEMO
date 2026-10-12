@@ -58,6 +58,7 @@ import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFM
 //@ts-ignore
 import { Changelog2Service } from '../generated/services/Changelog2Service';
 import { type Changelog2 } from '../generated/models/Changelog2Model';
+import { type DMS_CancellationRequests } from '../generated/models/DMS_CancellationRequestsModel';
 
 
 
@@ -625,7 +626,7 @@ const OrderManagement: React.FC = () => {
 
     };
 
-
+    const [changeTripReason, setChangeTripReason] = useState('');
 
     // State for Change Trip Modal
     const [showChangeTripModal, setShowChangeTripModal] = useState<{
@@ -2032,7 +2033,7 @@ const OrderManagement: React.FC = () => {
                     {/* Change Trip/OE Modal */}
                     {showChangeTripModal?.show && (
                         <Modal
-                            onClose={() => { setShowChangeTripModal(null); setScrollToNewTrips(null); }}
+                            onClose={() => { setShowChangeTripModal(null); setScrollToNewTrips(null); setChangeTripReason(''); }}
                             width={'90%'}
                             height={'90vh'}
                             contentStyle={{ paddingBottom: "0px" }}
@@ -2053,13 +2054,11 @@ const OrderManagement: React.FC = () => {
                                         bgColor='var(--color-primary)'
                                         hoverColor='var(--color-primary)'
                                     />
-
                                 </div>
                                 <div className="modal-body" style={{ paddingBottom: 80 }}>
                                     <div style={{ marginTop: 24 }}>
                                         {
                                             (() => {
-
                                                 return renderNewTripsTable(onSelectChangeTrip, showChangeTripModal.configChange);
                                             })()
                                         }
@@ -2077,22 +2076,55 @@ const OrderManagement: React.FC = () => {
                                         padding: '16px 24px',
                                         display: 'flex',
                                         justifyContent: 'flex-end',
+                                        alignItems: 'center',
+                                        gap: '16px',
                                         zIndex: 10,
                                     }}
                                 >
                                     <span
                                         className={`sticky-footer-message${selectedChangeTripOE ? ' selected' : ' not-selected'}`}
+                                        style={{ marginRight: 'auto' }}
                                     >
                                         {selectedChangeTripOE
                                             ? `Selected ${showChangeTripModal.action.toLocaleLowerCase()} OE: ${selectedChangeTripOE.OE}`
                                             : `Please select an OE to ${showChangeTripModal.action.toLocaleLowerCase()} into.`}
                                     </span>
+
+                                    {/* Reason Input with Gradient Outline & Rounded Corners */}
+                                    <div style={{
+                                        position: 'relative',
+                                        padding: '2px',
+                                        borderRadius: '10px',
+                                        background: 'linear-gradient(135deg, var(--color-primary, #001f3f), var(--color-accent, #ff4136))',
+                                        display: 'inline-flex'
+                                    }}>
+                                        <textarea
+                                            placeholder="Enter reason..."
+                                            value={changeTripReason}
+                                            onChange={(e) => setChangeTripReason(e.target.value)}
+                                            rows={2}
+                                            style={{
+                                                background: '#fff',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                padding: '8px 12px',
+                                                fontSize: '14px',
+                                                outline: 'none',
+                                                minWidth: '240px',
+                                                // maxWidth: '320px',
+                                                resize: 'vertical',
+                                                color: '#333',
+                                                fontFamily: 'inherit'
+                                            }}
+                                        />
+                                    </div>
+
                                     <button
-                                        className={`gradient-btn-proceed ${selectedChangeTripOE ? '' : 'disabled'}`}
+                                        className={`gradient-btn-proceed ${(!selectedChangeTripOE || !changeTripReason.trim()) ? 'disabled' : ''}`}
                                         style={{ minWidth: 120, fontWeight: 600, fontSize: 'var(--font-size-lg, 18px)' }}
-                                        disabled={!selectedChangeTripOE}
+                                        disabled={!selectedChangeTripOE || !changeTripReason.trim()}
                                         onClick={() => {
-                                            if (!selectedChangeTripOE) return;
+                                            if (!selectedChangeTripOE || !changeTripReason.trim()) return;
                                             console.log(`${showChangeTripModal.action} Trip to:`, selectedChangeTripOE.OE);
                                             const original = selectedOrder;
                                             const originalID = selectedChangeTripOE.ID.toString()
@@ -2110,12 +2142,12 @@ const OrderManagement: React.FC = () => {
 
                                             setSelectedOrder({ ...selectedOrder, ...changedTripRecord });
                                             setShowChangeTripModal(null);
+                                            setChangeTripReason(''); // Reset state
 
                                             addTask({
                                                 name: `${showChangeTripModal.action} trip ${selectedChangeTripOE.OE}`,
                                                 execute: async () => {
                                                     try {
-
                                                         const checkResult = await ewulFetchAll<LiveDMSView_CEM>(
                                                             LiveDMSView_CEMService,
                                                             { filter: `OE eq '${selectedChangeTripOE.OE}'`, orderBy: ["OEDateAsInt asc"] },
@@ -2123,18 +2155,12 @@ const OrderManagement: React.FC = () => {
                                                             'ID'
                                                         );
 
-                                                        console.log('check change trip: ', checkResult, ' with fikter: ', `OE eq '${selectedChangeTripOE.OE}'`);
-
-                                                        // 1. Verify a record was actually returned
                                                         if (!checkResult || checkResult.length === 0) {
                                                             throw new Error(`OE ${selectedChangeTripOE.OE} not found in the DMS.`);
                                                         }
 
                                                         const targetRecord = checkResult[0];
 
-                                                        // console.log('targetRecord: ', targetRecord.Driver, ' record: ', targetRecord);
-
-                                                        // 2. Throw explicit Error when validation fails
                                                         if (targetRecord.Driver || targetRecord.Helper) {
                                                             throw new Error(`OE ${selectedChangeTripOE.OE} already has a driver or helper assigned.`);
                                                         }
@@ -2144,9 +2170,7 @@ const OrderManagement: React.FC = () => {
                                                             changedTripRecord
                                                         )
 
-
                                                         await ewulDelete('DISPATCH_APP_DMS', 'DMS_CEM', originalID)
-
 
                                                         const result2 = await ewulUpdate('DISPATCH_APP_DMS', 'TripTickets',
                                                             showChangeTripModal.record.TripTicketID || '',
@@ -2155,8 +2179,6 @@ const OrderManagement: React.FC = () => {
                                                             }
                                                         );
 
-                                                        //change OF of triptask too
-                                                        console.log("changing oe of trip task from ", showChangeTripModal.record.OE || '', " to ", selectedChangeTripOE.OE || '');
                                                         ewulExecute('DISPATCH_APP_DMS', 'Usp_ChangeTripTaskTrackerOE', {
                                                             OldOE: showChangeTripModal.record.OE || '',
                                                             NewOE: selectedChangeTripOE.OE || '',
@@ -2167,15 +2189,17 @@ const OrderManagement: React.FC = () => {
                                                             newOE: selectedChangeTripOE.OE || ''
                                                         } as any);
 
-                                                        // const result3 = await TripTaskTrackerService.update(
-                                                        //     showChangeTripModal.record?.OE,
-                                                        //     { OE: selectedChangeTripOE.OE }
-                                                        // );
+                                                        ewulCreate('DISPATCH_APP_DMS', 'DMS_CancellationRequests', {
+                                                            oldOE: showChangeTripModal.record.OE || '',
+                                                            tripID: showChangeTripModal.record.ID,
+                                                            newOE: selectedChangeTripOE.OE || '',
+                                                            reason: changeTripReason, // Passed dynamically from input
+                                                            status: "Pending",
+                                                            CreatedBy: user?.FullName || 'Unknown User'
+                                                        } as DMS_CancellationRequests)
 
                                                         const assetPairingPayload = formRef.current?.buildPayloadWithOE(selectedChangeTripOE.OE);
                                                         ewulExecute('DISPATCH_APP_DMS', 'Upsert_DispatchedAssetPairing', assetPairingPayload as any);
-
-
 
                                                         if (result.error) {
                                                             throw new Error(result.error.message);
@@ -2184,7 +2208,6 @@ const OrderManagement: React.FC = () => {
                                                             throw new Error(result2.error.message);
                                                         }
 
-                                                        //log to transaction history
                                                         logDmsUpdate({
                                                             userName: user?.FullName || '',
                                                             userID: Number(user?.id) || 0,
@@ -2205,34 +2228,27 @@ const OrderManagement: React.FC = () => {
                                                 checkSuccess: (result: { success: boolean }) => result.success,
                                                 onSuccess: (updatedData) => {
                                                     const data = updatedData.data
-
-                                                    // console.log("Successfully saved trip change. Updating trips state... ",data);
                                                     handleTripsTableOnClick({});
                                                     setTrips(prevTrips => {
                                                         const index = prevTrips.findIndex(t => t.ID === data.ID);
                                                         if (index !== -1) {
-                                                            // Update existing trip
                                                             const newTrips = [...prevTrips];
                                                             newTrips[index] = data;
                                                             return newTrips;
                                                         } else {
-                                                            // Add new trip
                                                             return [data, ...prevTrips];
                                                         }
                                                     });
-
                                                     handleRefresh();
                                                 },
                                                 onFailure: () => { setSelectedOrder(original); handleRefresh(); },
-
                                                 message: `Saving changes for trip ${selectedChangeTripOE.OE}...`,
                                                 message_success: `Trip ${selectedChangeTripOE.OE} saved successfully!`,
                                                 message_failure: (result) => `Failed to save trip ${selectedChangeTripOE.OE}. Reason: ${result.error?.message || 'Unknown error'}`
                                             });
-
                                         }}
                                     >
-                                        {showChangeTripModal.action} Trip
+                                        Request {showChangeTripModal.action} Trip
                                     </button>
                                 </div>
                             </div>

@@ -14,6 +14,7 @@ export * as DISPAPP_BU_Capacity_SummaryModel from './models/DISPAPP_BU_Capacity_
 export * as DMS_AttachmentsModel from './models/DMS_AttachmentsModel';
 export * as DMS_AttendanceLogsModel from './models/DMS_AttendanceLogsModel';
 export * as DMS_CEMModel from './models/DMS_CEMModel';
+export * as DMS_CancellationRequestsModel from './models/DMS_CancellationRequestsModel';
 export * as DMS_DebugLogsModel from './models/DMS_DebugLogsModel';
 export * as DMS_NewTrip_RemarksModel from './models/DMS_NewTrip_RemarksModel';
 export * as DMS_TripFuelRequestsListModel from './models/DMS_TripFuelRequestsListModel';
@@ -78,6 +79,7 @@ export * from './services/DISPAPP_BU_Capacity_SummaryService';
 export * from './services/DMS_AttachmentsService';
 export * from './services/DMS_AttendanceLogsService';
 export * from './services/DMS_CEMService';
+export * from './services/DMS_CancellationRequestsService';
 export * from './services/DMS_DebugLogsService';
 export * from './services/DMS_NewTrip_RemarksService';
 export * from './services/DMS_TripFuelRequestsListService';
