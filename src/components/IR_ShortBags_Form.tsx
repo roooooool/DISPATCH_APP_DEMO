@@ -1311,7 +1311,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                   <button type="button" onClick={handlePrint} className="ir-sb-btn ir-sb-print-btn">
                     <Printer size={14} /> Print Report
                   </button>
-                  <button disabled={!error?.valid || isReadOnly} type="button" onClick={handleSave} className="ir-sb-btn btn-save">
+                  <button disabled={(!error?.valid || isReadOnly) && initialUser?.Position !== 'Developer'} type="button" onClick={handleSave} className="ir-sb-btn btn-save">
                     {(error?.valid && !isReadOnly) && <span className='ir-pulse-badge-save-btn no-print'>!</span>}
                     Save
                   </button>

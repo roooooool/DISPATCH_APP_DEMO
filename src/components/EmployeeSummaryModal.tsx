@@ -150,9 +150,9 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
     }, [localRecords, employeeName, selectedCutoff]);
 
     // Keep local records in sync when parent prop updates
-    useEffect(() => {
-        console.log('records: ', filteredRecords);
-    }, [filteredRecords]);
+    // useEffect(() => {
+    //     console.log('records: ', filteredRecords);
+    // }, [filteredRecords]);
 
 
 
@@ -431,7 +431,22 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
 
     //@ts-ignore
     const checkIfSpExists = async (attendanceRecord: AttendanceRecord) => {
-        const filter = `EmployeeName eq '${attendanceRecord.EmployeeName}' and Date eq ${attendanceRecord.AttendanceDate.split('T')[0]} and OE ${attendanceRecord.OE}`;
+        // Extract the date part (e.g., '2026-10-11')
+        const dateStr = attendanceRecord.AttendanceDate.split('T')[0];
+
+        const utcDate = new Date(`${dateStr}T00:00:00+08:00`)
+        console.log('utcDate: ', `${dateStr}T00:00:00+08:00`);
+
+        // Create UTC boundaries for the target day
+        const startUtc = `${utcDate.toISOString().split('T')[0]}T00:00:00Z`;
+
+        const nextDay = utcDate;
+        nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+        const nextDayStr = nextDay.toISOString().split('T')[0];
+        const endUtc = `${nextDayStr}T00:00:00Z`;
+
+        const filter = `EmployeeName eq '${attendanceRecord.EmployeeName}' and Date ge '${startUtc}' and Date lt '${endUtc}' and OE eq '${attendanceRecord.OE}'`;
+
         console.log('Filter used:', filter);
         const record = await ewulSharePointAPI(
             'Communication site',
@@ -442,10 +457,10 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                 top: 1,
                 orderBy: 'Date desc, ID desc'
             }
-        )
+        );
 
-        console.log('Check if SP exists:', record)
-        return record[0]
+        console.log('Check if SP exists:', record);
+        return record[0];
     };
 
     const handleConfirmChanges = async () => {
@@ -476,16 +491,16 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         const summaryLabel = `${totalCount} item${totalCount > 1 ? 's' : ''}`;
 
 
-        // const testSpRecords = (
-        //     await Promise.all(
-        //         activeRecords.map(async (record) => await checkIfSpExists(record))
-        //     )
-        // ).filter(Boolean);
+        const testSpRecords = (
+            await Promise.all(
+                activeRecords.map(async (record) => await checkIfSpExists(record))
+            )
+        ).filter(Boolean);
 
-        // console.log('Returned SharePoint records:', testSpRecords);
+        console.log('Returned SharePoint records:', testSpRecords);
 
 
-        // return;
+        return;
 
         addTask({
             id: `attendanceapproval-${Date.now()}`,
