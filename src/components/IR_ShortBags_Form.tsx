@@ -806,6 +806,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       incidentReportItem.ResolvedDate || formData.dateResolved
     );
 
+    console.log('why read only: ', incidentReportItem, formData)
+
 
 
     const isSectionEditable = (sectionName: string): boolean => {
@@ -923,12 +925,13 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
               } as Omit<Partial<OP_IncidentReports>, "IncidentID">;
 
               ir_details.IRStatus = 'Open';
-              ir_details.ResolvedDate = '';
+              ir_details.ResolvedDate = null as any;
 
-              console.log(`Saving IR [${incidentReportItem.IncidentID}]: `, { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
 
-              result = await ewulUpdate('DISPATCH_APP_DMS', 'OP_IncidentReports', incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify(formData) });
-              console.log('Saving result: ', result)
+              // console.log(`Saving IR [${incidentReportItem.IncidentID}]: `, { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify({ ...formData, dateResolved: '' }) });
+
+              result = await ewulUpdate('DISPATCH_APP_DMS', 'OP_IncidentReports', incidentReportItem.IncidentID.toString(), { ...ir_details, ActionStatus: formData.irAction, reportJSON: JSON.stringify({ ...formData, dateResolved: null as any }) });
+              console.log('reopen result: ', result)
 
 
               if (result.error) {
