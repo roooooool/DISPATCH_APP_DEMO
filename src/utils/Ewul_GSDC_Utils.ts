@@ -458,17 +458,21 @@ export const ewulSharePointAPI = async <T>(
 
   const FLOW_URL = import.meta.env.VITE_SHAREPOINT_API_URL;
 
-  const payload = {
+  const payload: Record<string, any> = {
     operation,
     site,
     list,
     id,
     data,
-    filter: options?.filter,
-    top: options?.top,
-    orderby: options?.orderBy,
-    select: options?.select,
   };
+
+
+  if (options?.filter) payload.filter = options.filter;
+  if (options?.top) payload.top = options.top;
+  if (options?.orderBy) payload.orderby = options.orderBy;
+  if (options?.select) payload.select = options.select;
+
+  console.log('sp api payload: ', payload);
 
   const response = await fetch(FLOW_URL, {
     method: "POST",
