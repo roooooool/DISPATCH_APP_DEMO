@@ -492,9 +492,11 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
         await Promise.all(
             activeRecords.map(async (record) => {
                 const existingSpRecord = await checkIfSpExists(record) as any;
-                const hasClzExisting = Boolean(existingSpRecord?.SD?.includes('CLZ'));
+                const hasClzExisting = existingSpRecord?.AttendanceStatus === 'SERVED';
                 const hasClzNew = Boolean(record?.SD?.includes('CLZ'));
                 const notSDConflict = hasClzExisting === hasClzNew;
+
+                console.log('existingSpRecord: ', existingSpRecord.ID, 'notSDConflict: ', notSDConflict);
 
                 if (existingSpRecord && existingSpRecord.ID && notSDConflict) {
                     // If it exists in SharePoint, assign its ID to spID and send to updateRecords
