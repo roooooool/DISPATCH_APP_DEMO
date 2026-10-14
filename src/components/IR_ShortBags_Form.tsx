@@ -982,9 +982,9 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       // Check for attachments
       const hasAttachments = Boolean(formData.attachedImages && formData.attachedImages.length > 0);
 
-      // if (opsAction === 'FOR CLEANING') {
-      //   return 'Closed';
-      // }
+      if (opsAction === 'FOR CLEANING' && supAction === 'PROCEED TO NEXT TRIP') {
+        return 'Closed';
+      }
 
       // 1. OPERATION WATERFALL RULE
       if (opsAction === 'PROCEED TO NEXT TRIP' && discrepancy < 0 && discrepancy > -5.0) {
@@ -1547,11 +1547,22 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                           className={`ir-sb-line-input actions-taken ir-sb-dropdown ${!formData.actions?.supervisor?.action ? 'is-empty-print' : ''}`}
                         >
                           <option value="" disabled>-- Select Action --</option>
-                          {getSectionActionOptions('Supervisor').map(option => (
-                            <option disabled={option.hide} key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
+                          {getSectionActionOptions('Supervisor').map(option => {
+                            const opsAction = formData.actions?.operations?.action;
+
+                            const isOptionDisabled =
+                              option.value === 'PROCEED TO NEXT TRIP'
+                                ? opsAction !== 'FOR CLEANING'
+                                : option.value === 'DISAPPROVED' && opsAction === 'FOR CLEANING'
+                                  ? true
+                                  : option.hide;
+
+                            return (
+                              <option disabled={isOptionDisabled} key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            );
+                          })}
                         </select>
                       </div>
                     </div>
