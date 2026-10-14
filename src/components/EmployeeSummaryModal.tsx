@@ -576,13 +576,13 @@ export const EmployeeSummaryModal: React.FC<EmployeeSummaryModalProps> = ({
                             updateRecords.map(async (rec) => {
                                 try {
 
-                                    console.log('to be update: ', Number(rec.spID))
+                                    // console.log('to be update: ', Number(rec.spID))
                                     // Attempt standard update
                                     const updateRes = await ewulSharePointAPI('Communication site', 'GSDC_Attendance', 'update', {}, {
                                         Approval: rec.Approved || '',
                                     }, Number(rec.spID))
 
-                                    console.log('updateRes: ', updateRes);
+                                    // console.log('updateRes: ', updateRes);
 
                                     // If update succeeded, return response
                                     if (updateRes) {
