@@ -4522,6 +4522,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                               CreatedBy: requesterName,
                               requestType,
                               broadcastToTeams: shouldBroadcast,
+                              BU: editingUser?.BusinessUnit,
                             } as DMS_CancellationRequests);
 
                             return { success: true };

@@ -1543,8 +1543,8 @@ export const FUEL_REQUESTS_TABLE_CONFIG: TableModuleConfig = {
 export const CANCELLATION_REQUEST_TABLE_CONFIG: TableModuleConfig = {
 
   table_config: [
-    { col: "position", alias: "POS" },
     { col: "oldOE", alias: "OE #" },
+    { col: "BU", alias: "BU" },
     {
       col: "requestType", alias: "Type",
       filter: {

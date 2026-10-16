@@ -18,4 +18,5 @@ export interface DMS_CancellationRequests {
   ModifiedAt?: string;
   requestType?: string;
   broadcastToTeams?: boolean;
+  BU?: string;
 }
