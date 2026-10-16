@@ -1023,7 +1023,7 @@ export const renderCancellationActions = (
   if (position === 'Coor') {
     // Coor cannot click/approve/disapprove any requests
     isButtonDisabled = true;
-  } else if (position === 'ODM' || position === 'Supervisor') {
+  } else if (position === 'ODM') {
     // ODM or Supervisor cannot approve/disapprove REVERT requests
     if (row.requestType === 'REVERT') {
       isButtonDisabled = true;
