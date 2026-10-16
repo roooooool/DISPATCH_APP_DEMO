@@ -706,8 +706,9 @@ const OrderManagement: React.FC = () => {
     const fetchCancellationRequests = useCallback(async () => {
         setIsRequestLoading(true);
 
-        const filter = `requestType ne null and oldOE ne null ${buFilter('Buisness Unit')} and status eq 'Approved'`;
-        const filter2 = `requestType ne null and oldOE ne null ${buFilter('Buisness Unit')} and (status eq 'Pending' or status eq 'Disapproved')`;
+        const filterByName = user?.Position === 'Coor' ? `and CreatedBy eq '${user?.FullName}'` : ''
+        const filter = `requestType ne null and oldOE ne null ${buFilter('Buisness Unit')} and status eq 'Approved' ${filterByName}`;
+        const filter2 = `requestType ne null and oldOE ne null ${buFilter('Buisness Unit')} and (status eq 'Pending' or status eq 'Disapproved') ${filterByName}`;
 
         try {
             console.log('fetching fetchCancellationRequests...', filter);
