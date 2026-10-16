@@ -1641,3 +1641,34 @@ export async function getDriverHelperList(BU?: string) {
 export const buFilter = (col: string, user: UserInfo | null) => {
   return ['Coor', 'Supervisor'].includes(user?.Position || '') ? `and ${encodeColumnName(col)} eq '${user?.BusinessUnit}'` : ''
 };
+
+
+
+
+
+
+export const extractGpsCameraDetails = async (file: File) => {
+  const token = await AuthService.ensureValidToken();
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/gps-camera/extract`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || "Failed to extract GPS details.");
+  }
+
+  return result;
+};

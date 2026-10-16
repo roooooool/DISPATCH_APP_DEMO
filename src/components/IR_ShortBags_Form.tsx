@@ -15,6 +15,9 @@ import {
   //@ts-ignore
   ewulFetchAll, ewulCreate, ewulUpdate, ewulDelete, ewulExecute, ewulSharePointAPI,
 
+
+  extractGpsCameraDetails
+
 } from '../utils/Ewul_GSDC_Utils';
 
 
@@ -694,6 +697,45 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
         // 6. Clean up after yourself by destroying the node element from the DOM tree
         document.body.removeChild(iframe);
       }, 250);
+    };
+
+    const [showGpsOcrModal, setShowGpsOcrModal] = useState(false);
+    const [isExtractingGps, setIsExtractingGps] = useState(false);
+    const [gpsOcrData, setGpsOcrData] = useState<{
+      latitude?: number;
+      longitude?: number;
+      timestamp?: string;
+      plus_code?: string;
+    } | null>(null);
+    const [gpsOcrError, setGpsOcrError] = useState('');
+
+    const handleImageToText = async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      setIsExtractingGps(true);
+      setGpsOcrError('');
+      setGpsOcrData(null);
+
+      try {
+        const result = await extractGpsCameraDetails(file);
+
+        if (!result?.data || Object.keys(result.data).length === 0) {
+          setGpsOcrError('No GPS details could be extracted from this image.');
+          setShowGpsOcrModal(true);
+          return;
+        }
+
+        setGpsOcrData(result.data);
+        setShowGpsOcrModal(true);
+      } catch (error) {
+        setGpsOcrError(
+          error instanceof Error ? error.message : 'Image extraction failed.'
+        );
+        setShowGpsOcrModal(true);
+      } finally {
+        setIsExtractingGps(false);
+      }
     };
 
     // Image Viewer Modal States
@@ -1909,6 +1951,8 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                     onChange={async (e) => {
                       if (isReadOnly || !e.target.files || e.target.files.length === 0) return;
 
+                      void handleImageToText(e);
+
                       const filePromises = Array.from(e.target.files).map(file => {
                         return new Promise<{ src: string; fileName: string; description: string }>((resolve) => {
                           const reader = new FileReader();
@@ -1951,6 +1995,10 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                       </div>
                     )}
                   </div>
+
+                  {isExtractingGps && (
+                    <p>Extracting GPS details from image...</p>
+                  )}
 
                 </div>
 
@@ -2014,6 +2062,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
                               const updatedDescText = e.target.value;
 
 
+
                               const safeImages = [...(formData.attachedImages || [])];
                               safeImages[idx] = { ...safeImages[idx], description: updatedDescText };
                               const nextState = { ...formData, attachedImages: safeImages };
@@ -2072,6 +2121,89 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
 
         </div>
+
+        {showGpsOcrModal && createPortal(
+          <Modal
+            onClose={() => setShowGpsOcrModal(false)}
+            width="500px"
+            height="auto"
+            hideX={false}
+          >
+            <div style={{ padding: '24px' }}>
+              <h3 style={{ marginTop: 0, color: 'var(--color-primary)' }}>
+                GPS Camera Details
+              </h3>
+
+              {gpsOcrError ? (
+                <p style={{ color: '#dc2626' }}>{gpsOcrError}</p>
+              ) : gpsOcrData ? (
+                <div style={{ display: 'grid', gap: '16px' }}>
+                  <label>
+                    Latitude
+                    <input
+                      className="ir-sb-line-input"
+                      value={gpsOcrData.latitude ?? ''}
+                      readOnly
+                    />
+                  </label>
+
+                  <label>
+                    Longitude
+                    <input
+                      className="ir-sb-line-input"
+                      value={gpsOcrData.longitude ?? ''}
+                      readOnly
+                    />
+                  </label>
+
+                  <label>
+                    Timestamp
+                    <input
+                      className="ir-sb-line-input"
+                      value={gpsOcrData.timestamp ?? ''}
+                      readOnly
+                    />
+                  </label>
+
+                  <label>
+                    Plus Code
+                    <input
+                      className="ir-sb-line-input"
+                      value={gpsOcrData.plus_code ?? ''}
+                      readOnly
+                    />
+                  </label>
+
+                  {gpsOcrData.latitude != null &&
+                    gpsOcrData.longitude != null && (
+                      <a
+                        href={`https://www.google.com/maps?q=${gpsOcrData.latitude},${gpsOcrData.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Open coordinates in Google Maps
+                      </a>
+                    )}
+                </div>
+              ) : null}
+
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                marginTop: '24px'
+              }}>
+                <button
+                  type="button"
+                  className="ir-sb-btn"
+                  onClick={() => setShowGpsOcrModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </Modal>,
+          document.body
+        )}
 
         {selectedPreviewImg && createPortal(
           <Modal
