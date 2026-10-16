@@ -2423,6 +2423,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     } | null>(null);
     const handleTripCreateIR = async (currentFormData: LiveDMSView_CEM, isVerifying?: 'COOR' | 'ODM' | 'MANUAL') => {
       if (incidentFormRef.current) {
+        let exisistingIR: any[] | null = null;
         try {
           console.log("Pre-Creating IR...");
           setIsCreatingIR(true);
@@ -2430,7 +2431,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
           //check if IR already exist on this OE first
-          const exisistingIR = await ewulFetchAll<any>(
+          exisistingIR = await ewulFetchAll<any>(
             OP_IncidentReportsService,
             { filter: `OE_Reference eq '${currentFormData.OE}'` },
             1,
@@ -2501,14 +2502,11 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
             });
 
             console.log('auto closed: ', data.reportJSON);
-
           }
 
           // WHEN VERIFIED
           if ((actualDiscrepancy < 0) && isVerifying == 'ODM') {
             // Safe JSON parse fallback
-
-
             data.reportJSON = JSON.stringify({
               ...parsedJSON,
               ActualQtyDelivered: currentFormData.QTYDelivered_Actual,
@@ -2517,18 +2515,18 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               VerifiedBy: editingUser?.FullName || 'Unknown User',
               ServedBy: currentFormData.ServedBy || '',
 
-              // Spread actions conditionally only if discrepancy < 0
-
-              actions: {
-                ...parsedJSON.actions,
-                operations: {
-                  ...parsedJSON.actions?.operations,
-                  name: currentFormData.ServedBy || '',
-                  action: 'NO REPORTED SB',
-                  date: new Date().toISOString().slice(0, 10),
+              // Conditionally add actions ONLY if discrepancy is exactly 0
+              ...(discrepancy === 0 && {
+                actions: {
+                  ...parsedJSON.actions,
+                  operations: {
+                    ...parsedJSON.actions?.operations,
+                    name: currentFormData.ServedBy || '',
+                    action: 'NO REPORTED SB',
+                    date: new Date().toISOString().slice(0, 10),
+                  },
                 },
-              },
-
+              }),
             });
           }
 
@@ -2593,9 +2591,13 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           console.error(e);
         } finally {
           setIsCreatingIR(false); // Turn off loading spinner regardless of success/fail
-          handleTripAnnounce(
-            'TRIP INCIDENT REPORT',
-            `
+
+          if ((exisistingIR?.length ?? 0) > 0) {
+            //no announce
+          } else {
+            handleTripAnnounce(
+              'TRIP INCIDENT REPORT',
+              `
               <p>A [Short-Bags] Incident report has been created for trip <strong>[${currentFormData.OE}]</strong> with the following details:</p>
               <br />
               <ul style="list-style-type: none; padding-left: 0; margin: 0; font-family: sans-serif; line-height: 1.6;">
@@ -2615,9 +2617,10 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
               <br>
               <em>Note: Units involved on an active IR will not be available for dispatch. Please process and complete the IR first to prevent delay on operations.</em>
             `,
-            true,
-            true
-          );
+              true,
+              true
+            );
+          }
         }
       }
     };
