@@ -16,7 +16,8 @@ import {
     TRIP_GROUPS,
     STORAGE_KEY_PREFIX,
 } from '../truth.config';
-import { RefreshCcw, Download, Maximize2, X, Menu, Eye, EyeOff } from 'lucide-react';
+//@ts-ignore
+import { RefreshCcw, Download, Maximize2, X, Menu, Eye, EyeOff, Ban } from 'lucide-react';
 
 import { getContext } from "@microsoft/power-apps/app";
 
@@ -58,7 +59,10 @@ import { CIFMETripsView_CEM_unfilteredService } from '../generated/services/CIFM
 //@ts-ignore
 import { Changelog2Service } from '../generated/services/Changelog2Service';
 import { type Changelog2 } from '../generated/models/Changelog2Model';
+//@ts-ignore
 import { type DMS_CancellationRequests } from '../generated/models/DMS_CancellationRequestsModel';
+import { DMS_CancellationRequestsService } from '../generated/services/DMS_CancellationRequestsService';
+
 
 
 
@@ -70,6 +74,7 @@ import TripGroup_DonutChart, { type TripGroupDonutChartRef } from '../components
 import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm';
 import Modal from '../components/ewul_Modal';
 import AutoDismissBanner from '../components/ewul_Banner';
+import CancellationRequestsModal from '../components/CancellationRequestsModal';
 
 
 //Utils
@@ -136,6 +141,10 @@ const OrderManagement: React.FC = () => {
     const [destinationOptions, setDestinationOptions] = useState<any[]>([]);
     const [stationOptions, setStationOptions] = useState<any[]>([]);
     const [fuelRequests, setFuelRequests] = useState<any[]>([]);
+
+    const [showCancellationRequests, setShowCancellationRequests] = useState(false);
+    const [cancellationRequests, setCancellationRequests] = useState<DMS_CancellationRequests[]>([]);
+    const [isRequestLoading, setIsRequestLoading] = useState(false);
 
 
     const [previewTrip, setPreviewTrip] = useState<any>({});
@@ -626,8 +635,6 @@ const OrderManagement: React.FC = () => {
 
     };
 
-    const [changeTripReason, setChangeTripReason] = useState('');
-
     // State for Change Trip Modal
     const [showChangeTripModal, setShowChangeTripModal] = useState<{
         show: boolean;
@@ -695,6 +702,63 @@ const OrderManagement: React.FC = () => {
             setIsTripLoading(false);
         }
     }, [selectedRange]); // ONLY depend on the range
+
+    const fetchCancellationRequests = useCallback(async () => {
+        setIsRequestLoading(true);
+
+        const filter = `requestType ne null and oldOE ne null ${buFilter('Buisness Unit')} and status eq 'Approved'`;
+        const filter2 = `requestType ne null and oldOE ne null ${buFilter('Buisness Unit')} and (status eq 'Pending' or status eq 'Disapproved')`;
+
+        try {
+            console.log('fetching fetchCancellationRequests...', filter);
+            const result = await ewulFetchAll<DMS_CancellationRequests>(
+                DMS_CancellationRequestsService,
+                { filter: filter, orderBy: ['CreatedAt desc'] },
+                200,
+                'CancellationID',
+            );
+
+            const result2 = await ewulFetchAll<DMS_CancellationRequests>(
+                DMS_CancellationRequestsService,
+                { filter: filter2, orderBy: ['CreatedAt desc'] },
+                2000,
+                'CancellationID',
+            );
+
+            // Combine the arrays
+            const combinedResults = [...(result || []), ...(result2 || [])].map(req => ({
+                ...req,
+                position: user?.Position || ''
+            }));
+
+            // Optional: If you need to re-sort the combined list by CreatedAt desc
+            combinedResults.sort((a, b) => new Date(b.CreatedAt).getTime() - new Date(a.CreatedAt).getTime());
+
+            console.log('fetchCancellationRequests combined: ', combinedResults);
+
+            setCancellationRequests(combinedResults);
+        } catch (err) {
+            console.error('Fetch Cancellation Requests Error:', err);
+        } finally {
+            setIsRequestLoading(false);
+        }
+    }, []);
+
+    const cancellationCount = React.useMemo(() => {
+        if (!cancellationRequests) return 0;
+
+        if (user?.Position === 'Coor') {
+            return cancellationRequests.filter(
+                (req) =>
+                    (req.status === 'Approved' || req.status === 'Disapproved') &&
+                    req.CreatedBy === user.FullName
+            ).length;
+        } else {
+            return cancellationRequests.filter(
+                (req) => req.status === 'Pending'
+            ).length;
+        }
+    }, [cancellationRequests, user]);
 
     const LSlist = useMemo(() => {
         const encodedLSKey = enc('Loading Sequence');
@@ -1081,6 +1145,7 @@ const OrderManagement: React.FC = () => {
         //fetchSourceList();
         fetchFCTRoutes();
         handleGlobalRefresh();
+        fetchCancellationRequests();
 
     }, []);
 
@@ -1328,19 +1393,24 @@ const OrderManagement: React.FC = () => {
                     </option>
                 ))}
             </select> */}
-            <button
+            {/* <button
                 className="header-btn primary"
                 onClick={() => null}
                 style={{ minWidth: 90 }}
             >
                 Fuel PO Tracking
-            </button>
+            </button> */}
             <button
-                className="header-btn secondary cancellation"
-                onClick={() => null}
+                className="header-btn primary cancellation"
+                onClick={() => {
+                    setShowCancellationRequests(true);
+                    fetchCancellationRequests();
+                }}
                 style={{ minWidth: 90 }}
             >
-                Cancellation Requests
+                <Ban></Ban>
+                <span>Cancellation Requests</span>
+                {cancellationCount > 0 && <span className="ordr-dist-cancellation-badge">{cancellationCount}</span>}
             </button>
             <button
                 className="header-btn secondary"
@@ -2033,7 +2103,7 @@ const OrderManagement: React.FC = () => {
                     {/* Change Trip/OE Modal */}
                     {showChangeTripModal?.show && (
                         <Modal
-                            onClose={() => { setShowChangeTripModal(null); setScrollToNewTrips(null); setChangeTripReason(''); }}
+                            onClose={() => { setShowChangeTripModal(null); setScrollToNewTrips(null); }}
                             width={'90%'}
                             height={'90vh'}
                             contentStyle={{ paddingBottom: "0px" }}
@@ -2088,54 +2158,24 @@ const OrderManagement: React.FC = () => {
                                     {/* Right side container for Message, Textarea, and Button */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: 'auto' }}>
                                         <span
-                                            className={`sticky-footer-message${selectedChangeTripOE && changeTripReason.trim() ? ' selected' : ' not-selected'}`}
+                                            className={`sticky-footer-message${selectedChangeTripOE ? ' selected' : ' not-selected'}`}
                                             style={{ display: 'flex', flexDirection: 'column', textAlign: 'right' }}
                                         >
                                             {!selectedChangeTripOE ? (
                                                 `Please select an OE to ${showChangeTripModal.action.toLocaleLowerCase()} into.`
-                                            ) : !changeTripReason.trim() ? (
-                                                <span style={{ color: 'var(--color-accent, #ff4136)', fontWeight: 500 }}>
-                                                    Please enter a reason for trip {showChangeTripModal.action}.
-                                                </span>
                                             ) : (
                                                 `Selected: ${selectedChangeTripOE.OE}`
                                             )}
                                         </span>
 
-                                        {/* Reason Input with Gradient Outline & Rounded Corners */}
-                                        <div style={{
-                                            position: 'relative',
-                                            padding: '2px',
-                                            borderRadius: '10px',
-                                            background: 'linear-gradient(135deg, var(--color-primary, #001f3f), var(--color-accent, #ff4136))',
-                                            display: 'inline-flex'
-                                        }}>
-                                            <textarea
-                                                placeholder="Enter reason..."
-                                                value={changeTripReason}
-                                                onChange={(e) => setChangeTripReason(e.target.value)}
-                                                rows={2}
-                                                style={{
-                                                    background: '#fff',
-                                                    border: 'none',
-                                                    borderRadius: '8px',
-                                                    padding: '8px 12px',
-                                                    fontSize: '14px',
-                                                    outline: 'none',
-                                                    minWidth: '240px',
-                                                    resize: 'vertical',
-                                                    color: '#333',
-                                                    fontFamily: 'inherit'
-                                                }}
-                                            />
-                                        </div>
+
 
                                         <button
-                                            className={`gradient-btn-proceed ${(!selectedChangeTripOE || !changeTripReason.trim()) ? 'disabled' : ''}`}
+                                            className={`gradient-btn-proceed ${(!selectedChangeTripOE) ? 'disabled' : ''}`}
                                             style={{ minWidth: 120, fontWeight: 600, fontSize: 'var(--font-size-lg, 18px)' }}
-                                            disabled={!selectedChangeTripOE || !changeTripReason.trim()}
+                                            disabled={!selectedChangeTripOE}
                                             onClick={() => {
-                                                if (!selectedChangeTripOE || !changeTripReason.trim()) return;
+                                                if (!selectedChangeTripOE) return;
                                                 console.log(`${showChangeTripModal.action} Trip to:`, selectedChangeTripOE.OE);
                                                 const original = selectedOrder;
                                                 const originalID = selectedChangeTripOE.ID.toString()
@@ -2153,7 +2193,6 @@ const OrderManagement: React.FC = () => {
 
                                                 setSelectedOrder({ ...selectedOrder, ...changedTripRecord });
                                                 setShowChangeTripModal(null);
-                                                setChangeTripReason(''); // Reset state
 
                                                 addTask({
                                                     name: `${showChangeTripModal.action} trip ${selectedChangeTripOE.OE}`,
@@ -2200,14 +2239,14 @@ const OrderManagement: React.FC = () => {
                                                                 newOE: selectedChangeTripOE.OE || ''
                                                             } as any);
 
-                                                            ewulCreate('DISPATCH_APP_DMS', 'DMS_CancellationRequests', {
-                                                                oldOE: showChangeTripModal.record.OE || '',
-                                                                tripID: showChangeTripModal.record.ID,
-                                                                newOE: selectedChangeTripOE.OE || '',
-                                                                reason: changeTripReason, // Passed dynamically from input
-                                                                status: "Pending",
-                                                                CreatedBy: user?.FullName || 'Unknown User'
-                                                            } as DMS_CancellationRequests)
+                                                            // ewulCreate('DISPATCH_APP_DMS', 'DMS_CancellationRequests', {
+                                                            //     oldOE: showChangeTripModal.record.OE || '',
+                                                            //     tripID: showChangeTripModal.record.ID,
+                                                            //     newOE: selectedChangeTripOE.OE || '',
+                                                            //     reason: changeTripReason, // Passed dynamically from input
+                                                            //     status: "Pending",
+                                                            //     CreatedBy: user?.FullName || 'Unknown User'
+                                                            // } as DMS_CancellationRequests)
 
                                                             const assetPairingPayload = formRef.current?.buildPayloadWithOE(selectedChangeTripOE.OE);
                                                             ewulExecute('DISPATCH_APP_DMS', 'Upsert_DispatchedAssetPairing', assetPairingPayload as any);
@@ -2398,6 +2437,55 @@ const OrderManagement: React.FC = () => {
                                 {renderOrderForm(true)}
                             </div>
                         </Modal>
+                    )}
+
+                    {showCancellationRequests && (
+                        <CancellationRequestsModal
+                            requests={cancellationRequests}
+                            isLoading={isRequestLoading}
+                            user={user}
+                            onClose={() => setShowCancellationRequests(false)}
+                            onRefresh={fetchCancellationRequests}
+                            onCancellationSignal={(updatedRequest) => {
+                                setCancellationRequests(prevRequests =>
+                                    prevRequests.map(req =>
+                                        req.CancellationID === updatedRequest.CancellationID ? updatedRequest : req
+                                    )
+                                );
+                            }}
+                            onProceed={(updatedTrip, deselect) => {
+                                console.log("Proceeding with trip:", updatedTrip);
+                                setTrips(prevTrips => {
+                                    const index = prevTrips.findIndex(t => t.OE === updatedTrip.OE);
+                                    if (index !== -1) {
+                                        // Update existing trip
+                                        const newTrips = [...prevTrips];
+                                        newTrips[index] = updatedTrip;
+                                        return newTrips;
+                                    } else {
+                                        // Add new trip
+                                        return [updatedTrip, ...prevTrips];
+                                    }
+                                });
+
+                                if (deselect) {
+                                    setSelectedOrder(null);
+                                    fetchTrips(true);
+                                } else {
+                                    setSelectedOrder(updatedTrip);
+                                }
+
+
+
+                            }}
+                            onCancelTrip={(id) => {
+                                setTrips(prevTrips => prevTrips.filter(trip => trip.ID !== id));
+                                setActiveView('dashboard');
+                                setSelectedOrder(null);
+                                setPreviewTrip({});
+                            }}
+                            onRefreshTrips={() => { fetchTrips(true); }}
+                        />
                     )}
 
 

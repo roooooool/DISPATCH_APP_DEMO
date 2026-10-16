@@ -30,6 +30,7 @@ import { GetEmployeeServedCountService } from '../generated/services/GetEmployee
 import { OP_IncidentReportsService } from '../generated/services/OP_IncidentReportsService';
 //@ts-ignore
 import { Upsert_DispatchedAssetPairingService } from '../generated/services/Upsert_DispatchedAssetPairingService';
+import { type DMS_CancellationRequests } from '../generated/models/DMS_CancellationRequestsModel';
 
 //CSS
 import './comp_css/OrderDistributionForm.css';
@@ -76,6 +77,7 @@ import {
   logDebug, type DebugLogParams,
 } from '../utils/Ewul_GSDC_Utils';
 import { useTaskWorker } from '../utils/TaskWorkerContext';
+import { DMS_CancellationRequestsService } from '@/generated';
 
 
 // SINGLE SOURCE OF TRUTH FOR CONFIGURATIONS
@@ -251,7 +253,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const [showTruckConflictModal, setShowTruckConflictModal] = useState(false);
     const [truckConflictInfo, setTruckConflictInfo] = useState<string[]>([]);
     const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+    //@ts-ignore
     const [cancelCountdown, setCancelCountdown] = useState(3);
+    //@ts-ignore
     const [isCancelDisabled, setIsCancelDisabled] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validation, setValidation] = useState<{ isValid: boolean; message: string }>({ isValid: true, message: '' });
@@ -330,6 +334,9 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const [selectedTimelineOE, setTimelineSelectedOE] = useState<string | null>(null);
     const [tripLogs, setTripLogs] = useState<any[]>([]);
     const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+
+    const [showOngoingRequestWarning, setShowOngoingRequestWarning] = useState(false);
+    const [ongoingRequestDetails, setOngoingRequestDetails] = useState<any>(null);
 
     // State initialization using the model structure
     const [formData, setFormData] = useState<LiveDMSView_CEM>(() => {
@@ -1270,23 +1277,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       setCollapsed(createCollapsedState(groupsToExpand));
     }, [formData.TripProgress, formData.ID]);
 
-    useEffect(() => {
-      if (showCancelConfirmModal) {
-        setIsCancelDisabled(true);
-        setCancelCountdown(3);
-        const timer = setInterval(() => {
-          setCancelCountdown(prev => {
-            if (prev <= 1) {
-              clearInterval(timer);
-              setIsCancelDisabled(false);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-        return () => clearInterval(timer);
-      }
-    }, [showCancelConfirmModal]);
+
 
 
 
@@ -2123,6 +2114,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
     const [skipBroadcast, setSkipBroadcast] = useState(false);
     const [cancelRemarks, setCancelRemarks] = useState<string>("");
     const [attachedCancellationImage, setAttachedCancellationImage] = useState<{ name: string; base64: string } | null>(null);
+    //@ts-ignore
     const handleCancellatioFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -2141,6 +2133,30 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       reader.readAsDataURL(file);
     };
 
+    useEffect(() => {
+      if (showCancelConfirmModal && cancelRemarks?.trim()) {
+        setIsCancelDisabled(true);
+        setCancelCountdown(3);
+
+        const timer = setInterval(() => {
+          setCancelCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              setIsCancelDisabled(false);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+
+        return () => clearInterval(timer);
+      }
+    }, [showCancelConfirmModal, cancelRemarks]);
+
+    const [requestType, setRequestType] = useState<'CANCEL' | 'REVERT'>('CANCEL');
+
+
+    //@ts-ignore
     const handleCancelTrip = (remarks?: string, broadcast?: boolean) => {
       if (!formData.ID) {
         console.log("Cannot cancel a trip that has not been saved.");
@@ -2300,6 +2316,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
       });
     };
 
+    //@ts-ignore
     const handleImagePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
       const items = e.clipboardData?.items;
 
@@ -3437,7 +3454,24 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       <a href="#" className={(!formData.Latlong) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); setMoreOptionsOpen(false); }}><MapPin size={16} /> Check GPS</a>
                       <a href="#" className={(!formData.tripID || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (!formData.tripID || isReadOnly) return; handlePrintDMS(); setMoreOptionsOpen(false); }}><Printer size={16} /> Print DMS</a>
                       <a href="#" className={(!formData.tripID || !canChangeTrip || isReadOnly) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if (isReadOnly) { return; } if (!formData.tripID || !canChangeTrip) { handleCannotChangeTrip(); return; } onRequestChangeTrip?.(formData, progress_idx() > 2 ? 'Divert' : 'Change'); setMoreOptionsOpen(false); }}><Replace size={16} /> {`${progress_idx() > 2 ? 'Divert' : 'Change'} Trip`}</a>
-                      <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip /*|| formData.TripProgress === 'Done'*/ || isReadOnly) && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || '')) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if ((!formData.tripID || isReadOnly || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || ''))) { handleCannotChangeTrip(); return; } setCancelRemarks(""); setAttachedCancellationImage(null); setSkipBroadcast(false); setShowCancelConfirmModal(true); setMoreOptionsOpen(false); }}><Ban size={16} /> Cancel Trip</a>
+                      <a href="#" className={(!formData.tripID || prog_verified || !canChangeTrip /*|| formData.TripProgress === 'Done'*/ || isReadOnly) && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || '')) ? 'disabled' : ''} onClick={(e) => { e.preventDefault(); if ((!formData.tripID || isReadOnly || !canChangeTrip || prog_verified || formData.TripProgress === 'Done') && !(['Developer', 'IT SUPPORT'].includes(editingUser?.Position || ''))) { handleCannotChangeTrip(); return; } setCancelRemarks(""); setAttachedCancellationImage(null); setSkipBroadcast(false); setShowCancelConfirmModal(true); setMoreOptionsOpen(false); setRequestType('CANCEL'); }}><Ban size={16} /> Cancel Trip</a>
+                      <a
+                        href="#"
+                        className={(!formData.OE || isReadOnly || !(formData.TripProgress === 'Done')) ? 'disabled' : ''}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (!formData.OE || isReadOnly || !(formData.TripProgress === 'Done')) return;
+
+                          setCancelRemarks('');
+                          setAttachedCancellationImage(null);
+                          setSkipBroadcast(false);
+                          setRequestType('REVERT');
+                          setShowCancelConfirmModal(true);
+                          setMoreOptionsOpen(false);
+                        }}
+                      >
+                        <Undo2 size={16} /> Revert Trip
+                      </a>
                       <a
                         href="#"
                         className={(!formData.OE) ? 'disabled' : ''}
@@ -4340,28 +4374,44 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
           {showCancelConfirmModal && createPortal(
             <Modal onClose={() => { setShowCancelConfirmModal(false); setCancelRemarks(""); setSkipBroadcast(false); }} width={'25%'} height={'auto'}>
               <div className="personnel-validation-modal">
-                <h3 className="modal-title">Confirm Cancellation</h3>
-                <p>Are you sure you want to cancel trip <strong>{formData.OE}</strong>? This action cannot be undone.</p>
+                <h3 className="modal-title">
+                  {requestType === 'REVERT' ? 'Request Trip Revert' : 'Request Trip Cancellation'}
+                </h3>
+                <p>
+                  Are you sure you want to request a trip {requestType === 'REVERT' ? 'revert' : 'cancellation'} for{' '}
+                  <strong>{formData.OE}</strong>?
+                </p>
+
+
 
                 {/* --- Cancellation Remarks Field --- */}
                 <div className="remarks-field-container">
                   <label className="field-label">
-                    Cancellation Remarks <span className="required-asterisk">*</span>
+                    {requestType === 'REVERT' ? 'Revert Reason' : 'Cancellation Reason'}{' '}
+                    <span className="required-asterisk">*</span>
                   </label>
+
 
                   <div className="gradient-input-wrapper">
                     <textarea
                       rows={3}
-                      placeholder="Please specify the reason for cancellation..."
+                      placeholder={`Please specify the reason for ${requestType === 'REVERT' ? 'reverting' : 'cancellation'}...`}
                       value={cancelRemarks}
                       onChange={(e) => setCancelRemarks(e.target.value)}
                       className="modal-textarea"
                     />
                   </div>
+
+                  {!cancelRemarks.trim() && (
+                    <p className="ordr-dist-validation-message">
+                      Please specify your reason for {requestType === 'REVERT' ? 'trip revert' : 'trip cancellation'}.
+                    </p>
+                  )}
                 </div>
 
+
                 {/* --- Image Attachment Field --- */}
-                <div className="image-field-container">
+                {/* <div className="image-field-container">
                   <label className="field-label">
                     Reference Image <span className="optional-tag">(Optional)</span>
                   </label>
@@ -4399,7 +4449,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                       )}
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 {/* --- TEST --- */}
 
@@ -4422,21 +4472,110 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
                 {/* --- Modal Actions --- */}
                 <div className="modal-actions">
                   <button className="btn-proceed" onClick={() => { setShowCancelConfirmModal(false); setSkipBroadcast(false); }}>GO BACK</button>
-                  <button
-                    className={`btn-cancel-wait ${isCancelDisabled ? 'disabled' : 'enabled'}`}
-                    onClick={() => {
-                      if (!isCancelDisabled) {
-                        // If checked, pass false (Do not broadcast). If unchecked or not a developer, defaults to true.
-                        const shouldBroadcast = !skipBroadcast;
-                        handleCancelTrip(cancelRemarks.trim(), shouldBroadcast);
 
-                        setShowCancelConfirmModal(false);
-                        setSkipBroadcast(false); // Reset field tracking
+                  <button
+                    className={`btn-cancel-wait ${!cancelRemarks.trim() ? 'disabled' : 'enabled'}`}
+                    onClick={async () => {
+                      if (!cancelRemarks.trim()) return;
+
+                      const shouldBroadcast = !skipBroadcast;
+                      const isRevert = requestType === 'REVERT';
+                      const requesterName = editingUser?.FullName || 'Unknown User';
+                      const actionName = isRevert ? 'reversion' : 'cancellation';
+                      const ActionTitle = isRevert ? 'REVERSION' : 'CANCELLATION';
+                      const currentOE = formData.OE || '';
+
+                      try {
+                        const existingRequests = await ewulFetchAll<any>(
+                          DMS_CancellationRequestsService,
+                          { filter: `oldOE eq '${currentOE}' and status eq 'Pending'` }
+                        );
+
+                        if (existingRequests && existingRequests.length > 0) {
+                          // Close the confirmation modal and open the warning modal instead
+                          setShowCancelConfirmModal(false);
+                          setOngoingRequestDetails(existingRequests[0]);
+                          setShowOngoingRequestWarning(true);
+                          return;
+                        }
+                      } catch (error) {
+                        console.error('Failed to check for ongoing requests:', error);
                       }
+
+                      addTask({
+                        id: `trip-${actionName}-${formData.OE}`,
+                        name: `${isRevert ? 'Requesting revert' : 'Cancelling'} trip ${formData.OE}`,
+                        execute: async () => {
+
+
+
+
+                          // Optimistically update the UI if handler exists
+                          onCancelTrip?.(formData.ID);
+
+                          try {
+                            await ewulCreate('DISPATCH_APP_DMS', 'DMS_CancellationRequests', {
+                              oldOE: formData.OE || '',
+                              tripID: formData.ID || '',
+                              reason: cancelRemarks.trim(),
+                              status: 'Pending',
+                              CreatedBy: requesterName,
+                              requestType,
+                              broadcastToTeams: shouldBroadcast,
+                            } as DMS_CancellationRequests);
+
+                            return { success: true };
+                          } catch (error) {
+                            console.error(`Failed to submit trip ${actionName}:`, error);
+                            handleLogError(error, `trip${actionName}`, `Trip - ${ActionTitle}`);
+                            return { success: false, error };
+                          }
+                        },
+                        checkSuccess: (result: { success: boolean }) => result.success,
+                        onSuccess: () => {
+                          onRefreshTrips?.();
+                          if (shouldBroadcast) {
+                            handleTripAnnounce(
+                              `TRIP ${ActionTitle} REQUEST`,
+                              `<p>A request to ${isRevert ? 'revert' : 'cancel'} the trip <strong>[${formData.OE || ''}]</strong> has been submitted by <strong>${requesterName}</strong>. Please process this as soon as possible.</p><br><p><strong>Reason:</strong> ${cancelRemarks.trim()}.</p> `,
+                              true,
+                              false
+                            );
+                          }
+                        },
+                        onFailure: () => {
+                          onRefreshTrips?.();
+                        },
+                        message: `${isRevert ? 'Requesting revert' : 'Submitting cancellation'} for trip ${formData.OE}...`,
+                        message_success: `Trip ${formData.OE} ${actionName} request submitted successfully.`,
+                        message_failure: (result) => `Failed to submit trip ${actionName} for ${formData.OE}. Reason: ${result.error?.message || 'Unknown error'}`
+                      });
+
+                      setShowCancelConfirmModal(false);
+                      setCancelRemarks('');
+                      setSkipBroadcast(false);
                     }}
-                    disabled={isCancelDisabled}
+                    disabled={!cancelRemarks.trim()}
                   >
-                    {isCancelDisabled ? `CANCEL TRIP (${cancelCountdown})` : 'CANCEL TRIP'}
+                    {requestType === 'REVERT' ? 'REQUEST REVERT' : 'REQUEST CANCEL'}
+                  </button>
+
+                </div>
+              </div>
+            </Modal>,
+            document.body
+          )}
+
+          {showOngoingRequestWarning && createPortal(
+            <Modal onClose={() => setShowOngoingRequestWarning(false)} width={'35%'} height={'auto'}>
+              <div className="personnel-validation-modal">
+                <h3>Ongoing Request Exists</h3>
+                <p>
+                  Trip <strong>{formData.OE}</strong> already has an ongoing <strong>{ongoingRequestDetails?.requestType || 'cancellation'}</strong> request submitted by <strong>{ongoingRequestDetails?.CreatedBy || 'someone'}</strong>. It needs to be processed first before creating a new one.
+                </p>
+                <div className="modal-actions">
+                  <button className="btn-proceed" onClick={() => setShowOngoingRequestWarning(false)}>
+                    OK
                   </button>
                 </div>
               </div>
@@ -5048,7 +5187,7 @@ const OrderDistributionForm = forwardRef<OrderDistributionFormRef, OrderDistribu
 
 
 
-        </div>
+        </div >
 
       </>
 

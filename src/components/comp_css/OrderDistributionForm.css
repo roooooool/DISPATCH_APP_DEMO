@@ -1713,3 +1713,9 @@ select.status-new {
 .ordr-dist-sequence-controls-row .ordr-dist-dashboard-action-btn:active:not(:disabled) {
   transform: scale(0.97);
 }
+
+.ordr-dist-validation-message {
+  color: #da1613;
+  font-size: 12px;
+  margin-top: 5px;
+}

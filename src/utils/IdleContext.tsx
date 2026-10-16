@@ -137,7 +137,7 @@ export function IdleProvider({ children, enabled = true, }: IdleProviderProps) {
         };
     }, [enabled, resetIdleTimer, userIdle]);
 
-    const isBackendActive = tabVisible && !userIdle;
+    const isBackendActive = /*tabVisible  &&*/ !userIdle;
 
     useEffect(() => {
         backendRequestsAllowed = isBackendActive;

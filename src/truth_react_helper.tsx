@@ -1,5 +1,5 @@
 import React, { useState, useImperativeHandle, forwardRef, useRef, useEffect, useMemo } from 'react';
-import { Wrench, Fuel, Pencil, Lock } from 'lucide-react';
+import { Wrench, Fuel, Pencil, Lock, Check, X } from 'lucide-react';
 import { createPortal } from "react-dom";
 import { HighlightText, encodeColumnName as enc } from './components/ewul_TableFlex';
 
@@ -982,5 +982,123 @@ export const renderDDRemarksStatusDropdown = (
       onRecordChange={onRecordChange}
       fontSize={fontSize}
     />
+  );
+};
+
+
+
+
+export const renderCancellationActions = (
+  row: any,
+  emitSignal?: (signal: string, record: any) => void,
+  disabled: boolean = false,
+  position?: string
+) => {
+  // If already processed (Approved/Disapproved), render the status badge
+  if (disabled || (row.status && row.status !== 'Pending')) {
+    const isApproved = row.status === 'Approved';
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '4px 10px',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          color: isApproved ? '#16a34a' : '#dc2626',
+          backgroundColor: isApproved ? '#f0fdf4' : '#fef2f2',
+          border: `1px solid ${isApproved ? '#bbf7d0' : '#fecaca'}`,
+          borderRadius: '6px',
+        }}
+      >
+        {row.status || 'Processed'}
+      </span>
+    );
+  }
+
+  // --- ROLE-BASED ACCESS CONTROL CONDITIONS ---
+  // Explicitly typing as boolean prevents strict literal type mismatch errors
+  let isButtonDisabled: boolean = disabled;
+
+  if (position === 'Coor') {
+    // Coor cannot click/approve/disapprove any requests
+    isButtonDisabled = true;
+  } else if (position === 'ODM' || position === 'Supervisor') {
+    // ODM or Supervisor cannot approve/disapprove REVERT requests
+    if (row.requestType === 'REVERT') {
+      isButtonDisabled = true;
+    }
+  } else if (position === 'Developer' || position === 'IT SUPPORT') {
+    // Developer and IT SUPPORT always have full access (enabled)
+    isButtonDisabled = false;
+  }
+
+  return (
+    <div
+      className="stop-propagation"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+      }}
+    >
+      {/* Approve Button */}
+      <button
+        type="button"
+        disabled={isButtonDisabled}
+        onClick={(e) => {
+          e.stopPropagation();
+          emitSignal?.('APPROVE_CANCELLATION', row);
+        }}
+        title={isButtonDisabled ? "Action restricted for your role" : "Approve Cancellation"}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          padding: '4px 8px',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          color: '#ffffff',
+          backgroundColor: '#16a34a', // Success green
+          border: 'none',
+          borderRadius: '6px',
+          cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
+          opacity: isButtonDisabled ? 0.5 : 1,
+          transition: 'all 0.2s ease-in-out',
+        }}
+      >
+        <Check size={13} />
+        <span>Approved</span>
+      </button>
+
+      {/* Disapprove Button */}
+      <button
+        type="button"
+        disabled={isButtonDisabled}
+        onClick={(e) => {
+          e.stopPropagation();
+          emitSignal?.('DISAPPROVE_CANCELLATION', row);
+        }}
+        title={isButtonDisabled ? "Action restricted for your role" : "Disapprove Cancellation"}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          padding: '4px 8px',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          color: '#ffffff',
+          backgroundColor: '#dc2626', // Theme accent red
+          border: 'none',
+          borderRadius: '6px',
+          cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
+          opacity: isButtonDisabled ? 0.5 : 1,
+          transition: 'all 0.2s ease-in-out',
+        }}
+      >
+        <X size={13} />
+        <span>Disapproved</span>
+      </button>
+    </div>
   );
 };

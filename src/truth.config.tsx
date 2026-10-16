@@ -14,6 +14,7 @@ import {
   renderFuelRequestIcon,
   renderDDRemarksInput,
   renderDDRemarksStatusDropdown,
+  renderCancellationActions,
 } from './truth_react_helper.tsx'
 
 import { HighlightText } from './components/ewul_TableFlex';
@@ -1533,6 +1534,75 @@ export const FUEL_REQUESTS_TABLE_CONFIG: TableModuleConfig = {
   }),
 
   searchable_cols: ["OE", "fuelrequestID", "Requestedby"] as const
+
+}
+
+
+
+// FUEL REQUESTS TABLE CONFIG
+export const CANCELLATION_REQUEST_TABLE_CONFIG: TableModuleConfig = {
+
+  table_config: [
+    { col: "position", alias: "POS" },
+    { col: "oldOE", alias: "OE #" },
+    {
+      col: "requestType", alias: "Type",
+      filter: {
+        type: "dropdown-multiple", options: [
+          { value: 'CANCEL' },
+          { value: 'REVERT' },
+        ]
+      },
+      cellStyle: (row: any) => {
+        let style: React.CSSProperties = { color: 'var(--color-muted)' };
+        if (row.requestType === "REVERT") style = { color: 'var(--progress-newtrip)' };
+        if (row.requestType === "CANCEL") style = { color: 'var(--color-border-danger)' };
+        style.fontWeight = 'bold';
+        return style;
+      }
+    },
+    { col: "reason", alias: "Reason" },
+    { col: "CreatedBy", alias: "Requested By" },
+    { col: "CreatedAt", alias: "Date Requested", calculate: (row: any) => formatDate(row.CreatedAt, { mode: "datetime" }) },
+    {
+      col: "status", alias: "Status",
+      filter: {
+        type: "dropdown-multiple", options: [
+          { value: 'Pending' },
+          { value: 'Approved' },
+          { value: 'Disapproved' },
+        ]
+      },
+      cellStyle: (row: any) => {
+        let style: React.CSSProperties = { color: 'var(--color-muted)' };
+        if (row.status === "Disapproved") style = { color: 'var(--color-border-danger)' };
+        if (row.status === "Pending") style = { color: 'var(--color-border-warning)' };
+        if (row.status === "Approved") style = { color: 'var(--color-border-success)' };
+        style.fontWeight = 'bold';
+        return style;
+      }
+    },
+    { col: "approver", alias: "Approved By" },
+    { col: "remarks", alias: "Approver Remarks" },
+    {
+      col: "",
+      alias: "Action",
+      portion: 1.5,
+      //@ts-ignore
+      render: (val: any, row: any, searchTerm: string, addTask?: any, _fontSize?: number, _onRecordChange?: any, emitSignal?: any) => {
+        const isEditLocked = row.status !== 'Pending';
+        return renderCancellationActions(row, emitSignal, isEditLocked, row.position);
+      },
+    },
+  ],
+
+  rowStyle: (row: any) => ({
+    backgroundColor: row._idx % 2 === 0
+      ? 'color-mix(in srgb, var(--color-primary) 10%, var(--color-bg) 100%)'
+      : 'var(--color-bg-blue)'
+  }),
+
+  searchable_cols: ["oldOE", "CreatedBy"] as const
 
 }
 
