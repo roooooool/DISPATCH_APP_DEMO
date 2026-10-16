@@ -1649,13 +1649,19 @@ const OrderManagement: React.FC = () => {
 
     const changeConfig = (originalOESource: string) => {
 
+        const isGNPD = (originalOESource === 'CLZ - G.M.E.C. PLANT - MARIVELES BATAAN' || originalOESource === 'CLZ - GNPD POWER PLANT - MARIVELES BATAAN')
+        const specialFilterCase = [
+            { label: 'CLZ - G.M.E.C. PLANT - MARIVELES BATAAN', value: 'CLZ - G.M.E.C. PLANT - MARIVELES BATAAN' },
+            { label: 'CLZ - GNPD POWER PLANT - MARIVELES BATAAN', value: 'CLZ - GNPD POWER PLANT - MARIVELES BATAAN' }
+        ]
+
         let changeTripConfig = [
             {
                 col: "Source", alias: "Source", portion: 1.5,
                 filter: {
                     type: "dropdown-multiple",
-                    options: [{ label: originalOESource, value: originalOESource }],
-                    default: originalOESource ? [originalOESource] : [],
+                    options: isGNPD ? specialFilterCase : [{ label: originalOESource, value: originalOESource }],
+                    default: isGNPD ? specialFilterCase.map(item => item.value) : originalOESource ? [originalOESource] : [],
                 }
             },
             {
@@ -1769,6 +1775,13 @@ const OrderManagement: React.FC = () => {
 
         const isDev = user?.Position === 'Developer';
         const original = showChangeTripModal.record;
+        const originalOESource = original.Source;
+        const isGNPD = (originalOESource === 'CLZ - G.M.E.C. PLANT - MARIVELES BATAAN' || originalOESource === 'CLZ - GNPD POWER PLANT - MARIVELES BATAAN')
+
+        // Check if the incoming raw_record source is also one of the valid GNPD/GMEC plants
+        const isRawGNPD = (raw_record.Source === 'CLZ - G.M.E.C. PLANT - MARIVELES BATAAN' || raw_record.Source === 'CLZ - GNPD POWER PLANT - MARIVELES BATAAN');
+        const isGNPDException = isGNPD && isRawGNPD;
+
         let errorMessage: string | null = null;
 
         // 1. Define Validation Rules
@@ -1778,7 +1791,7 @@ const OrderManagement: React.FC = () => {
         else if (!["Assigned", 'Planned'].includes(raw_record.TripProgress) && !(raw_record._tripGroup == 'Preload' && raw_record.SAPStatus === 'Manual' && original._tripGroup === 'Preload')) {
             errorMessage = "Only ASSIGNED trips can be selected.";
         }
-        else if (raw_record.Source !== original.Source) {
+        else if (raw_record.Source !== original.Source && !isGNPDException) {
             errorMessage = isDev ? null : "Source does not match the original trip. Please select a trip with the same source.";
         }
         else if (
