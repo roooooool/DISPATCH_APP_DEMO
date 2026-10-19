@@ -1639,10 +1639,10 @@ const OrderManagement: React.FC = () => {
             editingUser={localUser}
 
             canChangeTrip={
-                (loadingList[FETCH_LOADING_KEYS.fuelRequests] ? false : true) &&
+                (frLoading ? false : true) &&
                 openRequestsCount === 0
             } // Disable if there are any open fuel requests for that OE
-            fuelFetching={loadingList[FETCH_LOADING_KEYS.fuelRequests] || false}
+            fuelFetching={frLoading || false}
         />
     );
 
