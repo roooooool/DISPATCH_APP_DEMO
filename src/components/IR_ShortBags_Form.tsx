@@ -699,14 +699,17 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
       }, 250);
     };
 
+    //@ts-ignore
     const [showGpsOcrModal, setShowGpsOcrModal] = useState(false);
     const [isExtractingGps, setIsExtractingGps] = useState(false);
+    //@ts-ignore
     const [gpsOcrData, setGpsOcrData] = useState<{
       latitude?: number;
       longitude?: number;
       timestamp?: string;
       plus_code?: string;
     } | null>(null);
+    //@ts-ignore
     const [gpsOcrError, setGpsOcrError] = useState('');
 
     const handleImageToText = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -2122,7 +2125,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
 
         </div>
 
-        {showGpsOcrModal && createPortal(
+        {/* {showGpsOcrModal  && createPortal(
           <Modal
             onClose={() => setShowGpsOcrModal(false)}
             width="500px"
@@ -2203,7 +2206,7 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
             </div>
           </Modal>,
           document.body
-        )}
+        )} */}
 
         {selectedPreviewImg && createPortal(
           <Modal
