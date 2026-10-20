@@ -688,13 +688,11 @@ const IR_ShortBags_FormRender = forwardRef<IR_ShortBags_FormRef, IR_ShortBags_Pr
         }
       });
 
-      // 5. Wait for the styles/assets inside the iframe to load fully before opening the print prompt
       iframe.contentWindow?.focus();
 
       // Give the browser engine a microtask tick to process asset links securely
       setTimeout(() => {
         iframe.contentWindow?.print();
-        // 6. Clean up after yourself by destroying the node element from the DOM tree
         document.body.removeChild(iframe);
       }, 250);
     };

@@ -707,8 +707,8 @@ const OrderManagement: React.FC = () => {
         setIsRequestLoading(true);
 
         const filterByName = user?.Position === 'Coor' ? `and CreatedBy eq '${user?.FullName}'` : ''
-        const filter = `requestType ne null and oldOE ne null ${buFilter('Buisness Unit')} and status eq 'Approved' ${filterByName}`;
-        const filter2 = `requestType ne null and oldOE ne null ${buFilter('Buisness Unit')} and (status eq 'Pending' or status eq 'Disapproved') ${filterByName}`;
+        const filter = `requestType ne null and oldOE ne null ${buFilter('BU')} and status eq 'Approved' ${filterByName}`;
+        const filter2 = `requestType ne null and oldOE ne null ${buFilter('BU')} and (status eq 'Pending' or status eq 'Disapproved') ${filterByName}`;
 
         try {
             console.log('fetching fetchCancellationRequests...', filter);
