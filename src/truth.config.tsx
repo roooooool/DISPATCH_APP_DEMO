@@ -1,5 +1,5 @@
 export const APP_VERSION = "3.64.26"; // Update this with each release for better error tracking and user support
-export const mandatoryLogout = "2026-10-07 00:00:05"
+export const mandatoryLogout = "1998-01-01 00:00:05"
 
 //react helper for truths
 import {

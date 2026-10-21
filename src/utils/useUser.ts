@@ -14,8 +14,20 @@ export const useUser = () => {
     if (location.state?.user) return location.state.user;
 
     // 2. Fallback to Local Storage
+    //@ts-ignore
     const saved = localStorage.getItem("gsdc_user");
-    return saved ? JSON.parse(saved) : null;
+    const fix = {
+      FirstName: "Juan",
+      MiddleName: "",
+      LastName: "Dela Cruz",
+      FullName: "Dela Cruz, Juan",
+      BusinessUnit: "SBUO-1A",
+      Position: "TEST POSITION",
+      id: "BB2D2A51-1D2F-4C3C-A534-EA95ADF62E1A",
+      CurrentNav: "/dash",
+      email: "test@sample.com.ph"
+    };
+    return fix;
   });
 
   // Effect to listen for changes in localStorage from other tabs/windows

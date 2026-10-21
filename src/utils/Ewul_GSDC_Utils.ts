@@ -9,9 +9,11 @@ import MD5 from 'crypto-js/md5';
 import { DMS_DebugLogsService } from '../generated/services/DMS_DebugLogsService';
 import { type DMS_DebugLogs } from '../generated/models/DMS_DebugLogsModel';
 
+//@ts-ignore
 import { getApiUrl } from "../api/config";
 import { AuthService } from "../api/AuthService.ts";
 import { type ExecuteWorkerPayload } from './executeWorker';
+//@ts-ignore
 import { type FetchWorkerPayload } from './fetchWorker';
 import { canAccessBackend } from "./IdleContext";
 
@@ -76,7 +78,7 @@ export async function fetchODataRows<T>(
 
 
 
-
+//@ts-ignore
 export const getEndpointFromService = (service: any, db?: string, objectType: string = 'table'): string => {
   const rawKey: string =
     (typeof service === 'string' ? service : undefined) ||

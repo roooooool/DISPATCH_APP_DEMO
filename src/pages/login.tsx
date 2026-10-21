@@ -1,32 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 //@ts-ignore
-import { GSDC_AccountsService } from "../generated/services/GSDC_AccountsService";
-import { getApiUrl } from "../api/config";
-
-import { type UserInfo, mandatoryLogout } from '../truth.config';
-
+import { type UserInfo, mandatoryLogout } from "../truth.config";
 import "./css/Login.css";
 import "../theme.css";
-
 import ImageCarousel from "../components/imgHighlights";
-
-// --- ASSET IMPORTS ---
 import gsdcLogo from "../../public/gsdc_logo.png";
-import truckBg from "../../public/images/trucks.jpg"; // Import the background image
-
-
-import { useUser } from '../utils/useUser';
-import { AuthService } from "../api/AuthService.ts";
-import { msalInstance, msalInitPromise } from "../api/msalConfig";
-
+import truckBg from "../../public/images/trucks.jpg";
+import { useUser } from "../utils/useUser";
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
+  const [password, setPassword] = useState("test");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -42,399 +28,93 @@ export default function Login() {
     }
   }, [user, navigate]);
 
-  useEffect(() => {
-    let mounted = true;
+  const [username, setUsername] = useState("test");
 
-    async function processMicrosoftRedirect() {
-      try {
-        await msalInitPromise;
+  function handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setUsername(e.target.value);
+  }
 
-        const loginRequested =
-          sessionStorage.getItem("msal_login_requested") === "true";
-
-        if (!loginRequested) {
-          return;
-        }
-
-        const result = await msalInstance.handleRedirectPromise();
-
-        if (!mounted) return;
-
-        // Consume the flag so a normal visit to /login
-        // won't authenticate again.
-        sessionStorage.removeItem("msal_login_requested");
-
-        if (!result) {
-          return;
-        }
-
-        console.log("Microsoft redirect result:", result);
-
-        if (result.account) {
-          msalInstance.setActiveAccount(result.account);
-        }
-
-        if (!result.idToken) {
-          throw new Error("Microsoft ID token was not returned.");
-        }
-
-        await completeMicrosoftLogin(result.idToken);
-
-      } catch (err: any) {
-        console.error("MICROSOFT REDIRECT ERROR:", err);
-
-        sessionStorage.removeItem("msal_login_requested");
-
-        if (!mounted) return;
-
-        setError(
-          err.message || "Microsoft authentication failed."
-        );
-
-        setLoading(false);
-      }
+  async function loginApi(username: string, password: string) {
+    if (username !== "test" || password !== "test") {
+      return null;
     }
 
-    processMicrosoftRedirect();
-
-    return () => {
-      mounted = false;
+    return {
+      BusinessUnit: "SBUO-1A",
+      avatar_url: null,
+      branch: "BRANCH_SAMPLE",
+      branch_id: "7582535B-F31A-4A28-952D-7E20DABA3C55",
+      cost_center: "BS-IT/PROJECTS",
+      department: "TEST DEPARTMENT",
+      department_id: "91A392FA-846D-451C-927F-A3933E742B0C",
+      display_name: "TEST USER",
+      division: "DIVISION ABC",
+      email: "test@sample.com.ph",
+      employee_id: "GS-0565",
+      name: "Juan",
+      position: "TEST POSITION",
+      rank: "ASSOCIATE",
+      roles: ["Developer"],
+      surname: "Dela Cruz",
+      team: null,
+      unit: "TEST UNIT",
+      user_id: "BB2D2A51-1D2F-4C3C-A534-EA95ADF62E1A",
+      username: "test",
     };
-  }, []);
-
-
-
-  /*useEffect(() => {
-    const savedUser = localStorage.getItem("gsdc_user");
-    if (savedUser) {
-      const userInfo = JSON.parse(savedUser);
-      navigate(userInfo.CurrentNav, { state: { user: userInfo } });
-    }
-  }, [navigate]);*/
-
-  // Standard RFC 5322 compliant regex pattern
-  const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-  function validateEmail(val: string): boolean {
-    if (!val.trim()) {
-      setEmailError("Email address is required.");
-      return false;
-    }
-    if (!EMAIL_REGEX.test(val.trim())) {
-      setEmailError("Please enter a valid email address.");
-      return false;
-    }
-    setEmailError("");
-    return true;
   }
-
-  function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
-    setEmail(value);
-    if (emailError) {
-      validateEmail(value); // Clear/update error as user types once triggered
-    }
-  }
-
-  function validateEmailOnBlur() {
-    if (email) {
-      validateEmail(email);
-    }
-  }
-
-  //@ts-ignore
-  // src/pages/Login.tsx
-
-
-  async function handleMicrosoftLogin() {
-    if (loading) return;
-
-    try {
-      setError("");
-      setLoading(true);
-
-      await msalInitPromise;
-
-      // Remember that WE initiated a Microsoft login.
-      sessionStorage.setItem("msal_login_requested", "true");
-
-      await msalInstance.loginRedirect({
-        scopes: ["openid", "profile", "email"],
-        prompt: "select_account",
-      });
-
-    } catch (err: any) {
-      console.error("MICROSOFT LOGIN ERROR:", err);
-
-      sessionStorage.removeItem("msal_login_requested");
-
-      const errorCode = err.errorCode || err.code;
-
-      if (
-        errorCode === "user_cancelled" ||
-        err.message?.includes("user_cancelled")
-      ) {
-        clearMsalInteractionStorage();
-        setError("Login was cancelled.");
-      } else if (errorCode === "interaction_in_progress") {
-        clearMsalInteractionStorage();
-        setError("A Microsoft login is already in progress.");
-      } else {
-        setError(err.message || "Microsoft login failed");
-      }
-
-      setLoading(false);
-    }
-  }
-
-  async function completeMicrosoftLogin(microsoftToken: string) {
-    try {
-      setError("");
-      setLoading(true);
-
-      const APP_KEY = import.meta.env.VITE_APP_KEY;
-      const APP_SECRET = import.meta.env.VITE_APP_SECRET;
-
-      // Authenticate the application with your backend
-      const session = await AuthService.login(APP_KEY, APP_SECRET, email);
-      const accessToken = session.access_token;
-
-      if (!accessToken) {
-        throw new Error("Unable to authenticate with the server");
-      }
-
-      // Authenticate the Microsoft user with your new endpoint
-      const account = await loginMicrosoftApi(
-        accessToken,
-        microsoftToken
-      );
-
-      console.log("Microsoft authenticated user:", account);
-
-      if (!account) {
-        throw new Error("User account was not found.");
-      }
-
-      const fn = account.FirstName || account.name || "";
-      const mn = account.MiddleName || account.middlename || "";
-      const ln = account.LastName || account.surname || "";
-
-      const userInfo: UserInfo = {
-        FirstName: fn,
-        MiddleName: mn,
-        LastName: ln,
-        FullName: `${ln}, ${fn}${mn ? ` (${mn})` : ""}`,
-        BusinessUnit: account.BusinessUnit || "",
-        Position: account.Position || account.roles?.[0] || "",
-        id: String(account.ID || ""),
-        CurrentNav: "/dash",
-        email: email,
-      };
-
-      if (userInfo.id) {
-        localStorage.setItem(
-          `lastLogout_${userInfo.id}`,
-          mandatoryLogout
-        );
-      }
-
-      console.log("Final userInfo:", userInfo);
-
-      updateUser(userInfo);
-      setIsLeaving(true);
-
-      setTimeout(() => {
-        navigate(userInfo.CurrentNav || "/dash", {
-          state: { user: userInfo }
-        });
-      }, 500);
-
-    } catch (err: any) {
-      console.error("MICROSOFT BACKEND LOGIN ERROR:", err);
-
-      setError(
-        `Microsoft login failed. ${err.message || err}`
-      );
-
-    } finally {
-      setLoading(false);
-    }
-  }
-
-
-
-
-
-  // Helper to safely remove temporary MSAL interaction lock keys
-  function clearMsalInteractionStorage() {
-    const clearStorageKeys = (storage: Storage) => {
-      Object.keys(storage).forEach((key) => {
-        if (
-          key.startsWith("msal.") &&
-          (key.includes("interaction") || key.includes("request"))
-        ) {
-          storage.removeItem(key);
-        }
-      });
-    };
-
-    clearStorageKeys(sessionStorage);
-    clearStorageKeys(localStorage);
-  }
-
-  async function loginApi(accessToken: string) {
-    // 2. Call user login endpoint
-    const response = await fetch(
-      getApiUrl("/api/auth/login"),
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        })
-      }
-    );
-
-    const result = await response.json();
-
-    console.log("LOGIN STATUS:", response.status);
-    console.log("LOGIN RESPONSE:", result);
-
-    if (!response.ok) {
-      throw new Error(
-        result.error || `Login failed with status ${response.status}`
-      );
-    }
-
-    return result.user
-  }
-
-
-  //@ts-ignore
-  async function loginMicrosoftApi(
-    accessToken: string,
-    microsoftToken: string
-  ) {
-    const response = await fetch(
-      getApiUrl("/api/auth/microsoft"),
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          id_token: microsoftToken
-        })
-      }
-    );
-
-    const result = await response.json();
-
-    console.log("MICROSOFT LOGIN STATUS:", response.status);
-    console.log("MICROSOFT LOGIN RESPONSE:", result);
-
-    if (!response.ok) {
-      throw new Error(
-        result.error || `Microsoft login failed with status ${response.status}`
-      );
-    }
-
-    return result.user;
-  }
-
-
 
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError("");
 
-    const username = email;
-
-    const isEmailValid = validateEmail(email);
-    if (!isEmailValid) {
-      return;
-    }
-
-    if (!password) {
-      setError("Please enter your password.");
+    if (!username.trim() || !password) {
+      setError("Please enter your username and password.");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
-      const APP_KEY = import.meta.env.VITE_APP_KEY;
-      const APP_SECRET = import.meta.env.VITE_APP_SECRET;
-
-      // 1. Try existing access token / refresh token first
-      let accessToken = await AuthService.ensureValidToken();
-
-      // 2. No existing session -> authenticate the application
-      if (!accessToken || true) {
-        const session = await AuthService.login(APP_KEY, APP_SECRET, username);
-        accessToken = session.access_token;
-      }
-
-
-      if (!accessToken) {
-        throw new Error("Unable to authenticate with the server");
-      }
-
-      console.log('username: ', username, ' password: ', password);
-
-      const user = await loginApi(accessToken);
-
-      console.log("fetched account: ", user);
-
-      const account = user;
-
-      const fn = account.FirstName || account.name || "";
-      const mn = account.MiddleName || account.middlename || "";
-      const ln = account.LastName || account.surname || "";
+      const account = await loginApi(username.trim(), password);
 
       if (!account) {
-        setError("User not found");
-        // } else if (account.PassWord !== password) {
-        //   setError("Incorrect password");
-      } else {
-        const userInfo: UserInfo = {
-          FirstName: fn,
-          MiddleName: mn,
-          LastName: ln,
-          FullName: `${ln}, ${fn}${mn ? ` (${mn})` : ""}`,
-          BusinessUnit: account.BusinessUnit || "",
-          Position: account.Position || account.roles[0] || "",
-          id: String(account.ID) || "",
-          CurrentNav: "/dash",
-          email: username,
-        };
-
-        if (userInfo?.id) {
-          localStorage.setItem(`lastLogout_${userInfo.id}`, mandatoryLogout);
-        }
-
-        if (userInfo?.email) {
-          localStorage.setItem("user_email", userInfo.email);
-        }
-
-        updateUser(userInfo);
-        setIsLeaving(true);
-
-        setTimeout(() => {
-          navigate("/dash", { state: { user: userInfo } });
-        }, 500);
+        setError("Invalid username or password.");
+        return;
       }
+
+      const fn = account.name || "";
+      const mn = "";
+      const ln = account.surname || "";
+      const userInfo: UserInfo = {
+        FirstName: fn,
+        MiddleName: mn,
+        LastName: ln,
+        FullName: `${ln}, ${fn}`,
+        BusinessUnit: account.BusinessUnit || "",
+        Position: account.roles?.[0] || "",
+        id: String(account.user_id || ""),
+        CurrentNav: "/dash",
+        email: account.email || username.trim(),
+      };
+
+      // if (userInfo.id) {
+      //   localStorage.setItem(`lastLogout_${userInfo.id}`, mandatoryLogout);
+      // }
+      if (userInfo?.email) {
+        localStorage.setItem("user_email", userInfo.email);
+      }
+      localStorage.setItem("user_email", userInfo.email || '');
+
+
+
+
+      updateUser(userInfo);
+      setIsLeaving(true);
+      setTimeout(() => navigate("/dash", { state: { user: userInfo } }), 500);
     } catch (err: any) {
       console.error(err);
-      setError(`Error logging in. Please try again. ${err.message || err}`);
+      setError(`Error logging in. ${err.message || err}`);
     } finally {
       setLoading(false);
     }
@@ -445,24 +125,21 @@ export default function Login() {
       {/* Left Side - Login */}
       <div className="login-left">
         <img src={gsdcLogo} alt="GSDC Logo" className="logo" />
-        <h1 className="login-title">TRIP DISPATCH APP</h1>
+        <h1 className="login-title">LOG IN</h1>
 
         <form className="login-form" onSubmit={handleLogin}>
           {/* Gradient Wrapper Pattern for Inputs */}
-          <div className={`gradient-input-wrapper ${emailError ? "input-error" : ""}`}>
+          <div className="gradient-input-wrapper">
             <input
-              type="email"
-              placeholder="Email Address (e.g. user@company.com)"
-              value={email}
-              onChange={handleEmailChange}
-              onBlur={validateEmailOnBlur}
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={handleUsernameChange}
               className="gradient-input"
-              autoComplete="email"
+              autoComplete="username"
               required
             />
           </div>
-          {emailError && <p className="field-error-text">{emailError}</p>}
-
           <div className={`gradient-input-wrapper ${password ? "has-value" : ""}`}>
             <div className="password-input-container">
               <input
@@ -473,12 +150,14 @@ export default function Login() {
                 className="gradient-input password-input"
                 autoComplete="current-password"
                 required
+                disabled
               />
               <button
                 type="button"
                 className="password-toggle-btn"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                disabled
               >
                 {showPassword ? (
                   /* Eye Off Icon */
@@ -504,34 +183,6 @@ export default function Login() {
             {loading ? "Signing In..." : "Sign In"}
           </button>
 
-          {/* Visual Divider */}
-          <div className="login-divider">
-            <span>OR</span>
-          </div>
-
-          {/* Microsoft SSO Button with Gradient Outline */}
-          <button
-            type="button"
-            className="btn-microsoft"
-            onClick={() => handleMicrosoftLogin()}
-            disabled={loading}
-          >
-            <div className="btn-microsoft-inner">
-              <svg
-                className="ms-logo"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 23 23"
-                width="18"
-                height="18"
-              >
-                <path fill="#f35325" d="M1 1h10v10H1z" />
-                <path fill="#81bc06" d="M12 1h10v10H12z" />
-                <path fill="#05a6f0" d="M1 12h10v10H1z" />
-                <path fill="#ffba08" d="M12 12h10v10H12z" />
-              </svg>
-              <span>Sign in with Microsoft</span>
-            </div>
-          </button>
         </form>
       </div>
 

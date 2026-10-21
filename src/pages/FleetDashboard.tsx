@@ -336,7 +336,7 @@ const LandingPage: React.FC = () => {
 
               <div className="top-bar-right">
                 <DateRangePicker
-                  initialType="Monthly"
+                  initialType="Weekly"
                   onFilterChange={handleDateChange}
                   opacity={0}
                   bgColor="transparent"

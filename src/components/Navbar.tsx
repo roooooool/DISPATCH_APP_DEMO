@@ -362,7 +362,7 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
           user={user}
         />
       </nav>
-      {showMandatoryLogoutModal && (
+      {/* {showMandatoryLogoutModal  && (
         <div className="navbar-modal-overlay">
           <div className="navbar-modal-content-wrapper">
             <div className="navbar-modal-content">
@@ -381,7 +381,7 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 });
