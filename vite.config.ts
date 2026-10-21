@@ -8,7 +8,7 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "./",
+  base: "/DISPATCH_APP_DEMO/",
 
   plugins: [
     react(),
