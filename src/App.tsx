@@ -22,6 +22,7 @@ import OrderDistribution from "./pages/OrderDistribution";
 //CUSTOM
 import ProtectedRoute from "./components/ewul_ProtectedRoute"; // Route guard 
 import { TaskWorkerProvider } from "./utils/TaskWorkerContext";
+//@ts-ignore
 import { IdleProvider } from "./utils/IdleContext";
 import type { Notification } from "./components/NotificationBell"; // Ensure fetch_notifications is imported to set up the polling mechanism
 import NotificationFetcher from "./components/fetch_notifications"; // Import to set up the polling mechanism for notifications
@@ -39,7 +40,7 @@ const VersionGuard = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-
+//@ts-ignore
 function MsalInitializer({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initializeMsal = async () => {
@@ -141,44 +142,44 @@ function MainContent() {
 
 
   return (
-    <IdleProvider enabled={!showOverlay}>
-      <>
-        {showOverlay && (
-          <div className={`loading-overlay-mask${overlayFading ? ' fade-out' : ''}`}>
-            <LoadingOverlayMask onProgressChange={handleOverlayProgress} />
-          </div>
-        )}
 
-        <TaskWorkerProvider setNotifications={setWorkerNotifications}>
-          <HashRouter>
-            <MaintenanceChecker>
-              <NotificationFetcher onDataLoaded={handleNewToasts} stopFetching={overlayProgress < 99} />
-              <ErrorChecker>
-                <VersionGuard>
-                  <Routes>
-                    <Route path="/" element={<Navigate to="/loading" replace />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/dash" element={<ProtectedRoute><DASHPage /></ProtectedRoute>} />
-                    <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT /></ProtectedRoute>} />
-                    <Route path="/order-dist" element={<ProtectedRoute><OrderDistribution /></ProtectedRoute>} />
-                    <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring /></ProtectedRoute>} />
-                    <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
-                    <Route path="/maintenance" element={<MaintenancePage details={{}} />} />
-                    <Route path="/developer" element={<ProtectedRoute><DeveloperPage /></ProtectedRoute>} />
-                    <Route path="/loading" element={<LoadingPage />} />
-                    <Route path="/test" element={<NewFeatureDashboard />} />
-                    <Route path="/error" element={<ErrorPage />} />
-                    <Route path="/update-required" element={<UpdateRequired />} />
-                    <Route path="/incidents" element={<ProtectedRoute><IncidentManagement /></ProtectedRoute>} />
-                    <Route path="*" element={<Not_Found />} />
-                  </Routes>
-                </VersionGuard>
-              </ErrorChecker>
-            </MaintenanceChecker>
-          </HashRouter>
-        </TaskWorkerProvider>
-      </>
-    </IdleProvider>
+    <>
+      {showOverlay && (
+        <div className={`loading-overlay-mask${overlayFading ? ' fade-out' : ''}`}>
+          <LoadingOverlayMask onProgressChange={handleOverlayProgress} />
+        </div>
+      )}
+
+      <TaskWorkerProvider setNotifications={setWorkerNotifications}>
+        <HashRouter>
+          <MaintenanceChecker>
+            <NotificationFetcher onDataLoaded={handleNewToasts} stopFetching={overlayProgress < 99} />
+            <ErrorChecker>
+              <VersionGuard>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/loading" replace />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/dash" element={<ProtectedRoute><DASHPage /></ProtectedRoute>} />
+                  <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT /></ProtectedRoute>} />
+                  <Route path="/order-dist" element={<ProtectedRoute><OrderDistribution /></ProtectedRoute>} />
+                  <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring /></ProtectedRoute>} />
+                  <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
+                  <Route path="/maintenance" element={<MaintenancePage details={{}} />} />
+                  <Route path="/developer" element={<ProtectedRoute><DeveloperPage /></ProtectedRoute>} />
+                  <Route path="/loading" element={<LoadingPage />} />
+                  <Route path="/test" element={<NewFeatureDashboard />} />
+                  <Route path="/error" element={<ErrorPage />} />
+                  <Route path="/update-required" element={<UpdateRequired />} />
+                  <Route path="/incidents" element={<ProtectedRoute><IncidentManagement /></ProtectedRoute>} />
+                  <Route path="*" element={<Not_Found />} />
+                </Routes>
+              </VersionGuard>
+            </ErrorChecker>
+          </MaintenanceChecker>
+        </HashRouter>
+      </TaskWorkerProvider>
+    </>
+
   );
 }
 
@@ -187,9 +188,9 @@ function App() {
   return (
 
     <NotificationProvider>
-      <MsalInitializer>
-        <MainContent />
-      </MsalInitializer>
+
+      <MainContent />
+
     </NotificationProvider>
 
   );
