@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 //@ts-ignore
 import { type UserInfo, mandatoryLogout } from "../truth.config";
-import "./css/Login.css";
+import "./css/login.css";
 import "../theme.css";
 import ImageCarousel from "../components/imgHighlights";
 import gsdcLogo from "../../public/gsdc_logo.png";
