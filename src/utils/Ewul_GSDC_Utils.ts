@@ -1576,5 +1576,5 @@ export const buFilter = (col: string, user: UserInfo | null) => {
 export const extractGpsCameraDetails = async (file: File) => {
 
 
-  return {};
+  return { data: undefined };
 };
