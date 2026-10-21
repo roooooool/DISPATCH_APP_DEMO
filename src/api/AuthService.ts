@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+const API_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 let accessToken: string | null = null;
 let accessTokenExpiresAt = 0;
@@ -74,14 +74,17 @@ export const AuthService = {
     },
 
     async logout() {
-        try {
-            await fetch(`${API_URL}/api/auth/logout`, {
-                method: "POST",
-                credentials: "include"
-            });
-        } finally {
-            this.clear();
-        }
+        console.log('attempted log out')
+        // try {
+        //     await fetch(`${API_URL}/api/auth/logout`, {
+        //         method: "POST",
+        //         credentials: "include"
+        //     });
+        // } finally {
+        //     this.clear();
+        // }
+
+        this.clear();
     }
 };
 
