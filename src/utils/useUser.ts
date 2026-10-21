@@ -22,7 +22,7 @@ export const useUser = () => {
       LastName: "Dela Cruz",
       FullName: "Dela Cruz, Juan",
       BusinessUnit: "SBUO-1A",
-      Position: "TEST POSITION",
+      Position: "Developer",
       id: "BB2D2A51-1D2F-4C3C-A534-EA95ADF62E1A",
       CurrentNav: "/dash",
       email: "test@sample.com.ph"
