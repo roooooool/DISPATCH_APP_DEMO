@@ -16,6 +16,7 @@ export const useUser = () => {
     // 2. Fallback to Local Storage
     //@ts-ignore
     const saved = localStorage.getItem("gsdc_user");
+    // console.log('localStorage: ', saved);
     const fix = {
       FirstName: "Juan",
       MiddleName: "",
@@ -27,6 +28,7 @@ export const useUser = () => {
       CurrentNav: "/dash",
       email: "test@sample.com.ph"
     };
+    localStorage.setItem("gsdc_user", JSON.stringify(fix));
     return fix;
   });
 
