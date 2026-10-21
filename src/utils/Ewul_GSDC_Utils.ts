@@ -15,6 +15,8 @@ import { type ExecuteWorkerPayload } from './executeWorker';
 import { type FetchWorkerPayload } from './fetchWorker';
 import { canAccessBackend } from "./IdleContext";
 
+import Papa from 'papaparse';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 
@@ -76,7 +78,6 @@ export async function fetchODataRows<T>(
 
 
 export const getEndpointFromService = (service: any, db?: string, objectType: string = 'table'): string => {
-  // 1. Extract raw name (e.g. 'livedmsview_cem' from service.dataSourceName)
   const rawKey: string =
     (typeof service === 'string' ? service : undefined) ||
     service?.dataSourceName ||
@@ -85,21 +86,73 @@ export const getEndpointFromService = (service: any, db?: string, objectType: st
     service?.constructor?.name ||
     '';
 
-  const database = db ? db : 'DISPATCH_APP_DMS'
-
-  // 2. Normalize key for lookups (e.g. 'LiveDMSView_CEMService' -> 'livedmsview_cem')
   const lookupKey = rawKey.replace(/Service$/, '').toLowerCase();
-
-  // 3. Lookup in dataSourcesInfo to get the real tableId (e.g. "[dbo].[LiveDMSView_CEM]")
   const schemaEntry = (dataSourcesInfo as Record<string, any>)[lookupKey];
   const rawTableId: string = schemaEntry?.tableId || lookupKey;
-
-  // 4. Clean brackets: "[dbo].[LiveDMSView_CEM]" -> "LiveDMSView_CEM"
   const cleanTableName = rawTableId.replace(/^\[.*?\]\./, '').replace(/[\[\]]/g, '');
 
-  // 5. Construct final endpoint
-  return getApiUrl(`/api/${database}/${objectType}/${cleanTableName}`);
+  // Return local static path for PapaParse to fetch
+  const path = `/data/table/${cleanTableName}.csv`;
+  return path;
 };
+
+export const applyODataFilter = <T extends Record<string, any>>(data: T[], filterStr?: string): T[] => {
+  if (!filterStr) return data;
+
+  const decodedFilter = decodeURIComponent(filterStr).replace(/_x0020_/g, ' ');
+
+  // Simple, robust client-side OData matcher handling eq, ne, contains, startswith, and/or
+  return data.filter(row => {
+    // Replace OData logical operators with JS operators for eval or predicate matching
+    // For a safe robust approach, we can parse standard conditions:
+    return evaluateConditionTree(row, decodedFilter);
+  });
+};
+
+function evaluateConditionTree(row: Record<string, any>, filterStr: string): boolean {
+  // Split by ' and ' for multi-condition filters
+  const conditions = filterStr.split(/\s+and\s+/i);
+
+  return conditions.every(cond => {
+    cond = cond.trim().replace(/^\(|\)$/g, ''); // strip parentheses
+
+    // 1. Check contains(Col, 'Val')
+    const containsMatch = cond.match(/^contains\(([^,]+),\s*'([^']+)'\)$/i);
+    if (containsMatch) {
+      const [, col, val] = containsMatch;
+      const cellVal = String(row[col.trim()] || '').toLowerCase();
+      return cellVal.includes(val.toLowerCase());
+    }
+
+    // 2. Check startswith(Col, 'Val')
+    const startMatch = cond.match(/^startswith\(([^,]+),\s*'([^']+)'\)$/i);
+    if (startMatch) {
+      const [, col, val] = startMatch;
+      const cellVal = String(row[col.trim()] || '').toLowerCase();
+      return cellVal.startsWith(val.toLowerCase());
+    }
+
+    // 3. Check binary comparison (Col eq 'Val', Col eq 123) - Fixed Regex
+    const binMatch = cond.match(/^([a-zA-Z0-9_]+)\s+(eq|ne|gt|ge|lt|le)\s+(?:'([^']*)'|(-?\d+(?:\.\d+)?)|(null))?$/i);
+    if (binMatch) {
+      const [, col, op, strVal, numVal, nullVal] = binMatch;
+      const cellVal = row[col.trim()];
+      let targetVal: any = strVal ?? (numVal !== undefined ? Number(numVal) : null);
+      if (nullVal) targetVal = null;
+
+      switch (op.toLowerCase()) {
+        case 'eq': return cellVal == targetVal;
+        case 'ne': return cellVal != targetVal;
+        case 'gt': return cellVal > targetVal;
+        case 'ge': return cellVal >= targetVal;
+        case 'lt': return cellVal < targetVal;
+        case 'le': return cellVal <= targetVal;
+      }
+    }
+
+    return true; // fallback if unmatched
+  });
+}
 
 
 export const ewulDecodeKeys = <T extends Record<string, any>>(
@@ -138,69 +191,97 @@ export const ewulDecodeKeys = <T extends Record<string, any>>(
  * );
  */
 // ewulFetchAll.ts
-export const ewulFetchAll = async <T>(
-  service:
-    | { getAll: (options?: IGetAllOptions) => Promise<IOperationResult<T[]>> }
-    | string, // Allow string type
-  options: IGetAllOptions,
+export const ewulFetchAll = async <T extends Record<string, any>>(
+  service: any,
+  options: IGetAllOptions = {},
   targetTop: number = 2000,
   keyField?: keyof T,
-  //@ts-ignore
-  name?: string,
   decodeKeys: boolean = false,
-  db?: string,
-  //@ts-ignore
-  test: boolean = false
+  db?: string
 ): Promise<T[]> => {
-  // if (!test) return [];
-  if (!canAccessBackend()) {
-    console.log("[IDLE] Backend request skipped");
-    return [];
-  }
+  const csvPath = getEndpointFromService(service, db);
 
-  const endpoint = getEndpointFromService(service, db);
-  const token = await AuthService.ensureValidToken();
-
-  if (!token) {
-    throw new Error("Authentication required");
-  }
-
-  return new Promise((resolve, reject) => {
-    const worker = new Worker(
-      new URL('./fetchWorker.ts', import.meta.url),
-      { type: 'module' }
-    );
-
-    worker.onmessage = (event: MessageEvent<{ success: boolean; data?: T[]; error?: string }>) => {
-      const { success, data, error } = event.data;
-      worker.terminate();
-
-      if (success && data) {
-        resolve(data);
-      } else {
-        reject(new Error(error || 'Worker execution failed'));
-      }
-    };
-
-    worker.onerror = (err) => {
-      worker.terminate();
-      reject(err);
-    };
-
-    const payload: FetchWorkerPayload = {
-      type: "FETCH",
-      endpoint,
-      options,
-      targetTop,
-      keyField: keyField ? String(keyField) : undefined,
-      accessToken: token,
-      decodeKeys: decodeKeys,
+  try {
+    const response = await fetch(csvPath);
+    if (!response.ok) {
+      console.warn(`[OFFLINE DEMO] CSV not found for ${csvPath}, returning empty array.`);
+      return [];
     }
 
-    worker.postMessage(payload);
-  });
-};
+    const csvText = await response.text();
 
+    return new Promise((resolve, reject) => {
+      Papa.parse<T>(csvText, {
+        header: true,
+        dynamicTyping: true, // Automatically converts numbers/booleans
+        skipEmptyLines: true,
+        complete: (results) => {
+          let rows = results.data;
+
+          // 1. Decode keys if requested
+          if (decodeKeys) {
+            rows = rows.map(row => ewulDecodeKeys(row as Record<string, any>) as T);
+          }
+
+          // 2. Apply OData Filter locally
+          if (options.filter) {
+            rows = applyODataFilter(rows, options.filter);
+          }
+
+          // 3. Apply OrderBy if present (Fixed with string check)
+          // 3. Apply OrderBy if present (Handles both string and string[] safely)
+          if (options.orderBy) {
+            const orderClauses: string[] = Array.isArray(options.orderBy)
+              ? options.orderBy
+              : [options.orderBy as unknown as string];
+
+            rows.sort((a: T, b: T) => {
+              for (const clause of orderClauses) {
+                if (!clause || typeof clause !== 'string') continue;
+                const parts = clause.trim().split(/\s+/);
+                const field = parts[0];
+                const direction = parts[1];
+
+                if (!field) continue;
+
+                const valA = a[field as keyof T];
+                const valB = b[field as keyof T];
+
+                if (valA < valB) return direction?.toLowerCase() === 'desc' ? 1 : -1;
+                if (valA > valB) return direction?.toLowerCase() === 'desc' ? -1 : 1;
+              }
+              return 0;
+            });
+          }
+
+          // 4. Apply Target Top limit
+          if (targetTop && rows.length > targetTop) {
+            rows = rows.slice(0, targetTop);
+          }
+
+          // 5. De-duplicate if keyField is provided
+          if (keyField) {
+            const seen = new Set();
+            rows = rows.filter(row => {
+              const val = row[keyField];
+              if (seen.has(val)) return false;
+              seen.add(val);
+              return true;
+            });
+          }
+
+          resolve(rows);
+        },
+        error: (err: any) => {
+          reject(err);
+        }
+      });
+    });
+  } catch (error) {
+    console.error("[OFFLINE DEMO ERROR]", error);
+    return [];
+  }
+};
 
 
 export interface EwulResponse<T> { data: T | null; error: any; code: number; }

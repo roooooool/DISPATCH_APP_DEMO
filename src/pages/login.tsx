@@ -548,10 +548,10 @@ export default function Login() {
           <div className="company-info-inner">
             <div className="company-badge">
               <img src={gsdcLogo} alt="GSDC" /> {/* Corrected */}
-              <span>GSDC Dispatch</span>
+              <span>DEMO Dispatch</span>
             </div>
 
-            <h2>Great Sierra Development Corporation</h2>
+            <h2>Sample Trucking Corporation</h2>
             <p className="company-tagline">
               Smart, secure, and scalable transportation operations in one centralized app.
             </p>
@@ -565,7 +565,7 @@ export default function Login() {
 
             <div className="company-info-footer">
               <span>Version 1.0</span>
-              <span>© GSDC IT Projects & Development</span>
+              <span>© Ewul IT Projects & Development</span>
             </div>
           </div>
         </div>

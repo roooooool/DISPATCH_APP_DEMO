@@ -64,18 +64,18 @@ const LoadingOverlayMask: React.FC<LoadingOverlayMaskProps> = ({ onProgressChang
           alt="GSDC Logo"
           className="loading-logo"
         />
-        <div className="loader-logo">GSDC DISPATCH APP</div>
+        <div className="loader-logo">DEMO DISPATCH APP</div>
         <span>v{APP_VERSION}</span>
         <h2 className="loading-status-text">{statusText}</h2>
 
         <div className="progress-container">
           {/* Gradient bar: Navy to Red */}
-          <div 
-            className="progress-bar-fill" 
+          <div
+            className="progress-bar-fill"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
-        
+
         <span className="progress-percentage">{progress}%</span>
       </div>
     </div>

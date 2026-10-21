@@ -130,9 +130,10 @@ const LandingPage: React.FC = () => {
         LiveDMSView_CEMService,
         { filter: `${enc("Trip Status")} ne 'PLD Served' and ${dateFilter}`, orderBy: ["OEDateAsInt2 desc"] },
         top ? top : 10000,
-        'ID',
-        "dashboard - live dms"
+        'ID', true
       );
+
+      console.log('ewulFetchAll: ', result);
 
       // Define your item interface
       interface MapDataItem {
@@ -335,7 +336,7 @@ const LandingPage: React.FC = () => {
 
               <div className="top-bar-right">
                 <DateRangePicker
-                  initialType="Weekly"
+                  initialType="Monthly"
                   onFilterChange={handleDateChange}
                   opacity={0}
                   bgColor="transparent"

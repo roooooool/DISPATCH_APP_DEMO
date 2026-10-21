@@ -1,0 +1,609 @@
+MessageID,Channel,UserID,UserName,MessageText,SentAt,SentAtAsInt,RecipientUserID
+1,Dispatch,CURRENT_USER_ID,Current User,wew,2026-04-23 22:27:01.396,,
+2,Dispatch,251,"Development, Information Technology (GSDC)",test,2026-04-23 22:38:59.457,,
+3,Dispatch,251,"Development, Information Technology (GSDC)",wew,2026-04-23 22:39:02.934,,
+4,Dispatch,251,"Development, Information Technology (GSDC)",testawdawdaw,2026-04-23 22:39:25.872,,
+5,Dispatch,251,"Development, Information Technology (GSDC)",wew,2026-04-23 22:40:34.273,,
+6,Dispatch,251,"Development, Information Technology (GSDC)",awdaw,2026-04-23 22:40:43.755,,
+7,Dispatch,251,"Development, Information Technology (GSDC)",wew,2026-04-23 22:42:02.956,,
+8,Dispatch,251,"Development, Information Technology (GSDC)",awdawdaw,2026-04-23 22:42:59.890,,
+9,Dispatch,251,"Development, Information Technology (GSDC)",dwadawdaw,2026-04-23 22:45:40.520,,
+10,Dispatch,251,"Development, Information Technology (GSDC)",awdawdawdaw,2026-04-23 22:46:19.278,20260423144619.0,
+11,Dispatch,251,"Development, Information Technology (GSDC)",awdaw,2026-04-23 22:46:40.644,20260423144640.0,
+12,Dispatch,251,"Development, Information Technology (GSDC)",IT DEV testing,2026-04-23 22:48:28.124,20260423144828.0,
+13,Dispatch,251,"Development, Information Technology (GSDC)",anybody home?,2026-04-23 22:49:26.422,20260423144926.0,
+14,Dispatch,251,"Development, Information Technology (GSDC)",lets party!,2026-04-23 22:49:33.145,20260423144933.0,
+15,Dispatch,251,"Development, Information Technology (GSDC)",wew,2026-04-23 22:49:58.272,20260423144958.0,
+16,Dispatch,19,"Escarza, Kate Danielle",testing,2026-04-23 22:54:14.346,20260423145414.0,
+17,Dispatch,19,"Escarza, Kate Danielle",test,2026-04-23 23:00:18.042,20260423150018.0,
+18,Monitoring,19,"Escarza, Kate Danielle",awdwawda,2026-04-23 23:00:38.919,20260423150038.0,
+19,Monitoring,19,"Escarza, Kate Danielle",awdawd,2026-04-23 23:01:42.910,20260423150142.0,
+20,Dispatch,19,"Escarza, Kate Danielle",awdawda,2026-04-23 23:08:11.454,20260423150811.0,
+21,Dispatch,19,"Escarza, Kate Danielle",awdawd,2026-04-23 23:08:33.302,20260423150833.0,
+22,Monitoring,19,"Escarza, Kate Danielle",awdawd,2026-04-23 23:11:33.565,20260423151133.0,
+23,Dispatch,19,"Escarza, Kate Danielle",qweqweq,2026-04-23 23:11:36.150,20260423151136.0,
+24,Dispatch,19,"Escarza, Kate Danielle",awdawda,2026-04-23 23:11:56.770,20260423151156.0,
+25,Monitoring,19,"Escarza, Kate Danielle",awdawdaw,2026-04-23 23:12:00.255,20260423151200.0,
+26,Fuel,19,"Escarza, Kate Danielle",test,2026-04-23 23:18:34.642,20260423151834.0,
+27,Fuel,19,"Escarza, Kate Danielle",awdaw,2026-04-23 23:29:46.165,20260423152946.0,
+28,Documents,19,"Escarza, Kate Danielle",awdadwaw,2026-04-23 23:30:00.289,20260423153000.0,
+29,Documents,19,"Escarza, Kate Danielle",awdwa,2026-04-23 23:30:17.861,20260423153017.0,
+30,Documents,19,"Escarza, Kate Danielle",awdaw,2026-04-23 23:40:36.196,20260423154036.0,
+31,Documents,19,"Escarza, Kate Danielle",awdwad,2026-04-23 23:41:34.993,20260423154134.0,
+32,Dev Bot,251,"Development, Information Technology (GSDC)",test,2026-04-23 23:54:30.242,20260423155430.0,-1432
+33,Dispatch,251,"Development, Information Technology (GSDC)",TESTING PLEASE IGNNORE,2026-04-24 09:22:22.275,20260424012222.0,
+34,Dispatch,90,"Cruz, Jerico",ILO,2026-04-27 14:59:09.073,20260427065909.0,
+35,Monitoring,90,"Cruz, Jerico",WIIWIWW,2026-04-27 14:59:19.385,20260427065919.0,
+36,Monitoring,90,"Cruz, Jerico",ILO GAYS,2026-04-27 14:59:27.707,20260427065927.0,
+37,Fuel,90,"Cruz, Jerico",WIWIWIWIW,2026-04-27 14:59:42.241,20260427065942.0,
+38,Documents,90,"Cruz, Jerico",KRUK KRUK KRUK,2026-04-27 14:59:52.521,20260427065952.0,
+39,Documents,251,"Development, Information Technology (GSDC)",TEST TEST,2026-04-27 20:37:28.057,20260427123728.0,
+40,Dispatch,98,"Paner, Clarence",ALO,2026-04-28 13:04:06.310,20260428050406.0,
+41,Monitoring,98,"Paner, Clarence",ALO,2026-04-28 13:04:16.556,20260428050416.0,
+42,Monitoring,98,"Paner, Clarence",PAKAK,2026-04-28 13:04:23.980,20260428050423.0,
+43,Fuel,98,"Paner, Clarence",KRUNG KRUNG,2026-04-28 13:04:46.340,20260428050446.0,
+44,Dispatch,84,"Organista, Ronald",Halo halo,2026-04-28 23:19:23.674,20260428151923.0,
+45,Dispatch,84,"Organista, Ronald",mic test,2026-04-28 23:19:28.178,20260428151928.0,
+46,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:PLD26-04-0521],2026-04-29 22:42:00.564,20260429144200.0,
+47,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1304],2026-04-29 22:42:23.807,20260429144223.0,
+48,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1304],2026-04-29 22:43:21.981,20260429144321.0,
+49,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1304],2026-04-29 22:43:57.743,20260429144357.0,
+50,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1304],2026-04-29 22:44:41.094,20260429144441.0,
+51,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1304],2026-04-29 22:44:50.332,20260429144450.0,
+52,Dispatch,89,"Taguinin, Maria Blessie",[TRIP:SOC26-04-1043],2026-04-29 22:57:23.623,20260429145723.0,
+53,Dispatch,251,"Development, Information Technology (GSDC)",test asking about something on this trip [TRIP:SPT26-04-1304],2026-04-29 23:16:17.927,20260429151617.0,
+54,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1304] TESTING PLEASE IGNORE,2026-04-29 23:16:55.959,20260429151655.0,
+55,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1134] TEST MENTION TRIP,2026-04-29 23:18:34.729,20260429151834.0,
+56,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1134] TEST TEST,2026-04-29 23:24:38.593,20260429152438.0,
+57,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1304] TEST DISAPPROVED,2026-04-30 09:22:20.084,20260430012220.0,
+58,Dispatch,48,"Margallo, Ivy",test,2026-05-01 08:36:11.004,20260501003611.0,
+59,Dispatch,48,"Margallo, Ivy",test,2026-05-01 08:36:26.106,20260501003626.0,
+60,Dispatch,48,"Margallo, Ivy", test,2026-05-01 08:38:18.521,20260501003818.0,
+61,Dispatch,48,"Margallo, Ivy",test,2026-05-01 08:41:53.130,20260501004153.0,
+62,Dispatch,251,"Development, Information Technology (GSDC)",[TRIP:SPT26-04-1133] TEST MENTION FROM LAST MONTH,2026-05-02 11:06:40.011,20260502030640.0,
+63,Dispatch,152,"Cuadra, Bryan Carlo (Catacutan)",test ,2026-05-02 20:47:04.214,20260502124704.0,
+64,Dispatch,181,"Relente, Raven Klyde",this is a test message,2026-05-02 21:19:51.142,20260502131951.0,
+65,Dispatch,251,"Development, Information Technology (GSDC)",test,2026-05-06 16:43:24.426,20260506084324.0,
+66,Fuel,251,"Development, Information Technology (GSDC)",test,2026-05-06 16:43:35.424,20260506084335.0,
+67,Dispatch,352,"Iglesias, Melandro",0285,2026-05-16 08:21:46.502,20260516002146.0,
+68,Dev Bot,251,"Development, Information Technology (GSDC)","this is a test, reply with a short response",2026-05-26 12:55:52.375,20260526045552.0,-1432
+69,Dev Bot,-1432,Dev Bot,This is indeed a test! I'm here and ready to respond. What's next?,2026-05-26 12:55:58.804,20260526045558.0,251
+70,Dev Bot,251,"Development, Information Technology (GSDC)",1 + 1?,2026-05-26 12:58:45.294,20260526045845.0,-1432
+71,Dev Bot,-1432,Dev Bot,1 + 1 = 2.,2026-05-26 12:58:47.563,20260526045847.0,251
+72,Dev Bot,251,"Development, Information Technology (GSDC)",multiply that by -3.14,2026-05-26 12:58:59.990,20260526045859.0,-1432
+73,Dev Bot,-1432,Dev Bot,"However, I don't see any number for me to multiply! If you provide a number, I'd be happy to perform the calculation for you.",2026-05-26 12:59:04.251,20260526045904.0,251
+74,Dev Bot,251,"Development, Information Technology (GSDC)",multiply that by -3.14,2026-05-26 13:02:47.844,20260526050247.0,-1432
+75,Dev Bot,-1432,Dev Bot,"You want me to multiply 2 (from the previous result) by -3.14. Here's the calculation:
+
+2 × (-3.14) = -6.28",2026-05-26 13:02:54.635,20260526050254.0,251
+76,Dev Bot,251,"Development, Information Technology (GSDC)",what time is it ?,2026-05-26 13:04:26.742,20260526050426.0,-1432
+77,Dev Bot,-1432,Dev Bot,"The current system time is Tuesday, May 26, 2026 at 01:04 PM.",2026-05-26 13:04:34.217,20260526050434.0,251
+78,Dev Bot,251,"Development, Information Technology (GSDC)",give the UTC format,2026-05-26 13:09:48.780,20260526050948.0,-1432
+79,Dev Bot,-1432,Dev Bot,"The current system time in UTC (Coordinated Universal Time) format is:
+
+Tuesday, May 26, 2026 at 17:09:00 UTC",2026-05-26 13:10:00.442,20260526051000.0,251
+80,Dev Bot,251,"Development, Information Technology (GSDC)",can you check what's news today ?,2026-05-26 13:22:04.036,20260526052204.0,-1432
+81,Dev Bot,-1432,Dev Bot,"I'd be happy to help you with the latest news.
+
+However, as a conversational AI, I don't have direct access to real-time news feeds. But I can suggest some options for you to get the latest news:
+
+1. **News Websites**: You can visit popular news websites such as CNN, BBC News, Al Jazeera, or your local news sources for the latest updates.
+2. **News Aggregators**: Services like Google News or Apple News can provide a summary of the top stories from various news sources.
+3. **Social Media**: Follow reputable news outlets and journalists on social media platforms like Twitter to stay informed about current events.
+
+If you'd like, I can also try to provide some general information about what's happening in the world today based on my training data (which might not be entirely up-to-date). Please let me know how I can assist!",2026-05-26 13:22:31.683,20260526052231.0,251
+82,Dev Bot,251,"Development, Information Technology (GSDC)",do you have access with the web ?,2026-05-26 13:23:07.167,20260526052307.0,-1432
+83,Dev Bot,-1432,Dev Bot,"I don't have direct, real-time access to the internet or specific websites. However, I was trained on a vast amount of text data from various sources, including but not limited to news articles up until my last training data update (which is a bit outdated as per your current system time).",2026-05-26 13:23:22.328,20260526052322.0,251
+84,Dev Bot,251,"Development, Information Technology (GSDC)",explain to me what a bubble sort is,2026-05-26 13:26:39.725,20260526052639.0,-1432
+85,Dev Bot,-1432,Dev Bot,"**Bubble Sort**
+
+Bubble sort is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order. The pass through the list is repeated until the list is sorted.
+
+Here's how it works:
+
+1. **Step 1:** Start at the beginning of the list.
+2. **Comparison and Swap:** Compare the first two elements (A and B). If A > B, swap them.
+3. **Repeat Comparison and Swap:** Move to the next pair of adjacent elements (B and C), compare them and if they are in the wrong order, swap them.
+4. **Continue Passing Through the List:** Repeat this process until you reach the end of the list.
+5. **Pass 2:** Start again from the beginning of the list. This time, each element has already been compared to its adjacent elements (except for the last one). If there's a need for swapping in a particular pass (and there is if the largest number hasn't ""bubbled"" up), swap two elements.
+6. **Repeat Until Sorted:** Repeat this process until no more swaps are needed, which indicates that the list is sorted.
+
+Here's an example of how bubble sort works on a sample list: `[5, 2, 8, 1]`.
+
+Pass 1:
+
+- Compare `5` and `2`. Swap. `[2, 5, 8, 1]`
+- Compare `5` and `8`. No swap needed.
+- Compare `5` and `1`. Swap. `[2, 1, 8, 5]`
+
+Pass 2:
+
+- Compare `2` and `1`. Swap. `[1, 2, 8, 5]`
+- Compare `2` and `8`. No swap needed.
+- Compare `2` and `5`. No swap needed.
+
+We can see that the list is almost sorted after Pass 2, but since we still have a need for swapping (in this case between elements 5 and 1 in some versions of the algorithm), it means another pass is necessary. After another pass, the list will be sorted.
+
+Bubble sort has a worst-case and average time complexity of O(n^2) where n is the number of items being compared and swapped. This makes bubble sort inefficient for large data sets.",2026-05-26 13:27:42.493,20260526052742.0,251
+86,Dev Bot,251,"Development, Information Technology (GSDC)",how about a quick sort ?,2026-05-26 13:31:03.892,20260526053103.0,-1432
+87,Dev Bot,-1432,Dev Bot,"**Quick Sort**
+
+Quick sort is a divide-and-conquer algorithm that picks an element as a pivot, partitions the given array around the pivot and recursively sorts the sub-arrays on both sides of the pivot. Here's how it works:
+
+1. **Select Pivot:** Choose an element from the unsorted array.
+2. **Partition:** Partition the array into two parts: all elements less than the pivot are placed at one end, and all elements greater than the pivot are placed at the other end. The pivot is in its final position.
+3. **Recursion:** Recursively apply the quick sort to both sub-arrays on either side of the pivot.
+
+Here's an example:
+
+Suppose we have the array `[5, 2, 8, 1]`. We select `5` as our pivot and partition the array around it:
+
+* Elements less than `5`: `[2, 1]`
+* Pivot: `5`
+* Elements greater than `5`: `[8]`
+
+We then recursively sort the sub-arrays `[2, 1]` and `[8]`. For the first one, we choose `1` as the pivot (the smallest element), partition around it:
+
+* Elements less than `1`: `[2]`
+* Pivot: `1`
+* Elements greater than `1`: `[]`
+
+And for the second one, since there's only one element (`8`), it's already sorted.
+
+Now we have two sub-arrays: `[2]` and `[8]`. We combine them with the pivot `5`, giving us the final sorted array: `[1, 2, 5, 8]`.
+
+**Why Quick Sort is Efficient**
+
+Quick sort has an average-case time complexity of O(n log n), which is significantly better than bubble sort's O(n^2). This makes quick sort a popular choice for sorting large data sets.
+
+However, in the worst case (when the pivot is always the smallest or largest element, leading to poor partitioning), quick sort can degrade to O(n^2) time complexity.
+
+**Comparison with Bubble Sort**
+
+In summary:
+
+* **Bubble Sort**: Simple, but inefficient. Time complexity: O(n^2).
+* **Quick Sort**: More complex, but efficient on average. Time complexity: O(n log n).
+
+When choosing between these two algorithms for sorting a list of elements, quick sort is generally the better choice due to its efficiency and scalability.",2026-05-26 13:32:17.341,20260526053217.0,251
+88,Dev Bot,251,"Development, Information Technology (GSDC)",explain to me what A* pathfinding algorithm is,2026-05-26 13:32:50.597,20260526053250.0,-1432
+89,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-05-26 13:34:32.107,20260526053432.0,251
+90,Dev Bot,251,"Development, Information Technology (GSDC)",give me the RGBA value for color 'rede',2026-05-26 13:44:35.468,20260526054435.0,-1432
+91,Dev Bot,-1432,Dev Bot,"Since you mentioned ""color 'red'"", I'll provide the RGBA value for the color red. The RGB values for the color red are R: 255, G: 0, B: 0.
+
+So, in RGBA format (which includes an Alpha channel), the value is:
+
+R: 255, G: 0, B: 0, A: 1
+
+The 'A' or Alpha value of 1 means the color is fully opaque. If you want to make it semi-transparent, you can adjust the Alpha value accordingly.
+
+Let me know if you have any other questions!",2026-05-26 13:45:19.603,20260526054519.0,251
+92,Dev Bot,251,"Development, Information Technology (GSDC)",how about color blue?,2026-05-26 13:45:37.158,20260526054537.0,-1432
+93,Dev Bot,-1432,Dev Bot,"**RGBA Value for Color Blue**
+
+The RGB values for the color blue are R: 0, G: 0, B: 255. In RGBA format, with an Alpha value of 1 (fully opaque), the value is:
+
+R: 0, G: 0, B: 255, A: 1
+
+If you want to make it semi-transparent, you can adjust the Alpha value accordingly.
+
+Would you like me to provide the RGBA values for any other colors or help with anything else?",2026-05-26 13:46:20.080,20260526054620.0,251
+94,Dev Bot,251,"Development, Information Technology (GSDC)",yes,2026-05-26 13:47:06.971,20260526054706.0,-1432
+95,Dev Bot,-1432,Dev Bot,"It seems like our conversation was cut off. As we were discussing various topics, I'll provide a quick summary and then answer your latest question.
+
+
+**Quick Recap:**
+
+We covered:
+
+1. **Bubble Sort**: A simple sorting algorithm but inefficient with a time complexity of O(n^2).
+2. **Quick Sort**: A divide-and-conquer algorithm efficient on average with a time complexity of O(n log n).
+3. RGBA values for colors:
+   - **Red**: R: 255, G: 0, B: 0, A: 1 (fully opaque)
+   - **Blue**: R: 0, G: 0, B: 255, A: 1 (fully opaque)
+
+**Your Latest Question:**
+
+You asked if I could explain the A\* pathfinding algorithm. This is a crucial topic in computer science for finding paths between nodes in a weighted graph or network.
+
+
+**A\* Pathfinding Algorithm:**
+
+The A\* (pronounced ""A-star"") algorithm is an optimization over Dijkstra's algorithm and Breadth-First Search (BFS) that finds the shortest path between two points in a weighted graph. The A\* algorithm uses a heuristic function to guide the search towards the target node.
+
+
+**Key Components:**
+
+1.  **Heuristic Function:** This is an estimation of the distance from the current node to the target node.
+2.  **Open Set:** This is a list of nodes that have not yet been evaluated.
+3.  **Closed Set:** This is a list of nodes that have already been evaluated and are no longer under consideration.
+
+The A\* algorithm works by starting at the initial node, exploring neighboring nodes based on their estimated distance to the target node, and expanding the search until it reaches the target node.
+
+
+**Why A\*?**
+
+A\* pathfinding is used in many applications that require efficient navigation through complex networks. It's particularly useful for real-time applications such as video games or route planning systems because of its ability to provide near-optimal solutions while avoiding unnecessary exploration of the search space.
+
+Would you like me to elaborate on any specific aspect of the A\* pathfinding algorithm, or perhaps discuss a related topic?",2026-05-26 13:48:30.282,20260526054830.0,251
+96,Dev Bot,251,"Development, Information Technology (GSDC)","this is a test, 1 + 1 ?",2026-05-26 13:52:20.498,20260526055220.0,-1432
+97,Dev Bot,-1432,Dev Bot,"**Quick Answer:**
+
+
+Since you're asking if `1 + 1` equals something, I'll give you the answer as per our previous conversation:
+
+
+The result of `1 + 1` is indeed **2**.",2026-05-26 13:53:08.233,20260526055308.0,251
+98,Dev Bot,251,"Development, Information Technology (GSDC)",multiply by 2 ,2026-05-26 13:53:32.267,20260526055332.0,-1432
+99,Dev Bot,-1432,Dev Bot,"To multiply 2 by 2, we simply need to perform the multiplication operation.
+
+
+2 × 2 = 4",2026-05-26 13:54:19.487,20260526055419.0,251
+100,Dev Bot,251,"Development, Information Technology (GSDC)",divide by -6 ?,2026-05-26 13:56:06.325,20260526055606.0,-1432
+101,Dev Bot,-1432,Dev Bot,"To divide by -6, I'll first perform the division as per normal. Since you're dividing 4 (from our previous result) by a negative number (-6), we need to reverse the sign of the result.
+
+
+4 ÷ (-6) = -(4 ÷ 6)
+
+Now, performing the division:
+
+
+-(4 ÷ 6)
+= -0.67
+
+So, the result of dividing by -6 is **-0.67**.",2026-05-26 13:57:02.915,20260526055702.0,251
+102,Dev Bot,251,"Development, Information Technology (GSDC)",multiply by the value of e,2026-05-26 13:57:30.341,20260526055730.0,-1432
+103,Dev Bot,251,"Development, Information Technology (GSDC)",what time is it ?,2026-05-26 13:59:38.319,20260526055938.0,-1432
+104,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-05-26 14:01:23.832,20260526060123.0,251
+105,Dev Bot,251,"Development, Information Technology (GSDC)","ignore my previous request, what time is it now ?",2026-05-26 14:02:07.891,20260526060207.0,-1432
+106,Dev Bot,-1432,Dev Bot,"The current system time is Tuesday, May 26, 2026 at 02:02 PM.",2026-05-26 14:03:20.866,20260526060320.0,251
+107,Dev Bot,251,"Development, Information Technology (GSDC)",give me the UTC format,2026-05-26 14:04:50.919,20260526060450.0,-1432
+108,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-05-26 14:06:32.757,20260526060632.0,251
+109,Dev Bot,251,"Development, Information Technology (GSDC)","this is a test, reply on a short and fast response",2026-05-26 14:08:58.090,20260526060858.0,-1432
+110,Dev Bot,-1432,Dev Bot,"It's Tuesday, May 26, 2026 at 02:09 PM.",2026-05-26 14:09:24.677,20260526060924.0,251
+111,Dev Bot,251,"Development, Information Technology (GSDC)","lets go back to our previous discussiong, divide by -6 ?",2026-05-26 14:09:50.241,20260526060950.0,-1432
+112,Dev Bot,-1432,Dev Bot,"We previously established that dividing by -6 is equivalent to reversing the sign of the result. So, for any number divided by -6, you can simply reverse its sign.",2026-05-26 14:10:05.450,20260526061005.0,251
+113,Dev Bot,251,"Development, Information Technology (GSDC)",what is the final answer?,2026-05-26 14:10:40.011,20260526061040.0,-1432
+114,Dev Bot,-1432,Dev Bot,"The conversation has been about various topics including sorting algorithms (Bubble Sort and Quick Sort), RGBA values for colors (Red and Blue), and the A* pathfinding algorithm. The user also performed mathematical operations (1 + 1, multiplying by 2, dividing by -6) throughout the conversation.
+
+**Final Answer:**
+
+To provide a clear answer to your question of what is the final answer, I'll summarize the main points discussed in our conversation:
+
+
+1.  Sorting Algorithms:
+    *   **Bubble Sort**: Simple but inefficient with a time complexity of O(n^2).
+    *   **Quick Sort**: Efficient on average with a time complexity of O(n log n).
+2.  RGBA Values for Colors:
+    *   **Red**: R: 255, G: 0, B: 0, A: 1 (fully opaque)
+    *   **Blue**: R: 0, G: 0, B: 255, A: 1 (fully opaque)
+3.  A\* Pathfinding Algorithm:
+    *   An optimization over Dijkstra's algorithm and BFS for finding the shortest path in a weighted graph.
+4.  Mathematical Operations:
+    *   **1 + 1**: Result is **2**.
+    *   **Multiply by 2**: Result is **4** after multiplying 2.
+    *   **Divide by -6**: Reverses the sign of the number, so for any result divided by -6, you can simply reverse its sign.
+
+Considering these points and your final question about what is the final answer, I must conclude that our conversation covered a wide range of topics, but there isn't a single numerical value to provide as an answer. If you could be more specific or clarify what you're looking for, I'd be happy to assist further!",2026-05-26 14:12:17.182,20260526061217.0,251
+115,Dev Bot,251,"Development, Information Technology (GSDC)",how many chats do we have now?,2026-05-26 14:13:01.930,20260526061301.0,-1432
+116,Dev Bot,-1432,Dev Bot,There are 13 chats in this conversation.,2026-05-26 14:14:04.372,20260526061404.0,251
+117,Dev Bot,251,"Development, Information Technology (GSDC)",from the 13 chats what is my first question to you ?,2026-05-26 14:14:26.095,20260526061426.0,-1432
+118,Dev Bot,-1432,Dev Bot,"Your first question was ""test"".",2026-05-26 14:15:30.358,20260526061530.0,251
+119,Dev Bot,251,"Development, Information Technology (GSDC)","I see, this is a test, generate me 3 paraghraps poem of a random topic",2026-05-26 14:16:20.149,20260526061620.0,-1432
+120,Dev Bot,-1432,Dev Bot,"**Your First Question:** 
+
+""I see, this is a test, generate me 3 paraghraps poem of a random topic""
+
+---
+
+I'll honor your original request and provide a short poem for you:
+
+In moonlit gardens where secrets sleep
+A midnight bloom unfurls its gentle creep
+Its petals soft as silken threads that weave
+A mysterious tale in silence they leave.
+
+The night air whispers secrets to the trees
+Their leaves rustling with ancient memories
+The wind carries scents of far-off lands and seas
+Inviting dreams and mysteries yet unseen.
+
+In this enchanted hour where shadows play
+The world is hushed, a quiet stage for the display
+Of moonlit magic, mystery, and might
+A night of wonder that unfolds in silent light.",2026-05-26 14:17:41.923,20260526061741.0,251
+121,Dev Bot,251,"Development, Information Technology (GSDC)","this is a test, 1 + 1 ?",2026-05-26 14:18:01.840,20260526061801.0,-1432
+122,Dev Bot,-1432,Dev Bot,1 + 1 = **2**,2026-05-26 14:18:21.469,20260526061821.0,251
+123,Dev Bot,251,"Development, Information Technology (GSDC)",add another two,2026-05-26 14:19:04.590,20260526061904.0,-1432
+124,Dev Bot,-1432,Dev Bot,"I see you want to ""add another two"" from your last question. You previously asked about the result of 1 + 1, which is 2. To add another two would make it:
+
+2 (previous result) + 2 (additional) = **4**",2026-05-26 14:19:28.165,20260526061928.0,251
+125,Dev Bot,251,"Development, Information Technology (GSDC)",show me sample c# code for generating the fibonacci sequence,2026-05-26 14:29:06.541,20260526062906.0,-1432
+126,Dev Bot,-1432,Dev Bot,"To provide a clear answer to your original request for sample C# code generating the Fibonacci sequence:
+```csharp
+using System;
+using System.Collections.Generic;
+
+public class FibonacciSequenceGenerator
+{
+    public static IEnumerable<int> GenerateFibonacci(int count)
+    {
+        yield return 0;
+        if (count > 1) yield return 1;
+
+        int a = 0, b = 1;
+        for (int i = 2; i < count; i++)
+        {
+            yield return a + b;
+            (a, b) = (b, a + b);
+        }
+    }
+
+    public static void Main(string[] args)
+    {
+        foreach (var num in GenerateFibonacci(10))
+            Console.WriteLine(num); // Prints the first 10 numbers of the Fibonacci sequence
+    }
+}
+```
+This code defines a method `GenerateFibonacci` that generates the Fibonacci sequence up to the specified count. The `Main` method demonstrates how to use this generator by printing the first 10 numbers in the sequence.",2026-05-26 14:29:50.204,20260526062950.0,251
+127,Dev Bot,251,"Development, Information Technology (GSDC)",how about in python,2026-05-26 14:37:29.515,20260526063729.0,-1432
+128,Dev Bot,-1432,Dev Bot,"To answer your original question: 
+
+how about in python 
+
+The Fibonacci sequence generation can be achieved with the following Python code:
+
+```python
+def generate_fibonacci(count):
+    a, b = 0, 1
+    for i in range(2, count):
+        yield a + b
+        (a, b) = (b, a + b)
+
+for num in generate_fibonacci(10):
+    print(num)
+```
+
+This Python code uses a generator to produce the Fibonacci sequence up to the specified count.",2026-05-26 14:38:46.914,20260526063846.0,251
+129,Dev Bot,251,"Development, Information Technology (GSDC)",in c++ ?,2026-05-26 14:39:06.900,20260526063906.0,-1432
+130,Dev Bot,-1432,Dev Bot,"To answer your original question: ""in c++ ?""
+
+Here's an example of how you can generate the Fibonacci sequence in C++:
+
+```cpp
+#include <iostream>
+
+class FibonacciSequenceGenerator {
+public:
+    void generate(int count) {
+        int a = 0, b = 1;
+        for (int i = 2; i <= count; ++i) {
+            std::cout << a << "" "";
+            int temp = a + b;
+            a = b;
+            b = temp;
+        }
+    }
+};
+
+int main() {
+    FibonacciSequenceGenerator generator;
+    generator.generate(10);
+    return 0;
+}
+```
+
+This C++ code uses a class to encapsulate the Fibonacci sequence generation and prints the first 10 numbers of the sequence.",2026-05-26 14:39:46.225,20260526063946.0,251
+131,Dev Bot,251,"Development, Information Technology (GSDC)",what time is it?,2026-05-26 14:42:00.028,20260526064200.0,-1432
+132,Dev Bot,-1432,Dev Bot,"**02:42 PM**
+
+It is currently Tuesday, May 26, 2026 at 02:42 PM.",2026-05-26 14:42:29.751,20260526064229.0,251
+133,Dev Bot,251,"Development, Information Technology (GSDC)",can you generate me sample formatted table with mock up data?,2026-05-26 14:43:11.820,20260526064311.0,-1432
+134,Dev Bot,-1432,Dev Bot,"**Sample Formatted Table with Mock Up Data**
+```markdown
+| **Name** | **Age** | **City** |
+| --- | --- | --- |
+| John Doe | 25 | New York |
+| Jane Smith | 31 | Los Angeles |
+| Bob Johnson | 42 | Chicago  |
+| Alice Brown | 28 | Houston   |
+| Mike Davis | 35 | Phoenix   |
+```",2026-05-26 14:43:47.409,20260526064347.0,251
+135,Dev Bot,251,"Development, Information Technology (GSDC)",Hi,2026-05-26 14:46:45.872,20260526064645.0,-1432
+136,Dev Bot,-1432,Dev Bot,"### CURRENT USER PROMPT:
+Hi
+---
+
+Since there's no specific question or prompt provided, I'll consider this as the beginning of our conversation. What would you like to discuss or ask about?",2026-05-26 14:47:12.469,20260526064712.0,251
+137,Dev Bot,251,"Development, Information Technology (GSDC)",Hi again,2026-05-26 14:49:42.921,20260526064942.0,-1432
+138,Dev Bot,-1432,Dev Bot,"### CURRENT USER PROMPT:
+Hi again",2026-05-26 14:50:08.984,20260526065008.0,251
+139,Dev Bot,251,"Development, Information Technology (GSDC)","this is a test, respond quickly",2026-05-26 14:50:40.753,20260526065040.0,-1432
+140,Dev Bot,-1432,Dev Bot,"**Current Time:** Tuesday, May 26, 2026 at 02:50 PM. 
+
+(I'll wait for your next question or prompt)",2026-05-26 14:51:10.321,20260526065110.0,251
+141,Dev Bot,251,"Development, Information Technology (GSDC)",hi,2026-05-26 14:51:17.544,20260526065117.0,-1432
+142,Dev Bot,-1432,Dev Bot,"**02:51 PM**
+
+It's currently Tuesday, May 26, 2026 at 02:51 PM.",2026-05-26 14:51:40.949,20260526065140.0,251
+143,Dev Bot,251,"Development, Information Technology (GSDC)",1 + 1 ?,2026-05-26 14:51:47.386,20260526065147.0,-1432
+144,Dev Bot,-1432,Dev Bot,2,2026-05-26 14:52:05.827,20260526065205.0,251
+145,Dev Bot,251,"Development, Information Technology (GSDC)",+ 3 ?,2026-05-26 14:54:46.405,20260526065446.0,-1432
+146,Dev Bot,-1432,Dev Bot,"3 ? 
+
+There is no specific question or context provided for the number ""3"". If you could provide more information about what you are looking for, I'd be happy to help.",2026-05-26 14:55:12.631,20260526065512.0,251
+147,Dev Bot,251,"Development, Information Technology (GSDC)",what is the last 2 questions i asked you before this?,2026-05-26 14:55:59.276,20260526065559.0,-1432
+148,Dev Bot,-1432,Dev Bot,"You asked two questions before this one:
+
+1. what is the last 2 questions i asked you before this?
+2. This one doesn't make sense as it's referring back to itself in the conversation history.
+
+The two previous questions were about the Fibonacci sequence generation in Python and C++.",2026-05-26 14:56:22.294,20260526065622.0,251
+149,Dev Bot,251,"Development, Information Technology (GSDC)","i did ask you about ""1 + 1?"" then ask what if i add 3",2026-05-26 14:57:13.137,20260526065713.0,-1432
+150,Dev Bot,-1432,Dev Bot,5,2026-05-26 14:57:29.302,20260526065729.0,251
+151,Dev Bot,251,"Development, Information Technology (GSDC)",hi,2026-05-26 14:59:20.694,20260526065920.0,-1432
+152,Dev Bot,-1432,Dev Bot,"You asked to know how much is `1 + 1` and then asked what the result would be if you added `3`. 
+
+To answer your original question, `1 + 1 = 2`, and adding `3` makes it `2 + 3 = 5`.",2026-05-26 14:59:40.221,20260526065940.0,251
+153,Dev Bot,251,"Development, Information Technology (GSDC)",what time is it now ?,2026-05-26 15:28:20.250,20260526072820.0,-1432
+154,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-05-26 15:30:01.402,20260526073001.0,251
+155,Dev Bot,251,"Development, Information Technology (GSDC)",what time is it now ?,2026-05-26 15:30:28.402,20260526073028.0,-1432
+156,Dev Bot,-1432,Dev Bot,"**Current Time:** Tuesday, May 26, 2026 at 03:30 PM.",2026-05-26 15:30:48.530,20260526073048.0,251
+157,Dev Bot,251,"Development, Information Technology (GSDC)",test,2026-05-26 16:35:06.676,20260526083506.0,-1432
+158,Dev Bot,-1432,Dev Bot,"**Current Time:** Tuesday, May 26, 2026 at 04:35 PM.",2026-05-26 16:35:33.820,20260526083533.0,251
+159,Dev Bot,251,"Development, Information Technology (GSDC)",What is 1 + one?,2026-05-26 16:39:57.880,20260526083957.0,-1432
+160,Dev Bot,-1432,Dev Bot,2,2026-05-26 16:40:18.435,20260526084018.0,251
+161,Dev Bot,251,"Development, Information Technology (GSDC)",give me a sample python code that accurately generate the pi,2026-05-26 16:44:11.404,20260526084411.0,-1432
+162,Dev Bot,-1432,Dev Bot,"import math
+print(""Approximation of Pi:"", math.pi) 
+for i in range(10000):
+    x = (i % 6 == 0)
+    y = (i % 5 == 0)
+    if x and y:
+        term = 4 / ((i + 1/2)**2)
+    elif i % 6 == 0:
+        term = 4 / (i **2)
+    else:
+        term = -4 / ((i + 1/2) ** 2)
+    pi_approximation += term",2026-05-26 16:44:50.550,20260526084450.0,251
+163,Dev Bot,251,"Development, Information Technology (GSDC)",can you show it to me again ?,2026-05-26 16:46:10.234,20260526084610.0,-1432
+164,Dev Bot,-1432,Dev Bot,"Tuesday, May 26, 2026 at 04:46 PM.",2026-05-26 16:46:26.757,20260526084626.0,251
+165,Dev Bot,251,"Development, Information Technology (GSDC)",show me the code again,2026-05-26 16:46:59.058,20260526084659.0,-1432
+166,Dev Bot,-1432,Dev Bot,"**Current Time:** Tuesday, May 26, 2026 at 04:46 PM. 
+
+Here is the Python code that generates an approximation of Pi:
+```
+import math
+print(""Approximation of Pi:"", math.pi) 
+for i in range(10000):
+    x = (i % 6 == 0)
+    y = (i % 5 == 0)
+    if x and y:
+        term = 4 / ((i + 1/2)**2)
+    elif i % 6 == 0:
+        term = 4 / (i **2)
+    else:
+        term = -4 / ((i + 1/2) ** 2)
+    pi_approximation += term
+```",2026-05-26 16:47:26.704,20260526084726.0,251
+167,Dev Bot,251,"Development, Information Technology (GSDC)",how about the fibonacci sequence?,2026-05-26 16:48:00.658,20260526084800.0,-1432
+168,Dev Bot,-1432,Dev Bot,"The Fibonacci sequence is a series of numbers where each number is the sum of the two preceding ones, usually starting with 0 and 1. Here's a simple Python function to generate it:
+
+```python
+def fibonacci(n):
+    fib_sequence = [0, 1]
+    while len(fib_sequence) < n:
+        fib_sequence.append(fib_sequence[-1] + fib_sequence[-2])
+    return fib_sequence
+
+print(fibonacci(10))  # generates the first 10 Fibonacci numbers
+```",2026-05-26 16:48:30.457,20260526084830.0,251
+169,Dev Bot,251,"Development, Information Technology (GSDC)",teach me bubble sort,2026-05-26 16:48:51.745,20260526084851.0,-1432
+170,Dev Bot,-1432,Dev Bot,"### Bubble Sort Algorithm
+
+Here's a simple implementation of the bubble sort algorithm in Python:
+
+```python
+def bubble_sort(arr):
+    n = len(arr)
+    
+    for i in range(n):
+        # Create a flag that will allow the function to terminate early if there's nothing left to sort
+        already_sorted = True
+        
+        # Start looking at each item of the list one by one, comparing it with its adjacent value.
+        for j in range(n - i - 1):
+            # If we find an element that is greater than its adjacent element, swap them 
+            if arr[j] > arr[j + 1]:
+                # In Python, we don't need to explicitly swap the values. We can simply reassign the variables.
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                
+                # Since we had to change the list, we need to reset the flag as False
+                already_sorted = False
+        
+        # If there were no swaps during the last iteration, the list is already sorted, and we can terminate
+        if already_sorted:
+            break
+
+# Test the function with an example array
+arr = [64, 34, 25, 12, 22, 11, 90]
+bubble_sort(arr)
+print(""Sorted Array in Ascending Order:"", arr)
+```
+
+This code sorts the given list in ascending order using the bubble sort algorithm.",2026-05-26 16:49:45.909,20260526084945.0,251
+171,Dev Bot,251,"Development, Information Technology (GSDC)",how about quick sort or binary sort?,2026-05-26 16:55:16.777,20260526085516.0,-1432
+172,Dev Bot,-1432,Dev Bot,"### Sorting Algorithms Comparison
+Here are simple implementations of Quick Sort and Binary Insertion Sort (a variation of Binary Search) for comparison:
+
+#### **Quick Sort**
+```python
+def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quick_sort(left) + middle + quick_sort(right)
+
+print(quick_sort([3,6,8,10,1,4,7]))
+```
+
+#### **Binary Insertion Sort**
+```python
+def binary_insertion_sort(arr):
+    for i in range(len(arr)):
+        key = arr[i]
+        low = 0
+        high = i
+        
+        while low < high:
+            mid = (low + high) // 2
+            
+            if arr[mid] > key:
+                high = mid
+            else:
+                low = mid + 1
+                
+        j = i - 1
+        while j >= low:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[low] = key
+        
+    return arr
+
+print(binary_insertion_sort([3,6,8,10,1,4,7]))
+```
+
+These implementations demonstrate a basic version of each sorting algorithm. For more complex datasets or larger lists, consider using established libraries like the `sorted` function in Python, which uses Timsort for efficient sorting.",2026-05-26 16:56:20.846,20260526085620.0,251
+173,Dev Bot,251,"Development, Information Technology (GSDC)","this is a test, what time is it now?",2026-05-26 19:14:31.261,20260526111431.0,-1432
+174,Dev Bot,-1432,Dev Bot,"Tuesday, May 26, 2026 at 07:14 PM.",2026-05-26 19:15:05.431,20260526111505.0,251
+175,Dispatch,100,"Jordan, Christan","[TRIP:SPT26-05-1147] Hindi maitapat ang unit nila driver dahil may pagawa, huwag nalang ibigay sa iba ang OE dahil served na ito",2026-05-27 23:19:54.177,20260527151954.0,
+176,Dev Bot,251,"Development, Information Technology (GSDC)",hi,2026-05-28 09:17:29.444,20260528011729.0,-1432
+177,Dev Bot,-1432,Dev Bot,"**Current Time:** Thursday, May 28, 2026 at 09:17 AM.",2026-05-28 09:18:02.101,20260528011802.0,251
+178,Dev Bot,251,"Development, Information Technology (GSDC)","im not asking about time, i just greeted",2026-05-28 09:18:46.084,20260528011846.0,-1432
+179,Dev Bot,-1432,Dev Bot,Hi!,2026-05-28 09:19:12.258,20260528011912.0,251
+180,Dev Bot,251,"Development, Information Technology (GSDC)",hello,2026-05-28 09:19:20.279,20260528011920.0,-1432
+181,Dev Bot,-1432,Dev Bot,"Thursday, May 28, 2026 at 09:19 AM.",2026-05-28 09:19:47.867,20260528011947.0,251
+182,Dev Bot,251,"Development, Information Technology (GSDC)",1 + 1?,2026-05-28 13:32:46.632,20260528053246.0,-1432
+183,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-05-28 13:34:30.529,20260528053430.0,251
+184,Dev Bot,251,"Development, Information Technology (GSDC)",test,2026-05-28 14:22:39.574,20260528062239.0,-1432
+185,Dev Bot,-1432,Dev Bot,"### Tuesday, May 26, 2026 was over an hour ago 
+The current time is Thursday, May 28, 2026 at 02:22 PM.",2026-05-28 14:23:14.798,20260528062314.0,251
+186,Dev Bot,251,"Development, Information Technology (GSDC)",read this and analyze,2026-06-02 11:11:56.956,20260602031156.0,-1432
+187,Dev Bot,251,"Development, Information Technology (GSDC)","read this and analyze, import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'; import { useSearchParams } from ""react-router-dom""; import PageTemplate from './template'; import {      NEW_TRIPS_UNFILTERED_TABLE_CONFIG,      LIVE_DMS_TABLE_CONFIG,GPS_STATUS_EMOJIS,      ATTENDANCE_STATUS_COLORS,      ATTENDANCE_STATUSES,      TRIP_PROGRESS,     FETCH_LOADING_KEYS,     FUEL_REQUESTS_TABLE_CONFIG,     cementTypeOptions,     frStatuses,     GSDC_NAVIGATE_TO_TRIP_key, } from '../truth.config'; import { RefreshCcw, Download, Maximize2, X, Menu } from 'lucide-react';   // CSS import './css/OrderManagement.css';  // Power apps services import { NewTripsView_CEM_unfilteredService} from '../generated/services/NewTripsView_CEM_unfilteredService'; import { LiveDMSView_CEMService} from '../generated/services/LiveDMSView_CEMService'; import { LiveVehicleAssignmentLIstViewService } from '../generated/services/LiveVehicleAssignmentLIstViewService' import { type LiveVehicleAssignmentLIstView } from '../generated/models/LiveVehicleAssignmentLIstViewModel'; import { LiveDriverDispatchedList_AllService } from '../generated/services/LiveDriverDispatchedList_AllService' import {GenerateAdditionalOE_IDService} from '../generated/services/GenerateAdditionalOE_IDService'; import { GenerateNewTripTicketService} from '../generated/services/GenerateNewTripTicketService'; //import {Vw_SOURCE_LIST_CEMService } from '../generated/services/Vw_SOURCE_LIST_CEMService'; //alread being fetch on fct routes //import {DMS_TripFuelRequestsListService} from '../generated/services/DMS_TripFuelRequestsListService'; import { Live_LatestFuelRequestsService } from '../generated/services/Live_LatestFuelRequestsService'; import {Vw_FCT_RouteNodeListService} from '../generated/services/Vw_FCT_RouteNodeListService'; import { DMS_CEMService } from '../generated/services/DMS_CEMService'; import {FctFinalService} from '../generated/services/FctFinalService'; import { type FctFinal } from '../generated/models/FctFinalModel';  import { DMS_TripFuelRequestsListService} from '../generated/services/DMS_TripFuelRequestsListService'; import { GetLastLiquidatedOdometerService } from '../generated/services/GetLastLiquidatedOdometerService'; import FuelRequestManager from '../components/FuelRequestManager'; import {Vw_EmployeeServedTodayCountService} from '../generated/services/Vw_EmployeeServedTodayCountService'; import { UpsertTripTaskTrackerService } from '../generated/services/UpsertTripTaskTrackerService'; import { TripTicketsService } from '../generated/services/TripTicketsService';  // Custom Components import TableView,  { type ColumnConfig, type scrollToConfig, encodeColumnName as enc } from '../components/ewul_TableFlex'; import DateRangePicker from '../components/ewul_DateRangePicker'; import TripGroup_DonutChart from '../components/tripGroup_DonutChart';  import OrderDistributionForm, { type OrderDistributionFormRef, type FormUserInfo } from '../components/OrderDistributionForm'; import Modal from '../components/ewul_Modal'; import AutoDismissBanner from '../components/ewul_Banner';   //Utils import type { DropdownOption} from '@components/SearchableDropdown'; import { useUser } from '../utils/useUser'; import {      ewulFetchAll,     ISOtoInt,      ewul_canFetch as canFetch,     ewul_isAnythingLoading as isAnythingLoading,     ewul_setLoadingFor as setLoadingFor,     ewul_loadingList as loadingList,      logDmsUpdate,   } from '../utils/Ewul_GSDC_Utils'; import { useTaskWorker } from '../utils/TaskWorkerContext'; import type { LiveDMSView_CEM } from '../generated/models/LiveDMSView_CEMModel';      interface FuelRequestModalState {     show: boolean;     title: string;     subtitle: string;     tractor: string;     trailer: string;     data: LiveDMSView_CEM | null; }  interface lastOdometerResult {     Odometer: string;     OE: string;     lastOE: string; }  const OrderManagement: React.FC = () => {      const { user } = useUser();     const { addTask } = useTaskWorker();      const [orders, setOrders] = useState<any[]>([]);     const [trips, setTrips] = useState<any[]>([]);     const [livetruckassignment, setLiveTruckAssignment] = useState<any[]>([]);     const [driverHelperList, setDriverHelperList] = useState<any[]>([]);      const [truckOptions, setTruckOptions] = useState<any[]>([]);     const [trailerOptions, setTrailerOptions] = useState<any[]>([]);     const [sourceOptions, setSourceOptions] = useState<any[]>([]);     const [destinationOptions, setDestinationOptions] = useState<any[]>([]);     const [stationOptions, setStationOptions] = useState<any[]>([]);     const [fuelRequests, setFuelRequests] = useState<any[]>([]);     const [employeeServedAttendance, setEmployeeServedAttendance] = useState<any[]>([]);       const [previewTrip, setPreviewTrip] = useState<any>({});     //const [loading, setLoading] = useState<boolean>(false);     const [preview_preloadOE, setPreviewPreloadOE] = useState<any>({});     const [preview_mobilizationOE, setPreviewMobilizationOE] = useState<any>({});      const [activeView, setActiveView] = useState<'dashboard' | 'form'>('dashboard');      const [sidebarVisible, setSidebarVisible] = useState(false);     const [showNewTripModal, setShowNewTripModal] = useState(false);     const [showFuelRequestModal, setShowFuelRequestModal] = useState<FuelRequestModalState | null>(null);     const [lastOdometer, setLastOdometer] = useState<string | null>(null);     const [lastFuelReqOE, setLastFuelReqOE] = useState<string | null>(null);      const formRef = useRef<OrderDistributionFormRef>(null);      const [searchParams, _setSearchParams] = useSearchParams();     const targetOE = searchParams.get(""oe"");     useEffect(() => {         if (targetOE && trips.length > 0) {             console.log(""Deep link detected for OE:"", targetOE);                          // Logic to find the trip in your local list             const trip = trips.find(t => String(t.OE) === String(targetOE));                          if (trip) {                 // Trigger your existing table click/row selection logic                 handleTripsTableOnClick(trip,true); // dont do deselect                                  // OPTIONAL: Clear the URL param so it doesn't re-trigger on refresh                 // setSearchParams({}, { replace: true });             }         }     }, [targetOE, trips]); // Runs when trips load or OE param changes          const [isFormMaximized, setIsFormMaximized] = useState(false);      const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);      useEffect(() => {         const handleResize = () => {             setIsMobile(window.innerWidth <= 1024);         };         window.addEventListener('resize', handleResize);         return () => window.removeEventListener('resize', handleResize);     }, []);      const handleChangeActiveView = async (view: 'dashboard' | 'form') => {         if (activeView === 'form' && view === 'dashboard' && formRef.current && selectedOrder !== null) {             const canClose = await formRef.current?.showUnsavedChangesModal();             if (canClose) {                 setSelectedOrder(null);                  setPreviewTrip({});                 handleChangeActiveView('dashboard');                 return;             }         } else {             setActiveView(view);         }     };      const [selectedRange, setSelectedRange] = useState<{from: string, to: string} | null>(null);     const handleDateChange = useCallback((range: {from: string, to: string}) => {         setSelectedRange(prev => {             // If the values are exactly the same, return the previous state to avoid a re-render             if (prev?.from === range.from && prev?.to === range.to) {                 return prev;             }             return range;         });     }, []);      const [selectedRangeNewOrders, setSelectedRangeNewOrders] = useState<{from: string, to: string} | null>(null);     const handleDateChangeNewOrders = useCallback((range: {from: string, to: string}) => {         setSelectedRangeNewOrders(prev => {             // If the values are exactly the same, return the previous state to avoid a re-render             if (prev?.from === range.from && prev?.to === range.to) {                                  return prev;             }             return range;         });     }, []);         const [selectedOrder, setSelectedOrder] = useState<any | null>(null);     const currentOrderData = selectedOrder || { OE: '', LS: 0 };      // 1. Data Fetching Logic     const fetchNewOrders = useCallback(async () => {         if (!selectedRangeNewOrders) return;         if (!canFetch(FETCH_LOADING_KEYS.newOrders)) return;          console.log(""Fetching new orders with date range:"", selectedRangeNewOrders);                  // Convert ""2026-03-26"" to 20260326 for your SQL OEDateAsInt column         const fromInt = ISOtoInt(selectedRangeNewOrders.from);         const toInt = ISOtoInt(selectedRangeNewOrders.to);                  const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt}`;          const options = {                 filter: dateFilter, // Pass the filter here!                 orderBy: [""OEDateAsInt desc""]         }          setLoadingFor(FETCH_LOADING_KEYS.newOrders, true);         try {              const result = await ewulFetchAll<any>(                 NewTripsView_CEM_unfilteredService,                  options,                  10000             );              // console.log(""Fetched new orders:"", result);               // 'result' is the actual Array now!             if (result && result.length > 0) {                 setOrders(result);             } else {                 setOrders([]);             }                      } catch (err) {             console.error(""Fetch Error during batching:"", err);             setOrders([]);         } finally {             setLoadingFor(FETCH_LOADING_KEYS.newOrders, false);             console.log(""Fetch new orders completed with count:"", orders.length);         }      }, [selectedRangeNewOrders]);     fetchNewOrders(); // Call it once on component mount to load initial data      const fetchAttendanceServedCounts = useCallback(async (nocd: boolean = false) => {          if (!nocd && employeeServedAttendance.length > 0 && !canFetch(`${FETCH_LOADING_KEYS.fetchAttendanceServedCounts}`)) return;         setLoadingFor(`${FETCH_LOADING_KEYS.fetchAttendanceServedCounts}`, true);           try {             const requestsResults = await ewulFetchAll<any>(                 Vw_EmployeeServedTodayCountService,                 { filter: '' },                 2000,                 'EmployeeName'             );             setEmployeeServedAttendance(requestsResults);           } catch (err) {             console.error(""Fetch Error during fuel request batching:"", err);         } finally {             setLoadingFor(`${FETCH_LOADING_KEYS.fetchAttendanceServedCounts}`, false);         }     }, []);        const fetchFuelRequests = useCallback(async (nocd: boolean = false, vehicle?: string, oe?: string) => {         console.log(""Fetching fuel requests with parameters - nocd:"", nocd, ""vehicle:"", vehicle, ""oe:"", oe);         if (!vehicle || !oe) return;         if (!nocd && fuelRequests.length > 0 && !canFetch(`${FETCH_LOADING_KEYS.fuelRequests}-${vehicle}-${oe}`)) return;         setLoadingFor(`${FETCH_LOADING_KEYS.fuelRequests}`, true);                            // Filter 2: All requests for that Head on that OE         const currentOEFilter = `(Head eq '${vehicle}' and OE eq '${oe}') or (Head eq '${vehicle}' and isOngoing eq 'Yes')`;         setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, true);         try {              console.log(`Fetching fuel requests for vehicle: ${vehicle} and OE: ${oe}`);             //setFuelRequests([]); // reset to prevent stale data entering the logic             const requestsResults = await ewulFetchAll<any>(                 Live_LatestFuelRequestsService,                 { filter: currentOEFilter },                 100,                 'DMS_RequestID'             );              setFuelRequests(requestsResults);             setLoadingFor(`${FETCH_LOADING_KEYS.fuelRequests}`, false);              console.log(""fetching last Odometer:"");             const resOdo = await GetLastLiquidatedOdometerService.GetLastLiquidatedOdometer({                          Head: vehicle,                 } as any);               const tableOdoData = resOdo.data?.ResultSets?.Table1 as lastOdometerResult[];             const lastOdometer = tableOdoData ? tableOdoData[0].Odometer : 0;             const lastOE = tableOdoData ? tableOdoData[0].lastOE : null;               setLastOdometer(lastOdometer || null);             setLastFuelReqOE(lastOE);             console.log(""Last odometer reading from fuel requests:"", lastOdometer || null, 'results: ', lastOdometer);              console.log(""Fetched and combined unique fuel requests:"", requestsResults);           } catch (err) {             console.error(""Fetch Error during fuel request batching:"", err);             setFuelRequests([]);         } finally {             setLoadingFor(`${FETCH_LOADING_KEYS.fuelRequests}-${vehicle}-${oe}`, false);         }     }, []);           const fetchFCTRoutes = useCallback(async () => {         if (stationOptions.length > 0 && sourceOptions.length > 0 && destinationOptions.length > 0) if (!canFetch(FETCH_LOADING_KEYS.sourceList,1000*60*60 /** CD of 1 hr since its not always updated */)) return; // Only fetch if we don't already have options          try{             const result = await ewulFetchAll<any>(                 Vw_FCT_RouteNodeListService,                 { filter: ''},                 10000,                 'Route'             );              if (result && result.length > 0) {                  const station_options: DropdownOption[] = result                     .filter((item: any) => item.Type === 'Station')                     .map((item: any) => ({                         value: item.Route ?? '',                         label: item.Route ?? '',                         subtext: item.Type,                         type: 'multi',                         record: item // Store the original record for later use when an option is selected                                              }));                  const source_options: DropdownOption[] = result                     .filter((item: any) => item.Type === 'Source')                     .filter((item: any) => item.Route && item.Route.startsWith('CLZ')) // Filter out items without a Name                     .map((item: any) => ({                         value: item.Route ?? '',                         label: item.Route ?? '',                         subtext: item.U_DeliveryType ?? 'OTHERS',                         type: 'multi',                         record: item // Store the original record for later use when an option is selected                     }));                  const destination_options: DropdownOption[] = result                     .filter((item: any) => item.Type === 'Destination')                     .filter((item: any) => item.Route && item.Route.startsWith('CLZ')) // Filter out items without a Name                     .map((item: any) => ({                         value: item.Route ?? '',                         label: item.Route ?? '',                         subtext: item.U_DeliveryType ?? 'OTHERS',                         type: 'multi',                         record: item // Store the original record for later use when an option is selected                     }));                   // Only update if the result is actually different or exists                 setSourceOptions(source_options || []);                 setDestinationOptions(destination_options || []);                 setStationOptions(station_options || []);              } else {                 throw new Error(""No route data found"");             }           } catch (err) {             console.error(""Fetch Error during FCT Route fetching:"", err);         }              },[]);       const handleFuelRequestSubmit = async (formData: FctFinal, attachmentSPID?: string, tripID?: string) => {         setShowFuelRequestModal(null);         console.log(""Submitting new fuel request..."");         // 1. Set loading state         setLoadingFor(FETCH_LOADING_KEYS.fuelRequests, true);         let isCreate = formData.Frstatus === 'New' || formData.Frstatus === 'Pre-New';         let isFRDisapproveUpdate = formData.Frstatus === 'FR Disapproved';         let createData: FctFinal = { ...formData, Id: Number(attachmentSPID) || 0, Frstatus:  isCreate ? formData.Frstatus === 'Pre-New' ? 'Pre-Request' : 'Request' : formData.Frstatus }; // Ensure the status is set to 'Request' for new submissions         let updateData: FctFinal  = { ...formData, Frstatus: 'Request', SQLID: undefined}; // For updates, only change status if it's a disapproval update            console.log(""Fuel request form data before submission:"", isFRDisapproveUpdate, "" // "", formData, ' // Create?', isCreate, ' // Update?', isFRDisapproveUpdate);                  addTask({             id: `fuelRequest-${formData.Orderentryref}-${formData.Head}`,             name: `Fuel Request for trip ${formData.Orderentryref}`,             execute: async () => {                 try {                     let result = null;                     if (isCreate) {                         result = await FctFinalService.create(createData);                         if (result.error) throw new Error(""Failed to submit fuel request: "" + result.error.message);                         DMS_TripFuelRequestsListService.create({                             OE: formData.Orderentryref || '',                             fuelrequestID: result.data.SQLID?.toString() || '',                             RequestedBy: user?.FullName || 'Unknown',                             userID: Number(user?.id) || undefined,                             fctID: tripID ? Number(tripID) : undefined,                             CreatedDate: new Date().toISOString(),                         });                         logDmsUpdate({ // record transaction in log                             userName: user?.FullName || 'Unknown User',                             userID: Number(user?.id) || 0,                             inputOE: formData.Orderentryref || '',                             action: `Requested ${result.data.Category} fuel for this trip.`,                             value: result.data.SQLID?.toString() || '',                             context: `Trip - Fuel Request`,                             role: user?.Position || 'Unknown Role',                         });                     } else if (formData.SQLID?.toString()) {                         console.log(""Updating existing fuel request with ID:"", formData.SQLID.toString());                         result = await FctFinalService.update(formData.SQLID?.toString(), updateData);                         if (result.error) throw new Error(""Failed to update fuel request: "" + result.error.message);                         logDmsUpdate({ // record transaction in log                             userName: user?.FullName || 'Unknown User',                             userID: Number(user?.id) || 0,                             inputOE: formData.Orderentryref || '',                             action: `Updated disapproved fuel request [${formData.SQLID?.toString()}] for this trip.`,                             value: result.data.SQLID?.toString() || '',                             context: `Trip - Fuel Request Update`,                             role: user?.Position || 'Unknown Role',                         });                     }                      console.log(""Update result:"", result);                     if (!result?.success) {                         throw new Error(""Failed to submit fuel request."");                     }                  } catch (err) {                     console.error(""Error submitting fuel request:"", err);                     return { success: false, data: null };                 } finally {                     return { success: true, data: null };                 }             },             checkSuccess: (result: { success: boolean }) => result.success,             onSuccess: () => {null},             onFailure: () => {null},             message: `Submitting fuel request for OE ${formData.Orderentryref}...`,             message_success: `Fuel request for OE ${formData.Orderentryref} submitted successfully.`,             message_failure: `Failed to submit fuel request for OE ${formData.Orderentryref}.`,         });      };        // State for Change Trip Modal     const [showChangeTripModal, setShowChangeTripModal] = useState<{         show: boolean;         record: any;         action: 'Divert' | 'Change';         configChange: any[];     } | null>(null);     const [selectedChangeTripOE, setSelectedChangeTripOE] = useState<any | null>(null);      const handleRequestChangeTrip = (tripData: any, action: 'Divert' | 'Change') => {         let originalOESource = tripData?.Source || '';         setSelectedChangeTripOE(null); // Reset selected OE when opening modal         setShowChangeTripModal({ show: true, record: tripData, action, configChange: changeConfig(originalOESource) });         // console.log(""trip data: "", tripData);         fetchNewOrders(); // Refresh orders to get the latest OEs for selection     };            const fetchTrips = useCallback(async (nocd: boolean = false) => {         if (!selectedRange) return;         if (!nocd && trips.length > 0) null; //if (!canFetch(FETCH_LOADING_KEYS.trips)) return;         console.log(""Fetching trips with date range:"", selectedRange);                   const fromInt = ISOtoInt(selectedRange.from);         const toInt = ISOtoInt(selectedRange.to);         const dateFilter = `OEDateAsInt ge ${fromInt} and OEDateAsInt le ${toInt} and TripProgress ne 'PLD Done'`;          setLoadingFor(FETCH_LOADING_KEYS.trips, true);         try {             const result = await ewulFetchAll<any>(                 LiveDMSView_CEMService,                  { filter: dateFilter, orderBy: [""OEDateAsInt desc""] },                  10000,                 'ID'             );              // Only update if the result is actually different or exists             setTrips(result || []);              } catch (err) {             console.error(""Fetch Error:"", err);         } finally {             setLoadingFor(FETCH_LOADING_KEYS.trips, false);         }     }, [selectedRange]); // ONLY depend on the range      const [LSlist, setLSList] = useState<any[]>([]);     const fetchLSThisMonth = useCallback(async () => {         if (!canFetch(FETCH_LOADING_KEYS.lsList)) return;         console.log(""Fetching LS list for this month..."");          const now = new Date();         const firstDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));         const firstDayInt = ISOtoInt(firstDay.toISOString()); // YYYYMMDD          const lastDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));         const lastDayInt = ISOtoInt(lastDay.toISOString());                   const dateFilter = `OEDateAsInt ge ${firstDayInt} and OEDateAsInt le ${lastDayInt} and TripProgress ne 'Done' and TripProgress ne 'PLD Done' `;          setLoadingFor(FETCH_LOADING_KEYS.lsList, true);         try {             const result = await ewulFetchAll<any>(                 LiveDMSView_CEMService,                  { filter: dateFilter, orderBy: [""OEDateAsInt desc""], select: [`${enc('Loading Sequence')},ID,OE`] },                  5000,                 'ID'             );              // Only update if the result is actually different or exists             setLSList(result || []);              } catch (err) {             console.error(""Fetch Error:"", err);         } finally {             setLoadingFor(FETCH_LOADING_KEYS.lsList, false);         }     }, []);          const fetchTruckList = useCallback(async () => {         if (!canFetch(FETCH_LOADING_KEYS.truckList)) return;         console.log(""Fetching truck list..."");          setLoadingFor(FETCH_LOADING_KEYS.truckList, true);         try {             const result = await ewulFetchAll<any>(                 LiveVehicleAssignmentLIstViewService,                  { filter: `Assignment eq 'VASQUEZ' or Assignment eq 'INTERCITY'` },                  3000             ) || [];               setLiveTruckAssignment(result);               const truck_options: DropdownOption[] = result             .filter((item: any) => item.Head) // Only include if a head exists             .map((item: any) => {                 const statusEmoji = GPS_STATUS_EMOJIS[item.GpsStatus] ?? '⚫';                                  return {                     value: item.Head ?? '',                     label: item.Head_Full ?? '',                     subtext: `${statusEmoji} ${item.GpsStatus ?? 'NO GPS'} | ${item.PairedTrailer ?? 'NO BO'} | ${item.OE ?? 'NO TRIP'} |  ${item.TractorJRNumber ? item.TractorJRNumber + ': ' + item.Tractor_JRStatus : 'NO UR '} `,                     type: 'multi',                     record: item                 };             });              const trailer_options: DropdownOption[] = result                 .filter((item: any) => item.PairedTrailer) // Only include if a trailer exists                 .map((item: any) => ({                     value: item.PairedTrailer ?? '',                     label: item.Trailer_Full ?? '',                     subtext: 'Trailer Unit',                     type: 'multi',                     record: item // Store the original record for later use when an option is selected                 }));              const dummyOption: DropdownOption = {                 value: 'Apple',                 label: 'Apple',                 type: 'multi',                 subtext: 'TESTING'             };              // 3. Update dropdown states             setTruckOptions([dummyOption, ...truck_options]);             setTrailerOptions([dummyOption, ...trailer_options]);          } catch (err) {             console.error(""Truck List Fetch Error:"", err);         } finally {             setLoadingFor(FETCH_LOADING_KEYS.truckList, false);         }     }, [activeView, sidebarVisible]);       const mapToCardOption = (item: any, _fullList: any[]): DropdownOption => {          return {             value: item.FullName ?? '',             label: item.FullName ?? '',             type: 'card',             cardConfig: [             // Row 1: Attendance and Trip Status             [                 {                      label: 'Attendance',                      value: item.DMS_Attendance ?? 'ABSENT',                     color: ATTENDANCE_STATUS_COLORS[item.DMS_Attendance as keyof typeof ATTENDANCE_STATUS_COLORS]?.bg ?? '#ff0000'                 },                 {                      label: 'Deployment',                      value: item.EmploymentStatus ?? 'Undeployed',                     color: item.EmploymentStatus === 'Deployed' ? '#3a4efc' : '#64748b'                 }             ],             // Row 2: Employment and Pairing             [                 {                      label: 'Trip',                      value: item.OE ? `${item.OE}` : 'NO TRIP',                     color: item.OE ? '#3a4efc' : '#64748b',                     proportion: 1 // Give more space to the trip description                 },                 {                      label: 'Status',                      value: `${item.DMS_TripStatus ?? '---'}`,                     proportion: 1                 }             ]             ],             record: item         };     };      const processPersonnelData = (data: any[]) => {         // 1. Sort by attendance         const sorted = [...data].sort((a, b) => {             const aSort = ATTENDANCE_STATUSES.find(s => s.Status === a.DMS_Attendance)?.sort ?? 999;             const bSort = ATTENDANCE_STATUSES.find(s => s.Status === b.DMS_Attendance)?.sort ?? 999;             return aSort - bSort;         });          // 2. Separate and Map         const drivers = sorted             .filter(item => item.Position === 'Driver')             .map(item => mapToCardOption(item, data));          const helpers = sorted             .filter(item => item.Position === 'Helper')             .map(item => mapToCardOption(item, data));          return { drivers, helpers };     };      const dummyOption: DropdownOption = {         value: 'Apple',         label: 'Apple',         type: 'multi',         record: {Id: 'test', FullName: 'Apple', DMS_Attendance: 'PRESENT'}     };      const dummyOption2: DropdownOption = {         value: 'Berry',         label: 'Berry',         type: 'single',         record: {Id: 'test2', FullName: 'Berry'}     };      //const [driverOptions, setDriverOptions] = useState<any[]>([]);     //const [helperOptions, setHelperOptions] = useState<any[]>([]);     const { driverOptions, helperOptions } = useMemo(() => {         const { drivers, helpers } = processPersonnelData(driverHelperList);                  // Add your dummy options here         return {             driverOptions: [dummyOption, ...drivers],             helperOptions: [dummyOption2, ...helpers]         };     }, [driverHelperList]);        const fetchDriverHelperList = useCallback(async (nocd: boolean = false) => {         if (driverOptions.length > 0 && !nocd) if (!canFetch(FETCH_LOADING_KEYS.driverHelperList)) return;         console.log(""Fetching driver and helper list..."");          try {             setLoadingFor(FETCH_LOADING_KEYS.driverHelperList, true);             const result = await ewulFetchAll<any>(                 LiveDriverDispatchedList_AllService,                  { filter: `contains(Deploystatus, 'Deployed') and (contains(EmploymentStatus, 'Regular') or contains(EmploymentStatus, 'Probationary'))`  },                  3000,                 'Id'             );              setDriverHelperList(result);          } catch (err) {             console.error(""Driver Helper List Fetch Error:"", err);         } finally {             setLoadingFor(FETCH_LOADING_KEYS.driverHelperList, false);         }     }, [activeView, sidebarVisible]);      const [previewTripTicketID, setPreviewTripTicketID] = useState<any>(null);     const generateTripTicketID = async (OE?: string | undefined) => {         setLoadingFor(FETCH_LOADING_KEYS.generatedTripID, true);          try {         const res = await GenerateNewTripTicketService.GenerateNewTripTicket({              OE: OE,         } as any);           const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;         console.log(""Response from GenerateNewTripTicketService:"", res);         if (table1 && table1.length > 0) {             setPreviewTripTicketID(table1[0].TripTicketID + ' (Preview)' || null);         } else {             setPreviewTripTicketID(null);         }           } catch (error) {             console.error(""Error generating trip ticket ID:"", error);             setPreviewTripTicketID(null);         } finally {             setLoadingFor(FETCH_LOADING_KEYS.generatedTripID, false);         }      };      const generateAdditionalOE = async (type: 'Preload' | 'Mobilization') => {         //if (selectedOrder && ['Preload', 'Mobilization'].some(t => t === selectedOrder._tripGroup) ) return;           setLoadingFor(FETCH_LOADING_KEYS.generateAddOE, true);          try {         const res = await GenerateAdditionalOE_IDService.GenerateAdditionalOE_ID({              Type: type,         } as any);           const table1 = res.data?.ResultSets?.Table1 as any[] | undefined;         if (!table1 || table1.length === 0) {             console.error(""No data returned for new OE generation."");             return;         }          if (type === 'Preload') setPreviewPreloadOE( table1[0].NewID);         if (type === 'Mobilization') setPreviewMobilizationOE( table1[0].NewID);          } catch (error) {             console.error(""Fetch error:"", error);         } finally {             setLoadingFor(FETCH_LOADING_KEYS.generateAddOE, false);         }     };      const getAdditionalOEForType = (type: 'Preload' | 'Mobilization') => {         if (type === 'Preload') return preview_preloadOE;         if (type === 'Mobilization') return preview_mobilizationOE;         return '';     }      const handleAdditionalOEGeneration = (type: 'Preload' | 'Mobilization') => {         const record = {             OE: getAdditionalOEForType(type),             Source: """",             Destination: """",             cementType: """",             [enc(""Buisness Unit"") ]: 'SBUO-1A',             TripProgress: TRIP_PROGRESS[0].Progress,             _tripGroup: type,             TripTicketID: previewTripTicketID || '',         };          setPreviewTrip(record);         setSelectedOrder(record);           //refresh         generateTripTicketID();         generateAdditionalOE('Preload');         generateAdditionalOE('Mobilization');     };      useEffect(() => {         generateTripTicketID();         generateAdditionalOE('Preload');         generateAdditionalOE('Mobilization');     }, []); // Call once on mount to have it ready for when the user clicks Preload or Mobilization      // MAIN REFRESH     const handleRefresh = useCallback(() => {         fetchTruckList();         fetchDriverHelperList();         generateTripTicketID();         generateAdditionalOE('Preload');         generateAdditionalOE('Mobilization');         fetchTrips();         fetchLSThisMonth();         //fetchSourceList();         fetchFCTRoutes();         fetchAttendanceServedCounts();     }, []);      useEffect(() => {         handleRefresh();     }, [handleRefresh]);       // Scheduled refresh every 60 seconds     useEffect(() => {         const intervalId = setInterval(() => {             console.log(""Performing scheduled refresh..."");             handleRefresh();         }, 60000); // 60 seconds          return () => clearInterval(intervalId); // Cleanup on unmount     }, [handleRefresh]);      // REFRESH TRIP WHEN DATE RANGE CHANGES WITHOUT CD     useEffect(() => {          fetchTrips();         //fetchNewOrders();     }, [selectedRange]);      // REFRESH NEW ORDERS WHEN DATE RANGE CHANGES WITHOUT CD\     useEffect(() => {         fetchNewOrders();         //fetchNewOrders();     }, [selectedRangeNewOrders]);      // run once     useEffect(() => {         fetchFCTRoutes();     }, [fetchFCTRoutes]);       const handleDonutInteraction = (event: any) => {         console.log(""Filtering table by status:"", event);         // This is where you could trigger a search or filter in your TableView         // For now, let's just log it to ensure the interaction works.     };      const handleExport = () => {         console.log(""Exporting order data..."");         // Logic for CSV/Excel export would go here     };      const actions = (         <>             <button                 className=""header-btn primary""                 onClick={() => setShowNewTripModal(true)}                 style={{ minWidth: 90 }}             >                 + New Trip             </button>             <button className=""header-btn secondary preload"" onClick={() => { handleAdditionalOEGeneration(""Preload""); setActiveView('form'); setSidebarVisible(true);}} style={{ minWidth: 90 }}>Preload</button>             <button className=""header-btn secondary mobilization"" onClick={() => { handleAdditionalOEGeneration(""Mobilization""); setActiveView('form'); setSidebarVisible(true); }} style={{ minWidth: 120 }}>Mobilization</button>             {/*<button className=""header-btn secondary"" onClick={() => {setShowFuelRequestModal(true); fetchFuelRequests(true);}}>                 <Fuel size={16} />                 <span>Fuel Requests</span>             </button>*/}             <DateRangePicker                      allowedTypes={['Today','Yesterday','Last Week','Weekly','Monthly'/*, 'Yearly', 'Custom'*/]}                      initialType='Monthly'                     onFilterChange={(range) => { handleDateChange(range);}}                      opacity={0.2}                     bgColor='var(--color-primary)'                     hoverColor='var(--color-primary)'             />             <button className=""header-btn secondary"" onClick={handleExport}>                 <Download size={16} />                 <span>Export CSV</span>             </button>             <button                  className={`header-btn primary ${isAnythingLoading() ? 'spinning' : ''}`}                  onClick={handleRefresh}                 disabled={isAnythingLoading()}             >                 <RefreshCcw size={16} />                 <span>Refresh</span>             </button>         </>     );       // Resizable sidebar state     const [sidebarWidth, setSidebarWidth] = useState(33.33); // percent, default 1:2 ratio     const isResizing = useRef(false);      // Sidebar height tracking     const sidebarRef = useRef<HTMLDivElement>(null);     //const [sidebarHeight, setSidebarHeight] = useState<number | undefined>(undefined);      useEffect(() => {         const handleMouseMove = (e: MouseEvent) => {             if (!isResizing.current) return;             const container = document.getElementById('main-content-split');             if (!container) return;             const rect = container.getBoundingClientRect();             let percent = ((e.clientX - rect.left) / rect.width) * 100;             // Clamp between 20% and 60%             percent = Math.max(20, Math.min(60, percent));             setSidebarWidth(percent);         };         const handleMouseUp = () => {             isResizing.current = false;             document.body.style.cursor = '';             document.body.style.userSelect = '';         };         window.addEventListener('mousemove', handleMouseMove);         window.addEventListener('mouseup', handleMouseUp);         return () => {             window.removeEventListener('mousemove', handleMouseMove);             window.removeEventListener('mouseup', handleMouseUp);         };     }, []);      const openRequestsCount = fuelRequests.filter((req) => {           // 2. Check if the request's status is one of the 'isOpen' statuses         const isOpenStatus = frStatuses.some(status =>              status.isOpen && status.value === req.Frstatus         );          return isOpenStatus;     }).length;      // --- SCROLL TO STATE ---     const [scrollTo, setScrollTo] = useState<scrollToConfig | null>(null);      const localUser: FormUserInfo = useMemo(() => {         return {             id: user?.id,             FullName: user?.FullName,             BusinessUnit: user?.BusinessUnit,             Position: user?.Position         } as FormUserInfo;     }, [user?.id, user?.FullName, user?.BusinessUnit, user?.Position]);      const renderOrderForm = (isMaximized: boolean) => (         <OrderDistributionForm             ref={formRef}             orderId={currentOrderData.OE}             initialData={currentOrderData}             onClose={() => {                 if (isMaximized) {                     setIsFormMaximized(false);                 } else {                     setActiveView('dashboard');                     setScrollTo({ search_col: 'wew', key: 'wew', highlight: 'warning' });                     setSelectedOrder(null);                     setPreviewTrip({});                 }             }}             allTrips={trips} // Pass all trips here             onFormDataChange={(formData, editedColumn, isValid) => {                 console.log(`Form validity is: ${isValid}`);                 if (formData.OE) {                     //const exists = trips.some(t => t.OE === formData.OE);                     const preview = formData;                      setPreviewTrip(preview);                       setScrollTo({                          search_col: 'OE',                          key: formData.OE as any,                          highlight: isValid ? 'success' : 'danger',                         target_col: editedColumn,                     });                 } else {                     setPreviewTrip({});                 }             }}             onClearSelectedTrip={() => {setSelectedOrder(null); setPreviewTrip({});}}             onProceed={(updatedTrip, deselect) => {                 console.log(""Proceeding with trip:"", updatedTrip);                 setTrips(prevTrips => {                     const index = prevTrips.findIndex(t => t.OE === updatedTrip.OE);                     if (index !== -1) {                         // Update existing trip                         const newTrips = [...prevTrips];                         newTrips[index] = updatedTrip;                         return newTrips;                     } else {                         // Add new trip                         return [updatedTrip, ...prevTrips];                     }                 });                  if (deselect) {                      setSelectedOrder(null);                      fetchTrips(true);                 } else {                     setSelectedOrder(updatedTrip);                 }                                                }}             onOEInputClick={() => {                 setShowNewTripModal(true);             }}             onNavigateToTrip={(oe) => {                 const trip = trips.find(t => t.OE === oe);                 if (trip) {                     setSelectedOrder(trip);                     setActiveView('form');                     setSidebarVisible(true);                     setShowNewTripModal(false);                     setScrollTo({ search_col: 'OE', key: oe, highlight: 'info' });                 }             }}             onCancelTrip={(id) => {                 setTrips(prevTrips => prevTrips.filter(trip => trip.ID !== id));                 setActiveView('dashboard');                 setSelectedOrder(null);                 setPreviewTrip({});             }}             onRefreshTrips={() => {fetchTrips(true);}}             onRefreshDriverHelpers={() => {fetchDriverHelperList(true)}}             onUpdateDriverHelperAttendance={(name, attendance, position) => {                 setDriverHelperList(prevList => prevList.map(item => {                     if (item.FullName === name && item.Position === position) {                         return { ...item, DMS_Attendance: attendance };                     }                     return item;                 }));                 // Note: No more sorting or setOptions calls here!                  // useMemo catches the change to driverHelperList automatically.             }}             onShowFuelRequest={(tripData) => {                 setShowFuelRequestModal({                     show: true,                     title: `${tripData.Vehicle}`,                     subtitle: `${tripData.OE}`,                     tractor: tripData.Vehicle || '',                     trailer: tripData.BO || '',                     data: tripData,                 });                  fetchFuelRequests(true, tripData.Vehicle, tripData.OE);             }}             onRequestChangeTrip={(tripData, action) => {handleRequestChangeTrip(tripData, action); /*handle change trip*/}}              truckOptions={truckOptions}             trailerOptions={trailerOptions}             driverOptions={driverOptions}             helperOptions={helperOptions}             sourceOptions={sourceOptions}                          lsList={LSlist}             driverHelperList={driverHelperList}              attendanceServedCounts={employeeServedAttendance}              editingUser={localUser}              canChangeTrip={                 (loadingList[FETCH_LOADING_KEYS.fuelRequests] ? false : true) &&                  openRequestsCount === 0             } // Disable if there are any open fuel requests for that OE             fuelFetching={loadingList[FETCH_LOADING_KEYS.fuelRequests] || false}         />     );       const changeConfig = (originalOESource: string) => {          let changeTripConfig = [             {                 col: ""SourceName"", alias: ""Source"", portion: 1.5,                 filter: {                     type: ""dropdown-multiple"",                     options: [{ label: originalOESource, value: originalOESource }],                     default: originalOESource ? [originalOESource] : [],                 }             },             {                  col: ""CementTypeName"", alias: ""Type"", portion:1,                  filter: {                     type: ""dropdown-multiple"",                      options: cementTypeOptions,                     default: currentOrderData.cementType ? [currentOrderData.cementType] : [],                 }             }         ] as ColumnConfig[];          // Merge logic: replace by col if exists, else add         const base = NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config;         const overrides = changeTripConfig || [];         const overrideMap = Object.fromEntries(overrides.map((col: ColumnConfig) => [col.col, col]));         const merged = base.map(col => overrideMap[col.col] ? overrideMap[col.col] : col);         const baseCols = new Set(base.map(col => col.col));         overrides.forEach((col: ColumnConfig) => {             if (!baseCols.has(col.col)) merged.push(col);         });          return merged as ColumnConfig[];     }      const [scrollToNewTrips, setScrollToNewTrips] = useState<scrollToConfig | null>(null);     const renderNewTripsTable = (onRowClickLogic: (row: any) => void, changeConfig: ColumnConfig[] = NEW_TRIPS_UNFILTERED_TABLE_CONFIG.table_config) => {           return (             <TableView                  data={orders}                 config={changeConfig}                 searchCol={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.searchable_cols as string[]}                 storageKey={`order_page_sap_new_orders${user?.id}`}                 isLoading={loadingList[FETCH_LOADING_KEYS.newOrders] || false}                 showRowCount={500}                 onRefresh={(signal) => signal && fetchNewOrders()}                 overflowY={true}                 maxHeight={600}                 colMinWidth={120}                 onRowClick={onRowClickLogic}                 theme=""var(--color-primary)""                 allowMultipleSelection={false}                 rowStyle={NEW_TRIPS_UNFILTERED_TABLE_CONFIG.rowStyle}                 loadingNoPreventAction={true}                 showNumbering={true}                 highlightSelected={true}                 scrollTo={scrollToNewTrips}             />         );     };         //////     const [selectChangeTripError, setSelectChangeTripError] = useState<string | null>(null);     const onSelectChangeTrip = (raw_record: any) => {         if (!showChangeTripModal) return;          const isDev = user?.Position === 'Developer';         const original = showChangeTripModal.record;         let errorMessage: string | null = null;          // 1. Define Validation Rules         if ([""Tagged"", ""Completed""].includes(raw_record.SAPStatus)) {             errorMessage = isDev ? null : `This Trip is already ${raw_record.SAPStatus.toLowerCase()}.`;         }          else if (raw_record.SAPStatus !== ""Approved"" && !(raw_record._tripGroup == 'Preload' && raw_record.SAPStatus === 'Manual' && original._tripGroup === 'Preload')) {             errorMessage = ""Only approved trips can be selected."";         }          else if (raw_record.SourceName !== original.Source) {             errorMessage = isDev ? null : ""Source does not match the original trip. Please select a trip with the same source."";         }          else if (             raw_record._tripGroup !== original._tripGroup &&              !['Preload', 'Mobilization'].includes(original._tripGroup)         ) {             errorMessage = isDev ? null : ""Trip group does not match. Please select a trip with the same trip group."";         }          else if (raw_record.CementTypeName !== original.cementType) {             errorMessage = isDev ? null : ""Cement type does not match. Please select a trip with the same cement type."";         }          // 2. Execute Result         if (errorMessage) {             // Handle Failure             setSelectChangeTripError(errorMessage);             setScrollToNewTrips({ search_col: 'OE', key: raw_record.OE, highlight: 'danger' });             setSelectedChangeTripOE(null);         } else {             // Handle Success             console.log(""Selected order for trip change:"", raw_record);             setSelectChangeTripError(null); // Clear previous errors             setSelectedChangeTripOE(raw_record);             setScrollToNewTrips({ search_col: 'OE', key: raw_record.OE, highlight: 'success' });         }     };      // handle GSDC_NAVIGATE_TO_TRIP     useEffect(() => {         const handleNavigation = (event: any) => {             const { oe} = event.detail;             console.log(""Navigating to trip:"", oe);             helperNavigateToOEfromExternal(oe);         };          window.addEventListener(GSDC_NAVIGATE_TO_TRIP_key, handleNavigation);                  return () => {             window.removeEventListener(GSDC_NAVIGATE_TO_TRIP_key, handleNavigation);         };     }, [trips]);      const [bannerMessage, setBannerMessage] = useState<string | null>(null);     const helperNavigateToOEfromExternal = async (oe: string) => {         const oeRecord = displayData.find(item => item.OE === oe);                  if (!oeRecord) {             // Show banner and auto-hide after 3000ms (3 seconds)             setBannerMessage(`No record found for OE: ${oe}. Make sure the trips are loaded to the correct Month.`);             setTimeout(() => {                 setBannerMessage(null);             }, 2000);             return;         }          handleTripsTableOnClick(oeRecord, true);     };        const handleTripsTableOnClick = async (record: any, noDeselect?: boolean) => {         const isDeselecting = noDeselect ? false : selectedOrder?.OE === record.OE;         const isselectedrecordvalid = /*await formRef.current?.runValidation(record)*/ {isValid: true}; // For now, we'll assume it's valid. You can implement this function to validate the record before selecting it.         const highlight = isselectedrecordvalid?.isValid ? 'success' : 'danger';         const selectrecord = () => {             setSelectedOrder({                 ...record,                  QTYDelivered_Actual: record.TripProgress === 'Done'                      ? (record.QTYDelivered_Actual ?? record.QTYDelivered ?? 0)                      : (record.QTYDelivered_Actual ?? 0),                  QTYWithdrawn_Actual: record.TripProgress === 'Done'                      ? (record.QTYWithdrawn_Actual ?? record.QTYWithdrawn ?? 0)                      : (record.QTYWithdrawn_Actual ?? 0),             });             handleChangeActiveView('form');             setShowNewTripModal(false);             setSidebarVisible(true);             setScrollTo({                  search_col: 'OE',                  key: record.OE as any,                  highlight: highlight,             });         };          if (selectedOrder == undefined) {selectrecord(); return;}          // Always check for unsaved changes if the form might be open.         const canProceed = await formRef.current?.showUnsavedChangesModal();         console.log(""User chose to proceed with navigation:"", canProceed);          if (!canProceed) {             console.log(""User canceled navigation. Staying on current order."");             setScrollTo({                  search_col: 'OE',                  key: selectedOrder?.OE as any,                  highlight: highlight,             });             return;         }          // If the user confirms or there were no unsaved changes:         if (isDeselecting) {             // Deselect the current order and return to the dashboard view.             setSelectedOrder(null);             setPreviewTrip({});             handleChangeActiveView('dashboard');             setScrollTo({ search_col: 'OE', key: 'wew', highlight: highlight });         } else {             // Select the new order and switch to the form view.             selectrecord();             fetchFuelRequests(false, record.Vehicle, record.OE);         }     }         //FOR TRIPS TABLE     const displayData = useMemo(() => {     if (!previewTrip.OE) return trips;          // Return the preview at the top, followed by all other trips     return [previewTrip, ...trips.filter(t => t.OE !== previewTrip.OE)];     }, [trips, previewTrip]);           return (         <PageTemplate              title=""Trip Dispatch""              actions={actions}              overflowY={true}         >             {/* Sidebar Toggle Tab */}             <div                  title='Open DMS Form/Dashboard'                 className={`sidebar-toggle-tab ${sidebarVisible ? 'hidden' : ''}`}                 onClick={() => setSidebarVisible(true)}             >                 <Menu size={24} />             </div>              <div                 className=""main-content-split""                 id=""main-content-split""             >             {/* LEFT SIDE: Management Utility (Resizable) */}                 <div                     ref={sidebarRef}                     className={`management-sidebar animate-sidebar${sidebarVisible ? ' sidebar-in' : ' sidebar-out'}`}                     style={{                         flex: sidebarVisible ? `0 0 ${isMobile ? 100 : sidebarWidth}%` : '0 0 0%',                         minWidth: sidebarVisible ? (isMobile ? '100%' : 200) : 0,                         maxWidth: sidebarVisible ? (isMobile ? '100%' : '60%') : 0,                         pointerEvents: sidebarVisible ? 'auto' : 'none',                         opacity: sidebarVisible ? 1 : 0,                         transition: 'all 0.35s cubic-bezier(.4,2,.6,1), opacity 0.25s',                         zIndex: 2,                         display: !sidebarVisible && isMobile ? 'none' : 'flex',                         flexDirection: 'column'                     }}                     aria-hidden={!sidebarVisible}                 >                     {/* NEW HEADER ROW */}                     <div className=""sidebar-header-row"" style={{                          display: 'flex',                          justifyContent: 'space-between',                          alignItems: 'center',                          padding: '0 8px',                         height: '50px',                         borderBottom: '1px solid rgba(0,0,0,0.05)'                     }}>                         {/* LEFT SIDE: Tabs */}                         <div className=""utility-tabs"" style={{ marginBottom: 0, width: 'auto' }}>                             <div className={`tabs-pill-bg ${activeView}`}></div>                             <button className={`tab-btn ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => handleChangeActiveView('dashboard')}>Dashboard</button>                             <button className={`tab-btn ${activeView === 'form' ? 'active' : ''}`} onClick={() => handleChangeActiveView('form')}>Form</button>                         </div>                          {/* RIGHT SIDE: Action Group */}                         <div className=""utility-actions"">                             {/* Render Maximize first if you want it to the left of Close */}                             <div className={`utility-maximize ${activeView === 'form' ? 'show-icon' : ''}`}>                                 <button className=""maximize-btn"" onClick={() => setIsFormMaximized(true)}>                                     <Maximize2 size={18} />                                 </button>                             </div>                              <div className=""utility-close"">                                 <button className=""close-btn"" onClick={() => setSidebarVisible(false)}>                                     <X size={20} />                                 </button>                             </div>                         </div>                     </div>                      <div className=""utility-content animate-fade-in"">                         {activeView === 'dashboard' ? (                             <div className=""mini-dashboard-stack"">                                 <div className=""chart-container-card"">                                     <h4 className=""chart-title"">Trip Distribution</h4>                                     <TripGroup_DonutChart                                          key={selectedRange?.from || 'initial'}                                         BU={null}                                         fromStr={selectedRange?.from || """"}                                          toStr={selectedRange?.to || """"}                                          onChartClick={handleDonutInteraction}                                         orientation='vertical'                                     />                                 </div>                                  <div className=""sidebar-stats-grid"">                                     <div className=""mini-stat"">                                         <span className=""stat-label"">Total Loaded</span>                                         <span className=""stat-value"">{orders.length}</span>                                     </div>                                 </div>                             </div>                         ) : (                             <div className=""order-form-compact"">                                 {/* Passed false here because this is the sidebar, not the modal */}                                 {renderOrderForm(false)}                              </div>                         )}                     </div>                 </div>               {/* RIGHT SIDE: Trips Table */}             <div className={`table-main-area animate-table${sidebarVisible ? ' table-in' : ' table-out'}`}>                  <TableView                     data={displayData}                     config={LIVE_DMS_TABLE_CONFIG.table_config as ColumnConfig[]}                     storageKey={`order_page_live_trips${user?.id}`}                     searchCol={LIVE_DMS_TABLE_CONFIG.searchable_cols as string[]}                     isLoading={loadingList[FETCH_LOADING_KEYS.trips] || false}                     showRowCount={50}                     onRefresh={(signal) => signal && fetchTrips()}                     overflowY={true}                     overflowX={true}                     /* maxHeight={sidebarHeight} REMOVED - This was causing the height issue */                     colMinWidth={60}                     // You can add row click or other handlers as needed                     rowStyle={LIVE_DMS_TABLE_CONFIG.rowStyle}                     loadingNoPreventAction={true}                     showNumbering={true}                     scrollTo={scrollTo}                     highlightSelected={true}                     theme=""var(--color-primary)""                     onRowClick={async (record) => {                         handleTripsTableOnClick(record);                     }}                 />             </div>              {/* Fuel Request Modal */}             {showFuelRequestModal && (                 <Modal                      onClose={() => {setShowFuelRequestModal(null);}}                     width={'90%'}                     height={'90vh'}                 >                     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>                         <div className=""new-order-modal-header"">                             <div>                                 <h2>{`Fuel Requests: ${showFuelRequestModal?.title || ''}`}</h2>                                 <p>{`Order Reference: ${showFuelRequestModal?.subtitle || ''}`}</p>                             </div>                         </div>                         <div className=""fuel-modal-body"" style={{padding: 0}}>                             <FuelRequestManager                                 truckOE={(showFuelRequestModal?.tractor || '') + (showFuelRequestModal?.subtitle || '')}                                 fuelRequests={fuelRequests}                                 lastFuelRequestOE={lastFuelReqOE}                                 vehicleLists={livetruckassignment}                                 tableConfig={FUEL_REQUESTS_TABLE_CONFIG.table_config as ColumnConfig[]}                                 storageKey={`fuel_requests_${localUser?.id}`}                                 searchableCols={FUEL_REQUESTS_TABLE_CONFIG.searchable_cols as string[]}                                 isLoading={loadingList[FETCH_LOADING_KEYS.fuelRequests] || false}                                 onRefresh={(signal) => signal && showFuelRequestModal && fetchFuelRequests(false, showFuelRequestModal.tractor, showFuelRequestModal.subtitle)}                                 onFormSubmit={handleFuelRequestSubmit}                                 tripData={showFuelRequestModal.data}                                 initialFormData={(() => {                                     const truckRecord: LiveVehicleAssignmentLIstView = livetruckassignment.find((t: any) => t.Head === showFuelRequestModal?.tractor);                                      return {                                         Head: showFuelRequestModal.tractor,                                         Trailer: showFuelRequestModal.trailer,                                         Driversname: showFuelRequestModal.data?.Driver || '',                                         Orderentryref: showFuelRequestModal.data?.OE || '',                                         Category: 'New Trip',                                         Orderentrystatus: 'OE REFERENCE',                                         Status: (showFuelRequestModal.data?.QTYWithdrawn ?? 0) > 0 ? 'Loaded' : 'Empty',                                          Currentlocation: truckRecord?.LiveLocation || '',                                         Plate: truckRecord?.PlateNo || '',                                         Brand: truckRecord?.Brand || '',                                         Wheelertype: truckRecord?.WheelerType || '',                                         Platetrailer: truckRecord?.TPlateNo || '',                                         Classification: truckRecord?.Classification || '',                                         Axle: truckRecord?.Axle || '',                                         Subengine: truckRecord?.SubEngine || '',                                         Type: truckRecord?.TrailerType || '',                                          Odometer:  lastOdometer || '',                                          Frstatus: 'New',                                          CreatedBy: localUser?.FullName || '',                                         Created: new Date().toISOString(),                                         Businessunit: 'SBUO-1A',                                         Requestedby: localUser?.FullName || '',                                          Karga: showFuelRequestModal.data?.QTYWithdrawn || '',                                          Ts1: new Date().toISOString(),                                      } as Partial<FctFinal>;                                 })()}                                 onRowClick={(record) => {                                     console.log(""Editing fuel request:"", record);                                     // The component will automatically switch to the form view                                 }}                                  stationOptions={stationOptions}                                 sourceOptions={sourceOptions}                                 destinationOptions={destinationOptions}                                 user={localUser}                             />                         </div>                     </div>                 </Modal>             )}              {/* Change Trip/OE Modal */}             {showChangeTripModal?.show && (                 <Modal                      onClose={() => {setShowChangeTripModal(null); setScrollToNewTrips(null);}}                     width={'90%'}                     height={'90vh'}                     contentStyle={{ paddingBottom: ""0px""}}                 >                     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>                         <div className=""new-order-modal-header"">                             <div>                                 <h2>{showChangeTripModal.action} Trip: {showChangeTripModal.record?.OE} | {showChangeTripModal.record?.Source} | {showChangeTripModal.record?.cementType}</h2>                                 <p>Select a trip to {showChangeTripModal.action.toLowerCase()} into</p>                             </div>                              <DateRangePicker                                  allowedTypes={['Monthly', 'Yearly', 'Custom']}                                  onFilterChange={(range) => {                                     handleDateChangeNewOrders(range);                                 }}                                  opacity={1}                                 bgColor='var(--color-primary)'                                 hoverColor='var(--color-primary)'                             />                          </div>                         <div className=""modal-body"" style={{ paddingBottom: 80 }}>                             <div style={{ marginTop: 24 }}>                                 {                                     (() => {                                                                                      return renderNewTripsTable(onSelectChangeTrip, showChangeTripModal.configChange);                                     })()                                 }                             </div>                         </div>                         {/* Sticky Footer */}                         <div                             style={{                                 position: 'sticky',                                 left: 0,                                 bottom: 0,                                 width: '100%',                                 background: 'var(--color-bg, #fff)',                                 borderTop: '1px solid #eee',                                 padding: '16px 24px',                                 display: 'flex',                                 justifyContent: 'flex-end',                                 zIndex: 10,                             }}                         >                             <span                                 className={`sticky-footer-message${selectedChangeTripOE ? ' selected' : ' not-selected'}`}                             >                                 {selectedChangeTripOE                                     ? `Selected ${showChangeTripModal.action.toLocaleLowerCase()} OE: ${selectedChangeTripOE.OE}`                                     : `Please select an OE to ${showChangeTripModal.action.toLocaleLowerCase()} into.`}                             </span>                             <button                                 className={`gradient-btn-proceed ${selectedChangeTripOE ? '' : 'disabled'}`}                                 style={{ minWidth: 120, fontWeight: 600, fontSize: 'var(--font-size-lg, 18px)' }}                                 disabled={!selectedChangeTripOE}                                 onClick={() => {                                     if (!selectedChangeTripOE) return;                                     console.log(`${showChangeTripModal.action} Trip to:`, selectedChangeTripOE.OE);                                     const original = selectedOrder;                                     const changedTripRecord =                                          {                                             OE: selectedChangeTripOE.OE,                                             Source: selectedChangeTripOE.SourceName,                                             Destination: selectedChangeTripOE.DestiName,                                             Customer: selectedChangeTripOE.Customer,                                             Ordered_x0020_Date: selectedChangeTripOE.OrderedDate,                                             Needed_x0020_Date: selectedChangeTripOE.NeededDate,                                             OE_x0020_Date: selectedChangeTripOE.OE_x0020_Date,                                             _tripGroup: selectedChangeTripOE._tripGroup,                                           }                                      setSelectedOrder({...selectedOrder, ...changedTripRecord});                                     setShowChangeTripModal(null);                                      addTask({                                         name: `${showChangeTripModal.action} trip ${selectedChangeTripOE.OE}`,                                         execute: async () => {                                             try {                                                                              const result = await DMS_CEMService.update(                                                 showChangeTripModal.record.ID.toString(),                                                  changedTripRecord                                             );                                                                                           const result2 = await TripTicketsService.update(                                                 showChangeTripModal.record.TripTicketID || '',                                                 {                                                     OE: selectedChangeTripOE.OE,                                                 }                                             );                                             // console.log(""result2: "", result2)                                                                                if (result.error) {                                                 throw new Error(result.error.message);                                             }                                             if (result2.error) {                                                 throw new Error(result2.error.message);                                             }                                              //log to transaction history                                             logDmsUpdate({                                                 userName: user?.FullName || '',                                                 userID: Number(user?.id) || 0,                                                 inputOE: selectedChangeTripOE.OE || '',                                                 action: `Trip ${showChangeTripModal.action}ed from [${showChangeTripModal.record.OE}] to [${selectedChangeTripOE.OE}].`,                                                 value: selectedChangeTripOE.OE || '',                                                 context: `Trip - Divert/Change`,                                                 role: user?.Position || '',                                             });                                                                              return { success: true, data: result.data };                                                                              } catch (error) {                                             console.error('Failed to save trip:', error);                                             return { success: false, error };                                             }                                         },                                         checkSuccess: (result: { success: boolean }) => result.success,                                         onSuccess: (data) => {                                              UpsertTripTaskTrackerService.UpsertTripTaskTracker({ //delete task of old OE                                                 OE: selectedChangeTripOE.OE || '',                                                 TripProgress: selectedChangeTripOE.TripProgress || '',                                                 AssignedDriver: !!selectedChangeTripOE.Driver,                                                 AssignedUnit: !!selectedChangeTripOE.Vehicle,                                                 HasATW: !!selectedChangeTripOE.ATW_x002f_LO_x0023_,                                                 HasSO: !!selectedChangeTripOE.SO_x0023_,                                                 UpdateOnly: false,                                                  deleteIfComplete: true, //delete                                                 deleteAnyways: true,                                                 EditorName: user?.FullName || 'Unknown User',                                             }as any);                                               setTrips(prevTrips => {                                                 const index = prevTrips.findIndex(t => t.OE === data.OE);                                                 if (index !== -1) {                                                     // Update existing trip                                                     const newTrips = [...prevTrips];                                                     newTrips[index] = data;                                                     return newTrips;                                                 } else {                                                     // Add new trip                                                     return [data, ...prevTrips];                                                 }                                             });                                         },                                         onFailure: () => {setSelectedOrder(original);},                                                                          message: `Saving changes for trip ${selectedChangeTripOE.OE}...`,                                         message_success: `Trip ${selectedChangeTripOE.OE} saved successfully!`,                                         message_failure: (result) => `Failed to save trip ${selectedChangeTripOE.OE}. Reason: ${result.error?.message || 'Unknown error'}`                                         });                                  }}                             >                                 {showChangeTripModal.action} Trip                             </button>                         </div>                     </div>                 </Modal>             )}              {(selectChangeTripError && showChangeTripModal) && (                 <Modal                      onClose={() => setSelectChangeTripError(null)}                     width={'400px'} // Using fixed width for small alerts is usually cleaner                     height={'auto'}                 >                     <div className=""invalid-changetrip-trip-modal-container"">                         {/* Title Section */}                         <h3 className=""invalid-changetrip-modal-title-red"">Invalid Trip Selected!</h3>                                                  {/* Body Section */}                         <div className=""invalid-changetrip-modal-body-content"">                             <p>{selectChangeTripError}</p>                         </div>                          {/* Action Footer */}                         <div className=""invalid-changetrip-modal-footer-right"">                             <button                                  className=""gradient-btn-proceed""                                  onClick={() => setSelectChangeTripError(null)}                             >                                 OK                             </button>                         </div>                     </div>                 </Modal>             )}              {/* New Trip Modal */}             {showNewTripModal && (                 <Modal onClose={() => setShowNewTripModal(false)}>                     <div className=""new-order-modal-header"">                         <div>                             <h2>SAP New Orders</h2>                             <p>Select an order for a new trip</p>                         </div>                                                  <DateRangePicker                              allowedTypes={['Monthly', 'Yearly', 'Custom']}                              onFilterChange={(range) => {                                 handleDateChangeNewOrders(range);                             }}                              opacity={1}                             bgColor='var(--color-primary)'                             hoverColor='var(--color-primary)'                         />                     </div>                     <div className=""modal-body"">                         <div style={{ marginTop: 24 }}>                             {                                 (() => {                                     const onRowClick = (raw_record: any) => {                                         generateTripTicketID();                                         const record = {                                             ...raw_record,                                             Source: raw_record.SourceName,                                             Destination: raw_record.DestiName,                                             cementType: raw_record.CementTypeName,                                             [enc(""Buisness Unit"") ]: 'SBUO-1A',                                             TripProgress: TRIP_PROGRESS[0].Progress,                                             TripTicketID: previewTripTicketID || '',                                             Ordered_x0020_Date: raw_record.OrderedDate,                                             Needed_x0020_Date: raw_record.NeededDate                                         };                                         setSelectedOrder(record);                                         console.log(""Selected order for new trip:"", record);                                         setActiveView('form');                                         setShowNewTripModal(false);                                         setSidebarVisible(true);                                         const exists = trips.some(t => t.OE === record.OE);                                          const preview = record;                                          if (!exists) setPreviewTrip(preview);                                         else setPreviewTrip({});                                         setScrollTo({ search_col: 'OE', key: record.OE, highlight: 'warning' });                                     };                                     return renderNewTripsTable(onRowClick);                                 })()                             }                         </div>                     </div>                 </Modal>             )}              {/* Fullscreen Form Modal */}             {isFormMaximized && (                 <Modal onClose={() => setIsFormMaximized(false)}>                     <div className=""modal-header-fullscreen"">                         <h2>Order Distribution: {currentOrderData.OE}</h2>                     </div>                     <div className=""modal-body-fullscreen"" style={{ padding: '20px', maxHeight: '80vh', overflowY: 'auto' }}>                         {renderOrderForm(true)}                     </div>                 </Modal>             )}               {bannerMessage && (             <AutoDismissBanner                  message={bannerMessage}                  onClose={() => setBannerMessage(null)}              />             )}                  </div>     </PageTemplate>     ); };  export default OrderManagement;",2026-06-02 11:12:37.067,20260602031237.0,-1432
+188,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-06-02 11:14:18.478,20260602031418.0,251
+189,Dev Bot,251,"Development, Information Technology (GSDC)",tell me how to do a quick sort,2026-06-09 13:56:03.570,20260609055603.0,-1432
+190,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-06-09 13:58:27.761,20260609055827.0,251
+191,Dev Bot,251,"Development, Information Technology (GSDC)",test,2026-07-20 15:53:51.503,20260720075351.0,-1432
+192,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-07-20 15:53:52.563,20260720075352.0,251
+193,Dev Bot,251,"Development, Information Technology (GSDC)",test,2026-07-21 17:22:32.986,20260721092232.0,-1432
+194,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-07-21 17:22:34.443,20260721092234.0,251
+195,Dev Bot,251,"Development, Information Technology (GSDC)",test,2026-07-21 17:22:38.120,20260721092238.0,-1432
+196,Dev Bot,-1432,Dev Bot,I'm having trouble connecting to the server right now.,2026-07-21 17:22:39.380,20260721092239.0,251
+197,IT Support,86,"Adeva, Kim John",sna safe magsample ng transact dito haha,2026-08-01 16:43:32.059,20260801084332.0,251
+198,Fuel,73,"Ramos, Aira",DADA,2026-09-12 04:13:26.969,20260911201326.0,
+199,Documents,UNKNOWN_USER,"Sinag, Christian Errol",test,2026-09-30 08:50:00.337,20260930085000.0,

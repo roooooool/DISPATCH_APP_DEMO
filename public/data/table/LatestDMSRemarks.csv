@@ -1,0 +1,226 @@
+ChatID,Sender,Receiver,Message,DateSent,OE,isConvoDone,replytoID,UserID,ContextType
+1,IT Dev,SBUO-1D,TEST asking about something,2025-11-13 10:49:49.757,SPT25-10-0888,False,,251.0,Remarks - SPT25-10-0888 - 1
+2,IT Dev2,SBUO-1D,sample reply,2025-11-13 16:26:02.550,SPT25-10-0888,False,1,,Remarks - SPT25-10-0888 - 1
+4,IT Dev2,SBUO-1D,"very very long reply, test 1 2 3 lorem ipsum lore more tore wore fore core dore sore",2025-11-13 16:28:54.747,SPT25-10-0888,False,1,,Remarks - SPT25-10-0888 - 1
+5,Information Technology Development,SBUO-1D,test reply,2025-11-19 14:58:28.620,SPT25-10-0888,False,1,251.0,Remarks - SPT25-10-0888 - 1
+6,Information Technology Development,SBUO-1D,asking about somthing 2 ?,2025-11-19 14:58:42.790,SPT25-10-0888,False,1,251.0,Remarks - SPT25-10-0888 - 1
+7,Information Technology Development,SBUO-1D,"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus sit amet lectus sollicitudin varius. Phasellus euismod, magna at ullamcorper tincidunt, turpis justo scelerisque nunc, at interdum odio erat ut libero. Curabitur sit amet dolor ac nulla cursus venenatis. Vivamus tempor, nunc ut tincidunt venenatis, ligula magna porta lacus, vel lacinia magna nisl at nulla. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Fusce scelerisque, sapien ut gravida elementum, purus odio mollis sapien, at ultrices velit odio ut purus. Integer eu facilisis nunc. Etiam efficitur leo id lectus faucibus, a volutpat urna facilisis. Donec eget sem non tortor interdum sodales. Suspendisse potenti. Aliquam erat volutpat. Cras a diam vitae odio commodo commodo. Phasellus ac dui sed justo fringilla eleifend. Sed a magna id libero vulputate eleifend ut sed urna. Curabitur mattis, ligula ac porttitor volutpat, ex est sollicitudin odio, sed ultrices nulla nisl vel justo.",2025-11-19 15:26:16.800,SPT25-10-0888,False,1,251.0,Remarks - SPT25-10-0888 - 1
+8,Information Technology Development,SBUO-1D,test,2025-11-19 15:40:43.207,SPT25-10-0888,False,1,251.0,Remarks - SPT25-10-0888 - 1
+9,Information Technology Development,SBUO-1D,hi pa follow up po nito,2025-11-20 11:25:42.107,SPT25-10-0888,False,,251.0,Remarks - SPT25-10-0888 - 9
+10,Information Technology Development,SBUO-1D,test pa prio po,2025-11-22 11:25:06.683,SOC25-10-0505,False,,251.0,Remarks - SOC25-10-0505 - 10
+11,Information Technology Development,SBUO-1D,test,2025-11-26 14:42:43.530,SOC25-10-0506,False,,251.0,Remarks - SOC25-10-0506 - 11
+12,Information Technology Development,SBUO-1D,testing another ask,2025-11-27 10:23:18.770,SPT25-10-0888,False,,251.0,Remarks - SPT25-10-0888 - 12
+13,Information Technology Development,SBUO-1D,TESTING REMARKS,2025-12-01 13:49:34.430,SOC25-10-0505,False,,251.0,Remarks - SOC25-10-0505 - 13
+14,Ron Christian Villanueva,SBUO-1B,sir glen,2025-12-04 16:06:32.700,SOC25-12-0258,False,,93.0,Remarks - SOC25-12-0258 - 14
+15,Ron Christian Villanueva,SBUO-1B,ang pogi ko,2025-12-04 16:06:49.347,SOC25-12-0258,False,14,93.0,Remarks - SOC25-12-0258 - 14
+16,Jonina Pascual,SBUO-1B,di naman,2025-12-04 16:07:57.570,SOC25-12-0258,False,14,311.0,Remarks - SOC25-12-0258 - 14
+17,Jayvee Torres,SBUO-1A,pauwi na si driver ng vas,2025-12-05 11:42:00.783,SOC25-12-0209,False,,95.0,Remarks - SOC25-12-0209 - 17
+18,Althea Jasmin Del Valle,SBUO-1C,NAKA UNTAG NA PO SAMIN YUN BIYAHE NATO,2025-12-05 12:02:49.157,SOC25-12-0123,False,,62.0,Remarks - SOC25-12-0123 - 18
+19,Information Technology Development,SBUO-1D,test,2025-12-09 14:28:54.527,SOC23-02-0659,False,,251.0,Remarks - SOC23-02-0659 - 19
+20,Information Technology Development,SBUO-1D,test2,2025-12-09 14:36:51.880,SOC23-02-0659,False,19,251.0,Remarks - SOC23-02-0659 - 19
+21,Information Technology Development,SBUO-1D,twest3,2025-12-09 14:38:58.973,SOC23-02-0659,False,,251.0,Remarks - SOC23-02-0659 - 21
+22,Information Technology Development,SBUO-1D,new remarks test,2025-12-09 14:41:15.147,SOC23-02-0659,False,,251.0,Remarks - SOC23-02-0659 - 22
+23,Information Technology Development,SBUO-1D,test123,2025-12-09 14:42:27.930,SOC23-02-0659,False,22,251.0,Remarks - SOC23-02-0659 - 22
+24,Information Technology Development,SBUO-1D,test,2025-12-09 14:42:53.867,SOC23-02-0659,False,,251.0,Remarks - SOC23-02-0659 - 24
+25,Information Technology Development,SBUO-1D,tseaw,2025-12-09 14:43:19.820,SOC23-02-0659,False,,251.0,Remarks - SOC23-02-0659 - 25
+26,Information Technology Development,SBUO-1A,TEST,2025-12-09 14:52:07.977,SOC23-02-0659,False,,251.0,Remarks - SOC23-02-0659 - 26
+27,Information Technology Development,SBUO-1A,test again,2025-12-09 14:52:37.633,SOC23-02-0659,False,26,251.0,Remarks - SOC23-02-0659 - 26
+28,Information Technology Development,SBUO-1D,TESTING remarks please ignore,2025-12-11 09:20:48.693,SOC25-12-0548,False,,251.0,Remarks - SOC25-12-0548 - 28
+29,Information Technology Development,SBUO-1D,TEST REMARKS,2025-12-11 10:31:13.820,SOC25-12-0101,False,,251.0,Remarks - SOC25-12-0101 - 29
+30,Information Technology Development,SBUO-1D,TESTING AGAIN,2025-12-11 15:09:44.133,SOC25-12-0101,False,29,251.0,Remarks - SOC25-12-0101 - 29
+31,Information Technology Development,SBUO-1D,testing,2025-12-11 15:10:44.770,SOC25-12-0101,False,29,251.0,Remarks - SOC25-12-0101 - 29
+32,Information Technology Development,SBUO-1D,TESTING AGAIN,2025-12-11 15:23:30.720,SOC25-12-0101,False,,251.0,Remarks - SOC25-12-0101 - 32
+33,Information Technology Development,SBUO-1D,test test test,2025-12-11 15:33:00.443,SOC25-12-0101,False,32,251.0,Remarks - SOC25-12-0101 - 32
+34,Information Technology Development,SBUO-1D,test,2025-12-11 16:30:39.180,SOC25-12-0101,False,29,251.0,Remarks - SOC25-12-0101 - 29
+35,Angelo Mananguit,SBUO-2B,waiting to load,2026-01-09 14:31:15.447,SPT26-01-0391,False,,183.0,Remarks - SPT26-01-0391 - 35
+36,Althea Jasmin Del Valle,SBUO-1C,"wala po kaming bumayahe ng mexico pampanga, pa untag po ",2026-01-13 15:41:04.600,SOC26-01-0363,False,,62.0,Remarks - SOC26-01-0363 - 36
+37,Raven Klyde Relente,SBUO-1C,"CHANGED SOURCE ORDER FROM REPUBLIC TERESA TO REPUBLIC NORZAGARAY, FOR OE CHECKING ",2026-01-13 22:46:05.403,SOC26-01-0214,False,,181.0,Remarks - SOC26-01-0214 - 37
+38,Information Technology Development,SBUO-1D,This is a test do not reply,2026-01-14 15:04:10.117,SOC26-01-0429,False,,251.0,Remarks - SOC26-01-0429 - 38
+39,Information Technology Development,SBUO-1D,TEST DO NOT REPLY,2026-01-15 11:27:55.867,SOC26-01-0328,False,,251.0,Remarks - SOC26-01-0328 - 39
+40,Information Technology Development,SBUO-1D,test,2026-01-15 11:28:03.087,SOC26-01-0328,False,39,251.0,Remarks - SOC26-01-0328 - 39
+41,Information Technology Development,SBUO-1D,test 2,2026-01-15 11:28:09.710,SOC26-01-0328,False,39,251.0,Remarks - SOC26-01-0328 - 39
+42,Information Developer2,SBUO-1D,test reply,2026-01-15 12:42:08.640,SOC26-01-0328,False,39,325.0,Remarks - SOC26-01-0328 - 39
+44,Information Technology Development,SBUO-1D,Test  reply,2026-01-15 13:41:20.713,SOC26-01-0328,False,39,251.0,Remarks - SOC26-01-0328 - 39
+45,Information Technology Development,SBUO-1D,test,2026-01-15 13:42:55.947,SOC26-01-0328,False,39,251.0,Remarks - SOC26-01-0328 - 39
+47,Information Technology Development,SBUO-1D,test 2:04 PM,2026-01-15 14:04:11.460,SOC26-01-0328,False,,251.0,Remarks - SOC26-01-0328 - 47
+48,Information Technology Development,SBUO-1D,test 2:04 again ,2026-01-15 14:04:57.130,SOC26-01-0328,False,,251.0,Remarks - SOC26-01-0328 - 48
+49,Information Technology Development,SBUO-1D,test 2:09,2026-01-15 14:09:36.520,SOC26-01-0328,False,,251.0,Remarks - SOC26-01-0328 - 49
+51,Information Technology Development,SBUO-1D,test,2026-01-15 14:38:08.560,SOC26-01-0328,False,,251.0,Remarks - SOC26-01-0328 - 51
+52,Information Technology Development,SBUO-1D,test 2:38 pm,2026-01-15 14:38:32.063,SOC26-01-0328,False,39,251.0,Remarks - SOC26-01-0328 - 39
+53,Information Technology Development,SBUO-1D,test,2026-01-15 14:39:32.833,SOC26-01-0328,False,39,251.0,Remarks - SOC26-01-0328 - 39
+54,Information Technology Development,SBUO-1D,THIS IS A TEST Do not reply,2026-01-15 15:38:22.857,SOC26-01-0528,False,,251.0,Remarks - SOC26-01-0528 - 54
+55,Information Technology Development,SBUO-1D,test 3:38,2026-01-15 15:38:42.627,SOC26-01-0528,False,54,251.0,Remarks - SOC26-01-0528 - 54
+56,Information Technology Development,SBUO-1D,"test 3:47 PM
+
+",2026-01-15 15:47:14.957,SOC26-01-0528,False,54,251.0,Remarks - SOC26-01-0528 - 54
+57,Information Technology Development,SBUO-1D,Name Remarks,2026-01-15 15:59:10.430,SOC26-01-0528,False,,251.0,Remarks - SOC26-01-0528 - 57
+58,Information Technology Development,SBUO-1D,Unit Remarks,2026-01-15 15:59:18.537,SOC26-01-0528,False,,251.0,Remarks - SOC26-01-0528 - 58
+59,Information Technology Development,SBUO-1D,OE remarks,2026-01-15 15:59:25.260,SOC26-01-0528,False,,251.0,Remarks - SOC26-01-0528 - 59
+60,Glenn Arizala,SBUO-1D,TEST,2026-01-15 16:18:39.320,SOC26-01-0528,False,59,310.0,Remarks - SOC26-01-0528 - 59
+61,Information Technology Development,SBUO-1D,TEST,2026-01-15 16:20:09.810,SOC26-01-0528,False,59,251.0,Remarks - SOC26-01-0528 - 59
+62,Information Technology Development,SBUO-1D,TEST FOR NOTIF,2026-01-15 17:21:15.030,SOC26-01-0528,False,59,251.0,Remarks - SOC26-01-0528 - 59
+63,Pauline Jane Menese,SBUO-1A,pasuyo po palipat po sa 1D thankyou po ,2026-01-16 11:01:51.907,SOC26-01-0452,False,,134.0,Remarks - SOC26-01-0452 - 63
+64,Maria Blessie Taguinin,SBUO-1C,pauntag po wrong source,2026-01-16 15:52:00.993,SOC26-01-0215,False,,89.0,Remarks - SOC26-01-0215 - 64
+65,Jerrymie Cruz,SBUO-1A,jjv,2026-01-16 16:00:26.603,SOC26-01-0481,False,,34.0,Remarks - SOC26-01-0481 - 65
+66,Althea Jasmin Del Valle,SBUO-1C,SERVED TRIP,2026-01-17 11:26:51.393,SOC26-01-0134,False,,62.0,Remarks - SOC26-01-0134 - 66
+67,Althea Jasmin Del Valle,SBUO-1C,Hindi po ito natuloy | Changetrip po si driver,2026-01-19 13:38:44.953,SOC26-01-0611,False,,62.0,Remarks - SOC26-01-0611 - 67
+68,Maria Blessie Taguinin,SBUO-1C,NASERVED NA PO YUNG OE NA ITO NUNG JANUARY 17 DALAWANG OE LANG PO YUNG NAPASOK. KAPAG PINAALIS DAW PO KASI YUNG OE NA ITO AY PATI YUNG NASERVED NA OE ANG MAWAWALA,2026-01-19 14:08:47.953,SOC26-01-0600,False,,89.0,Remarks - SOC26-01-0600 - 68
+69,Raven Klyde Relente,SBUO-1C,CHANGED SOURCE FROM COC TO RCC,2026-01-22 00:38:13.730,SOC26-01-0835,False,,181.0,Remarks - SOC26-01-0835 - 69
+70,Jayvee Torres,SBUO-1A,EDI WOW ,2026-01-30 15:55:02.313,PLD26-1-0158,False,,95.0,Remarks - PLD26-1-0158 - 70
+71,Maria Blessie Taguinin,SBUO-1C,double tagging po ito,2026-02-01 14:13:12.800,SOC26-01-1246,False,,89.0,Remarks - SOC26-01-1246 - 71
+72,Rochelle Cruz,SBUO-1C,LO: 32648276,2026-02-01 14:22:45.180,PLD26-2-0201,False,,332.0,Remarks - PLD26-2-0201 - 72
+73,Jayvee Torres,SBUO-1A,FOR TESTING ONLY,2026-02-02 14:19:03.040,SOC26-01-1283,False,,95.0,Remarks - SOC26-01-1283 - 73
+74,Jayvee Torres,SBUO-1A,,2026-02-02 14:19:06.513,SOC26-01-1283,False,73,95.0,Remarks - SOC26-01-1283 - 73
+75,Rochelle Cruz,SBUO-1A,holcim to L.R. TIQUI - STA MARIA BULACAN,2026-02-02 21:19:40.233,SOC26-02-0099,False,,332.0,Remarks - SOC26-02-0099 - 75
+76,Patricia Ancheta,SBUO-1B,DELOY,2026-02-03 18:38:11.623,RVC26-02-0007,False,,94.0,Remarks - RVC26-02-0007 - 76
+77,Patricia Ancheta,SBUO-1B,DALMA,2026-02-03 19:00:59.363,PLD26-2-0198,False,,94.0,Remarks - PLD26-2-0198 - 77
+78,Patricia Ancheta,SBUO-1B,32650084 - LO,2026-02-03 20:32:32.053,RVC26-02-0006,False,,94.0,Remarks - RVC26-02-0006 - 78
+79,Patricia Ancheta,SBUO-1B,DALMA,2026-02-03 20:46:34.267,SPT26-02-0086,False,,94.0,Remarks - SPT26-02-0086 - 79
+80,Patricia Ancheta,SBUO-1B,GAMIT NA PO H-1013 GABBY FRANCISCO,2026-02-04 11:15:08.857,PLD26-2-0218,False,,94.0,Remarks - PLD26-2-0218 - 80
+81,Angelo Mananguit,SBUO-2A,wala raw po issued weigh slip sila bsp ahnex as per driver po,2026-02-04 15:12:33.057,SOC26-02-0080,False,,333.0,Remarks - SOC26-02-0080 - 81
+82,Angelo Mananguit,SBUO-2A,served trip na ,2026-02-05 10:13:30.727,SOC26-02-0116,False,,333.0,Remarks - SOC26-02-0116 - 82
+83,Angelo Mananguit,SBUO-2A,ARMAN BBIYAHE NITO AFTER SANSIMON,2026-02-05 14:03:20.127,SOC26-02-0245,False,,333.0,Remarks - SOC26-02-0245 - 83
+84,Angelo Mananguit,SBUO-2A,KILA DAYDAY AFTER TRIP,2026-02-05 15:46:45.127,SOC26-02-0269,False,,333.0,Remarks - SOC26-02-0269 - 84
+85,Angelo Mananguit,SBUO-2A,KAY LORENZO AFTER DISKARGA SA TITAN TONIGHT,2026-02-05 17:36:23.467,SOC26-02-0426,False,,333.0,Remarks - SOC26-02-0426 - 85
+86,Patricia Ancheta,SBUO-1B,VILLENA,2026-02-06 18:28:13.743,SOC26-02-0349,False,,94.0,Remarks - SOC26-02-0349 - 86
+87,Angelo Mananguit,SBUO-2A,PRIORITY MABIGAY SA MGA MA-LOADED NA UNIT SA EAGLE,2026-02-06 22:38:44.067,SOC26-02-0233,False,,333.0,Remarks - SOC26-02-0233 - 87
+88,Angelo Mananguit,SBUO-2A,PRIORITY MABIGAY SA MGA MA-LOADED NA UNIT SA EAGLE,2026-02-06 22:39:09.277,SOC26-02-0357,False,,333.0,Remarks - SOC26-02-0357 - 88
+89,Ed Fabregas Yumul,SBUO-2A,CHESTER CORNELIO'S TRIP AFTER LEMERY - ALPHAMIX CAVITE,2026-02-07 15:46:03.503,SOC26-02-0309,False,,206.0,Remarks - SOC26-02-0309 - 89
+90,Miguel Jonas Blue Ople,SBUO-2A,KUNIN DAW ITO NILA CADALZO,2026-02-07 23:43:44.283,SOC26-02-0233,False,,133.0,Remarks - SOC26-02-0233 - 90
+91,Angelo Mananguit,SBUO-2A,PWEDE KAY REAN IBIGAY,2026-02-09 06:30:47.150,SOC26-02-0370,False,,333.0,Remarks - SOC26-02-0370 - 91
+92,Angelo Mananguit,SBUO-2A,lorenzo after san simon,2026-02-09 06:53:40.153,SOC26-02-0450,False,,333.0,Remarks - SOC26-02-0450 - 92
+93,Angelo Mananguit,SBUO-2A,"pwede kay Arman or Villano pagka empty, sino mauna sa kanila",2026-02-09 06:54:12.777,SOC26-02-0428,False,,333.0,Remarks - SOC26-02-0428 - 93
+94,Marlon Gudao,SBUO-2A,bayocot next trip ,2026-02-09 14:05:35.133,SOC26-02-0475,False,,60.0,Remarks - SOC26-02-0475 - 94
+95,Marlon Gudao,SBUO-2A,SARTO - nangako magrereport ngayon eto kukunin byahe ,2026-02-09 15:05:01.380,SOC26-02-0378,False,,60.0,Remarks - SOC26-02-0378 - 95
+96,Glenn Arizala,SBUO-1B,SOCH26020441 - STA LUCIA LAND - PALO ALTO RIZAL,2026-02-09 20:36:23.163,PLD26-2-0619,False,,310.0,Remarks - PLD26-2-0619 - 96
+97,Manilyn Ignacio,SBUO-1D,CFB,2026-02-10 10:03:52.300,SPT26-02-0453,False,,324.0,Remarks - SPT26-02-0453 - 97
+98,Marlon Gudao,SBUO-2A,BYAHE NI EDEP NGAYON / DI MATAG DAHIL MAY HINDI PA SYA NATAPOS NA BYAHE 10K ,2026-02-10 20:36:33.693,SOC26-02-0540,False,,60.0,Remarks - SOC26-02-0540 - 98
+99,Angelo Mananguit,SBUO-2A,KAY CADALZO,2026-02-11 15:23:30.303,SOC26-02-0558,False,,333.0,Remarks - SOC26-02-0558 - 99
+100,Angelo Mananguit,SBUO-2A,NASA IC NGAYON,2026-02-11 15:31:05.157,SPT26-02-0575,False,,333.0,Remarks - SPT26-02-0575 - 100
+101,Ed Fabregas Yumul,SBUO-2A,SERVED 02/11,2026-02-11 23:18:11.743,SOC26-02-0540,False,,206.0,Remarks - SOC26-02-0540 - 101
+102,Ed Fabregas Yumul,SBUO-2A,"DRIVER: EDEP, NIKKO | HELPER: RHANZ ABENOJAR | UNIT: 2192",2026-02-11 23:19:14.870,SOC26-02-0540,False,101,206.0,Remarks - SOC26-02-0540 - 101
+103,Ed Fabregas Yumul,SBUO-2A,"DRIVER: EDEP, NIKKO | HELPER: RHANZ, ABENOJAR | H - 2192  BO - 191",2026-02-11 23:20:18.350,SPT26-02-0049,False,,206.0,Remarks - SPT26-02-0049 - 103
+104,Patricia Ancheta,SBUO-1B,BOLASTIG,2026-02-12 13:38:32.483,SOC26-02-0641,False,,94.0,Remarks - SOC26-02-0641 - 104
+105,Patricia Ancheta,SBUO-1B,MAGALE,2026-02-12 15:55:26.133,SOC26-02-0649,False,,94.0,Remarks - SOC26-02-0649 - 105
+106,John Vincent Castillo,SBUO-1D,JR UNIT,2026-02-13 11:15:32.633,SOC26-02-0553,False,,124.0,Remarks - SOC26-02-0553 - 106
+107,Ed Fabregas Yumul,SBUO-2A,h-179 romnick bayocot,2026-02-13 14:27:58.577,SOC26-02-0705,False,,206.0,Remarks - SOC26-02-0705 - 107
+108,Ed Fabregas Yumul,SBUO-2A,h-1709,2026-02-13 14:28:25.433,SOC26-02-0705,False,107,206.0,Remarks - SOC26-02-0705 - 107
+109,Marlon Gudao,SBUO-2A,roselito morales H 2205 wala sa list natin ,2026-02-14 04:27:37.097,SOC26-02-0733,False,,60.0,Remarks - SOC26-02-0733 - 109
+110,Christan Jordan,SBUO-1A,HELPER: ROSENDO DINOY,2026-02-14 10:31:53.837,SOC26-02-0391,False,,100.0,Remarks - SOC26-02-0391 - 110
+111,Christan Jordan,SBUO-1A,HELPER: ROSENDO DINOY FROM 1D,2026-02-14 10:34:08.623,SOC26-02-0005,False,,100.0,Remarks - SOC26-02-0005 - 111
+112,Angelo Mananguit,SBUO-2A,"For darwin manalo, DR# 0014875, served 2/16/26",2026-02-16 15:46:12.150,SPT26-02-0650,False,,333.0,Remarks - SPT26-02-0650 - 112
+113,Angelo Mananguit,SBUO-2A,wrong remarks ,2026-02-16 15:47:18.680,SPT26-02-0650,False,112,333.0,Remarks - SPT26-02-0650 - 112
+114,Angelo Mananguit,SBUO-2A,For Darwin Manalo under DR#0014817 served last 2/13/26,2026-02-16 15:51:48.760,SPT26-02-0687,False,,333.0,Remarks - SPT26-02-0687 - 114
+115,Angelo Mananguit,SBUO-2A,for darwin manalo under dr#0014875 served last 2/16/25,2026-02-16 15:53:06.537,SPT26-02-0747,False,,333.0,Remarks - SPT26-02-0747 - 115
+116,Miguel Jonas Blue Ople,SBUO-2A,Eto yung trip ni Edep na hindi pa tapos i-unload,2026-02-16 17:21:42.973,SOC26-02-0020,False,,133.0,Remarks - SOC26-02-0020 - 116
+117,Pauline Jane Menese,SBUO-1A,sapinit hindi papo ma tapat kay driver naka ontrip pa po ito,2026-02-19 13:19:56.897,MOB26-2-0950,False,,134.0,Remarks - MOB26-2-0950 - 117
+118,Pauline Jane Menese,SBUO-1A,driver : cherwin saberon || naka on trip papo ito kaya dipa maitapat kay driver,2026-02-19 13:38:02.380,MOB26-2-1042,False,,134.0,Remarks - MOB26-2-1042 - 118
+119,John Vincent Castillo,SBUO-1D,Driver: Jessie Abayato Date: 2-15-26,2026-02-19 13:58:12.320,MOB26-2-0657,False,,124.0,Remarks - MOB26-2-0657 - 119
+120,Jayvee Torres,SBUO-1A,ETABAG,2026-02-20 13:05:47.120,MOB26-2-1077,False,,95.0,Remarks - MOB26-2-1077 - 120
+121,Jayvee Torres,SBUO-1A,INTERCITY TO VAS UNIT NA KUKUHANIN AY H-1061,2026-02-20 13:07:27.813,MOB26-2-1077,False,120,95.0,Remarks - MOB26-2-1077 - 120
+122,John Vincent Castillo,SBUO-1D,kukuha ng unit sa IC Driver: Tomas Fernandez,2026-02-20 19:45:15.653,MOB26-2-1089,False,,124.0,Remarks - MOB26-2-1089 - 122
+123,Pauline Jane Menese,SBUO-1A,"DRIVER : ETABAG, JOSEPH | WAG NAPO GAMITIN DIPA MASERVE KAY DRIVER DAHIL MAY TRIP PAPO ITO",2026-02-20 20:50:27.763,MOB26-02-1042,False,,134.0,Remarks - MOB26-02-1042 - 123
+124,Angelo Mananguit,SBUO-2A,"MONDAY NA MAISEND ANG WEIGH SLIP, NAKAUWI NA SILA DRIVER. ",2026-02-21 07:33:59.487,SOC26-02-0917,False,,333.0,Remarks - SOC26-02-0917 - 124
+125,Christan Jordan,SBUO-1A,H-1070 KAY LAGASCA HINDI PA MAITAPAT DAHIL MAY JR PA ANG UNIT,2026-02-21 11:00:39.527,MOB26-2-1117,False,,100.0,Remarks - MOB26-2-1117 - 125
+126,Miguel Jonas Blue Ople,SBUO-2A,roselito Morales after titan,2026-02-22 06:07:13.337,SOC26-02-0963,False,,133.0,Remarks - SOC26-02-0963 - 126
+127,Angelo Mananguit,SBUO-2A,itsaka na i-done kapag naitag na sa coor app,2026-02-22 11:00:00.823,SOC26-02-1009,False,,333.0,Remarks - SOC26-02-1009 - 127
+128,Miguel Jonas Blue Ople,SBUO-2A,PHILCEMENT - SUMMIT STA ROSA,2026-02-23 00:20:27.660,PLD26-2-1175,False,,133.0,Remarks - PLD26-2-1175 - 128
+129,Angelo Mananguit,SBUO-2A,"gamit na ni dablo OE, for tagging na lang wag na galawin",2026-02-23 10:07:52.610,SPT26-02-1117,False,,333.0,Remarks - SPT26-02-1117 - 129
+130,Patricia Ancheta,SBUO-1B,GAMIT NA ITO,2026-02-23 20:57:03.750,PLD26-02-0965,False,,94.0,Remarks - PLD26-02-0965 - 130
+131,Ed Fabregas Yumul,SBUO-2A,JOREBEM VILLANO,2026-02-25 03:16:41.710,SOC26-02-1223,False,,206.0,Remarks - SOC26-02-1223 - 131
+132,Angelo Mananguit,SBUO-2A,valmoria,2026-02-25 10:24:41.927,SOC26-02-1287,False,,333.0,Remarks - SOC26-02-1287 - 132
+133,Angelo Mananguit,SBUO-2A,VALMORIA,2026-02-25 10:26:36.313,SOC26-02-1261,False,,333.0,Remarks - SOC26-02-1261 - 133
+134,Angelo Mananguit,SBUO-2A,VILLANO AFTER SUMMIT,2026-02-25 13:10:55.157,SOC26-02-1180,False,,333.0,Remarks - SOC26-02-1180 - 134
+135,Ron Christian Villanueva,SBUO-1B,gabby,2026-02-26 07:56:02.327,SPT26-02-1317,False,,93.0,Remarks - SPT26-02-1317 - 135
+136,Ron Christian Villanueva,SBUO-1B,NOLI,2026-02-26 08:28:10.617,SPT26-02-1272,False,,93.0,Remarks - SPT26-02-1272 - 136
+138,Information Technology Development,SBUO-1D,Test asking about something,2026-02-26 14:11:28.753,"PL-Lindayag, Jomari Alejo",False,,251.0,"Remarks - PL-Lindayag, Jomari Alejo - 138"
+137,Information Technology Development,SBUO-1D,"this is a test remarks, feel free to remove",2026-02-26 14:24:27.170,PL-1258,False,,251.0,Remarks - PL-1258 - 137
+139,Jerrymie Cruz,SBUO-1D,Jerrymie,2026-02-26 15:01:05.050,PL-100,False,,158.0,Remarks - PL-100 - 139
+140,Marlon Gudao,SBUO-2A,BARIA TRIP,2026-02-27 23:53:24.410,SPT26-02-1006,False,,60.0,Remarks - SPT26-02-1006 - 140
+141,Marlon Gudao,SBUO-2A,DDC LAND TANZA CAVITE,2026-02-28 03:37:24.893,PLD26-2-1414,False,,60.0,Remarks - PLD26-2-1414 - 141
+142,Ed Fabregas Yumul,SBUO-2A,lorenzo's trip,2026-03-01 03:51:07.013,SOC26-02-1056,False,,206.0,Remarks - SOC26-02-1056 - 142
+143,Clarence Paner,SBUO-1A,for loreto,2026-03-01 20:36:59.193,SOC26-02-1243,False,,98.0,Remarks - SOC26-02-1243 - 143
+144,Angelo Mananguit,SBUO-2A,"bayocot, loaded na",2026-03-02 01:21:48.383,SPT26-02-0914,False,,333.0,Remarks - SPT26-02-0914 - 144
+145,Angelo Mananguit,SBUO-2A,"bibigay sa ibang driver ito, divert na lang si Jesum sa malapit na biyahe",2026-03-02 02:01:02.503,SOC26-02-1215,False,,333.0,Remarks - SOC26-02-1215 - 145
+146,Janella  Maquidato,SBUO-1B,FOR BARAJAS,2026-03-02 12:01:37.193,SPT26-03-0182,False,,315.0,Remarks - SPT26-03-0182 - 146
+147,Angelo Mananguit,SBUO-2A,VILLANO AFTER HPSI,2026-03-03 07:30:51.307,SOC26-03-0028,False,,333.0,Remarks - SOC26-03-0028 - 147
+148,Ed Fabregas Yumul,SBUO-2A,beef next trip,2026-03-03 10:35:28.900,SPT26-03-0197,False,,206.0,Remarks - SPT26-03-0197 - 148
+150,Ed Fabregas Yumul,SBUO-2A,manny laroa's trip,2026-03-04 09:37:05.380,SOC26-03-0079,False,,206.0,Remarks - SOC26-03-0079 - 150
+151,Information Technology Development,SBUO-1D,"test transaction, ignore",2026-03-04 09:54:12.147,PL-1804,False,,251.0,Remarks - PL-1804 - 151
+152,Marlon Gudao,SBUO-2A,LAROA MAGKAKARGA  AFTER NG TITAN ,2026-03-04 20:32:49.480,SOC26-03-0107,False,,60.0,Remarks - SOC26-03-0107 - 152
+153,Marlon Gudao,SBUO-2A,PALERMO NA BYAHE ,2026-03-04 20:36:47.913,SOC26-03-0197,False,,60.0,Remarks - SOC26-03-0197 - 153
+154,Ed Fabregas Yumul,SBUO-2A,bayocot next trip,2026-03-05 13:23:19.550,SOC26-02-1458,False,,206.0,Remarks - SOC26-02-1458 - 154
+155,Christan Jordan,SBUO-1A,kay calamongay,2026-03-05 13:51:37.180,SOC26-03-0159,False,,100.0,Remarks - SOC26-03-0159 - 155
+156,Christan Jordan,SBUO-1A,kay pangilinan,2026-03-05 13:52:10.520,SOC26-03-0158,False,,100.0,Remarks - SOC26-03-0158 - 156
+157,Patricia Ancheta,SBUO-1B,SERAFICA,2026-03-06 10:48:12.180,SOC26-03-0210,False,,94.0,Remarks - SOC26-03-0210 - 157
+158,Ronald Organista,SBUO-2A,JONARD NEXT TRIP,2026-03-06 16:31:56.623,SOC26-03-0227,False,,84.0,Remarks - SOC26-03-0227 - 158
+159,Miguel Jonas Blue Ople,SBUO-2A,WFA muna as per sales,2026-03-06 18:56:12.120,SOC26-03-0151,False,,133.0,Remarks - SOC26-03-0151 - 159
+160,Patricia Ancheta,SBUO-1B,divert ni catimbang,2026-03-07 10:59:10.143,SOC26-03-0222,False,,94.0,Remarks - SOC26-03-0222 - 160
+161,Patricia Ancheta,SBUO-1B,divert - dorado,2026-03-07 15:04:26.993,SOC26-03-0237,False,,94.0,Remarks - SOC26-03-0237 - 161
+162,Patricia Ancheta,SBUO-1B,TAY KIKO - BUKAS MAG PAPAKARGA,2026-03-07 15:57:35.830,SOC26-03-0268,False,,94.0,Remarks - SOC26-03-0268 - 162
+163,Marlon Gudao,SBUO-2A,para sa titan na byahe ,2026-03-08 09:17:34.810,SOC26-03-0302,False,,60.0,Remarks - SOC26-03-0302 - 163
+164,Marlon Gudao,SBUO-2A,para sa titan na byahe ,2026-03-08 09:18:25.827,PLD26-03-1584,False,,60.0,Remarks - PLD26-03-1584 - 164
+165,Marlon Gudao,SBUO-2A,para sa titan na byahe ,2026-03-08 09:18:42.473,PLD26-03-1585,False,,60.0,Remarks - PLD26-03-1585 - 165
+166,Marlon Gudao,SBUO-2A,para sa byahe na DANCON cavite ,2026-03-08 09:22:28.010,SOC26-03-0299,False,,60.0,Remarks - SOC26-03-0299 - 166
+167,Marlon Gudao,SBUO-2A,byahe ni jonard ,2026-03-08 09:54:17.910,SOC26-03-0168,False,,60.0,Remarks - SOC26-03-0168 - 167
+168,John Vincent Castillo,SBUO-1D,Driver: Kerwyn Sudaria,2026-03-08 22:27:56.230,SOC26-03-0320,False,,124.0,Remarks - SOC26-03-0320 - 168
+169,Patricia Ancheta,SBUO-1B,SERAFICA,2026-03-10 14:01:21.490,SOC26-03-0398,False,,94.0,Remarks - SOC26-03-0398 - 169
+170,John Vincent Castillo,SBUO-1D,Ginamit ni Sudaria H-1824 pang baba vasquez galing calaca,2026-03-11 03:00:04.320,SPT26-03-0432,False,,124.0,Remarks - SPT26-03-0432 - 170
+171,Ronald Organista,SBUO-2A,ricky vicente,2026-03-11 20:14:17.110,SOC26-03-0447,False,,84.0,Remarks - SOC26-03-0447 - 171
+172,John Vincent Castillo,SBUO-1D,"maling picture po na attach ko, mali din po ang tractor na gamit H-580 napindot ko po yung submit kase dalawang tab ng dispatch app naka open sakin",2026-03-12 01:24:06.467,MOB26-03-0019,False,,124.0,Remarks - MOB26-03-0019 - 172
+173,Information Technology Development,SBUO-1D,"3rd test, please ignore",2026-03-12 11:08:40.153,PL-3211,False,,251.0,Remarks - PL-3211 - 173
+174,Janella  Maquidato,SBUO-1B,anyayahan,2026-03-13 14:56:02.640,SOC26-03-0572,False,,315.0,Remarks - SOC26-03-0572 - 174
+175,Christan Jordan,SBUO-1A,FOR JEZZ,2026-03-13 17:11:45.110,SOC26-03-0579,False,,100.0,Remarks - SOC26-03-0579 - 175
+176,Christan Jordan,SBUO-1A,FOR CALAMONGAY,2026-03-13 17:11:59.500,SOC26-03-0585,False,,100.0,Remarks - SOC26-03-0585 - 176
+177,Janella  Maquidato,SBUO-1B,DENIS,2026-03-14 09:57:05.117,PLD26-03-1691,False,,315.0,Remarks - PLD26-03-1691 - 177
+178,Marlon Gudao,SBUO-2A,babalikan ni lopez ,2026-03-14 15:27:53.357,SOC26-03-0527,False,,60.0,Remarks - SOC26-03-0527 - 178
+179,Ed Fabregas Yumul,SBUO-2A,SARTO'S NEXT TRIP,2026-03-16 16:48:32.573,SOC26-03-0668,False,,206.0,Remarks - SOC26-03-0668 - 179
+180,Ronald Organista,SBUO-2A,JEROME DELA TORRE,2026-03-16 17:31:45.160,SOC26-03-0695,False,,84.0,Remarks - SOC26-03-0695 - 180
+181,Ed Fabregas Yumul,SBUO-2A,"For Zircon Plaridel, tom lunch time delivery",2026-03-16 19:47:01.417,PLD26-03-1744,False,,206.0,Remarks - PLD26-03-1744 - 181
+182,John Vincent Castillo,SBUO-1D,"Dagaas, Adrian Lorenzo Pagodon",2026-03-17 11:19:03.180,SOC26-03-0790,False,,124.0,Remarks - SOC26-03-0790 - 182
+183,Ed Fabregas Yumul,SBUO-2A,BEEFLOAF,2026-03-19 09:25:19.667,MOB26-03-0041,False,,206.0,Remarks - MOB26-03-0041 - 183
+184,Ed Fabregas Yumul,SBUO-2A,BEEFLOAF,2026-03-19 09:26:23.523,SPT26-03-0908,False,,206.0,Remarks - SPT26-03-0908 - 184
+186,Crystal Miranda,SBUO-1D,kay armada,2026-03-21 11:06:49.520,SPT26-03-0847,False,,123.0,Remarks - SPT26-03-0847 - 186
+187,John Paulo Mercado,SBUO-1D,1001.25 po ung karga ni driver kulang po ng isang zero,2026-03-21 13:56:14.957,SPT26-03-0852,False,,83.0,Remarks - SPT26-03-0852 - 187
+188,Pauline Jane Menese,SBUO-1A,"Driver: Santillan, Rodgie Abedong",2026-03-21 18:21:09.253,SOC26-03-0919,False,,134.0,Remarks - SOC26-03-0919 - 188
+185,Jerrymie Cruz,SBUO-1D,oiph,2026-03-23 13:03:43.160,PL-1916,False,,158.0,Remarks - PL-1916 - 185
+189,Jerrymie Cruz,SBUO-1D,,2026-03-23 13:04:19.810,PL-3351,False,,158.0,Remarks - PL-3351 - 189
+190,Angelo Mananguit,SBUO-2A,NA REQUESTAN NA NG SO NI BARIA,2026-03-24 00:48:41.370,PLD26-03-1738,False,,333.0,Remarks - PLD26-03-1738 - 190
+191,Marlon Gudao,SBUO-2A,jersam teleron,2026-03-24 11:40:19.870,SPT26-03-1110,False,,60.0,Remarks - SPT26-03-1110 - 191
+192,Marlon Gudao,SBUO-2A,JESSIE SULIMA,2026-03-24 11:40:37.530,SPT26-03-1111,False,,60.0,Remarks - SPT26-03-1111 - 192
+193,Ed Fabregas Yumul,SBUO-2A,ricky vicente,2026-03-24 13:51:08.637,SPT26-03-1112,False,,206.0,Remarks - SPT26-03-1112 - 193
+194,Ronald Organista,SBUO-2A,Joemart Lopez,2026-03-24 15:44:18.090,SOC26-03-1057,False,,84.0,Remarks - SOC26-03-1057 - 194
+195,Angelo Mananguit,SBUO-2A,"BIYAHE FOR EDEP, HINDI PA MAITAPAT DAHIL MAY PENDING PA NG DIESEL",2026-03-25 03:39:14.277,SOC26-03-1075,False,,333.0,Remarks - SOC26-03-1075 - 195
+196,Marlon Gudao,SBUO-2A,JERSAM TELERON,2026-03-25 11:37:22.300,SOC26-03-1089,False,,60.0,Remarks - SOC26-03-1089 - 196
+197,Christan Jordan,SBUO-1A,ROMEO DUCA ONLY,2026-03-26 16:25:59.447,MOB26-03-0047,False,,100.0,Remarks - MOB26-03-0047 - 197
+198,Ed Fabregas Yumul,SBUO-2A,ROMNICK BAYOCOT,2026-03-27 16:35:42.947,SPT26-03-1286,False,,206.0,Remarks - SPT26-03-1286 - 198
+199,Ed Fabregas Yumul,SBUO-2A,CLZ - ICON READYMIX - SILANG CAV,2026-03-27 20:35:40.883,PLD26-03-2005,False,,206.0,Remarks - PLD26-03-2005 - 199
+200,Ronald Organista,SBUO-2A,wait for advise,2026-03-28 10:44:55.233,SOC26-03-1168,False,,84.0,Remarks - SOC26-03-1168 - 200
+201,John Vincent Castillo,SBUO-1D,For Castulo,2026-03-29 13:40:17.397,SOC26-03-1265,False,,124.0,Remarks - SOC26-03-1265 - 201
+202,John Vincent Castillo,SBUO-1D,Plan for Loreto Morales,2026-03-29 15:45:48.250,SOC26-03-1213,False,,124.0,Remarks - SOC26-03-1213 - 202
+203,Christan Jordan,SBUO-1A,"huwag papilahan, kay kuya sonny ito, tapos na itong byahe",2026-03-30 11:43:49.227,SOC26-03-1263,False,,100.0,Remarks - SOC26-03-1263 - 203
+204,John Vincent Castillo,SBUO-1D,Plan for Baydo,2026-03-30 14:31:57.810,SOC26-03-1280,False,,124.0,Remarks - SOC26-03-1280 - 204
+205,Christan Jordan,SBUO-1A,PLAN FOR JUNREY PANG BAWI NI DRIVER,2026-03-30 18:32:37.050,SOC26-03-1331,False,,100.0,Remarks - SOC26-03-1331 - 205
+206,Jacob Punzalan,SBUO-1A,"as per mam JC pinagbawas po si driver ng karga sa trista at ung matitira po na karga ay dadalahin po ng alpha mix over po kase si driver ng karga kaya po nagbawas po siya ng karga sa trista at kaylangan na kaylangan nadaw po ni alpha mix ng cement 318.5 po ung na unload ni driver sa trista ang natira po na dadalahin da alpha mix 1,045.25. ",2026-03-31 10:46:31.860,SOC26-03-1301,False,,82.0,Remarks - SOC26-03-1301 - 206
+207,Patricia Ancheta,SBUO-1B,GABBY,2026-03-31 13:17:40.157,SOC26-03-1335,False,,94.0,Remarks - SOC26-03-1335 - 207
+208,Ed Fabregas Yumul,SBUO-1A,BEEFLOAF TELERON,2026-04-01 10:34:41.467,SPT26-03-1312,False,,206.0,Remarks - SPT26-03-1312 - 208
+209,Ronald Organista,SBUO-1A,"DONE TRIP NA ITO , HINDI MATAG DRIVER",2026-04-01 16:13:34.937,SPT26-04-0069,False,,84.0,Remarks - SPT26-04-0069 - 209
+210,Clarence Paner,SBUO-1A,ACEJO,2026-04-05 09:34:45.363,SPT26-04-0317,False,,98.0,Remarks - SPT26-04-0317 - 210
+211,Christan Jordan,SBUO-1A,"Kay Berin po ito, mobilization nya po nung April 2, hindi pa maitapat ang pangalan at unit dahil may byahe pa siya",2026-04-06 13:29:46.807,MOB26-04-0009,False,,100.0,Remarks - MOB26-04-0009 - 211
+212,Ronald Organista,SBUO-1A,ARMAN CALLEDO,2026-04-06 16:11:40.350,SOC26-04-0075,False,,84.0,Remarks - SOC26-04-0075 - 212
+213,Ronald Organista,SBUO-1A,NIKKO EDEP,2026-04-06 16:17:21.787,SOC26-04-0058,False,,84.0,Remarks - SOC26-04-0058 - 213
+214,Ronald Organista,SBUO-1A,RICKY VINCETE TATAKBO AFTER MAKABITAN NG GPS UNIT NIYA SA VASQUEZ,2026-04-07 10:27:52.510,SOC26-04-0067,False,,84.0,Remarks - SOC26-04-0067 - 214
+215,Ronald Organista,SBUO-1A,manny laroa,2026-04-07 17:22:21.940,SOC26-04-0102,False,,84.0,Remarks - SOC26-04-0102 - 215
+216,Ronald Organista,SBUO-1A,JEROME DELA TORRE,2026-04-08 11:47:04.077,SOC26-04-0174,False,,84.0,Remarks - SOC26-04-0174 - 216
+217,Ronald Organista,SBUO-1A,NELSON MAHUSAY NEXT TRIP,2026-04-10 17:28:23.403,SOTC26-04-0008,False,,84.0,Remarks - SOTC26-04-0008 - 217
+218,Ronald Organista,SBUO-1A,HOLD WFA,2026-04-16 17:53:40.710,SPT26-04-0687,False,,84.0,Remarks - SPT26-04-0687 - 218
+220,Ed Fabregas Yumul,SBUO-1A,NIKKO EDEP,2026-04-20 14:00:33.593,SOC26-04-0619,False,,206.0,Remarks - SOC26-04-0619 - 220
+221,Christan Jordan,SBUO-1A,HUWAG IBIGAY SA IBA KAY BARROGA ITO ISESERVED NALANG,2026-04-20 15:44:46.730,SPT26-04-0828,False,,100.0,Remarks - SPT26-04-0828 - 221
+222,Christan Jordan,SBUO-1A,kay abrigo ito,2026-04-21 14:14:00.993,SPT26-04-0778,False,,100.0,Remarks - SPT26-04-0778 - 222
+223,Christan Jordan,SBUO-1A,"huwag na ipamigay sa iba, kay villena ito may nag revert lang",2026-04-21 14:57:51.170,SOC26-04-0708,False,,100.0,Remarks - SOC26-04-0708 - 223
+224,Christan Jordan,SBUO-1A,"done na ito nung sabado pa, salamat",2026-04-21 14:58:17.740,SOC26-04-0708,False,223,100.0,Remarks - SOC26-04-0708 - 223
+225,Christan Jordan,SBUO-1A,"okay na pala hindi naituloy ni kuya villena yung byahe, balanse uli ito salamat",2026-04-21 15:05:27.263,SOC26-04-0708,False,223,100.0,Remarks - SOC26-04-0708 - 223
+226,Ed Fabregas Yumul,SBUO-1A,"Driver: lopez, joemart",2026-04-24 11:39:49.240,SPT26-04-0896,False,,206.0,Remarks - SPT26-04-0896 - 226
+227,Ronald Organista,SBUO-1A,DIVERTED / WFA,2026-04-28 23:17:04.977,SPT26-04-1195,False,,84.0,Remarks - SPT26-04-1195 - 227
+228,Ed Fabregas Yumul,SBUO-1A,CADALZO,2026-04-29 15:36:29.700,SOC26-04-1147,False,,206.0,Remarks - SOC26-04-1147 - 228
+229,Ronald Organista,SBUO-1A,CANCELLED BY CUSTOMER,2026-04-30 17:03:55.233,SPT26-04-1197,False,,84.0,Remarks - SPT26-04-1197 - 229
