@@ -325,7 +325,7 @@ export const ewulCreate = async <T = any>(
 ): Promise<EwulResponse<T>> => {
   console.log("[OFFLINE MODE] ewulCreate skipped for:", database, tableName);
   return {
-    data: {} as T,
+    data: { value: {} } as unknown as T,
     error: null,
     code: 200,
   };
@@ -340,7 +340,7 @@ export const ewulUpdate = async <T = any>(
 ): Promise<EwulResponse<T>> => {
   console.log("[OFFLINE MODE] ewulUpdate skipped for:", database, tableName, recordId);
   return {
-    data: {} as T,
+    data: { value: {} } as unknown as T,
     error: null,
     code: 200,
   };
@@ -358,7 +358,6 @@ export const ewulDelete = async (
     code: 200,
   };
 };
-
 
 
 
