@@ -11,14 +11,15 @@ import { type DMS_DebugLogs } from '../generated/models/DMS_DebugLogsModel';
 
 //@ts-ignore
 import { getApiUrl } from "../api/config";
-import { AuthService } from "../api/AuthService.ts";
-import { type ExecuteWorkerPayload } from './executeWorker';
+// import { AuthService } from "../api/AuthService.ts";
+// import { type ExecuteWorkerPayload } from './executeWorker';
 //@ts-ignore
-import { type FetchWorkerPayload } from './fetchWorker';
+// import { type FetchWorkerPayload } from './fetchWorker';
 import { canAccessBackend } from "./IdleContext";
 
 import Papa from 'papaparse';
 
+//@ts-ignore
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
 
 
@@ -287,9 +288,11 @@ export const ewulFetchAll = async <T extends Record<string, any>>(
 };
 
 
-export interface EwulResponse<T> { data: T | null; error: any; code: number; }
-
-
+export interface EwulResponse<T> {
+  data: T | null;
+  error: any;
+  code: number;
+}
 
 export interface EwulExecuteOptions {
   params?: Record<string, any>;
@@ -300,7 +303,6 @@ export interface EwulExecuteOptions {
   };
 }
 
-
 export type EwulStoredProcedureResult<T> =
   | T[]
   | Record<`Table${number}`, T[]>;
@@ -308,123 +310,24 @@ export type EwulStoredProcedureResult<T> =
 export const ewulExecute = async <T>(
   database: string,
   storedProcedure: string,
+  //@ts-ignore
   options: any,
 ): Promise<EwulStoredProcedureResult<T>> => {
-
-  if (!canAccessBackend()) {
-    console.log("[IDLE] Backend request skipped");
-    return [];
-  }
-
-
-  const token = await AuthService.ensureValidToken();
-
-  if (!token) {
-    throw new Error("Authentication required");
-  }
-
-  return new Promise((resolve, reject) => {
-    const worker = new Worker(
-      new URL('./executeWorker.ts', import.meta.url),
-      { type: 'module' }
-    );
-
-    worker.onmessage = (
-      event: MessageEvent<{
-        success: boolean;
-        data?: T[] | Record<`Table${number}`, T[]>;
-        error?: string;
-      }>
-    ) => {
-      const { success, data, error } = event.data;
-
-      worker.terminate();
-
-      if (success && data !== undefined) {
-        // Backward compatibility:
-        // One result set → return the original T[] format.
-        if (
-          !Array.isArray(data) &&
-          Object.keys(data).length === 1 &&
-          'Table1' in data
-        ) {
-          resolve(data.Table1);
-          return;
-        }
-
-        // Multiple result sets → keep the named TableN structure.
-        resolve(data);
-      } else {
-        reject(new Error(error || 'Worker execution failed'));
-      }
-    };
-
-    worker.onerror = (err) => {
-      worker.terminate();
-      reject(err);
-    };
-
-    const payload: ExecuteWorkerPayload = {
-      database,
-      spName: storedProcedure,
-      method: 'GET',
-      params: ewulDecodeKeys(options),
-      accessToken: token,
-    };
-
-    worker.postMessage(payload);
-  });
+  console.log("[OFFLINE MODE] ewulExecute skipped for:", database, storedProcedure);
+  return [] as unknown as EwulStoredProcedureResult<T>;
 };
-
-
-
-
 
 export const ewulCreate = async <T = any>(
   database: string,
   tableName: string,
+  //@ts-ignore
   record: Record<string, any>,
 ): Promise<EwulResponse<T>> => {
-
-  if (!canAccessBackend()) {
-    console.log("[IDLE] Backend request skipped");
-    return {
-      data: {} as T,
-      error: "Stopping API Call, client IDLE",
-      code: 0,
-    };
-  }
-
-  const token = await AuthService.ensureValidToken();
-
-  if (!token) {
-    throw new Error("Authentication required");
-  }
-
-  const url = `${API_BASE_URL}/api/${encodeURIComponent(database)}/table/${encodeURIComponent(tableName)}`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-    },
-    body: JSON.stringify(ewulDecodeKeys(record)),
-  });
-
-  const result = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const message = result?.error?.message || result?.error || `Create request failed (${response.status})`;
-    throw new Error(message);
-  }
-
-  console.log('db: ', database, 'tb: ', tableName, ' res:', result);
-
+  console.log("[OFFLINE MODE] ewulCreate skipped for:", database, tableName);
   return {
-    data: (result?.data?.value ?? result?.data ?? result?.value ?? result) as T,
-    error: result?.error,
-    code: response.status,
+    data: {} as T,
+    error: null,
+    code: 200,
   };
 };
 
@@ -432,47 +335,14 @@ export const ewulUpdate = async <T = any>(
   database: string,
   tableName: string,
   recordId: string,
+  //@ts-ignore
   changes: Record<string, any>,
 ): Promise<EwulResponse<T>> => {
-
-  if (!canAccessBackend()) {
-    console.log("[IDLE] Backend request skipped");
-    return {
-      data: {} as T,
-      error: "Stopping API Call, client IDLE",
-      code: 0,
-    };
-  }
-
-
-  const token = await AuthService.ensureValidToken();
-
-  if (!token) {
-    throw new Error("Authentication required");
-  }
-
-  const url = `${API_BASE_URL}/api/${encodeURIComponent(database)}/table/${encodeURIComponent(tableName)}/${encodeURIComponent(recordId)}`;
-
-  const response = await fetch(url, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-    },
-    body: JSON.stringify(ewulDecodeKeys(changes)),
-  });
-
-  const result = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const message = result?.error?.message || result?.error || `Update request failed (${response.status})`;
-    throw new Error(message);
-  }
-
+  console.log("[OFFLINE MODE] ewulUpdate skipped for:", database, tableName, recordId);
   return {
-    data: (result?.data?.value ?? result?.data ?? result?.value ?? result) as T,
-    error: result?.error,
-    code: response.status,
+    data: {} as T,
+    error: null,
+    code: 200,
   };
 };
 
@@ -481,40 +351,13 @@ export const ewulDelete = async (
   tableName: string,
   recordId: string,
 ): Promise<EwulResponse<boolean>> => {
-
-  if (!canAccessBackend()) {
-    console.log("[IDLE] Backend request skipped");
-  }
-
-  const token = await AuthService.ensureValidToken();
-
-  if (!token) {
-    throw new Error("Authentication required");
-  }
-
-  const url = `${API_BASE_URL}/api/${encodeURIComponent(database)}/table/${encodeURIComponent(tableName)}/${encodeURIComponent(recordId)}`;
-
-  const response = await fetch(url, {
-    method: "DELETE",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-    },
-  });
-
-  const result = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const message = result?.error?.message || result?.error || `Delete request failed (${response.status})`;
-    throw new Error(message);
-  }
-
+  console.log("[OFFLINE MODE] ewulDelete skipped for:", database, tableName, recordId);
   return {
     data: true,
-    error: result?.error,
-    code: response.status,
+    error: null,
+    code: 200,
   };
 };
-
 
 
 
@@ -1730,29 +1573,9 @@ export const buFilter = (col: string, user: UserInfo | null) => {
 
 
 
-
+//@ts-ignore
 export const extractGpsCameraDetails = async (file: File) => {
-  const token = await AuthService.ensureValidToken();
 
-  const formData = new FormData();
-  formData.append("image", file);
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/gps-camera/extract`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    }
-  );
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.error || "Failed to extract GPS details.");
-  }
-
-  return result;
+  return {};
 };

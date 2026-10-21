@@ -15,6 +15,7 @@ export const AuthService = {
     },
 
     async login(appKey: string, appSecret: string, deviceKey?: string) {
+        return {}
         const response = await fetch(`${API_URL}/api/auth/token`, {
             method: "POST",
             headers: {
