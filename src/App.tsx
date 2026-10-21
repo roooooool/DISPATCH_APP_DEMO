@@ -28,15 +28,18 @@ import type { Notification } from "./components/NotificationBell"; // Ensure fet
 import NotificationFetcher from "./components/fetch_notifications"; // Import to set up the polling mechanism for notifications
 import LoadingOverlayMask from './components/loaderMask';
 import { NotificationProvider, useNotifications } from './utils/NotificationContext'; // Ensure the context is imported to wrap the app and provide notification state
+//@ts-ignore
 import MaintenanceChecker from './components/maintenanceChecker';
+//@ts-ignore
 import { ErrorChecker } from './components/errorChecker'; // Import the error checker to wrap the app
+//@ts-ignore
 import { useVersionCheck } from './components/versionChecker'; // Import the version checker hook
 import { msalInstance, msalInitPromise } from "./api/msalConfig";
 
 
 
 const VersionGuard = ({ children }: { children: React.ReactNode }) => {
-  useVersionCheck(); // This runs the Major/Minor comparison logic
+  // useVersionCheck(); // This runs the Major/Minor comparison logic
   return <>{children}</>;
 };
 
@@ -152,30 +155,30 @@ function MainContent() {
 
       <TaskWorkerProvider setNotifications={setWorkerNotifications}>
         <HashRouter>
-          <MaintenanceChecker>
-            <NotificationFetcher onDataLoaded={handleNewToasts} stopFetching={overlayProgress < 99} />
-            <ErrorChecker>
-              <VersionGuard>
-                <Routes>
-                  <Route path="/" element={<Navigate to="/loading" replace />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/dash" element={<ProtectedRoute><DASHPage /></ProtectedRoute>} />
-                  <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT /></ProtectedRoute>} />
-                  <Route path="/order-dist" element={<ProtectedRoute><OrderDistribution /></ProtectedRoute>} />
-                  <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring /></ProtectedRoute>} />
-                  <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
-                  <Route path="/maintenance" element={<MaintenancePage details={{}} />} />
-                  <Route path="/developer" element={<ProtectedRoute><DeveloperPage /></ProtectedRoute>} />
-                  <Route path="/loading" element={<LoadingPage />} />
-                  <Route path="/test" element={<NewFeatureDashboard />} />
-                  <Route path="/error" element={<ErrorPage />} />
-                  <Route path="/update-required" element={<UpdateRequired />} />
-                  <Route path="/incidents" element={<ProtectedRoute><IncidentManagement /></ProtectedRoute>} />
-                  <Route path="*" element={<Not_Found />} />
-                </Routes>
-              </VersionGuard>
-            </ErrorChecker>
-          </MaintenanceChecker>
+
+          <NotificationFetcher onDataLoaded={handleNewToasts} stopFetching={overlayProgress < 99} />
+
+          <VersionGuard>
+            <Routes>
+              <Route path="/" element={<Navigate to="/loading" replace />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dash" element={<ProtectedRoute><DASHPage /></ProtectedRoute>} />
+              <Route path="/order" element={<ProtectedRoute><ORDER_MANAGEMENT /></ProtectedRoute>} />
+              <Route path="/order-dist" element={<ProtectedRoute><OrderDistribution /></ProtectedRoute>} />
+              <Route path="/fleet" element={<ProtectedRoute><FleetMonitoring /></ProtectedRoute>} />
+              <Route path="/test_page" element={<ProtectedRoute><TEMPLATE_PAGE /></ProtectedRoute>} />
+              <Route path="/maintenance" element={<MaintenancePage details={{}} />} />
+              <Route path="/developer" element={<ProtectedRoute><DeveloperPage /></ProtectedRoute>} />
+              <Route path="/loading" element={<LoadingPage />} />
+              <Route path="/test" element={<NewFeatureDashboard />} />
+              <Route path="/error" element={<ErrorPage />} />
+              <Route path="/update-required" element={<UpdateRequired />} />
+              <Route path="/incidents" element={<ProtectedRoute><IncidentManagement /></ProtectedRoute>} />
+              <Route path="*" element={<Not_Found />} />
+            </Routes>
+          </VersionGuard>
+
+
         </HashRouter>
       </TaskWorkerProvider>
     </>
