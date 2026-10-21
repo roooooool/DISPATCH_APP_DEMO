@@ -93,8 +93,9 @@ export const getEndpointFromService = (service: any, db?: string, objectType: st
   const rawTableId: string = schemaEntry?.tableId || lookupKey;
   const cleanTableName = rawTableId.replace(/^\[.*?\]\./, '').replace(/[\[\]]/g, '');
 
-  // Return local static path for PapaParse to fetch
-  const path = `/data/table/${cleanTableName}.csv`;
+  // Use import.meta.env.BASE_URL to properly prefix local assets for GitHub Pages
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const path = `${baseUrl}data/table/${cleanTableName}.csv`.replace(/\/+/g, '/'); // cleans up double slashes if any
   return path;
 };
 

@@ -44,7 +44,7 @@ export function IdleProvider({ children, enabled = true, }: IdleProviderProps) {
 
     const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const BASE_TITLE = `GSDC Dispatch App v${APP_VERSION}`;
+    const BASE_TITLE = `DEMO Dispatch App v${APP_VERSION}`;
 
     useEffect(() => {
         document.title = userIdle
