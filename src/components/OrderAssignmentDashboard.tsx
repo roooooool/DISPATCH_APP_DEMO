@@ -82,6 +82,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     newOrdersList,
     newOrdersLoading,
     tripAssignedList,
+    //@ts-ignore
     tripAssignedLoading,
     businessUnits,
     displayMapping,
@@ -91,7 +92,7 @@ export const OrderAssignmentDashboard: React.FC<OrderAssignmentDashboardProps> =
     newTripsTableConfig,
     buCapacity,
 }) => {
-    console.log(tripAssignedLoading, newOrdersLoading);
+    // console.log(tripAssignedLoading, newOrdersLoading);
 
     const { user } = useUser();
     const { addTask } = useTaskWorker();

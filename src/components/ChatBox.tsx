@@ -171,50 +171,63 @@ const ChatBox = forwardRef<ChatBoxHandle, ChatBoxProps>(({ isOpen, onClose, onOp
         return () => window.removeEventListener(GSDC_SEND_TO_CHAT_key, handleExternalSend);
     }, [activeChannel, user]);
 
-    const renderMessageText = (text: string, onMentionClick: (oe: string) => void, isMine: boolean) => {
-        // Combined regex to catch both patterns
-        // Group 1: TRIP, Group 2: THINK
+    const renderMessageText = (text: any, onMentionClick: (oe: string) => void, isMine: boolean) => {
+        // 1. Ensure text is safely converted to a string to prevent runtime crashes
+        const safeText = typeof text === 'string' ? text : String(text || '');
+
+        // 2. Combined regex to catch both patterns
         const combinedRegex = /\[TRIP:(.*?)\]|\[THINK:(.*?)\]/g;
+        const matches = [...safeText.matchAll(combinedRegex)];
 
-        const parts = text.split(combinedRegex);
-        if (parts.length === 1) return <ReactMarkdown components={{ p: 'span' }}>{text}</ReactMarkdown>;
+        // If no tags are found, render normally with markdown
+        if (matches.length === 0) {
+            return <ReactMarkdown components={{ p: 'span' }}>{safeText}</ReactMarkdown>;
+        }
 
-        // Filter out undefined/empty matches from the split groups
-        return parts.map((part, index) => {
-            if (!part) return null;
+        const elements: React.ReactNode[] = [];
+        let lastIndex = 0;
 
-            // Note: With two capture groups, every match consumes 3 array slots (part, group1, group2)
-            // However, a simpler way is to check the text content or context
+        matches.forEach((match, index) => {
+            const matchStart = match.index!;
+
+            // Push any preceding text chunk before the tag
+            if (matchStart > lastIndex) {
+                const textChunk = safeText.substring(lastIndex, matchStart);
+                elements.push(<span key={`text-${index}`}>{textChunk}</span>);
+            }
+
+            const [fullMatch, tripValue, thinkValue] = match;
 
             // Handle Trip Mentions
-            if (text.includes(`[TRIP:${part}]`)) {
-                return (
+            if (tripValue !== undefined) {
+                elements.push(
                     <span
-                        key={index}
+                        key={`trip-${index}`}
                         className={`chat-mention-trip ${isMine ? 'mine' : ''}`}
-                        onClick={() => onMentionClick(part)}
+                        onClick={() => onMentionClick(tripValue)}
                     >
-                        @{part}
+                        @{tripValue}
                     </span>
                 );
             }
-
             // Handle Thinking Animations
-            if (text.includes(`[THINK:${part}]`)) {
-                return (
-                    <span key={index} className="bot-thinking-text">
-                        {/* <span className="thinking-icon"><Settings/></span> */}
+            else if (thinkValue !== undefined) {
+                elements.push(
+                    <span key={`think-${index}`} className="bot-thinking-text">
                         <div className="chat-loader"></div>
-                        {/* {part} */}
-                        {/* <span className="dot-one">.</span>
-                        <span className="dot-two">.</span>
-                        <span className="dot-three">.</span> */}
                     </span>
                 );
             }
 
-            return <span key={index}>{part}</span>;
+            lastIndex = matchStart + fullMatch.length;
         });
+
+        // Push any remaining text after the last tag
+        if (lastIndex < safeText.length) {
+            elements.push(<span key={`text-end`}>{safeText.substring(lastIndex)}</span>);
+        }
+
+        return <>{elements}</>;
     };
 
 
