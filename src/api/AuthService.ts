@@ -85,7 +85,7 @@ export const AuthService = {
         //     this.clear();
         // }
 
-        this.clear();
+        // this.clear();
     }
 };
 
