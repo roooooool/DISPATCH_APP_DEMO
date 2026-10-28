@@ -172,7 +172,7 @@ const Navbar = forwardRef<NavbarHandle, NavbarProps>(({ user: _user, onNavigate 
 
   const handleMandatoryLogoutConfirm = () => {
     setShowMandatoryLogoutModal(false);
-    handleLogout(mandatoryLogout);
+    // handleLogout(mandatoryLogout);
   };
 
   const handleNavigateError = (error: string) => {
